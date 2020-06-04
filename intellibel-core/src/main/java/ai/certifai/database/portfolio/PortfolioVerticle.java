@@ -1,0 +1,440 @@
+/*
+ * Copyright (c) 2020 CertifAI
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package ai.certifai.database.portfolio;
+
+import ai.certifai.database.DatabaseConfig;
+import ai.certifai.util.message.ErrorCodes;
+import ai.certifai.util.message.ReplyHandler;
+import ai.certifai.selector.SelectorHandler;
+import ai.certifai.server.ServerConfig;
+import ai.certifai.util.ConversionHandler;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Promise;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.SQLConnection;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Portfolio is a collection of projects
+ * Each projects contains respective UUIDs
+ */
+@Slf4j
+public class PortfolioVerticle extends AbstractVerticle implements PortfolioServiceable
+{
+    //connection to database
+    private static JDBCClient portfolioDbClient;
+
+    public void onMessage(Message<JsonObject> message)
+    {
+        if (!message.headers().contains(ServerConfig.ACTION_KEYWORD))
+        {
+            log.error("No action header specified for message with headers {} and body {}",
+                    message.headers(), message.body().encodePrettily());
+
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ServerConfig.ACTION_KEYWORD + " specified");
+
+            return;
+        }
+        String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
+
+        if(action.equals(PortfolioSQLQuery.createNewProject()))
+        {
+            this.createNewProject(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.getAllProjects()))
+        {
+            this.getAllProjects(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.updateLabels()))
+        {
+            this.updateLabel(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.getProjectUUIDList()))
+        {
+            this.getProjectUUIDList(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.getThumbNailList()))
+        {
+            this.getThumbNailList(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.getUUIDLabelList()))
+        {
+            this.getUUIDLabelList(message);
+        }
+        else
+        {
+            log.error("Portfolio SQL query error: Action did not found follow up function");
+        }
+    }
+
+
+    public void createNewProject(Message<JsonObject> message)
+    {
+        JsonObject request = message.body();
+
+        String projectName = request.getString(ServerConfig.PROJECT_NAME_PARAM);
+
+        log.info("Create project with name: " + projectName + " in portfolio table");
+
+        Integer projectID = SelectorHandler.generateProjectID();
+
+        JsonArray params = new JsonArray().add(projectID).add(projectName).add(ServerConfig.EMPTY_ARRAY).add(0).add(ServerConfig.EMPTY_ARRAY);
+
+        portfolioDbClient.queryWithParams(PortfolioSQLQuery.createNewProject(), params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                SelectorHandler.setUUIDGenerator(0);
+                SelectorHandler.setProjectNameNID(projectName, projectID);
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else {
+                //query database failed
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+
+    }
+
+    public void updateLabel(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        JsonArray labelList = message.body().getJsonArray(ServerConfig.LABEL_LIST_PARAM);
+
+        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        {
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateLabels(), new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
+
+                if(fetch.succeeded())
+                {
+                    message.reply(ReplyHandler.getOkReply());
+                }
+                else {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+        }
+
+
+    }
+
+    public void getProjectUUIDList(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+
+        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        {
+            JsonArray params = new JsonArray().add(projectName);
+
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.getProjectUUIDList(), params, fetch -> {
+
+                if(fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
+                    JsonArray row = resultSet.getResults().get(0);
+                    JsonObject response = ReplyHandler.getOkReply();
+
+                    response.put(ServerConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
+                    message.reply(response);
+                }
+                else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+        }
+    }
+
+    public void getThumbNailList(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+
+        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        {
+            JsonArray params = new JsonArray().add(projectName);
+
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.getThumbNailList(), params, fetch -> {
+
+                if(fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
+                    JsonArray row = resultSet.getResults().get(0);
+
+
+                    List<Integer> wholeUUIDList = ConversionHandler.string2IntegerList(row.getString(0));
+
+                    List<Integer> subList = new ArrayList<>();
+
+                    if(wholeUUIDList.isEmpty() == false)
+                    {
+                        Integer previousUUIDPointer = row.getInteger(1);
+
+                        for(Integer item : wholeUUIDList)
+                        {
+                            if(item > previousUUIDPointer)
+                            {
+                                subList.add(item);
+                            }
+                        }
+
+                        Integer currentUUIDMarker = Collections.max(wholeUUIDList);
+
+                        JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectName);
+                        portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateThumbNailMaxIndex(), markerUpdateParams, markerFetch -> {
+
+                            if (!markerFetch.succeeded()) {
+                                log.error("Update thumbnail marker failed");
+                            }
+                        });
+
+                    }
+                    JsonObject response = ReplyHandler.getOkReply();
+                    response.put(ServerConfig.UUID_LIST_PARAM, subList);
+                    message.reply(response);
+
+                }
+                else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+        }
+    }
+
+    public void getUUIDLabelList(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+
+        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        {
+            JsonArray params = new JsonArray().add(projectName);
+
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.getUUIDLabelList(), params, fetch -> {
+
+                if(fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
+                    JsonArray row = resultSet.getResults().get(0);
+
+                    List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
+                    List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
+
+                    JsonObject response = ReplyHandler.getOkReply();
+                    response.put(ServerConfig.LABEL_LIST_PARAM, labelList);
+                    response.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+                    message.reply(response);
+                }
+                else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+        }
+
+    }
+
+    public void getAllProjects(Message<JsonObject> message)
+    {
+        portfolioDbClient.query(PortfolioSQLQuery.getAllProjects(), fetch -> {
+            if (fetch.succeeded()) {
+
+                List<String> projectNameList = fetch.result()
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getString(0))
+                        .sorted()
+                        .collect(Collectors.toList());
+
+                JsonObject response = new JsonObject().put(ServerConfig.CONTENT, projectNameList);
+
+                message.reply(response);
+            }
+            else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public static void updateUUIDList(List<Integer> newUUIDList)
+    {
+        String projectName = SelectorHandler.getProjectNameBuffer();
+
+        portfolioDbClient.queryWithParams(PortfolioSQLQuery.getProjectUUIDList(),  new JsonArray().add(projectName), fetch ->{
+
+            if(fetch.succeeded())
+            {
+                String UUIDString = fetch.result().getResults().get(0).getString(0);
+
+                List<Integer> UUIDListString = ConversionHandler.string2IntegerList(UUIDString);
+
+                //for(Integer item : UUIDListString) System.out.println("Debug 1: " + item);
+
+                //for(Integer item : newUUIDList) System.out.println("Debug 2: " + item);
+
+                UUIDListString.addAll(newUUIDList);
+
+                JsonArray jsonUpdateBody = new JsonArray().add(UUIDListString.toString()).add(projectName);
+
+                portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateProject(), jsonUpdateBody, reply -> {
+
+                    if(!reply.succeeded())
+                    {
+                        log.error("Update list of uuids to Portfolio Database failed");
+                    }
+                });
+
+            }
+            else {
+                log.error("Retrieving list of uuids from Portfolio Database failed");
+            }
+        });
+    }
+
+    public void configurePortfolioVerticle()
+    {
+        portfolioDbClient.query(PortfolioSQLQuery.getProjectIDList(), fetch -> {
+            if (fetch.succeeded()) {
+
+                List<Integer> projectIDList = fetch.result()
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getInteger(0))
+                        .sorted()
+                        .collect(Collectors.toList());
+
+
+                if(projectIDList.isEmpty())
+                {
+                    log.info("Project ID List is empty. Initiate generator id from 0");
+                    SelectorHandler.setProjectIDGenerator(0);
+                }
+                else {
+                    Integer maxProjectID = Collections.max(projectIDList);
+                    SelectorHandler.setProjectIDGenerator(maxProjectID);
+
+                    //set projectIDNameDict and projectNameIDDict in SelectorHandler
+
+                    for (Integer projectID : projectIDList) {
+                        JsonArray projectIDJson = new JsonArray().add(projectID);
+
+                        portfolioDbClient.queryWithParams(PortfolioSQLQuery.getProjectName(), projectIDJson, projectNameFetch -> {
+
+                            if (projectNameFetch.succeeded()) {
+                                ResultSet resultSet = projectNameFetch.result();
+
+                                if (resultSet.getNumRows() != 0) {
+
+                                    JsonArray row = resultSet.getResults().get(0);
+
+                                    String projectName = row.getString(0);
+
+                                    SelectorHandler.setProjectNameNID(projectName, projectID);
+
+                                    JsonArray thumbnailIDJson = new JsonArray().add(0).add(projectName);
+
+                                    portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateThumbNailMaxIndex(), thumbnailIDJson, thumbnailFetch -> {
+
+                                        if (!thumbnailFetch.succeeded()) {
+                                            log.error("Fail in updating thumbnail max in tutorial");
+                                        }
+                                    });
+                                }
+                            } else {
+                                log.error("Retrieving project name failed");
+                            }
+                        });
+
+
+
+                    }
+                }
+
+            }
+        });
+    }
+
+
+    //obtain a JDBC client connection,
+    //Performs a SQL query to create the portfolio table unless existed
+    @Override
+    public void start(Promise<Void> promise) throws Exception
+    {
+        portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.PORTFOLIO_DB)
+                .put("driver_class", "org.hsqldb.jdbcDriver")
+                .put("max_pool_size", 30));
+
+        portfolioDbClient.getConnection(ar -> {
+
+            if (ar.failed()) {
+                log.error("Could not open a portfolio database connection", ar.cause());
+                promise.fail(ar.cause());
+
+            } else {
+
+                SQLConnection connection = ar.result();
+                connection.execute(PortfolioSQLQuery.createPortfolioTable(), create -> {
+                    connection.close();
+                    if (create.failed()) {
+                        log.error("Portfolio database preparation error", create.cause());
+                        promise.fail(create.cause());
+
+                    } else
+                    {
+                        log.info("Portfolio database connection success");
+
+                        //the consumer methods registers an event bus destination handler
+                        vertx.eventBus().consumer(PortfolioSQLQuery.getQueue(), this::onMessage);
+
+                        configurePortfolioVerticle();
+
+                        promise.complete();
+                    }
+                });
+            }
+        });
+
+    }
+}
