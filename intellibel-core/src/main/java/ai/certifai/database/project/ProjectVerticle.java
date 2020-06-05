@@ -55,23 +55,22 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
         String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
 
-        if(action.equals(ProjectSQLQuery.retrieveData()))
+        if(action.equals(ProjectSQLQuery.RETRIEVE_DATA))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(ProjectSQLQuery.retrieveDataPath()))
+        else if(action.equals(ProjectSQLQuery.RETRIEVE_DATA_PATH))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(ProjectSQLQuery.updateData()))
+        else if(action.equals(ProjectSQLQuery.UPDATE_DATA))
         {
             this.updateData(message);
         }
         else
         {
-            log.error("Project query error: Action did not found follow up function");
+            log.error("Project query error: Action did not found follow up with function");
         }
-
     }
 
 
@@ -82,7 +81,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectNameIDDict().get(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.retrieveDataPath(), params, fetch -> {
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -135,7 +134,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     .add((Integer)imgMetadata.getLeft())
                     .add((Integer)imgMetadata.getRight());
 
-            projectJDBCClient.queryWithParams(ProjectSQLQuery.createData(), params, fetch -> {
+            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
                 {
                     log.error(fetch.cause().getMessage());
@@ -155,7 +154,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectNameIDDict().get(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.retrieveData(), params, fetch -> {
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -202,6 +201,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         String projectName = requestBody.getString(ServerConfig.PROJECT_NAME_PARAM);
         String boundingBox = requestBody.getJsonArray(ServerConfig.BOUNDING_BOX_PARAM).encode();
 
+        //FIXME repetitive as above
         JsonArray params = new JsonArray()
                 .add(boundingBox)
                 .add(requestBody.getInteger(ServerConfig.IMAGEX_PARAM))
@@ -241,7 +241,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         */
 
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.updateData(), params, fetch -> {
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
                 message.reply("ok");
@@ -268,7 +268,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 promise.fail(ar.cause());
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(ProjectSQLQuery.createProject(), create -> {
+                connection.execute(ProjectSQLQuery.CREATE_PROJECT, create -> {
                     connection.close();
                     if (create.failed()) {
                         log.error("Project database preparation error", create.cause());
@@ -279,7 +279,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         log.info("Project database connection success");
 
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(ProjectSQLQuery.getQueue(), this::onMessage);
+                        vertx.eventBus().consumer(ProjectSQLQuery.QUEUE, this::onMessage);
                         promise.complete();
                     }
                 });

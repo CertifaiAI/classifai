@@ -33,20 +33,20 @@ enum ProjectSQLQueryCode
 
 public class ProjectSQLQuery
 {
-    @Getter final static String queue = "project.queue";
+    public final static String QUEUE = "project.queue";
 
-    private final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, projectid integer, imagepath varchar(255), bndbox varchar(5000), " +
+    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, projectid integer, imagepath varchar(255), bndbox varchar(5000), " +
             "imageX integer, imageY integer, imageW double, imageH double, imageOriW integer, imageOriH integer, primary key(uuid, projectid))";
 
-    private final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private final static String RETRIEVE_DATA = "select imagepath, bndbox, imageX, imageY, imageW, imageH, imageOriW, imageOriH from Project where uuid = ? and projectid = ?";
+    public final static String RETRIEVE_DATA = "select imagepath, bndbox, imageX, imageY, imageW, imageH, imageOriW, imageOriH from Project where uuid = ? and projectid = ?";
 
-    private final static String RETRIEVE_DATA_PATH = "select imagepath from Project where uuid = ? and projectid = ?";
+    public final static String RETRIEVE_DATA_PATH = "select imagepath from Project where uuid = ? and projectid = ?";
 
-    private final static String UPDATE_DATA = "update Project set bndbox = ?, imageX = ?, imageY = ?, imageW = ?, imageH = ?, imageOriW = ?, imageOriH = ? where uuid = ? and projectid = ?";
+    public final static String UPDATE_DATA = "update Project set bndbox = ?, imageX = ?, imageY = ?, imageW = ?, imageH = ?, imageOriW = ?, imageOriH = ? where uuid = ? and projectid = ?";
 
-    private final static Map<ProjectSQLQueryCode, String> queryLUT = new HashMap();
+    public final static Map<ProjectSQLQueryCode, String> queryLUT = new HashMap();
 
     // Instantiating the static map
     static
@@ -58,31 +58,4 @@ public class ProjectSQLQuery
         queryLUT.put(ProjectSQLQueryCode.UPDATE_DATA, UPDATE_DATA);
 
     }
-
-    public static String createProject()
-    {
-        return CREATE_PROJECT;
-    }
-
-    public static String createData()
-    {
-        return CREATE_DATA;
-    }
-
-    public static String retrieveData()
-    {
-        return RETRIEVE_DATA;
-    }
-
-    public static String retrieveDataPath()
-    {
-        return RETRIEVE_DATA_PATH;
-    }
-
-    public static String updateData()
-    {
-        return UPDATE_DATA;
-    }
-
-
 }

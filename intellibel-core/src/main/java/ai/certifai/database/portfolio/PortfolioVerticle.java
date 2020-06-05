@@ -60,33 +60,33 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
         String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
 
-        if(action.equals(PortfolioSQLQuery.createNewProject()))
+        if(action.equals(PortfolioSQLQuery.CREATE_NEW_PROJECT))
         {
             this.createNewProject(message);
         }
-        else if(action.equals(PortfolioSQLQuery.getAllProjects()))
+        else if(action.equals(PortfolioSQLQuery.GET_ALL_PROJECTS))
         {
             this.getAllProjects(message);
         }
-        else if(action.equals(PortfolioSQLQuery.updateLabels()))
+        else if(action.equals(PortfolioSQLQuery.UPDATE_LABEL))
         {
             this.updateLabel(message);
         }
-        else if(action.equals(PortfolioSQLQuery.getProjectUUIDList()))
+        else if(action.equals(PortfolioSQLQuery.GET_PROJECT_UUID_LIST))
         {
             this.getProjectUUIDList(message);
         }
-        else if(action.equals(PortfolioSQLQuery.getThumbNailList()))
+        else if(action.equals(PortfolioSQLQuery.GET_THUMBNAIL_LIST))
         {
             this.getThumbNailList(message);
         }
-        else if(action.equals(PortfolioSQLQuery.getUUIDLabelList()))
+        else if(action.equals(PortfolioSQLQuery.GET_UUID_LABEL_LIST))
         {
             this.getUUIDLabelList(message);
         }
         else
         {
-            log.error("Portfolio SQL query error: Action did not found follow up function");
+            log.error("Portfolio SQL query error: Action did not found follow up with function");
         }
     }
 
@@ -103,7 +103,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         JsonArray params = new JsonArray().add(projectID).add(projectName).add(ServerConfig.EMPTY_ARRAY).add(0).add(ServerConfig.EMPTY_ARRAY);
 
-        portfolioDbClient.queryWithParams(PortfolioSQLQuery.createNewProject(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioSQLQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -126,7 +126,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
         {
-            portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateLabels(), new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_LABEL, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
 
                 if(fetch.succeeded())
                 {
@@ -153,7 +153,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             JsonArray params = new JsonArray().add(projectName);
 
-            portfolioDbClient.queryWithParams(PortfolioSQLQuery.getProjectUUIDList(), params, fetch -> {
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
 
                 if(fetch.succeeded())
                 {
@@ -185,7 +185,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             JsonArray params = new JsonArray().add(projectName);
 
-            portfolioDbClient.queryWithParams(PortfolioSQLQuery.getThumbNailList(), params, fetch -> {
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_THUMBNAIL_LIST, params, fetch -> {
 
                 if(fetch.succeeded())
                 {
@@ -212,7 +212,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         Integer currentUUIDMarker = Collections.max(wholeUUIDList);
 
                         JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectName);
-                        portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateThumbNailMaxIndex(), markerUpdateParams, markerFetch -> {
+                        portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_THUMBNAIL_MAX_INDEX, markerUpdateParams, markerFetch -> {
 
                             if (!markerFetch.succeeded()) {
                                 log.error("Update thumbnail marker failed");
@@ -246,7 +246,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             JsonArray params = new JsonArray().add(projectName);
 
-            portfolioDbClient.queryWithParams(PortfolioSQLQuery.getUUIDLabelList(), params, fetch -> {
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_UUID_LABEL_LIST, params, fetch -> {
 
                 if(fetch.succeeded())
                 {
@@ -277,7 +277,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getAllProjects(Message<JsonObject> message)
     {
-        portfolioDbClient.query(PortfolioSQLQuery.getAllProjects(), fetch -> {
+        portfolioDbClient.query(PortfolioSQLQuery.GET_ALL_PROJECTS, fetch -> {
             if (fetch.succeeded()) {
 
                 List<String> projectNameList = fetch.result()
@@ -301,7 +301,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = SelectorHandler.getProjectNameBuffer();
 
-        portfolioDbClient.queryWithParams(PortfolioSQLQuery.getProjectUUIDList(),  new JsonArray().add(projectName), fetch ->{
+        portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectName), fetch ->{
 
             if(fetch.succeeded())
             {
@@ -317,7 +317,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 JsonArray jsonUpdateBody = new JsonArray().add(UUIDListString.toString()).add(projectName);
 
-                portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateProject(), jsonUpdateBody, reply -> {
+                portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
 
                     if(!reply.succeeded())
                     {
@@ -334,7 +334,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void configurePortfolioVerticle()
     {
-        portfolioDbClient.query(PortfolioSQLQuery.getProjectIDList(), fetch -> {
+        portfolioDbClient.query(PortfolioSQLQuery.GET_PROJECT_ID_LIST, fetch -> {
             if (fetch.succeeded()) {
 
                 List<Integer> projectIDList = fetch.result()
@@ -359,7 +359,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     for (Integer projectID : projectIDList) {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
 
-                        portfolioDbClient.queryWithParams(PortfolioSQLQuery.getProjectName(), projectIDJson, projectNameFetch -> {
+                        portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_NAME, projectIDJson, projectNameFetch -> {
 
                             if (projectNameFetch.succeeded()) {
                                 ResultSet resultSet = projectNameFetch.result();
@@ -374,7 +374,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                                     JsonArray thumbnailIDJson = new JsonArray().add(0).add(projectName);
 
-                                    portfolioDbClient.queryWithParams(PortfolioSQLQuery.updateThumbNailMaxIndex(), thumbnailIDJson, thumbnailFetch -> {
+                                    portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_THUMBNAIL_MAX_INDEX, thumbnailIDJson, thumbnailFetch -> {
 
                                         if (!thumbnailFetch.succeeded()) {
                                             log.error("Fail in updating thumbnail max in tutorial");
@@ -415,7 +415,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             } else {
 
                 SQLConnection connection = ar.result();
-                connection.execute(PortfolioSQLQuery.createPortfolioTable(), create -> {
+                connection.execute(PortfolioSQLQuery.CREATE_PORTFOLIO_TABLE, create -> {
                     connection.close();
                     if (create.failed()) {
                         log.error("Portfolio database preparation error", create.cause());
@@ -426,7 +426,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         log.info("Portfolio database connection success");
 
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(PortfolioSQLQuery.getQueue(), this::onMessage);
+                        vertx.eventBus().consumer(PortfolioSQLQuery.QUEUE, this::onMessage);
 
                         configurePortfolioVerticle();
 
