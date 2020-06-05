@@ -7,7 +7,7 @@ GET http://localhost:8080/project/:projectname
 GET http://localhost:8080/projects  
     
 GET http://localhost:8080/select?projectname={projectname}&filetype={file/folder}  
-GET http://localhost:8080/selectstatus  
+GET http://localhost:8080/selectstatus/:projectname
 
 GET http://localhost:8080/thumbnail?projectname={projectname}&uuid={uuid}  
 GET http://localhost:8080/imgsrc?projectname={projectname}&uuid={uuid}

@@ -79,7 +79,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = message.body().getInteger(ServerConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectNameIDDict().get(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
         projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
@@ -115,11 +115,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             log.error("Number of files is not aligned to number of uuid");
             return;
         }
-        Integer currentProjectID = (Integer) SelectorHandler.getProjectNameIDDict().get(SelectorHandler.getProjectNameBuffer());
+
+        Integer currentProjectID = (Integer) SelectorHandler.getProjectIDFromBuffer();
 
         for(int i = 0 ; i < fileHolder.size(); ++i)
         {
-
             Pair imgMetadata = ImageUtils.getImageSize(fileHolder.get(i));
 
             JsonArray params = new JsonArray()
@@ -137,7 +137,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
                 {
-                    log.error(fetch.cause().getMessage());
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
             });
         }
@@ -151,8 +151,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = message.body().getInteger(ServerConfig.UUID_PARAM);
 
-
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectNameIDDict().get(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
         projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
             if(fetch.succeeded())
@@ -170,7 +169,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     Integer counter = 0;
                     String imagePath = row.getString(counter++);
 
-
                     response.put(ServerConfig.UUID_PARAM, uuid);
                     response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
@@ -183,6 +181,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(imagePath));
+
+                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
 
                 }
                 message.reply(response);
@@ -201,7 +201,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         String projectName = requestBody.getString(ServerConfig.PROJECT_NAME_PARAM);
         String boundingBox = requestBody.getJsonArray(ServerConfig.BOUNDING_BOX_PARAM).encode();
 
-        //FIXME repetitive as above
         JsonArray params = new JsonArray()
                 .add(boundingBox)
                 .add(requestBody.getInteger(ServerConfig.IMAGEX_PARAM))
@@ -211,7 +210,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIW_PARAM))
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ServerConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectNameIDDict().get(projectName));
+                .add(SelectorHandler.getProjectID(projectName));
 
         /*
         System.out.println("bounding box: ");
@@ -244,7 +243,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
-                message.reply("ok");
+                message.reply(ReplyHandler.getOkReply());
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));

@@ -36,6 +36,9 @@ public class PortfolioSQLQuery
 
     public final static String GET_PROJECT_UUID_LIST = "select uuidlist from Portfolio where projectname = ?";
 
+    //returning the list of uuid's to check if a specific uuid exist
+    public final static String CHECK_PROJECT_VALIDITY = GET_PROJECT_UUID_LIST;
+
     public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnailmax = ? where projectname = ?";
 
     public final static String GET_THUMBNAIL_LIST = "select uuidlist, thumbnailmax from Portfolio where projectname = ?";

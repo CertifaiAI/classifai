@@ -46,14 +46,6 @@ public class HTTPResponseHandler
         context.response().setStatusCode(HTTPResponseCode.internalServerError());
 
     }
-
-    public static void configureInternalServerError(@NonNull RoutingContext context, JsonObject jsonObject)
-    {
-        context.response().setStatusCode(HTTPResponseCode.internalServerError());
-        context.response().putHeader("Content-Type", "application/json");
-        context.response().end(jsonObject.encodePrettily());
-    }
-
     public static void configureMethodsNotAllowed(@NonNull RoutingContext context, JsonObject jsonObject)
     {
         context.response().setStatusCode(HTTPResponseCode.methodsNotAllowed());

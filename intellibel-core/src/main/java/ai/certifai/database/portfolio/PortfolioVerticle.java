@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +48,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     //connection to database
     private static JDBCClient portfolioDbClient;
 
+    private static String projectNameExistMessage = "Project name did not exist. Retrieve uuid list from existing project name failed";
+
     public void onMessage(Message<JsonObject> message)
     {
         if (!message.headers().contains(ServerConfig.ACTION_KEYWORD))
@@ -58,6 +61,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             return;
         }
+
         String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
 
         if(action.equals(PortfolioSQLQuery.CREATE_NEW_PROJECT))
@@ -75,6 +79,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         else if(action.equals(PortfolioSQLQuery.GET_PROJECT_UUID_LIST))
         {
             this.getProjectUUIDList(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.CHECK_PROJECT_VALIDITY))
+        {
+            this.checkProjectValidity(message);
         }
         else if(action.equals(PortfolioSQLQuery.GET_THUMBNAIL_LIST))
         {
@@ -97,25 +105,31 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         String projectName = request.getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        log.info("Create project with name: " + projectName + " in portfolio table");
+        if(SelectorHandler.isProjectNameRegistered(projectName)) {
 
-        Integer projectID = SelectorHandler.generateProjectID();
+            log.info("Create project with name: " + projectName + " in portfolio table");
 
-        JsonArray params = new JsonArray().add(projectID).add(projectName).add(ServerConfig.EMPTY_ARRAY).add(0).add(ServerConfig.EMPTY_ARRAY);
+            Integer projectID = SelectorHandler.generateProjectID();
 
-        portfolioDbClient.queryWithParams(PortfolioSQLQuery.CREATE_NEW_PROJECT, params, fetch -> {
+            JsonArray params = new JsonArray().add(projectID).add(projectName).add(ServerConfig.EMPTY_ARRAY).add(0).add(ServerConfig.EMPTY_ARRAY);
 
-            if(fetch.succeeded())
-            {
-                SelectorHandler.setUUIDGenerator(0);
-                SelectorHandler.setProjectNameNID(projectName, projectID);
-                message.reply(ReplyHandler.getOkReply());
-            }
-            else {
-                //query database failed
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.CREATE_NEW_PROJECT, params, fetch -> {
+
+                if (fetch.succeeded()) {
+                    SelectorHandler.setUUIDGenerator(0);
+                    SelectorHandler.setProjectNameNID(projectName, projectID);
+                    message.reply(ReplyHandler.getOkReply());
+                } else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
+
+        }
 
     }
 
@@ -124,7 +138,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
         JsonArray labelList = message.body().getJsonArray(ServerConfig.LABEL_LIST_PARAM);
 
-        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        if(SelectorHandler.isProjectNameRegistered(projectName))
         {
             portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_LABEL, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
 
@@ -139,17 +153,15 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
-
-
     }
 
     public void getProjectUUIDList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        if(SelectorHandler.isProjectNameRegistered(projectName))
         {
             JsonArray params = new JsonArray().add(projectName);
 
@@ -173,7 +185,48 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+            message.reply(ReplyHandler.reportBadParamError(projectNameExistMessage));
+        }
+    }
+
+    public void checkProjectValidity(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+
+        if(SelectorHandler.isProjectNameRegistered(projectName))
+        {
+            JsonArray params = new JsonArray().add(projectName);
+
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
+
+                if(fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
+                    JsonArray row = resultSet.getResults().get(0);
+
+                    List<Integer> listArray = ConversionHandler.string2IntegerList(row.getString(0));
+                    Integer uuidSpecific = message.body().getInteger(ServerConfig.UUID_PARAM);
+
+                    if(listArray.contains(uuidSpecific))
+                    {
+                        message.reply(ReplyHandler.getOkReply());
+                    }
+                    else
+                    {
+                        message.reply(ReplyHandler.reportBadParamError("Selected UUID not found in the available database"));
+                    }
+
+                }
+                else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportBadParamError(projectNameExistMessage));
         }
     }
 
@@ -181,7 +234,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        if(SelectorHandler.isProjectNameRegistered(projectName))
         {
             JsonArray params = new JsonArray().add(projectName);
 
@@ -191,7 +244,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 {
                     ResultSet resultSet = fetch.result();
                     JsonArray row = resultSet.getResults().get(0);
-
 
                     List<Integer> wholeUUIDList = ConversionHandler.string2IntegerList(row.getString(0));
 
@@ -212,6 +264,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         Integer currentUUIDMarker = Collections.max(wholeUUIDList);
 
                         JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectName);
+
+                        //this is for update of thumbnail list to not include the existing send one to front end
                         portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_THUMBNAIL_MAX_INDEX, markerUpdateParams, markerFetch -> {
 
                             if (!markerFetch.succeeded()) {
@@ -234,7 +288,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
     }
 
@@ -242,7 +296,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.getProjectNameIDDict().containsKey(projectName))
+        if(SelectorHandler.isProjectNameRegistered(projectName))
         {
             JsonArray params = new JsonArray().add(projectName);
 
@@ -259,6 +313,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     JsonObject response = ReplyHandler.getOkReply();
                     response.put(ServerConfig.LABEL_LIST_PARAM, labelList);
                     response.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+
                     message.reply(response);
                 }
                 else {
@@ -266,11 +321,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
-
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Project name did not exist. Retrieve uuid list from existing project name failed"));
+            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
 
     }
@@ -308,10 +362,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 String UUIDString = fetch.result().getResults().get(0).getString(0);
 
                 List<Integer> UUIDListString = ConversionHandler.string2IntegerList(UUIDString);
-
-                //for(Integer item : UUIDListString) System.out.println("Debug 1: " + item);
-
-                //for(Integer item : newUUIDList) System.out.println("Debug 2: " + item);
 
                 UUIDListString.addAll(newUUIDList);
 
@@ -355,8 +405,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     SelectorHandler.setProjectIDGenerator(maxProjectID);
 
                     //set projectIDNameDict and projectNameIDDict in SelectorHandler
-
-                    for (Integer projectID : projectIDList) {
+                    for (Integer projectID : projectIDList)
+                    {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
 
                         portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_NAME, projectIDJson, projectNameFetch -> {
@@ -385,9 +435,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                 log.error("Retrieving project name failed");
                             }
                         });
-
-
-
                     }
                 }
 

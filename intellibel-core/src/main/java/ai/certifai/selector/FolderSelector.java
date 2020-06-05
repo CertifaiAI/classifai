@@ -42,8 +42,7 @@ public class FolderSelector extends Application {
         catch(IllegalStateException e)
         {
             SelectorHandler.setWindowState(false);
-
-            e.printStackTrace();
+            log.debug("Select folder failed to open", e);
         }
 
     }

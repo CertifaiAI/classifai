@@ -48,7 +48,7 @@ public class FileSelector extends Application {
         {
             SelectorHandler.setWindowState(false);
 
-            e.printStackTrace();
+            log.debug("Select files failed to open", e);
         }
 
     }
