@@ -1,2 +1,2 @@
-ai\certifai\IntellibelApp.class
-ai\certifai\annotator\YoloAnnotator.class
+ai/certifai/annotator/YoloAnnotator.class
+ai/certifai/IntellibelApp.class
