@@ -29,15 +29,19 @@ public class ReplyHandler {
     private static final Integer SUCCESSFUL = 1;
     private static final Integer FAILED = 0;
 
-
     public static String getMessageKey()
     {
         return MESSAGE_KEY;
     }
 
-    public static Integer getOKKey()
+    public static Integer getSuccessfulSignal()
     {
         return SUCCESSFUL;
+    }
+
+    public static Integer getFailedSignal()
+    {
+        return FAILED;
     }
 
     public static JsonObject reportDatabaseQueryError(Throwable cause)
@@ -52,6 +56,12 @@ public class ReplyHandler {
     {
         return new JsonObject().put(MESSAGE_KEY, SUCCESSFUL);
     }
+
+    public static JsonObject getFailedReply()
+    {
+        return new JsonObject().put(MESSAGE_KEY, FAILED);
+    }
+
 
     public static JsonObject reportUserDefinedError(String userDefinedMessage)
     {

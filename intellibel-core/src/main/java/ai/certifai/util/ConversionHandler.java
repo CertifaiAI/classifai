@@ -137,7 +137,7 @@ public class ConversionHandler
 
             if(content.length() == 1)
             {
-                return Arrays.asList(Integer.parseInt(content));
+                return new ArrayList<>(Arrays.asList(Integer.parseInt(content)));
             }
 
             String delimiter = content.contains(", ") ? ", " :",";

@@ -32,12 +32,12 @@ public class SelectorHandler {
 
     //key: (Integer) Project ID
     //value: (String) Project Name
-    @Getter private static Map projectIDNameDict;
+    private static Map projectIDNameDict;
 
     //projectUUIDNameDict opposite
     //key: (String) Project Name
     //value: (Integer) Project ID
-    @Getter private static Map projectNameIDDict;
+    private static Map projectNameIDDict;
 
     private static AtomicInteger projectIDGenerator;
     private static AtomicInteger uuidGenerator;
@@ -66,7 +66,6 @@ public class SelectorHandler {
 
         projectIDGenerator =  new AtomicInteger(0);
         uuidGenerator =  new AtomicInteger(0);
-
     }
 
 
@@ -108,15 +107,21 @@ public class SelectorHandler {
     private static void initiateDatabaseUpdate()
     {
         isDatabaseUpdating = true;
-
-        //JsonArray uuidListArray = response.getJsonArray(ServerConfig.UUID_LIST_PARAM);
-
-        //SelectorHandler.configureUUIDGenerator(ConversionHandler.jsonArray2IntegerList(uuidListArray));
     }
 
     public static boolean isProjectNameRegistered(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);
+    }
+
+    public static Integer getProjectID(String projectName)
+    {
+        return (Integer) projectNameIDDict.get(projectName);
+    }
+
+    public static Integer getProjectIDFromBuffer()
+    {
+        return getProjectID(projectNameBuffer);
     }
 
     public static void setProjectNameBuffer(String projectName)
@@ -258,8 +263,6 @@ public class SelectorHandler {
     {
         return uuidGenerator.incrementAndGet();
     }
-
-
 
     public static void setProjectIDGenerator(Integer seedNumber)
     {

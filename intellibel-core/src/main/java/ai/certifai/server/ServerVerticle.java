@@ -53,36 +53,28 @@ public class ServerVerticle extends AbstractVerticle
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
         JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-        //check project name if exist
-        if(SelectorHandler.isProjectNameRegistered(projectName)) {
+        context.request().bodyHandler(h -> {
 
-            HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportBadParamError("Project name exist. Choose another one"));
-        }
-        else
-        {
+            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.CREATE_NEW_PROJECT);
 
-            context.request().bodyHandler(h -> {
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, createOptions, reply -> {
 
-                DeliveryOptions createOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.createNewProject());
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
 
-                vertx.eventBus().request(PortfolioSQLQuery.getQueue(), request, createOptions, reply -> {
-
-                    if(reply.succeeded())
+                    if(ReplyHandler.isReplyOk(response))
                     {
-                        JsonObject response = (JsonObject) reply.result().body();
-
-                        if(ReplyHandler.isReplyOk(response))
-                        {
-                            HTTPResponseHandler.configureOK(context, response);
-                        }
-                        else
-                        {
-                            HTTPResponseHandler.configureBadRequest(context, response);
-                        }
+                        HTTPResponseHandler.configureOK(context, response);
                     }
-                });
+                    else
+                    {
+                        HTTPResponseHandler.configureBadRequest(context, response);
+                    }
+                }
             });
-        }
+        });
+
     }
 
     //GET http://localhost:8080/project/:projectname http://localhost:8080/project/projectname
@@ -92,9 +84,9 @@ public class ServerVerticle extends AbstractVerticle
 
         JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getProjectUUIDList());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
 
-        vertx.eventBus().request(PortfolioSQLQuery.getQueue(), request, options, reply ->
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
         {
             if(reply.succeeded())
             {
@@ -116,14 +108,14 @@ public class ServerVerticle extends AbstractVerticle
     private void getUUIDListWithLabel(RoutingContext context) {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getUUIDLabelList());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
 
-        vertx.eventBus().request(PortfolioSQLQuery.getQueue(), new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
         {
             if (reply.succeeded()) {
                 JsonObject result = (JsonObject) reply.result().body();
 
-                result.put(ReplyHandler.getMessageKey(), 1);
+                result.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
 
                 HTTPResponseHandler.configureOK(context, result);
 
@@ -145,9 +137,9 @@ public class ServerVerticle extends AbstractVerticle
 
             jsonObject.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.updateLabels());
+            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
 
-            vertx.eventBus().request(PortfolioSQLQuery.getQueue(), jsonObject, options, reply ->
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
             {
                 if(reply.succeeded())
                 {
@@ -155,11 +147,11 @@ public class ServerVerticle extends AbstractVerticle
 
                     if (ReplyHandler.isReplyOk(response))
                     {
-                        HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 1));
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
                     }
                     else
                     {
-                        HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 0));
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.getFailedReply());
                     }
                 }
             });
@@ -169,9 +161,9 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:8080/projects
     private void getAllProjectNamesInPortfolio(RoutingContext context)
     {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getAllProjects());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
 
-        vertx.eventBus().request(PortfolioSQLQuery.getQueue(), new JsonObject(), options, reply -> {
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject(), options, reply -> {
 
             if(reply.succeeded())
             {
@@ -190,14 +182,19 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:8080/select?projectname={projectname}&filetype={file/folder}
     private void selectFileType(RoutingContext context)
     {
-        if(SelectorHandler.isDatabaseUpdating() || SelectorHandler.isWindowOpen())
+        if(SelectorHandler.isDatabaseUpdating())
         {
-            JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Database is updating / Window opened"); //FIXME
+            JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Database is updating");
+            jsonObject.put(ReplyHandler.getMessageKey(), 2); //FIXME: THE WAY OF PUTTING INTEGER IN THIS FUNCTION
+
+            HTTPResponseHandler.configureMethodsNotAllowed(context, jsonObject);
+        }
+        else if (SelectorHandler.isWindowOpen())
+        {
+            JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Window opened");
             jsonObject.put(ReplyHandler.getMessageKey(), 2);
 
             HTTPResponseHandler.configureMethodsNotAllowed(context, jsonObject);
-
-            return;
         }
         else
         {
@@ -217,7 +214,7 @@ public class ServerVerticle extends AbstractVerticle
                 if(!isFileTypeSupported)
                 {
                     JsonObject jsonObject = ReplyHandler.reportUserDefinedError("filetype with parameter " + fileType + " which is not recognizable");
-                    jsonObject.put(ReplyHandler.getMessageKey(), 0);
+                    jsonObject.put(ReplyHandler.getMessageKey(), ReplyHandler.getFailedSignal());
 
                     HTTPResponseHandler.configureBadRequest(context, jsonObject);
 
@@ -226,8 +223,8 @@ public class ServerVerticle extends AbstractVerticle
 
 
                 //set uuid generator
-                DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getProjectUUIDList());
-                vertx.eventBus().request(PortfolioSQLQuery.getQueue(), new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+                DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+                vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
                 {
                     if(reply.succeeded())
                     {
@@ -290,10 +287,8 @@ public class ServerVerticle extends AbstractVerticle
                     }
                 }
 
-                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 1));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
             }
-
-
         }
     }
 
@@ -306,107 +301,98 @@ public class ServerVerticle extends AbstractVerticle
         if(SelectorHandler.isProjectNameRegistered(projectName) == false)
         {
             HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
-
-            return;
         }
         else
         {
             if(SelectorHandler.isWindowOpen())
             {
-                JsonObject jsonObject = new JsonObject();
-
-                jsonObject.put(ReplyHandler.getMessageKey(), 0);
-
-                HTTPResponseHandler.configureOK(context, jsonObject);
-
-                return;
+                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 0));
             }
             else if (SelectorHandler.isDatabaseUpdating())
             {
-                JsonObject jsonObject = new JsonObject();
-
-                jsonObject.put(ReplyHandler.getMessageKey(), 2);
-
-                HTTPResponseHandler.configureOK(context, jsonObject);
-
-                return;
+                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 2));
             }
             else {
                 JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-                    DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getThumbNailList());
+                DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_THUMBNAIL_LIST);
 
-                    vertx.eventBus().request(PortfolioSQLQuery.getQueue(), request, options, reply ->
+                vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
+                {
+                    if(reply.succeeded())
                     {
-                        if(reply.succeeded())
+                        JsonObject response = (JsonObject) reply.result().body();
+
+                        if(ReplyHandler.isReplyOk(response))
                         {
-                            JsonObject response = (JsonObject) reply.result().body();
+                            List<Integer> intList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ServerConfig.UUID_LIST_PARAM));
 
-                            if(ReplyHandler.isReplyOk(response))
+                            if(intList.isEmpty())
                             {
-                                List<Integer> intList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ServerConfig.UUID_LIST_PARAM));
-
-                                if(intList.isEmpty())
-                                {
-                                    response.put(ReplyHandler.getMessageKey(), 1);
-                                    HTTPResponseHandler.configureOK(context, response);
-                                }
-                                else
-                                {
-
-                                    response.put(ReplyHandler.getMessageKey(), 3);
-                                    HTTPResponseHandler.configureOK(context, response);
-                                }
+                                response.put(ReplyHandler.getMessageKey(), 1);
+                                HTTPResponseHandler.configureOK(context, response);
                             }
                             else
                             {
-                                response.put(ReplyHandler.getMessageKey(), 4);
-                                HTTPResponseHandler.configureBadRequest(context, response);
+                                response.put(ReplyHandler.getMessageKey(), 3);
+                                HTTPResponseHandler.configureOK(context, response);
                             }
                         }
-                    });
+                        else
+                        {
+                            HTTPResponseHandler.configureBadRequest(context, new JsonObject().put(ReplyHandler.getMessageKey(), 4));
+                        }
+                    }
+                    else {
+                        HTTPResponseHandler.configureInternalServerError(context);
+                    }
+                });
             }
         }
     }
 
 
-    private void updateData(RoutingContext context)
-    {
+    private void updateData(RoutingContext context) {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
 
-        if(SelectorHandler.isProjectNameRegistered(projectName) == false)
+        context.request().bodyHandler(h ->
         {
-            HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
-            return;
-        }
-        else {
+            JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
+                    .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-            context.request().bodyHandler(h ->
+            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.CHECK_PROJECT_VALIDITY);
+
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
             {
-                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                if (reply.succeeded()) {
 
-                DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.updateData());
+                    JsonObject body = (JsonObject) reply.result().body();
 
-                vertx.eventBus().request(ProjectSQLQuery.getQueue(), jsonObject, updateOptions, fetch ->
-                {
-                    JsonObject response = new JsonObject();
+                    if (ReplyHandler.isReplyOk(body) == false) {
+                        HTTPResponseHandler.configureBadRequest(context, body);
+                    } else {
+                        DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.UPDATE_DATA);
 
-                    if (fetch.succeeded())
-                    {
-                        response.put(ReplyHandler.getMessageKey(), 1);
-                        HTTPResponseHandler.configureOK(context, response);
+                        io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+                        vertx.eventBus().request(ProjectSQLQuery.QUEUE, jsonObject, updateOptions, fetch ->
+                        {
+                            if (fetch.succeeded())
+                            {
+                                JsonObject response = (JsonObject) fetch.result().body();
+                                HTTPResponseHandler.configureOK(context, response);
+                            } else {
+                                HTTPResponseHandler.configureInternalServerError(context);
+                            }
+                        });
                     }
-                    else{
-                        response.put(ReplyHandler.getMessageKey(), 0);
-                        HTTPResponseHandler.configureBadRequest(context, response);
-                    }
-                });
+                } else {
+                    HTTPResponseHandler.configureInternalServerError(context);
+                }
             });
-        }
+        });
     }
-
-
 
     //GET http://localhost:8080/thumbnail?projectname=helloworld&uuid=1234
     public void getThumbnailwithMetadata(RoutingContext context)
@@ -414,59 +400,43 @@ public class ServerVerticle extends AbstractVerticle
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
 
-
         JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
                                              .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.CHECK_PROJECT_VALIDITY);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName) == false)
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
         {
-            HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
-        }
-        else {
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getProjectUUIDList());
-
-            vertx.eventBus().request(PortfolioSQLQuery.getQueue(), request, options, reply ->
+            if (reply.succeeded())
             {
-                if (reply.succeeded())
+                JsonObject body = (JsonObject) reply.result().body();
+
+                if(ReplyHandler.isReplyOk(body))
                 {
-                    JsonObject body = (JsonObject) reply.result().body();
+                    DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA);
 
-                    if (body.getInteger(ReplyHandler.getMessageKey()) == ReplyHandler.getOKKey()) {
-                        JsonArray jsonArray = body.getJsonArray(ServerConfig.UUID_LIST_PARAM);
+                    vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, thumbnailOptions, fetch -> {
 
-                        List<Integer> listArray = ConversionHandler.jsonArray2IntegerList(jsonArray);
-
-                        if (listArray.contains(uuid) == false)
+                        if (fetch.succeeded())
                         {
-                            JsonObject response = ReplyHandler.reportBadParamError("UUID Index is not registered in database");
-                            HTTPResponseHandler.configureBadRequest(context, response);
+                            JsonObject result = (JsonObject) fetch.result().body();
+                            HTTPResponseHandler.configureOK(context, result);
                         }
-                        else
-                        {
-                            DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.retrieveData());
-
-                            vertx.eventBus().request(ProjectSQLQuery.getQueue(), request, thumbnailOptions, fetch -> {
-
-                                if (fetch.succeeded()) {
-                                    JsonObject result = (JsonObject) fetch.result().body();
-                                    result.put(ReplyHandler.getMessageKey(), 1);
-
-                                    HTTPResponseHandler.configureOK(context, result);
-                                } else {
-                                    HTTPResponseHandler.configureInternalServerError(context);
-                                }
-                            });
+                        else {
+                            HTTPResponseHandler.configureInternalServerError(context);
                         }
+                    });
 
-                    } else {
-                        HTTPResponseHandler.configureBadRequest(context, body);
-                    }
+                } else {
+                    HTTPResponseHandler.configureBadRequest(context, body);
                 }
-            });
-        }
+            }
+            else
+            {
+                HTTPResponseHandler.configureInternalServerError(context);
 
+            }
+        });
     }
 
 
@@ -479,49 +449,37 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
                 .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.CHECK_PROJECT_VALIDITY);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName) == false)
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
         {
-            HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
-        }
-        else
-        {
-            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.getProjectUUIDList());
-
-
-            vertx.eventBus().request(PortfolioSQLQuery.getQueue(), request, options, reply ->
+            if (reply.succeeded())
             {
-                if (reply.succeeded()) {
-                    JsonObject body = (JsonObject) reply.result().body();
+                JsonObject body = (JsonObject) reply.result().body();
 
-                    if (body.getInteger(ReplyHandler.getMessageKey()) == ReplyHandler.getOKKey()) {
-                        JsonArray jsonArray = body.getJsonArray(ServerConfig.UUID_LIST_PARAM);
+                if(ReplyHandler.isReplyOk(body))
+                {
+                    DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
 
-                        List<Integer> listArray = ConversionHandler.jsonArray2IntegerList(jsonArray);
+                    vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
 
-                        if (listArray.contains(uuid) == false)
-                        {
-                            JsonObject response = ReplyHandler.reportBadParamError("UUID Index is not registered in database");
-                            HTTPResponseHandler.configureBadRequest(context, response);
+                        if (fetch.succeeded()) {
+
+                            JsonObject imgSrcObject = (JsonObject) fetch.result().body();
+                            HTTPResponseHandler.configureOK(context, imgSrcObject);
+
+                        } else {
+                            HTTPResponseHandler.configureInternalServerError(context);
                         }
-                        else {
-                            DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.retrieveDataPath());
-
-                            vertx.eventBus().request(ProjectSQLQuery.getQueue(), request, imgSrcOptions, fetch -> {
-
-                                if (fetch.succeeded()) {
-                                    JsonObject imgSrcObject = (JsonObject) fetch.result().body();
-
-                                    HTTPResponseHandler.configureOK(context, imgSrcObject);
-                                } else {
-                                    HTTPResponseHandler.configureInternalServerError(context);
-                                }
-                            });
-                        }
-                    }
+                    });
                 }
-            });
-        }
+                else {
+                    HTTPResponseHandler.configureBadRequest(context, body);
+                }
+
+            }
+        });
+
     }
 
 
@@ -529,7 +487,6 @@ public class ServerVerticle extends AbstractVerticle
     public void start(Promise<Void> promise) throws Exception
     {
         Router router = Router.router(vertx);
-
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 

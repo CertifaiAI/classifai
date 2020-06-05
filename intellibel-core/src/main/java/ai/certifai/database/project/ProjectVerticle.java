@@ -55,23 +55,22 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
         String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
 
-        if(action.equals(ProjectSQLQuery.retrieveData()))
+        if(action.equals(ProjectSQLQuery.RETRIEVE_DATA))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(ProjectSQLQuery.retrieveDataPath()))
+        else if(action.equals(ProjectSQLQuery.RETRIEVE_DATA_PATH))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(ProjectSQLQuery.updateData()))
+        else if(action.equals(ProjectSQLQuery.UPDATE_DATA))
         {
             this.updateData(message);
         }
         else
         {
-            log.error("Project query error: Action did not found follow up function");
+            log.error("Project query error: Action did not found follow up with function");
         }
-
     }
 
 
@@ -80,9 +79,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = message.body().getInteger(ServerConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectNameIDDict().get(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.retrieveDataPath(), params, fetch -> {
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -116,11 +115,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             log.error("Number of files is not aligned to number of uuid");
             return;
         }
-        Integer currentProjectID = (Integer) SelectorHandler.getProjectNameIDDict().get(SelectorHandler.getProjectNameBuffer());
+
+        Integer currentProjectID = (Integer) SelectorHandler.getProjectIDFromBuffer();
 
         for(int i = 0 ; i < fileHolder.size(); ++i)
         {
-
             Pair imgMetadata = ImageUtils.getImageSize(fileHolder.get(i));
 
             JsonArray params = new JsonArray()
@@ -135,10 +134,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     .add((Integer)imgMetadata.getLeft())
                     .add((Integer)imgMetadata.getRight());
 
-            projectJDBCClient.queryWithParams(ProjectSQLQuery.createData(), params, fetch -> {
+            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
                 {
-                    log.error(fetch.cause().getMessage());
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
             });
         }
@@ -152,10 +151,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = message.body().getInteger(ServerConfig.UUID_PARAM);
 
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectNameIDDict().get(projectName));
-
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.retrieveData(), params, fetch -> {
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -171,7 +169,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     Integer counter = 0;
                     String imagePath = row.getString(counter++);
 
-
                     response.put(ServerConfig.UUID_PARAM, uuid);
                     response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
@@ -184,6 +181,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(imagePath));
+
+                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
 
                 }
                 message.reply(response);
@@ -211,7 +210,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIW_PARAM))
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ServerConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectNameIDDict().get(projectName));
+                .add(SelectorHandler.getProjectID(projectName));
 
         /*
         System.out.println("bounding box: ");
@@ -241,10 +240,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         */
 
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.updateData(), params, fetch -> {
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
-                message.reply("ok");
+                message.reply(ReplyHandler.getOkReply());
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
@@ -268,7 +267,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 promise.fail(ar.cause());
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(ProjectSQLQuery.createProject(), create -> {
+                connection.execute(ProjectSQLQuery.CREATE_PROJECT, create -> {
                     connection.close();
                     if (create.failed()) {
                         log.error("Project database preparation error", create.cause());
@@ -279,7 +278,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         log.info("Project database connection success");
 
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(ProjectSQLQuery.getQueue(), this::onMessage);
+                        vertx.eventBus().consumer(ProjectSQLQuery.QUEUE, this::onMessage);
                         promise.complete();
                     }
                 });
