@@ -105,7 +105,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         String projectName = request.getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName)) {
+        if(!SelectorHandler.isProjectNameRegistered(projectName)) {
 
             log.info("Create project with name: " + projectName + " in portfolio table");
 
@@ -127,8 +127,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
-
+            message.reply(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
 
     }

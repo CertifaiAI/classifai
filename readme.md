@@ -1,5 +1,9 @@
 # Intellibel
 
+<p align="center">
+  <img align="middle" src="metadata/sample.gif" width="680" height="425"/>
+</p>
+
 Intellibel is a deep learning powered data annotator toolkit.  
 
 Data labelling tasks are challenging due to a few factors:
