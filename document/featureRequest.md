@@ -1,9 +1,9 @@
-# Feature Request
+# Features Layout For Planning
 
 ### File Output
 - Number of file output for reference  
 <p align="center">
-  <img align="middle" src="outputformat.png" width="680" height="425"/>
+  <img align="middle" src="outputformat.png"/>
 </p>
 
 ### File Saving  
