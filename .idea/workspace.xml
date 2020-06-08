@@ -5,19 +5,14 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-api/target/intellibel-api-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-api/target/intellibel-api-1.0-SNAPSHOT.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-api/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-api/target/maven-archiver/pom.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-api/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-api/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-api/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-api/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-core/src/main/resources/webroot/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/src/main/resources/webroot/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/src/main/resources/webroot/main-es2015.5af8c8b96452f1a8379f.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/src/main/resources/webroot/main-es5.5af8c8b96452f1a8379f.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/3rdpartylicenses.txt" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/3rdpartylicenses.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/intellibel-core/src/main/resources/webroot/main-es2015.6d9830389a3115bcd1a2.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/intellibel-core/src/main/resources/webroot/main-es5.6d9830389a3115bcd1a2.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/main-es2015.12bbeccf98c030930842.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/main-es5.12bbeccf98c030930842.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/main-es2015.6d9830389a3115bcd1a2.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/intellibel-core/target/classes/webroot/main-es5.6d9830389a3115bcd1a2.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-core/target/intellibel-core-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/target/intellibel-core-1.0-SNAPSHOT.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-core/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/target/maven-archiver/pom.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/intellibel-core/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-core/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-uberjar/target/intellibel-uberjar-1.0-SNAPSHOT-dev.jar" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-uberjar/target/intellibel-uberjar-1.0-SNAPSHOT-dev.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-uberjar/target/intellibel-uberjar-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-uberjar/target/intellibel-uberjar-1.0-SNAPSHOT.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/intellibel-uberjar/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/intellibel-uberjar/target/maven-archiver/pom.properties" afterDir="false" />
@@ -34,8 +29,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="DefaultGradleProjectSettings">
-    <option name="testRunner" value="GRADLE" />
-    <option name="delegatedBuild" value="true" />
+    <option name="isMigrated" value="true" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
