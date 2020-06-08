@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/intellibel.iml" filepath="$PROJECT_DIR$/intellibel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/intellibel-api/intellibel-api.iml" filepath="$PROJECT_DIR$/intellibel-api/intellibel-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/intellibel-core/intellibel-core.iml" filepath="$PROJECT_DIR$/intellibel-core/intellibel-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/intellibel-uberjar/intellibel-uberjar.iml" filepath="$PROJECT_DIR$/intellibel-uberjar/intellibel-uberjar.iml" />
+    </modules>
+  </component>
+</project>
