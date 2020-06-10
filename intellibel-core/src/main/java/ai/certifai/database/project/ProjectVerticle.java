@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -108,39 +109,58 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     }
 
-    public static void updateUUIDList(List<File> fileHolder, List<Integer> UUIDList)
+    public static List<Integer> updateUUIDList(List<File> fileHolder, List<Integer> UUIDList)
     {
         if(fileHolder.size() != UUIDList.size())
         {
             log.error("Number of files is not aligned to number of uuid");
-            return;
+            return null;
         }
 
-        Integer currentProjectID = (Integer) SelectorHandler.getProjectIDFromBuffer();
+        Integer currentProjectID = SelectorHandler.getProjectIDFromBuffer();
+
+        List<Integer> indexToRemove = new ArrayList<>();
 
         for(int i = 0 ; i < fileHolder.size(); ++i)
         {
             Pair imgMetadata = ImageUtils.getImageSize(fileHolder.get(i));
 
-            JsonArray params = new JsonArray()
-                    .add(UUIDList.get(i)) //uuid
-                    .add(currentProjectID) //projectid
-                    .add(fileHolder.get(i).getAbsolutePath()) //imgpath
-                    .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                    .add(0) //imgX
-                    .add(0) //imgY
-                    .add(0) //imgW
-                    .add(0) //imgH
-                    .add((Integer)imgMetadata.getLeft())
-                    .add((Integer)imgMetadata.getRight());
+            if(imgMetadata != null)
+            {
+                JsonArray params = new JsonArray()
+                        .add(UUIDList.get(i)) //uuid
+                        .add(currentProjectID) //projectid
+                        .add(fileHolder.get(i).getAbsolutePath()) //imgpath
+                        .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                        .add(0) //imgX
+                        .add(0) //imgY
+                        .add(0) //imgW
+                        .add(0) //imgH
+                        .add((Integer)imgMetadata.getLeft())
+                        .add((Integer)imgMetadata.getRight());
 
-            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
-                if(!fetch.succeeded())
-                {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
-                }
-            });
+                projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
+                    if(!fetch.succeeded())
+                    {
+                        log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                    }
+                });
+            }
+            else
+            {
+                indexToRemove.add(i);
+            }
         }
+
+        Integer counter = 0; //counter to remove index remove
+
+        for(Integer item : indexToRemove)
+        {
+            UUIDList.remove(item - counter);
+            ++counter;
+        }
+
+        return UUIDList;
     }
 
     /*

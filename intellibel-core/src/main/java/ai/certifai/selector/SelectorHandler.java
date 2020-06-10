@@ -150,11 +150,11 @@ public class SelectorHandler {
 
             if((fileHolder.isEmpty() == false) && (uuidList.size() == fileHolder.size()))
             {
-                //update portfolio table
-                PortfolioVerticle.updateUUIDList(uuidList);
-
                 //update project table
-                ProjectVerticle.updateUUIDList(fileHolder, uuidList);
+                List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
+
+                //update portfolio table
+                PortfolioVerticle.updateUUIDList(uuidListVerified);
             }
 
             //it's important to set database updating as false here as front end will start retrieving these
