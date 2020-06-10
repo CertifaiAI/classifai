@@ -35,8 +35,9 @@ import java.util.Map;
 public class ImageUtils
 {
     private static Map base64header;
-    private static Integer thumbnailWidth = 100;
-    private static Integer thumbnailHeight = 100;
+
+    private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
+    private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
 
     static
     {
@@ -98,6 +99,21 @@ public class ImageUtils
 
             BufferedImage img  = ImageIO.read(file);
 
+            Integer oriHeight = img.getHeight();
+            Integer oriWidth = img.getWidth();
+
+            Integer thumbnailWidth = FIXED_THUMBNAIL_WIDTH;
+            Integer thumbnailHeight = FIXED_THUMBNAIL_HEIGHT;
+
+            if(oriHeight > oriWidth)
+            {
+                thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
+            }
+            else
+            {
+                thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
+            }
+
             Image tmp = img.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
             BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = resized.createGraphics();
@@ -108,9 +124,8 @@ public class ImageUtils
 
         }
         catch (IOException e) {
-            e.printStackTrace();
-            return "";
-            //how to handle this
+            log.error("Failed in getting thumbnail: ", e);
+            return null;
         }
     }
 
@@ -146,16 +161,19 @@ public class ImageUtils
      */
     public static ImmutablePair<Integer, Integer> getImageSize(File file)
     {
+        if(file == null) return null;
+
+        BufferedImage bimg;
         try
         {
-            BufferedImage bimg = ImageIO.read(file);
-            return new ImmutablePair(bimg.getWidth(), bimg.getHeight());
+            bimg = ImageIO.read(file);
         }
         catch(Exception e)
         {
-            log.error("Error in reading image, ", e.getMessage());
+            log.error("Error in reading image ", e);
+            return null;
         }
 
-        return null;
+        return new ImmutablePair(bimg.getWidth(), bimg.getHeight());
     }
 }
