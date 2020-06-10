@@ -21,6 +21,7 @@ import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -104,11 +105,6 @@ public class SelectorHandler {
         return true;
     }
 
-    private static void initiateDatabaseUpdate()
-    {
-        isDatabaseUpdating = true;
-    }
-
     public static boolean isProjectNameRegistered(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);
@@ -129,26 +125,36 @@ public class SelectorHandler {
         projectNameBuffer = projectName;
     }
 
-    public static void processSelectorOutput(List<File> files)
+    public static void configureDatabaseUpdate(List<File> file)
     {
         setWindowState(false);
 
-        if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
+        if((file != null) && (!file.isEmpty()) && (file.get(0) != null))
         {
-            initiateDatabaseUpdate();
+            isDatabaseUpdating = true;
+            fileHolder = file;
 
+            processSelectorOutput();
+        }
+        else
+        {
+            fileHolder = null;
+        }
+    }
+    public static void processSelectorOutput()
+    {
+        if((fileHolder != null) && (!fileHolder.isEmpty()) && (fileHolder.get(0) != null))
+        {
             if(currentWindowSelection.equals(FILE))
             {
-                fileHolder = files;
-
                 generateUUID(fileHolder);
             }
             else if(currentWindowSelection.equals(FOLDER))
             {
-                generateUUIDwithIteration(files.get(0));
+                generateUUIDwithIteration(fileHolder.get(0));
             }
 
-            if((fileHolder.isEmpty() == false) && (uuidList.size() == fileHolder.size()))
+            if(uuidList.size() == fileHolder.size())
             {
                 //update project table
                 List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);

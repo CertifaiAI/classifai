@@ -220,7 +220,6 @@ public class ServerVerticle extends AbstractVerticle
                     return;
                 }
 
-
                 //set uuid generator
                 DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
                 vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
@@ -242,11 +241,10 @@ public class ServerVerticle extends AbstractVerticle
                     }
                 });
 
+                SelectorHandler.setWindowState(true);
 
                 if (fileType.equals(SelectorHandler.FILE))
                 {
-                    SelectorHandler.setWindowState(true);
-
                     if(fileSelector == null)
                     {
                         Thread thread = new Thread(){
@@ -262,13 +260,9 @@ public class ServerVerticle extends AbstractVerticle
                     {
                         fileSelector.runFileSelector();
                     }
-
                 }
                 else if (fileType.equals(SelectorHandler.FOLDER))
                 {
-
-                    SelectorHandler.setWindowState(true);
-
                     if(folderSelector == null)
                     {
                         Thread thread = new Thread(){
@@ -285,6 +279,8 @@ public class ServerVerticle extends AbstractVerticle
                         folderSelector.runFolderSelector();
                     }
                 }
+
+                //SelectorHandler.processSelectorOutput();
 
                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
             }

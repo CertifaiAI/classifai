@@ -82,7 +82,9 @@ public class FileSelector extends Application {
 
             List<File> chosenFiles = fileChooser.showOpenMultipleDialog(stage);
 
-            SelectorHandler.processSelectorOutput(chosenFiles);
+            SelectorHandler.configureDatabaseUpdate(chosenFiles);
+
+            //SelectorHandler.processSelectorOutput();
 
             Platform.setImplicitExit(false);
 

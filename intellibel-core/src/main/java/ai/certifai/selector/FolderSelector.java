@@ -73,10 +73,9 @@ public class FolderSelector extends Application {
 
             File rootDirPath = directoryChooser.showDialog(stage);
 
-            SelectorHandler.processSelectorOutput(Arrays.asList(rootDirPath));
+            SelectorHandler.configureDatabaseUpdate(Arrays.asList(rootDirPath));
 
             Platform.setImplicitExit(false);
-
         });
     }
 
