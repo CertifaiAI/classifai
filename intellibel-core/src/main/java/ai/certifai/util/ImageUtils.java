@@ -161,19 +161,27 @@ public class ImageUtils
      */
     public static ImmutablePair<Integer, Integer> getImageSize(File file)
     {
-        if(file == null) return null;
+        Integer width = 0;
+        Integer height = 0;
 
-        BufferedImage bimg;
-        try
-        {
-            bimg = ImageIO.read(file);
+        try{
+            BufferedImage bimg = ImageIO.read(file);
+
+            if(bimg == null)
+            {
+                log.error("Failed in reading " + file.getAbsolutePath());
+            }
+            else
+            {
+                width = bimg.getWidth();
+                height = bimg.getHeight();
+            }
         }
         catch(Exception e)
         {
             log.error("Error in reading image ", e);
-            return null;
         }
 
-        return new ImmutablePair(bimg.getWidth(), bimg.getHeight());
+        return new ImmutablePair(width, height);
     }
 }
