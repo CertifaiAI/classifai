@@ -20,18 +20,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ai.certifai</groupId>
-    <artifactId>intellibel</artifactId>
+    <artifactId>classifai</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>intellibel-core</module>
-        <module>intellibel-uberjar</module>
-        <module>intellibel-api</module>
-        <!--<module>intellibel-test</module>-->
+        <module>classifai-core</module>
+        <module>classifai-uberjar</module>
+        <module>classifai-api</module>
+        <!--<module>classifai-test</module>-->
     </modules>
 
-    <name>intellibel</name>
+    <name>classifai</name>
     <description>
         Deep learning powered data annotator toolkit
     </description>
@@ -72,24 +72,19 @@
         <apache.commons.version>3.8.1</apache.commons.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <intellibel.release.name>dev</intellibel.release.name>
+        <classifai.release.name>dev</classifai.release.name>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>ai.certifai</groupId>
-                <artifactId>intellibel-core</artifactId>
+                <artifactId>classifai-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>ai.certifai</groupId>
-                <artifactId>intellibel-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ai.certifai</groupId>
-                <artifactId>intellibel-ui</artifactId>
+                <artifactId>classifai-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -176,7 +171,7 @@
         <profile>
             <id>test</id>
             <modules>
-                <module>intellibel-test</module>
+                <module>classifai-test</module>
             </modules>
         </profile>
     </profiles>
