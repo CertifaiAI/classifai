@@ -139,6 +139,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         .add((Integer)imgMetadata.getLeft())
                         .add((Integer)imgMetadata.getRight());
 
+
                 projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                     if(!fetch.succeeded())
                     {
@@ -159,8 +160,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             UUIDList.remove(item - counter);
             ++counter;
         }
-
-        System.out.println("Debugging: Complete updating....");
 
         return UUIDList;
     }
@@ -234,34 +233,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ServerConfig.UUID_PARAM))
                 .add(SelectorHandler.getProjectID(projectName));
-
-        /*
-        System.out.println("bounding box: ");
-        System.out.println(boundingBox);
-        System.out.println("imagex");
-        System.out.println(requestBody.getInteger(ServerConfig.IMAGEX_PARAM));
-        System.out.println("imagey");
-        System.out.println(requestBody.getInteger(ServerConfig.IMAGEY_PARAM));
-
-        System.out.println("imageW");
-        System.out.println(requestBody.getDouble(ServerConfig.IMAGEW_PARAM));
-
-        System.out.println("imageH");
-        System.out.println(requestBody.getDouble(ServerConfig.IMAGEH_PARAM));
-
-        System.out.println("imageORIW");
-        System.out.println(requestBody.getInteger(ServerConfig.IMAGEORIW_PARAM));
-
-        System.out.println("imageORIH");
-        System.out.println(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM));
-
-        System.out.println("uuid");
-        System.out.println(requestBody.getInteger(ServerConfig.UUID_PARAM));
-
-        System.out.println("projectid");
-        System.out.println(SelectorHandler.getProjectNameUUIDDict().get(projectName));
-        */
-
 
         projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())

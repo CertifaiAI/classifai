@@ -163,13 +163,8 @@ public class SelectorHandler {
                     //update project table
                     List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
 
-                    System.out.println("List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);");
-
                     //update portfolio table
                     PortfolioVerticle.updateUUIDList(uuidListVerified);
-
-                    System.out.println("PortfolioVerticle.updateUUIDList(uuidListVerified);");
-
                 }
 
                 //it's important to set database updating as false here as front end will start retrieving these

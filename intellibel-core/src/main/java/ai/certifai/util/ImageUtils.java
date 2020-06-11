@@ -170,6 +170,7 @@ public class ImageUtils
             if(bimg == null)
             {
                 log.error("Failed in reading " + file.getAbsolutePath());
+                return null;
             }
             else
             {

@@ -46,17 +46,7 @@ public class IntellibelApp {
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
-        vertxOptions.setMaxEventLoopExecuteTime(15);
-
-        //vertxOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.SECONDS);
-        //vertxOptions.setMaxWorkerExecuteTime(15);
-
-        System.out.println("getMaxEventLoopExecuteTimeUnit: " + vertxOptions.getMaxEventLoopExecuteTimeUnit());
-        System.out.println("getMaxEventLoopExecuteTime: " + vertxOptions.getMaxEventLoopExecuteTime());
-        System.out.println("getMaxWorkerExecuteTime: " + vertxOptions.getMaxWorkerExecuteTime());
-
-        //setWarningExceptionTimeUnit
-        //setMaxEventLoopExecuteTimeUnit
+        vertxOptions.setMaxEventLoopExecuteTime(15); //for bulk images upload
 
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
