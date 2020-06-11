@@ -160,6 +160,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             ++counter;
         }
 
+        System.out.println("Debugging: Complete updating....");
+
         return UUIDList;
     }
 
@@ -174,6 +176,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
         projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
+
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();

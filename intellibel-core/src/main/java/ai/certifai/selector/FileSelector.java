@@ -84,7 +84,7 @@ public class FileSelector extends Application {
 
             SelectorHandler.configureDatabaseUpdate(chosenFiles);
 
-            //SelectorHandler.processSelectorOutput();
+            SelectorHandler.processSelectorOutput();
 
             Platform.setImplicitExit(false);
 

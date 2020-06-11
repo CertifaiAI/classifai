@@ -75,6 +75,8 @@ public class FolderSelector extends Application {
 
             SelectorHandler.configureDatabaseUpdate(Arrays.asList(rootDirPath));
 
+            SelectorHandler.processSelectorOutput();
+
             Platform.setImplicitExit(false);
         });
     }

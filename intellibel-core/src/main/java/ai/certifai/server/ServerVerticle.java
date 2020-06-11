@@ -33,6 +33,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -280,8 +281,6 @@ public class ServerVerticle extends AbstractVerticle
                     }
                 }
 
-                //SelectorHandler.processSelectorOutput();
-
                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
             }
         }
@@ -305,6 +304,8 @@ public class ServerVerticle extends AbstractVerticle
             }
             else if (SelectorHandler.isDatabaseUpdating())
             {
+                //SelectorHandler.processSelectorOutput();
+
                 HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 2));
             }
             else {

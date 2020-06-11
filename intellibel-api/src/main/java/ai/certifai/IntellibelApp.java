@@ -19,8 +19,11 @@ package ai.certifai;
 import ai.certifai.server.ServerConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class IntellibelApp {
@@ -39,9 +42,28 @@ public class IntellibelApp {
                 }
             }
         }
+
+        VertxOptions vertxOptions = new VertxOptions();
+
+        vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
+        vertxOptions.setMaxEventLoopExecuteTime(15);
+
+        //vertxOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.SECONDS);
+        //vertxOptions.setMaxWorkerExecuteTime(15);
+
+        System.out.println("getMaxEventLoopExecuteTimeUnit: " + vertxOptions.getMaxEventLoopExecuteTimeUnit());
+        System.out.println("getMaxEventLoopExecuteTime: " + vertxOptions.getMaxEventLoopExecuteTime());
+        System.out.println("getMaxWorkerExecuteTime: " + vertxOptions.getMaxWorkerExecuteTime());
+
+        //setWarningExceptionTimeUnit
+        //setMaxEventLoopExecuteTimeUnit
+
         DeploymentOptions opt = new DeploymentOptions();
+        opt.setWorker(true);
         opt.setConfig(new JsonObject().put("http.port", ServerConfig.dynamicPort));
-        Vertx vertx = Vertx.vertx();
+
+
+        Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);
     }
 }

@@ -58,6 +58,8 @@ public class SelectorHandler {
 
     @Getter private static List<Integer> uuidList;
 
+    @Setter private static boolean updateListInitiated = false;
+
     static
     {
         projectIDNameDict = new HashMap<Integer, String>();
@@ -133,8 +135,6 @@ public class SelectorHandler {
         {
             isDatabaseUpdating = true;
             fileHolder = file;
-
-            processSelectorOutput();
         }
         else
         {
@@ -143,31 +143,42 @@ public class SelectorHandler {
     }
     public static void processSelectorOutput()
     {
-        if((fileHolder != null) && (!fileHolder.isEmpty()) && (fileHolder.get(0) != null))
+        if(updateListInitiated == false)
         {
-            if(currentWindowSelection.equals(FILE))
-            {
-                generateUUID(fileHolder);
-            }
-            else if(currentWindowSelection.equals(FOLDER))
-            {
-                generateUUIDwithIteration(fileHolder.get(0));
-            }
+            updateListInitiated = true;
 
-            if(uuidList.size() == fileHolder.size())
+            if((fileHolder != null) && (!fileHolder.isEmpty()) && (fileHolder.get(0) != null))
             {
-                //update project table
-                List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
+                if(currentWindowSelection.equals(FILE))
+                {
+                    generateUUID(fileHolder);
+                }
+                else if(currentWindowSelection.equals(FOLDER))
+                {
+                    generateUUIDwithIteration(fileHolder.get(0));
+                }
 
-                //update portfolio table
-                PortfolioVerticle.updateUUIDList(uuidListVerified);
+                if(uuidList.size() == fileHolder.size())
+                {
+                    //update project table
+                    List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
+
+                    System.out.println("List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);");
+
+                    //update portfolio table
+                    PortfolioVerticle.updateUUIDList(uuidListVerified);
+
+                    System.out.println("PortfolioVerticle.updateUUIDList(uuidListVerified);");
+
+                }
+
+                //it's important to set database updating as false here as front end will start retrieving these
+                isDatabaseUpdating = false;
+                updateListInitiated = false;
+
+                clearProjectNameBuffer();
             }
-
-            //it's important to set database updating as false here as front end will start retrieving these
-            isDatabaseUpdating = false;
         }
-
-        clearProjectNameBuffer();
     }
 
     private static void clearProjectNameBuffer()
