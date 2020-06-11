@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/classifai-api/classifai-api.iml" filepath="$PROJECT_DIR$/classifai-api/classifai-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/classifai-core/classifai-core.iml" filepath="$PROJECT_DIR$/classifai-core/classifai-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/classifai-uberjar/classifai-uberjar.iml" filepath="$PROJECT_DIR$/classifai-uberjar/classifai-uberjar.iml" />
       <module fileurl="file://$PROJECT_DIR$/intellibel.iml" filepath="$PROJECT_DIR$/intellibel.iml" />
-      <module fileurl="file://$PROJECT_DIR$/intellibel-api/intellibel-api.iml" filepath="$PROJECT_DIR$/intellibel-api/intellibel-api.iml" />
-      <module fileurl="file://$PROJECT_DIR$/intellibel-core/intellibel-core.iml" filepath="$PROJECT_DIR$/intellibel-core/intellibel-core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/intellibel-uberjar/intellibel-uberjar.iml" filepath="$PROJECT_DIR$/intellibel-uberjar/intellibel-uberjar.iml" />
     </modules>
   </component>
 </project>
