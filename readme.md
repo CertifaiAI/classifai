@@ -1,17 +1,17 @@
-# Intellibel
+# Classifai
 
 <p align="center">
   <img align="middle" src="metadata/sample.gif" width="680" height="425"/>
 </p>
 
-Intellibel is a deep learning powered data annotator toolkit.  
+Classifai is a deep learning powered data annotator toolkit.  
 
 Data labelling tasks are challenging due to a few factors:
 - long hours of human workforce to label the data manually, 
 - frustration processes which further complicate the labelling work
 - technology/product which cannot fulfill the use cases needs.
 
-We aim to solve these in Intellibel to provide significant value to the data science workflow.
+We aim to solve these in classifai to provide significant value to the data science workflow.
 
 ## Features
 - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.
@@ -31,19 +31,19 @@ We aim to solve these in Intellibel to provide significant value to the data sci
 ## On Mac/Linux
 Run  
 ```
-./startIntellibel.sh --port=8888
+./startClassifai.sh --port=8888
 ```
 
 ## On Windows
 Run  
 ```
-startIntellibel.bat --port=8888
+startClassifai.bat --port=8888
 ```
 
 ## Alternatively
 ```
 ./mvnw -Puberjar -Dmaven.test.skip=true clean package  
-cd intellibel-uberjar/target  
-java -jar intellibel-uberjar-1.0-SNAPSHOT-dev.jar  
+cd classifai-uberjar/target  
+java -jar classifai-uberjar-1.0-SNAPSHOT-dev.jar  
 ```
 
