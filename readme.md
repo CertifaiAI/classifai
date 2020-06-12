@@ -14,12 +14,13 @@ Data labelling tasks are challenging due to a few factors:
 We aim to solve these in classifai to provide significant value to the data science workflow.
 
 ## Features
-- **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.
-- Data alteration with built in Computer Vision features
-- One click retraining of models after labelling  
 - Platform-agnostic (Currently tested on Mac and Windows)
 - Asynchronous - Fast and speedy response
 - In-memory Java-based database with JDBC driver
+- [Still WIP. Stay tune with these features coming up below]   
+  - Data alteration with built in Computer Vision features
+  - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.  
+  - One click retraining of models after labelling  
 
 ## Strengths of the tool
 - Scale data labelling operations to massive real world dataset
