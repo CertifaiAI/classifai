@@ -37,7 +37,19 @@ public class FileSelector extends Application {
 
     //private static String windowTitle = "Choose a file / multiple files";
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
-//    private static FileChooser.ExtensionFilter fileExtensions;
+    private static  JFileChooser fc = new JFileChooser(){
+        @Override
+        protected JDialog createDialog(Component parent)
+                throws HeadlessException {
+            JDialog dialog = super.createDialog(parent);
+            // config here as needed - just to see a difference
+            dialog.setLocationByPlatform(true);
+            // might help - can't know because I can't reproduce the problem
+            dialog.setAlwaysOnTop(true);
+            return dialog;
+        }
+    };
+    //    private static FileChooser.ExtensionFilter fileExtensions;
 //
 //    static {
 //        fileExtensions = new FileChooser.ExtensionFilter("image", Arrays.asList("*.jpg", "*.jpeg", "*.png"));
@@ -90,18 +102,7 @@ public class FileSelector extends Application {
 //
 //            SelectorHandler.processSelectorOutput();
 
-            JFileChooser fc = new JFileChooser(){
-                @Override
-                protected JDialog createDialog(Component parent)
-                        throws HeadlessException {
-                    JDialog dialog = super.createDialog(parent);
-                    // config here as needed - just to see a difference
-                    dialog.setLocationByPlatform(true);
-                    // might help - can't know because I can't reproduce the problem
-                    dialog.setAlwaysOnTop(true);
-                    return dialog;
-                }
-            };
+
             //fc.setCurrentDirectory(new java.io.File("."));
             fc.setFileFilter(imgfilter);
             fc.setDialogTitle("Select Files");

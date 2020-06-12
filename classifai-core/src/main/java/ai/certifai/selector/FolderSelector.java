@@ -37,6 +37,18 @@ public class FolderSelector extends Application {
 
     //private static String windowTitle = "Choose a folder of data points";
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
+    private static JFileChooser fc = new JFileChooser(){
+        @Override
+        protected JDialog createDialog(Component parent)
+                throws HeadlessException {
+            JDialog dialog = super.createDialog(parent);
+            // config here as needed - just to see a difference
+            dialog.setLocationByPlatform(true);
+            // might help - can't know because I can't reproduce the problem
+            dialog.setAlwaysOnTop(true);
+            return dialog;
+        }
+    };
     public void runMain()
     {
         try
@@ -82,18 +94,7 @@ public class FolderSelector extends Application {
 //            SelectorHandler.processSelectorOutput();
 
 //            JButton open =  new JButton();
-            JFileChooser fc = new JFileChooser(){
-                @Override
-                protected JDialog createDialog(Component parent)
-                        throws HeadlessException {
-                    JDialog dialog = super.createDialog(parent);
-                    // config here as needed - just to see a difference
-                    dialog.setLocationByPlatform(true);
-                    // might help - can't know because I can't reproduce the problem
-                    dialog.setAlwaysOnTop(true);
-                    return dialog;
-                }
-            };
+
             //fc.setCurrentDirectory(new java.io.File("."));
             fc.setFileFilter(imgfilter);
             fc.setDialogTitle("Select Directory");
