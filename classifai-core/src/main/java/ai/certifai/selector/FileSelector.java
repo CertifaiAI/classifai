@@ -24,6 +24,9 @@ import javafx.stage.StageStyle;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -32,12 +35,13 @@ import java.util.List;
 @NoArgsConstructor
 public class FileSelector extends Application {
 
-    private static String windowTitle = "Choose a file / multiple files";
-    private static FileChooser.ExtensionFilter fileExtensions;
-
-    static {
-        fileExtensions = new FileChooser.ExtensionFilter("image", Arrays.asList("*.jpg", "*.jpeg", "*.png"));
-    }
+    //private static String windowTitle = "Choose a file / multiple files";
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
+//    private static FileChooser.ExtensionFilter fileExtensions;
+//
+//    static {
+//        fileExtensions = new FileChooser.ExtensionFilter("image", Arrays.asList("*.jpg", "*.jpeg", "*.png"));
+//    }
     public void runMain()
     {
         try
@@ -62,29 +66,58 @@ public class FileSelector extends Application {
 
         Platform.runLater(() -> {
 
-            Stage stage = new Stage();
+//            Stage stage = new Stage();
+//
+//            FileChooser fileChooser = new FileChooser();
+//            fileChooser.setTitle(windowTitle);
+//            fileChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
+//            fileChooser.getExtensionFilters().addAll(fileExtensions);
+//
+//            //Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
+//            stage.initStyle(StageStyle.UTILITY);
+//            stage.setMaxWidth(0);
+//            stage.setMaxHeight(0);
+//            stage.setX(Double.MAX_VALUE);
+//            //stage.setX((primScreenBounds.getWidth() - stage.getWidth()) / 2);
+//            //stage.setY((primScreenBounds.getHeight() - stage.getHeight()) / 2);
+//
+//            stage.setAlwaysOnTop(true);
+//            stage.show();
+//
+//            List<File> chosenFiles = fileChooser.showOpenMultipleDialog(stage);
+//
+//            SelectorHandler.configureDatabaseUpdate(chosenFiles);
+//
+//            SelectorHandler.processSelectorOutput();
 
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle(windowTitle);
-            fileChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
-            fileChooser.getExtensionFilters().addAll(fileExtensions);
+            JFileChooser fc = new JFileChooser(){
+                @Override
+                protected JDialog createDialog(Component parent)
+                        throws HeadlessException {
+                    JDialog dialog = super.createDialog(parent);
+                    // config here as needed - just to see a difference
+                    dialog.setLocationByPlatform(true);
+                    // might help - can't know because I can't reproduce the problem
+                    dialog.setAlwaysOnTop(true);
+                    return dialog;
+                }
+            };
+            //fc.setCurrentDirectory(new java.io.File("."));
+            fc.setFileFilter(imgfilter);
+            fc.setDialogTitle("Select Files");
+            fc.setMultiSelectionEnabled(true);
+            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-            //Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
-            stage.initStyle(StageStyle.UTILITY);
-            stage.setMaxWidth(0);
-            stage.setMaxHeight(0);
-            stage.setX(Double.MAX_VALUE);
-            //stage.setX((primScreenBounds.getWidth() - stage.getWidth()) / 2);
-            //stage.setY((primScreenBounds.getHeight() - stage.getHeight()) / 2);
-
-            stage.setAlwaysOnTop(true);
-            stage.show();
-
-            List<File> chosenFiles = fileChooser.showOpenMultipleDialog(stage);
-
-            SelectorHandler.configureDatabaseUpdate(chosenFiles);
-
-            SelectorHandler.processSelectorOutput();
+            if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+                File[] allfiles = fc.getSelectedFiles();
+                SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
+                SelectorHandler.processSelectorOutput();
+            }
+            else{
+                File nullfiles = null;
+                SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
+                SelectorHandler.processSelectorOutput();
+            }
 
             Platform.setImplicitExit(false);
 

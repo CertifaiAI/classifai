@@ -24,6 +24,10 @@ import javafx.stage.StageStyle;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
 
@@ -31,8 +35,8 @@ import java.util.Arrays;
 @NoArgsConstructor
 public class FolderSelector extends Application {
 
-    private static String windowTitle = "Choose a folder of data points";
-
+    //private static String windowTitle = "Choose a folder of data points";
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
     public void runMain()
     {
         try
@@ -56,27 +60,56 @@ public class FolderSelector extends Application {
 
         Platform.runLater(() -> {
 
-            Stage stage = new Stage();
+//            Stage stage = new Stage();
+//
+//            DirectoryChooser directoryChooser = new DirectoryChooser();
+//            directoryChooser.setTitle("Choose a folder");
+//            directoryChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
+//
+//            stage.initStyle(StageStyle.UTILITY);
+//            stage.setMaxWidth(0);
+//            stage.setMaxHeight(0);
+//
+//            stage.setX(Double.MAX_VALUE);
+//
+//            stage.setAlwaysOnTop(true);
+//            stage.show();
+//
+//            File rootDirPath = directoryChooser.showDialog(stage);
+//
+//            SelectorHandler.configureDatabaseUpdate(Arrays.asList(rootDirPath));
+//
+//            SelectorHandler.processSelectorOutput();
 
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Choose a folder");
-            directoryChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
+//            JButton open =  new JButton();
+            JFileChooser fc = new JFileChooser(){
+                @Override
+                protected JDialog createDialog(Component parent)
+                        throws HeadlessException {
+                    JDialog dialog = super.createDialog(parent);
+                    // config here as needed - just to see a difference
+                    dialog.setLocationByPlatform(true);
+                    // might help - can't know because I can't reproduce the problem
+                    dialog.setAlwaysOnTop(true);
+                    return dialog;
+                }
+            };
+            //fc.setCurrentDirectory(new java.io.File("."));
+            fc.setFileFilter(imgfilter);
+            fc.setDialogTitle("Select Directory");
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-            stage.initStyle(StageStyle.UTILITY);
-            stage.setMaxWidth(0);
-            stage.setMaxHeight(0);
-
-            stage.setX(Double.MAX_VALUE);
-
-            stage.setAlwaysOnTop(true);
-            stage.show();
-
-            File rootDirPath = directoryChooser.showDialog(stage);
-
-            SelectorHandler.configureDatabaseUpdate(Arrays.asList(rootDirPath));
-
-            SelectorHandler.processSelectorOutput();
-
+            if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+                System.out.println(fc.getSelectedFile().getAbsolutePath());
+                File allfiles = fc.getSelectedFile().getAbsoluteFile();
+                SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
+                SelectorHandler.processSelectorOutput();
+            }
+            else{
+                File nullfiles = null;
+                SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
+                SelectorHandler.processSelectorOutput();
+            }
             Platform.setImplicitExit(false);
         });
     }

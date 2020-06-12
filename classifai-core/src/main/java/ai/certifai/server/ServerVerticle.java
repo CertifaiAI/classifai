@@ -248,6 +248,7 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     if(fileSelector == null)
                     {
+                        System.out.println("file selector is null");
                         Thread thread = new Thread(){
                             public void run(){
                                 fileSelector = new FileSelector();
@@ -259,6 +260,7 @@ public class ServerVerticle extends AbstractVerticle
                     }
                     else
                     {
+                        System.out.println("file selector is not null");
                         fileSelector.runFileSelector();
                     }
                 }
@@ -266,6 +268,7 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     if(folderSelector == null)
                     {
+                        System.out.println("folder selector is null");
                         Thread thread = new Thread(){
                             public void run(){
                                 folderSelector = new FolderSelector();
@@ -277,6 +280,7 @@ public class ServerVerticle extends AbstractVerticle
                     }
                     else
                     {
+                        System.out.println("folder selector is not null");
                         folderSelector.runFolderSelector();
                     }
                 }
