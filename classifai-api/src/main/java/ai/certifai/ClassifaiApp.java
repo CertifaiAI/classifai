@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class IntellibelApp {
+public class ClassifaiApp {
     public static void main(String[] args)
     {
         ServerConfig.dynamicPort = ServerConfig.SERVER_PORT;
