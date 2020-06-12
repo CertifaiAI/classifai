@@ -9,7 +9,7 @@ Classifai is a deep learning powered data annotator toolkit.
 Data labelling tasks are challenging due to a few factors:
 - long hours of human workforce to label the data manually, 
 - frustration processes which further complicate the labelling work
-- technology/product which cannot fulfill the use cases needs.
+- off-the-shelves product which cannot fulfill the use cases needs.
 
 We aim to solve these in classifai to provide significant value to the data science workflow.
 
@@ -22,8 +22,9 @@ We aim to solve these in classifai to provide significant value to the data scie
 - In-memory Java-based database with JDBC driver
 
 ## Strengths of the tool
-- Scale data labelling operations to massive real world dataset  
+- Scale data labelling operations to massive real world dataset
 - Cut costly data labelling services
+- Aesthetic and intuitive UI interface, to make the work fun to do!
 - Reclaim valuable time from inefficient data labelling, technical team can focus on more meaningful ML/DL tasks.
 
 ## How to Run
