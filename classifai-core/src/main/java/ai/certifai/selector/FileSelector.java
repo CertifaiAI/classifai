@@ -96,11 +96,13 @@ public class FileSelector{
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFileChooser fc = new JFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent)
                                 throws HeadlessException {
                             JDialog dialog = super.createDialog(parent);
+                            dialog.setLocation(pt);
                             dialog.setLocationByPlatform(true);
                             dialog.setAlwaysOnTop(true);
                             return dialog;
@@ -112,14 +114,20 @@ public class FileSelector{
                     fc.setMultiSelectionEnabled(true);
                     fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
+//                    JFrame jf = new JFrame();
+//                    jf.setLocation(p.x, p.y);
+//                    jf.setVisible(false);
+
                     if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                         File[] allfiles = fc.getSelectedFiles();
                         SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
                         SelectorHandler.processSelectorOutput();
+//                        jf.dispose();
                     } else {
                         File nullfiles = null;
                         SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
                         SelectorHandler.processSelectorOutput();
+//                        jf.dispose();
                     }
                 }
             });

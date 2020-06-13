@@ -86,11 +86,13 @@ public class FolderSelector{
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFileChooser fc = new JFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent)
                                 throws HeadlessException {
                             JDialog dialog = super.createDialog(parent);
+                            dialog.setLocation(pt);
                             dialog.setLocationByPlatform(true);
                             dialog.setAlwaysOnTop(true);
                             return dialog;
@@ -101,15 +103,21 @@ public class FolderSelector{
                     fc.setDialogTitle("Select Directory");
                     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
+//                    JFrame jf = new JFrame();
+//                    jf.setLocation(p.x, p.y);
+//                    jf.setVisible(false);
+
                     if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                         System.out.println(fc.getSelectedFile().getAbsolutePath());
                         File allfiles = fc.getSelectedFile().getAbsoluteFile();
                         SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
                         SelectorHandler.processSelectorOutput();
+//                        jf.dispose();
                     } else {
                         File nullfiles = null;
                         SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
                         SelectorHandler.processSelectorOutput();
+//                        jf.dispose();
                     }
                 }
             });
