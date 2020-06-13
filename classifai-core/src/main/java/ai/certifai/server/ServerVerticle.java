@@ -47,6 +47,22 @@ public class ServerVerticle extends AbstractVerticle
     private FileSelector fileSelector;
     private FolderSelector folderSelector;
 
+    public ServerVerticle(){
+        Thread threadfile = new Thread(){
+            public void run(){
+                fileSelector = new FileSelector();
+            }
+        };
+        threadfile.start();
+
+        Thread threadfolder = new Thread(){
+            public void run(){
+                folderSelector = new FolderSelector();
+            }
+        };
+        threadfolder.start();
+    }
+
     //PUT http://localhost:8080/createproject/:projectname http://localhost:8080/createproject/helloworld
     private void createProjectInPortfolio(RoutingContext context)
     {
@@ -246,43 +262,41 @@ public class ServerVerticle extends AbstractVerticle
 
                 if (fileType.equals(SelectorHandler.FILE))
                 {
-                    if(fileSelector == null)
-                    {
-                        System.out.println("file selector is null");
-                        Thread thread = new Thread(){
-                            public void run(){
-                                fileSelector = new FileSelector();
-                                fileSelector.runMain();
-                            }
-                        };
-
-                        thread.start();
-                    }
-                    else
-                    {
-                        System.out.println("file selector is not null");
-                        fileSelector.runFileSelector();
-                    }
+                    fileSelector.runFileSelector();
+//                    if(fileSelector == null)
+//                    {
+//                        Thread thread = new Thread(){
+//                            public void run(){
+//                                fileSelector = new FileSelector();
+//                                fileSelector.runMain();
+//                            }
+//                        };
+//
+//                        thread.start();
+//                    }
+//                    else
+//                    {
+//                        fileSelector.runFileSelector();
+//                    }
                 }
                 else if (fileType.equals(SelectorHandler.FOLDER))
                 {
-                    if(folderSelector == null)
-                    {
-                        System.out.println("folder selector is null");
-                        Thread thread = new Thread(){
-                            public void run(){
-                                folderSelector = new FolderSelector();
-                                folderSelector.runMain();
-                            }
-                        };
-
-                        thread.start();
-                    }
-                    else
-                    {
-                        System.out.println("folder selector is not null");
-                        folderSelector.runFolderSelector();
-                    }
+                    folderSelector.runFolderSelector();
+//                    if(folderSelector == null)
+//                    {
+//                        Thread thread = new Thread(){
+//                            public void run(){
+//                                folderSelector = new FolderSelector();
+//                                folderSelector.runMain();
+//                            }
+//                        };
+//
+//                        thread.start();
+//                    }
+//                    else
+//                    {
+//                        folderSelector.runFolderSelector();
+//                    }
                 }
 
                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());

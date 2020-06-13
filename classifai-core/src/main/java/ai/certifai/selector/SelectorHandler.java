@@ -179,7 +179,7 @@ public class SelectorHandler {
     public static void setWindowState(boolean state)
     {
         isWindowOpen = state;
-        System.out.println("isWindowOpen:" + isWindowOpen);
+        //System.out.println("isWindowOpen:" + isWindowOpen);
     }
 
     public static void configureUUIDGenerator(List<Integer> uuidList)

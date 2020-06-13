@@ -32,51 +32,39 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-@NoArgsConstructor
-public class FileSelector extends Application {
-
+//@NoArgsConstructor
+////public class FileSelector extends Application {
+public class FileSelector{
     //private static String windowTitle = "Choose a file / multiple files";
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
-    private static  JFileChooser fc = new JFileChooser(){
-        @Override
-        protected JDialog createDialog(Component parent)
-                throws HeadlessException {
-            JDialog dialog = super.createDialog(parent);
-            // config here as needed - just to see a difference
-            dialog.setLocationByPlatform(true);
-            // might help - can't know because I can't reproduce the problem
-            dialog.setAlwaysOnTop(true);
-            return dialog;
-        }
-    };
     //    private static FileChooser.ExtensionFilter fileExtensions;
 //
 //    static {
 //        fileExtensions = new FileChooser.ExtensionFilter("image", Arrays.asList("*.jpg", "*.jpeg", "*.png"));
 //    }
-    public void runMain()
-    {
-        try
-        {
-            launch();
-        }
-        catch(IllegalStateException e)
-        {
-            SelectorHandler.setWindowState(false);
+//    public void runMain()
+//    {
+//        try
+//        {
+//            launch();
+//        }
+//        catch(IllegalStateException e)
+//        {
+//            SelectorHandler.setWindowState(false);
+//
+//            log.debug("Select files failed to open", e);
+//        }
+//
+//    }
 
-            log.debug("Select files failed to open", e);
-        }
-
-    }
-
-    public void start(Stage stage) throws Exception
-    {
-        runFileSelector();
-    }
+//    public void start(Stage stage) throws Exception
+//    {
+//        runFileSelector();
+//    }
 
     public void runFileSelector() {
 
-        Platform.runLater(() -> {
+//        Platform.runLater(() -> {
 
 //            Stage stage = new Stage();
 //
@@ -101,30 +89,47 @@ public class FileSelector extends Application {
 //            SelectorHandler.configureDatabaseUpdate(chosenFiles);
 //
 //            SelectorHandler.processSelectorOutput();
+//            Platform.setImplicitExit(false);
+//    });
 
+        try {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JFileChooser fc = new JFileChooser() {
+                        @Override
+                        protected JDialog createDialog(Component parent)
+                                throws HeadlessException {
+                            JDialog dialog = super.createDialog(parent);
+                            dialog.setLocationByPlatform(true);
+                            dialog.setAlwaysOnTop(true);
+                            return dialog;
+                        }
+                    };
+                    fc.setCurrentDirectory(new java.io.File(System.getProperty("user.home")));
+                    fc.setFileFilter(imgfilter);
+                    fc.setDialogTitle("Select Files");
+                    fc.setMultiSelectionEnabled(true);
+                    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-            //fc.setCurrentDirectory(new java.io.File("."));
-            fc.setFileFilter(imgfilter);
-            fc.setDialogTitle("Select Files");
-            fc.setMultiSelectionEnabled(true);
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                        File[] allfiles = fc.getSelectedFiles();
+                        SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
+                        SelectorHandler.processSelectorOutput();
+                    } else {
+                        File nullfiles = null;
+                        SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
+                        SelectorHandler.processSelectorOutput();
+                    }
+                }
+            });
+        }
+        catch (Exception e){
+            SelectorHandler.setWindowState(false);
+            log.debug("Select files failed to open", e);
+        }
 
-            if(fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
-                File[] allfiles = fc.getSelectedFiles();
-                SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
-                SelectorHandler.processSelectorOutput();
-            }
-            else{
-                File nullfiles = null;
-                SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
-                SelectorHandler.processSelectorOutput();
-            }
-
-            Platform.setImplicitExit(false);
-
-        });
     }
-
 
 }
 
