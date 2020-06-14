@@ -16,12 +16,6 @@
 
 package ai.certifai.selector;
 
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -32,56 +26,11 @@ import java.io.File;
 import java.util.Arrays;
 
 @Slf4j
-//@NoArgsConstructor
-//public class FolderSelector extends Application {
 public class FolderSelector{
-    //private static String windowTitle = "Choose a folder of data points";
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
-//    public void runMain()
-//    {
-//        try
-//        {
-//            launch();
-//        }
-//        catch(IllegalStateException e){
-//            SelectorHandler.setWindowState(false);
-//            log.debug("Select folder failed to open", e);
-//        }
-//    }
-
-//    public void start(Stage stage) throws Exception
-//    {
-//        runFolderSelector();
-//    }
 
     public void runFolderSelector() {
 
-//        Platform.runLater(() -> {
-
-//            Stage stage = new Stage();
-//
-//            DirectoryChooser directoryChooser = new DirectoryChooser();
-//            directoryChooser.setTitle("Choose a folder");
-//            directoryChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
-//
-//            stage.initStyle(StageStyle.UTILITY);
-//            stage.setMaxWidth(0);
-//            stage.setMaxHeight(0);
-//
-//            stage.setX(Double.MAX_VALUE);
-//
-//            stage.setAlwaysOnTop(true);
-//            stage.show();
-//
-//            File rootDirPath = directoryChooser.showDialog(stage);
-//
-//            SelectorHandler.configureDatabaseUpdate(Arrays.asList(rootDirPath));
-//
-//            SelectorHandler.processSelectorOutput();
-
-//            JButton open =  new JButton();
-//            Platform.setImplicitExit(false);
-//    });
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -98,31 +47,29 @@ public class FolderSelector{
                             return dialog;
                         }
                     };
-                    fc.setCurrentDirectory(new java.io.File(System.getProperty("user.home")));
+
+                    fc.setCurrentDirectory(SelectorHandler.getRootSearchPath());
                     fc.setFileFilter(imgfilter);
                     fc.setDialogTitle("Select Directory");
                     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-//                    JFrame jf = new JFrame();
-//                    jf.setLocation(p.x, p.y);
-//                    jf.setVisible(false);
 
-                    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                    {
                         System.out.println(fc.getSelectedFile().getAbsolutePath());
                         File allfiles = fc.getSelectedFile().getAbsoluteFile();
                         SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
                         SelectorHandler.processSelectorOutput();
-//                        jf.dispose();
                     } else {
                         File nullfiles = null;
                         SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
                         SelectorHandler.processSelectorOutput();
-//                        jf.dispose();
                     }
                 }
             });
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             SelectorHandler.setWindowState(false);
             log.debug("Select folder failed to open", e);
         }

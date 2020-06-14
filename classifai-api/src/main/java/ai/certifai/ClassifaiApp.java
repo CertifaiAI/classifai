@@ -43,17 +43,15 @@ public class ClassifaiApp {
                 }
             }
         }
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        catch (UnsupportedLookAndFeelException e){}
-        catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        catch (Exception e)
+        {
+            log.error("Error in setting UIManager: ", e);
         }
+
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
@@ -62,7 +60,6 @@ public class ClassifaiApp {
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
         opt.setConfig(new JsonObject().put("http.port", ServerConfig.dynamicPort));
-
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);

@@ -33,7 +33,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -263,40 +262,10 @@ public class ServerVerticle extends AbstractVerticle
                 if (fileType.equals(SelectorHandler.FILE))
                 {
                     fileSelector.runFileSelector();
-//                    if(fileSelector == null)
-//                    {
-//                        Thread thread = new Thread(){
-//                            public void run(){
-//                                fileSelector = new FileSelector();
-//                                fileSelector.runMain();
-//                            }
-//                        };
-//
-//                        thread.start();
-//                    }
-//                    else
-//                    {
-//                        fileSelector.runFileSelector();
-//                    }
                 }
                 else if (fileType.equals(SelectorHandler.FOLDER))
                 {
                     folderSelector.runFolderSelector();
-//                    if(folderSelector == null)
-//                    {
-//                        Thread thread = new Thread(){
-//                            public void run(){
-//                                folderSelector = new FolderSelector();
-//                                folderSelector.runMain();
-//                            }
-//                        };
-//
-//                        thread.start();
-//                    }
-//                    else
-//                    {
-//                        folderSelector.runFolderSelector();
-//                    }
                 }
 
                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
