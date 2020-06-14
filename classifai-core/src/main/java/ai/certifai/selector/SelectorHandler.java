@@ -21,6 +21,7 @@ import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -38,6 +39,8 @@ public class SelectorHandler {
     //key: (String) Project Name
     //value: (Integer) Project ID
     private static Map projectNameIDDict;
+
+    @Setter @Getter static Integer currentProcessingUUID;
 
     private static AtomicInteger projectIDGenerator;
     private static AtomicInteger uuidGenerator;
@@ -68,6 +71,11 @@ public class SelectorHandler {
         uuidGenerator =  new AtomicInteger(0);
     }
 
+
+    public static Integer getUUIDListSize()
+    {
+        return uuidList.size();
+    }
 
     public static boolean isDatabaseUpdating()
     {
@@ -124,24 +132,14 @@ public class SelectorHandler {
         projectNameBuffer = projectName;
     }
 
-    public static void configureDatabaseUpdate(List<File> file)
+    public static void processSelectorOutput(List<File> file)
     {
-        setWindowState(false);
-
         if((file != null) && (!file.isEmpty()) && (file.get(0) != null))
         {
-            isDatabaseUpdating = true;
+            uuidList = new ArrayList<>();
+            currentProcessingUUID = 0;
             fileHolder = file;
-        }
-        else
-        {
-            fileHolder = null;
-        }
-    }
-    public static void processSelectorOutput()
-    {
-        if((fileHolder != null) && (!fileHolder.isEmpty()) && (fileHolder.get(0) != null))
-        {
+
             if(currentWindowSelection.equals(FILE))
             {
                 generateUUID(fileHolder);
@@ -150,6 +148,9 @@ public class SelectorHandler {
             {
                 generateUUIDwithIteration(fileHolder.get(0));
             }
+
+            isDatabaseUpdating = true;
+            setWindowState(false);
 
             if(uuidList.size() == fileHolder.size())
             {
@@ -164,6 +165,9 @@ public class SelectorHandler {
             isDatabaseUpdating = false;
 
             clearProjectNameBuffer();
+        }
+        else {
+            setWindowState(false);
         }
     }
 
@@ -196,8 +200,6 @@ public class SelectorHandler {
 
     public static void generateUUID(List<File> filesList)
     {
-        uuidList = new ArrayList<>();
-
         for(File item : filesList)
         {
             uuidList.add(generateUUID());
@@ -207,7 +209,6 @@ public class SelectorHandler {
     public static void generateUUIDwithIteration(@NonNull File rootDataPath)
     {
         fileHolder = new ArrayList<>();
-        uuidList = new ArrayList<>();
         Stack<File> folderStack = new Stack<>();
 
         folderStack.push(rootDataPath);

@@ -68,8 +68,7 @@ public class FileSelector{
                         files = new ArrayList<>(java.util.Arrays.asList(fc.getSelectedFiles()));
                     }
 
-                    SelectorHandler.configureDatabaseUpdate(files);
-                    SelectorHandler.processSelectorOutput();
+                    SelectorHandler.processSelectorOutput(files);
                 }
             });
         }
