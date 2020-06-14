@@ -21,7 +21,6 @@ import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -213,7 +212,7 @@ public class SelectorHandler {
 
         folderStack.push(rootDataPath);
 
-        List<String> acceptableFileFormats = ImageFileType.getAllowedFileTypes();
+        List<String> acceptableFileFormats = new ArrayList<>(Arrays.asList(ImageFileType.getImageFileTypes()));
 
         while(folderStack.isEmpty() != true)
         {

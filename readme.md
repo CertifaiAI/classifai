@@ -1,7 +1,7 @@
 # Classifai
 
 <p align="center">
-  <img align="middle" src="metadata/sample.gif" width="680" height="425"/>
+  <img align="middle" src="metadata/sample.gif" width="700" height="425"/>
 </p>
 
 Classifai is a deep learning powered data annotator toolkit.  
@@ -28,7 +28,11 @@ We aim to solve these in classifai to provide significant value to the data scie
 - Aesthetic and intuitive UI interface, to make the work fun to do!
 - Reclaim valuable time from inefficient data labelling, technical team can focus on more meaningful ML/DL tasks.
 
-## How to Run
+## How to Run  
+
+## Prerequisites  
+Install [Java JDK 8](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) according on your platforms. 
+
 
 ## On Mac/Linux
 Run  
@@ -48,4 +52,7 @@ startClassifai.bat --port=8888
 cd classifai-uberjar/target  
 java -jar classifai-uberjar-1.0-SNAPSHOT-dev.jar  
 ```
+
+This repo is tested on both Windows and Mac in current stage.  
+Do submit issues or contact us at _helloannotation@certifai.ai_.  
 

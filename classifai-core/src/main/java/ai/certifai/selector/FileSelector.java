@@ -16,81 +16,63 @@
 
 package ai.certifai.selector;
 
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import lombok.NoArgsConstructor;
+import ai.certifai.data.type.image.ImageFileType;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
+
 
 @Slf4j
-@NoArgsConstructor
-public class FileSelector extends Application {
+public class FileSelector{
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    private static String windowTitle = "Choose a file / multiple files";
-    private static FileChooser.ExtensionFilter fileExtensions;
+    public void runFileSelector() {
 
-    static {
-        fileExtensions = new FileChooser.ExtensionFilter("image", Arrays.asList("*.jpg", "*.jpeg", "*.png"));
-    }
-    public void runMain()
-    {
-        try
-        {
-            launch();
+        try {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Point pt = MouseInfo.getPointerInfo().getLocation();
+
+                    JFileChooser fc = new JFileChooser() {
+                        @Override
+                        protected JDialog createDialog(Component parent)
+                                throws HeadlessException {
+                            JDialog dialog = super.createDialog(parent);
+                            dialog.setLocation(pt);
+                            dialog.setLocationByPlatform(true);
+                            dialog.setAlwaysOnTop(true);
+                            return dialog;
+                        }
+                    };
+
+                    fc.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    fc.setFileFilter(imgfilter);
+                    fc.setDialogTitle("Select Files");
+                    fc.setMultiSelectionEnabled(true);
+                    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+                    java.util.List<File> files = null;
+
+                    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                        files = new ArrayList<>(java.util.Arrays.asList(fc.getSelectedFiles()));
+                    }
+
+                    SelectorHandler.configureDatabaseUpdate(files);
+                    SelectorHandler.processSelectorOutput();
+                }
+            });
         }
-        catch(IllegalStateException e)
-        {
+        catch (Exception e){
             SelectorHandler.setWindowState(false);
-
             log.debug("Select files failed to open", e);
         }
 
     }
-
-    public void start(Stage stage) throws Exception
-    {
-        runFileSelector();
-    }
-
-    public void runFileSelector() {
-
-        Platform.runLater(() -> {
-
-            Stage stage = new Stage();
-
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle(windowTitle);
-            fileChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
-            fileChooser.getExtensionFilters().addAll(fileExtensions);
-
-            //Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
-            stage.initStyle(StageStyle.UTILITY);
-            stage.setMaxWidth(0);
-            stage.setMaxHeight(0);
-            stage.setX(Double.MAX_VALUE);
-            //stage.setX((primScreenBounds.getWidth() - stage.getWidth()) / 2);
-            //stage.setY((primScreenBounds.getHeight() - stage.getHeight()) / 2);
-
-            stage.setAlwaysOnTop(true);
-            stage.show();
-
-            List<File> chosenFiles = fileChooser.showOpenMultipleDialog(stage);
-
-            SelectorHandler.configureDatabaseUpdate(chosenFiles);
-
-            SelectorHandler.processSelectorOutput();
-
-            Platform.setImplicitExit(false);
-
-        });
-    }
-
 
 }
 

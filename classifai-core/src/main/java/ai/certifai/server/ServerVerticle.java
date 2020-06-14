@@ -33,7 +33,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -46,6 +45,22 @@ public class ServerVerticle extends AbstractVerticle
 {
     private FileSelector fileSelector;
     private FolderSelector folderSelector;
+
+    public ServerVerticle(){
+        Thread threadfile = new Thread(){
+            public void run(){
+                fileSelector = new FileSelector();
+            }
+        };
+        threadfile.start();
+
+        Thread threadfolder = new Thread(){
+            public void run(){
+                folderSelector = new FolderSelector();
+            }
+        };
+        threadfolder.start();
+    }
 
     //PUT http://localhost:8080/createproject/:projectname http://localhost:8080/createproject/helloworld
     private void createProjectInPortfolio(RoutingContext context)
@@ -246,39 +261,11 @@ public class ServerVerticle extends AbstractVerticle
 
                 if (fileType.equals(SelectorHandler.FILE))
                 {
-                    if(fileSelector == null)
-                    {
-                        Thread thread = new Thread(){
-                            public void run(){
-                                fileSelector = new FileSelector();
-                                fileSelector.runMain();
-                            }
-                        };
-
-                        thread.start();
-                    }
-                    else
-                    {
-                        fileSelector.runFileSelector();
-                    }
+                    fileSelector.runFileSelector();
                 }
                 else if (fileType.equals(SelectorHandler.FOLDER))
                 {
-                    if(folderSelector == null)
-                    {
-                        Thread thread = new Thread(){
-                            public void run(){
-                                folderSelector = new FolderSelector();
-                                folderSelector.runMain();
-                            }
-                        };
-
-                        thread.start();
-                    }
-                    else
-                    {
-                        folderSelector.runFolderSelector();
-                    }
+                    folderSelector.runFolderSelector();
                 }
 
                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
