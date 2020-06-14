@@ -16,69 +16,65 @@
 
 package ai.certifai.selector;
 
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import lombok.NoArgsConstructor;
+import ai.certifai.data.type.image.ImageFileType;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Slf4j
-@NoArgsConstructor
-public class FolderSelector extends Application {
+public class FolderSelector{
 
-    private static String windowTitle = "Choose a folder of data points";
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runMain()
-    {
-        try
-        {
-            launch();
+    public void runFolderSelector() {
+
+        try {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Point pt = MouseInfo.getPointerInfo().getLocation();
+                    JFileChooser fc = new JFileChooser() {
+                        @Override
+                        protected JDialog createDialog(Component parent)
+                                throws HeadlessException {
+                            JDialog dialog = super.createDialog(parent);
+                            dialog.setLocation(pt);
+                            dialog.setLocationByPlatform(true);
+                            dialog.setAlwaysOnTop(true);
+                            return dialog;
+                        }
+                    };
+
+                    fc.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    fc.setFileFilter(imgfilter);
+                    fc.setDialogTitle("Select Directory");
+                    fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+                    java.util.List<File> files = null;
+
+                    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                    {
+                        File rootFolder =  fc.getSelectedFile().getAbsoluteFile();
+
+                        files = new ArrayList<>(java.util.Arrays.asList(rootFolder));
+                    }
+
+                    SelectorHandler.configureDatabaseUpdate(files);
+                    SelectorHandler.processSelectorOutput();
+                }
+            });
         }
-        catch(IllegalStateException e)
+        catch (Exception e)
         {
             SelectorHandler.setWindowState(false);
             log.debug("Select folder failed to open", e);
         }
 
-    }
-
-    public void start(Stage stage) throws Exception
-    {
-        runFolderSelector();
-    }
-
-    public void runFolderSelector() {
-
-        Platform.runLater(() -> {
-
-            Stage stage = new Stage();
-
-            DirectoryChooser directoryChooser = new DirectoryChooser();
-            directoryChooser.setTitle("Choose a folder");
-            directoryChooser.setInitialDirectory(SelectorHandler.getRootSearchPath());
-
-            stage.initStyle(StageStyle.UTILITY);
-            stage.setMaxWidth(0);
-            stage.setMaxHeight(0);
-
-            stage.setX(Double.MAX_VALUE);
-
-            stage.setAlwaysOnTop(true);
-            stage.show();
-
-            File rootDirPath = directoryChooser.showDialog(stage);
-
-            SelectorHandler.configureDatabaseUpdate(Arrays.asList(rootDirPath));
-
-            SelectorHandler.processSelectorOutput();
-
-            Platform.setImplicitExit(false);
-        });
     }
 
 }

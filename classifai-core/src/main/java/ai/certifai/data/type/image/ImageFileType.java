@@ -16,18 +16,13 @@
 
 package ai.certifai.data.type.image;
 
-import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class ImageFileType
 {
-    @Getter
-    public static final List<String> allowedFileTypes = new ArrayList<>(
-            Arrays.asList(".png", ".jpg", ".jpeg")
-    );
+    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg"};
 
+    public static String[] getImageFileTypes()
+    {
+        return ALLOWED_FILE_TYPES;
+    }
 
 }
