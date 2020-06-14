@@ -31,5 +31,7 @@ public class ProjectSQLQuery
 
     public final static String UPDATE_DATA = "update Project set bndbox = ?, imageX = ?, imageY = ?, imageW = ?, imageH = ?, imageOriW = ?, imageOriH = ? where uuid = ? and projectid = ?";
 
-    public final static String RECOVER_DATA = "";
+    public final static String DELETE_DATA = "delete from Project where uuid = ? and projectid = ?";
+
+    public final static String RECOVER_DATA = "Check database if image path still valid";
 }

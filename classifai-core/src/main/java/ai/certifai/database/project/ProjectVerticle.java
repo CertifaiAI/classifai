@@ -17,6 +17,7 @@
 package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
+import ai.certifai.util.ConversionHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
@@ -32,6 +33,7 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hsqldb.Server;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,7 +72,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
         else if (action.equals(ProjectSQLQuery.RECOVER_DATA))
         {
-            this.recoverData(message);
+            this.sanityCheckDataPath(message);
         }
         else
         {
@@ -221,9 +223,51 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         });
     }
 
-    public void recoverData(Message<JsonObject> message)
+    public void sanityCheckDataPath(Message<JsonObject> message)
     {
+        JsonObject requestBody = message.body();
 
+        JsonArray params = new JsonArray().add(requestBody.getInteger(ServerConfig.UUID_PARAM))
+                                            .add(requestBody.getInteger(ServerConfig.PROJECT_ID_PARAM));
+
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+
+            if(fetch.succeeded()) {
+                ResultSet resultSet = fetch.result();
+
+                if (resultSet.getNumRows() != 0) {
+
+                    String imagePath = resultSet.getResults().get(0).getString(0);
+
+                    File imageFilePath = new File(imagePath);
+
+                    if (imageFilePath.exists() && (ImageUtils.getImageSize(imageFilePath) != null))
+                    {
+                        message.reply(ReplyHandler.getOkReply());
+                    }
+                    else {
+
+                        //this uuid has to be remove
+                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+                            if (!reply.succeeded()) {
+                                log.error("Delete uuid failed. This should not happened");
+                            }
+                        });
+
+                        message.reply(ReplyHandler.getFailedReply());
+                    }
+                }
+                else
+                {
+                    message.reply(ReplyHandler.getFailedReply());
+                }
+            }
+            else {
+                log.error("Request uuid failed. This should not happened");
+                message.reply(ReplyHandler.getFailedReply());
+            }
+
+        });
     }
 
     //PUT http://localhost:8080/updatedata
