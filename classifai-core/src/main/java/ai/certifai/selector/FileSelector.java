@@ -16,6 +16,7 @@
 
 package ai.certifai.selector;
 
+import ai.certifai.data.type.image.ImageFileType;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -26,17 +27,17 @@ import java.util.Arrays;
 
 @Slf4j
 public class FileSelector{
-    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "jpeg");
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
 
     public void runFileSelector() {
-
 
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     Point pt = MouseInfo.getPointerInfo().getLocation();
+
                     JFileChooser fc = new JFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent)
@@ -48,21 +49,21 @@ public class FileSelector{
                             return dialog;
                         }
                     };
+
                     fc.setCurrentDirectory(SelectorHandler.getRootSearchPath());
                     fc.setFileFilter(imgfilter);
                     fc.setDialogTitle("Select Files");
                     fc.setMultiSelectionEnabled(true);
                     fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
+                    File[] files = null;
+
                     if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                         File[] allfiles = fc.getSelectedFiles();
-                        SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
-                        SelectorHandler.processSelectorOutput();
-                    } else {
-                        File nullfiles = null;
-                        SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
-                        SelectorHandler.processSelectorOutput();
                     }
+
+                    SelectorHandler.configureDatabaseUpdate(Arrays.asList(files));
+                    SelectorHandler.processSelectorOutput();
                 }
             });
         }

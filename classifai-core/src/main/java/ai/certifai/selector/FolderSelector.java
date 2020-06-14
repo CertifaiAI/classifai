@@ -16,18 +16,19 @@
 
 package ai.certifai.selector;
 
+import ai.certifai.data.type.image.ImageFileType;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.*;
 import java.io.File;
 import java.util.Arrays;
 
 @Slf4j
 public class FolderSelector{
-    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", "jpg", "png", "gif", "jpeg");
+
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
     public void runFolderSelector() {
 
@@ -53,18 +54,19 @@ public class FolderSelector{
                     fc.setDialogTitle("Select Directory");
                     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
+                    File[] files = new File[0];
 
                     if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
                     {
-                        System.out.println(fc.getSelectedFile().getAbsolutePath());
-                        File allfiles = fc.getSelectedFile().getAbsoluteFile();
-                        SelectorHandler.configureDatabaseUpdate(Arrays.asList(allfiles));
-                        SelectorHandler.processSelectorOutput();
-                    } else {
-                        File nullfiles = null;
-                        SelectorHandler.configureDatabaseUpdate(Arrays.asList(nullfiles));
-                        SelectorHandler.processSelectorOutput();
+                        files[0] = fc.getSelectedFile().getAbsoluteFile();
                     }
+                    else
+                    {
+                        files = null;
+                    }
+
+                    SelectorHandler.configureDatabaseUpdate(Arrays.asList(files));
+                    SelectorHandler.processSelectorOutput();
                 }
             });
         }

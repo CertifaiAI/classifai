@@ -22,8 +22,6 @@ import ai.certifai.data.DataCollection;
 import ai.certifai.data.DataType;
 import ai.certifai.data.type.image.ImageDataCollection;
 import ai.certifai.data.type.image.ImageFileType;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
@@ -53,7 +52,7 @@ public class FileUtils
 
         folderStack.push(new File(rootDataPath));
 
-        List<String> acceptableFileFormats = ImageFileType.getAllowedFileTypes();
+        List<String> acceptableFileFormats = Arrays.asList(ImageFileType.getImageFileTypes());
 
         while(folderStack.isEmpty() != true)
         {
