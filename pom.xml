@@ -62,7 +62,6 @@
         <lombok.version>1.18.8</lombok.version>
         <slf4j.version>1.7.26</slf4j.version>
         <hsqldb.version>2.3.4</hsqldb.version>
-        <seaglass.version>0.2.1</seaglass.version>
         <commons.io.version>2.6</commons.io.version>
         <logback.version>1.2.3</logback.version>
         <org.json.version>20190722</org.json.version>
@@ -164,11 +163,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>${commons.collections4.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.seaglasslookandfeel</groupId>
-                <artifactId>seaglasslookandfeel</artifactId>
-                <version>${seaglass.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
