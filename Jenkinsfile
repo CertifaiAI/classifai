@@ -2,9 +2,19 @@ pipeline {
   agent any
   stages {
     stage('Build') {
-      steps {
-        bat(script: 'startClassifai.bat', returnStdout: true, returnStatus: true)
-        sh './startClassifai.sh'
+      parallel {
+        stage('Build') {
+          steps {
+            sh './startClassifai.sh'
+          }
+        }
+
+        stage('') {
+          steps {
+            powershell(script: 'startClassifai.bat', returnStatus: true, returnStdout: true)
+          }
+        }
+
       }
     }
 
