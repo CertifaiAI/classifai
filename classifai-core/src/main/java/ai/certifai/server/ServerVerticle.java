@@ -291,9 +291,13 @@ public class ServerVerticle extends AbstractVerticle
             }
             else if (SelectorHandler.isDatabaseUpdating())
             {
-                //SelectorHandler.processSelectorOutput();
+                JsonObject res = new JsonObject();
 
-                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), 2));
+                List metadata = new ArrayList<>(Arrays.asList(SelectorHandler.getCurrentProcessingUUID(), SelectorHandler.getUUIDListSize()));
+                res.put(ServerConfig.PROGRESS_METADATA, metadata);
+                res.put(ReplyHandler.getMessageKey(), 2);
+
+                HTTPResponseHandler.configureOK(context, res);
             }
             else {
                 JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
