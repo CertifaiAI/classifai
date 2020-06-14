@@ -23,6 +23,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Slf4j
@@ -54,18 +55,16 @@ public class FolderSelector{
                     fc.setDialogTitle("Select Directory");
                     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-                    File[] files = new File[0];
+                    java.util.List<File> files = null;
 
                     if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
                     {
-                        files[0] = fc.getSelectedFile().getAbsoluteFile();
-                    }
-                    else
-                    {
-                        files = null;
+                        File rootFolder =  fc.getSelectedFile().getAbsoluteFile();
+
+                        files = new ArrayList<>(java.util.Arrays.asList(rootFolder));
                     }
 
-                    SelectorHandler.configureDatabaseUpdate(Arrays.asList(files));
+                    SelectorHandler.configureDatabaseUpdate(files);
                     SelectorHandler.processSelectorOutput();
                 }
             });

@@ -23,12 +23,12 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
+
 
 @Slf4j
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
-
 
     public void runFileSelector() {
 
@@ -56,13 +56,13 @@ public class FileSelector{
                     fc.setMultiSelectionEnabled(true);
                     fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-                    File[] files = null;
+                    java.util.List<File> files = null;
 
                     if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        File[] allfiles = fc.getSelectedFiles();
+                        files = new ArrayList<>(java.util.Arrays.asList(fc.getSelectedFiles()));
                     }
 
-                    SelectorHandler.configureDatabaseUpdate(Arrays.asList(files));
+                    SelectorHandler.configureDatabaseUpdate(files);
                     SelectorHandler.processSelectorOutput();
                 }
             });

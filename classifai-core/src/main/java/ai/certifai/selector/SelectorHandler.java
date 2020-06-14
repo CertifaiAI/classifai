@@ -212,7 +212,7 @@ public class SelectorHandler {
 
         folderStack.push(rootDataPath);
 
-        List<String> acceptableFileFormats = Arrays.asList(ImageFileType.getImageFileTypes());
+        List<String> acceptableFileFormats = new ArrayList<>(Arrays.asList(ImageFileType.getImageFileTypes()));
 
         while(folderStack.isEmpty() != true)
         {
