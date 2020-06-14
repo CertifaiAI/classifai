@@ -128,6 +128,38 @@ public class ServerVerticle extends AbstractVerticle
         vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
         {
             if (reply.succeeded()) {
+
+                JsonObject uuidLabelObject = (JsonObject) reply.result().body();
+
+                DeliveryOptions checkOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RECOVER_DATA);
+
+                //check if image path still exist, else remove the list
+                vertx.eventBus().request(ProjectSQLQuery.QUEUE, uuidLabelObject, checkOptions, response ->
+                {
+                    if(response.succeeded())
+                    {
+
+                    }
+                    else
+                    {
+                        HTTPResponseHandler.configureInternalServerError(context);
+                    }
+                });
+
+            } else {
+                HTTPResponseHandler.configureInternalServerError(context);
+            }
+        });
+    }
+
+    /*
+    String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
+
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+        {
+            if (reply.succeeded()) {
                 JsonObject result = (JsonObject) reply.result().body();
 
                 result.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
@@ -138,8 +170,7 @@ public class ServerVerticle extends AbstractVerticle
                 HTTPResponseHandler.configureInternalServerError(context);
             }
         });
-    }
-
+     */
 
 
     private void updateLabelInPortfolio(RoutingContext context)

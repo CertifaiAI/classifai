@@ -16,21 +16,6 @@
 
 package ai.certifai.database.project;
 
-import lombok.Getter;
-
-import java.util.HashMap;
-import java.util.Map;
-
-
-enum ProjectSQLQueryCode
-{
-    CREATE_PROJECT,
-    CREATE_DATA,
-    RETRIEVE_DATA,
-    RETRIEVE_DATA_PATH,
-    UPDATE_DATA
-}
-
 public class ProjectSQLQuery
 {
     public final static String QUEUE = "project.queue";
@@ -46,16 +31,5 @@ public class ProjectSQLQuery
 
     public final static String UPDATE_DATA = "update Project set bndbox = ?, imageX = ?, imageY = ?, imageW = ?, imageH = ?, imageOriW = ?, imageOriH = ? where uuid = ? and projectid = ?";
 
-    public final static Map<ProjectSQLQueryCode, String> queryLUT = new HashMap();
-
-    // Instantiating the static map
-    static
-    {
-        queryLUT.put(ProjectSQLQueryCode.CREATE_PROJECT, CREATE_PROJECT);
-        queryLUT.put(ProjectSQLQueryCode.CREATE_DATA, CREATE_DATA);
-        queryLUT.put(ProjectSQLQueryCode.RETRIEVE_DATA, RETRIEVE_DATA);
-        queryLUT.put(ProjectSQLQueryCode.RETRIEVE_DATA_PATH, RETRIEVE_DATA_PATH);
-        queryLUT.put(ProjectSQLQueryCode.UPDATE_DATA, UPDATE_DATA);
-
-    }
+    public final static String RECOVER_DATA = "";
 }

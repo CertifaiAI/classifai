@@ -68,6 +68,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         {
             this.updateData(message);
         }
+        else if (action.equals(ProjectSQLQuery.RECOVER_DATA))
+        {
+            this.recoverData(message);
+        }
         else
         {
             log.error("Project query error: Action did not found follow up with function");
@@ -215,6 +219,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    public void recoverData(Message<JsonObject> message)
+    {
+
     }
 
     //PUT http://localhost:8080/updatedata

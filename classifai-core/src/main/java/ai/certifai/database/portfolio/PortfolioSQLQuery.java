@@ -16,9 +16,6 @@
 
 package ai.certifai.database.portfolio;
 
-import lombok.Getter;
-
-
 public class PortfolioSQLQuery
 {
     public final static String QUEUE = "portfolio.queue";
