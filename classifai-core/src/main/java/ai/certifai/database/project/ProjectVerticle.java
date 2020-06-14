@@ -123,6 +123,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         for(int i = 0 ; i < fileHolder.size(); ++i)
         {
+            SelectorHandler.setCurrentProcessingUUID(i + 1);
+
             Pair imgMetadata = ImageUtils.getImageSize(fileHolder.get(i));
 
             if(imgMetadata != null)

@@ -48,4 +48,6 @@ public class ServerConfig
     public final static String ACTION_KEYWORD = "action";
     public final static String CONTENT = "content";
 
+    public final static String PROGRESS_METADATA = "progress";
+
 }

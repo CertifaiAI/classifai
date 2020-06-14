@@ -71,8 +71,7 @@ public class FolderSelector{
                         files = new ArrayList<>(java.util.Arrays.asList(rootFolder));
                     }
 
-                    SelectorHandler.configureDatabaseUpdate(files);
-                    SelectorHandler.processSelectorOutput();
+                    SelectorHandler.processSelectorOutput(files);
                 }
             });
         }
