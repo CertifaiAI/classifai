@@ -125,53 +125,12 @@ public class ServerVerticle extends AbstractVerticle
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
-        DeliveryOptions checkOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RECOVER_DATA);
 
         vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
         {
             if (reply.succeeded()) {
 
                 JsonObject object = (JsonObject) reply.result().body();
-
-                List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(object.getJsonArray(ServerConfig.UUID_LIST_PARAM));
-
-                List<Integer> uuidValidList = new ArrayList<>();
-
-                JsonObject checkObject = new JsonObject().put(ServerConfig.PROJECT_ID_PARAM, SelectorHandler.getProjectID(projectName));
-
-                for(Integer uuid : uuidList)
-                {
-                    checkObject.put(ServerConfig.UUID_PARAM, uuid);
-
-                    //check if image path still exist, else remove the list
-                    vertx.eventBus().request(ProjectSQLQuery.QUEUE, checkObject, checkOptions, response ->
-                    {
-                        if(response.succeeded())
-                        {
-                            JsonObject result = (JsonObject) response.result().body();
-
-                            if(result.getInteger(ReplyHandler.getMessageKey()) == ReplyHandler.getSuccessfulSignal())
-                            {
-                                System.out.println("Added: " + uuid);
-
-                                uuidValidList.add(uuid);
-                            }
-                            else
-                            {
-                                System.out.println("Removed: " + uuid);
-                            }
-                        }
-                        else
-                        {
-                            HTTPResponseHandler.configureInternalServerError(context);
-                        }
-                    });
-                }
-
-                object.put(ServerConfig.UUID_LIST_PARAM, uuidValidList);
-                object.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
-
-                System.out.println("Returned array");
 
                 HTTPResponseHandler.configureOK(context, object);
 

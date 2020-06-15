@@ -17,7 +17,9 @@
 package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
+import ai.certifai.database.portfolio.PortfolioSQLQuery;
 import ai.certifai.util.ConversionHandler;
+import ai.certifai.util.http.HTTPResponseHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
@@ -25,6 +27,7 @@ import ai.certifai.util.ImageUtils;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -197,25 +200,67 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
-                    String imagePath = row.getString(counter++);
+                    String dataPath = row.getString(counter++);
 
-                    response.put(ServerConfig.UUID_PARAM, uuid);
-                    response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+                    File file = new File(dataPath);
 
-                    response.put(ServerConfig.IMAGE_PATH_PARAM, imagePath);
-                    response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
-                    response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
-                    response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(imagePath));
+                    if((file.exists() == false) || (ImageUtils.getImageSize(file) == null))
+                    {
+                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
 
-                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
+                            if(reply.failed())
+                            {
+                                log.error("Failed in deleting uuid");
+                            }
 
+                        });
+
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+                        {
+                            if(reply.succeeded())
+                            {
+                                JsonObject result = (JsonObject) reply.result().body();
+
+                                if(ReplyHandler.isReplyOk(result))
+                                {
+                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
+
+                                    uuidList.removeIf(index -> (index == uuid));
+
+                                    //update data
+                                    DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
+
+
+                                }
+                                else
+                                {
+                                    log.error("Retrieve uuid list failed");
+                                }
+                            }
+                        });
+
+                        message.reply(ReplyHandler.getFailedReply());
+                    }
+                    else
+                    {
+                        response.put(ServerConfig.UUID_PARAM, uuid);
+                        response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+
+                        response.put(ServerConfig.IMAGE_PATH_PARAM, dataPath);
+                        response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                        response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
+                        response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
+                        response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(dataPath));
+
+                        response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
+                        message.reply(response);
+                    }
                 }
-                message.reply(response);
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));

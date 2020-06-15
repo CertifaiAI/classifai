@@ -17,6 +17,8 @@
 package ai.certifai.database.portfolio;
 
 import ai.certifai.database.DatabaseConfig;
+import ai.certifai.database.project.ProjectSQLQuery;
+import ai.certifai.util.http.HTTPResponseHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import ai.certifai.selector.SelectorHandler;
@@ -24,6 +26,7 @@ import ai.certifai.server.ServerConfig;
 import ai.certifai.util.ConversionHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -294,28 +297,24 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName))
-        {
+        if(SelectorHandler.isProjectNameRegistered(projectName)) {
             JsonArray params = new JsonArray().add(projectName);
 
             portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_UUID_LABEL_LIST, params, fetch -> {
 
-                if(fetch.succeeded())
-                {
+                if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
                     JsonArray row = resultSet.getResults().get(0);
 
                     List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
                     List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
 
-                    JsonObject response = ReplyHandler.getOkReply();
-                    response.put(ServerConfig.LABEL_LIST_PARAM, labelList);
-                    response.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+                    JsonObject reply = ReplyHandler.getOkReply();
+                    reply.put(ServerConfig.LABEL_LIST_PARAM, labelList);
+                    reply.put(ServerConfig.UUID_LIST_PARAM, uuidList);
 
-                    message.reply(response);
-                }
-                else {
-                    //query database failed
+                    message.reply(reply);
+                } else {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
@@ -325,6 +324,63 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
 
+                    /*
+                    //****************
+                    if(uuidList.isEmpty())
+                    {
+                        JsonObject reply = ReplyHandler.getOkReply();
+                        reply.put(ServerConfig.LABEL_LIST_PARAM, labelList);
+                        reply.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+
+                        message.reply(reply);
+                    }
+                    else
+                        {
+                        Integer lastIndex = uuidList.get(uuidList.size() - 1);
+
+                        DeliveryOptions checkOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RECOVER_DATA);
+
+                        List<Integer> uuidValidList = new ArrayList<>();
+
+                        JsonObject checkObject = new JsonObject().put(ServerConfig.PROJECT_ID_PARAM, SelectorHandler.getProjectID(projectName));
+
+                        for(int index = 0; index < uuidList.size(); ++index)
+                        {
+                            Integer uuid = uuidList.get(index);
+                            checkObject.put(ServerConfig.UUID_PARAM, uuid);
+
+                            //check if image path still exist, else remove the list
+                            vertx.eventBus().request(ProjectSQLQuery.QUEUE, checkObject, checkOptions, response ->
+                            {
+                                if(response.succeeded())
+                                {
+                                    JsonObject result = (JsonObject) response.result().body();
+
+                                    if(result.getInteger(ReplyHandler.getMessageKey()) == ReplyHandler.getSuccessfulSignal())
+                                    {
+                                        uuidValidList.add(uuid);
+                                    }
+
+                                    if(uuid == lastIndex)
+                                    {
+                                        JsonObject reply = ReplyHandler.getOkReply();
+                                        reply.put(ServerConfig.LABEL_LIST_PARAM, labelList);
+                                        reply.put(ServerConfig.UUID_LIST_PARAM, uuidValidList);
+
+                                        message.reply(reply);
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                }
+                else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+            */
     }
 
     public void getAllProjects(Message<JsonObject> message)
