@@ -95,6 +95,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.updateUUIDList(message);
         }
+        else if(action.equals(PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
+        {
+            this.removeObsoleteUUID(message);
+        }
         else
         {
             log.error("Portfolio SQL query error: Action did not found follow up with function");
@@ -157,6 +161,21 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
+    }
+
+    public void removeObsoleteUUID(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        String uuidList = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+
+        List<Integer> uuidListArray = ConversionHandler.string2IntegerList(uuidList);
+
+        for(Integer i : uuidListArray)
+        {
+            System.out.println(i);
+        }
+
+        message.reply(ReplyHandler.getOkReply());
     }
 
     public void getProjectUUIDList(Message<JsonObject> message)
@@ -415,7 +434,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .map(json -> json.getInteger(0))
                         .sorted()
                         .collect(Collectors.toList());
-
 
                 if(projectIDList.isEmpty())
                 {

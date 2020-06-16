@@ -40,6 +40,8 @@ public class SelectorHandler {
     //value: (Integer) Project ID
     private static Map projectNameIDDict;
 
+    private static Map projectUUIDListRemoval;
+
     @Setter @Getter static Integer currentProcessingUUID;
 
     private static AtomicInteger projectIDGenerator;
@@ -64,6 +66,7 @@ public class SelectorHandler {
     {
         projectIDNameDict = new HashMap<Integer, String>();
         projectNameIDDict = new HashMap<String, String>();
+        projectUUIDListRemoval = new HashMap<String, List<Integer>>();
 
         uuidList = new ArrayList<>();
 
@@ -91,6 +94,8 @@ public class SelectorHandler {
     {
         projectNameIDDict.put(projectName, projectID);
         projectIDNameDict.put(projectID, projectName);
+
+        projectUUIDListRemoval.put(projectName, new ArrayList<>());
     }
 
     public static void setUUIDGenerator(Integer integer)
@@ -110,6 +115,16 @@ public class SelectorHandler {
             return false;
         }
         return true;
+    }
+
+    public static void putUUIDToRemove(String projectName, Integer uuid)
+    {
+        projectUUIDListRemoval.put(projectName, uuid);
+    }
+
+    public static List<Integer> getUUIDListToRemove(String projectName)
+    {
+        return (List) projectUUIDListRemoval.get(projectName);
     }
 
     public static boolean isProjectNameRegistered(String projectName)

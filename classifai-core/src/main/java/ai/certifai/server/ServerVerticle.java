@@ -141,26 +141,6 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    /*
-    String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
-
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
-        {
-            if (reply.succeeded()) {
-                JsonObject result = (JsonObject) reply.result().body();
-
-                result.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
-
-                HTTPResponseHandler.configureOK(context, result);
-
-            } else {
-                HTTPResponseHandler.configureInternalServerError(context);
-            }
-        });
-     */
-
 
     private void updateLabelInPortfolio(RoutingContext context)
     {
@@ -447,6 +427,36 @@ public class ServerVerticle extends AbstractVerticle
     }
 
 
+    //PUT http://localhost:8080/:projectname/loading/complete
+    public void postLoading(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+
+        List<Integer> uuidListToRemove = SelectorHandler.getUUIDListToRemove(projectName);
+
+        JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuidListToRemove)
+                .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
+
+        //remove from portfolio database
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
+        {
+            if(reply.succeeded())
+            {
+                JsonObject body = (JsonObject) reply.result().body();
+
+                if(!ReplyHandler.isReplyOk(body))
+                {
+                    HTTPResponseHandler.configureInternalServerError(context);
+                    return;
+                }
+            }
+        });
+
+        //remove from profile database.
+    }
+
     //GET http://localhost:8080/imgsrc?projectname=helloworld&uuid=1234
     public void getImageSource(RoutingContext context)
     {
@@ -511,6 +521,8 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/imgsrc").handler(this::getImageSource);
         router.put("/update").handler(this::updateData);
+
+        router.put("/:projectname/loading/complete").handler(this::postLoading);
 
         vertx.createHttpServer()
                 .requestHandler(router)

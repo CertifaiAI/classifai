@@ -191,11 +191,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    log.error("Read from database failed");
-                    message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), 2));
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    log.error("Should not get null");
                 }
-                else
-                {
+                else {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
@@ -204,22 +203,21 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     boolean fileExist = true;
                     String thumbnail = "";
 
-                    if(new File(dataPath).exists() == true) {
+                    if (new File(dataPath).exists() == true) {
 
                         try {
                             thumbnail = ImageUtils.getThumbNail(dataPath);
                         }
-                        catch (Exception e) {
+                        catch (Exception e)
+                        {
                             fileExist = false;
                         }
 
-                    }
-                    else {
+                    } else {
                         fileExist = false;
                     }
 
-                    if(fileExist)
-                    {
+                    if (fileExist) {
                         response.put(ServerConfig.UUID_PARAM, uuid);
                         response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
@@ -236,69 +234,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
                         message.reply(response);
                     }
-                    else
-                    {
-                        System.out.println("Delete image of datapath: " + dataPath);
-
-                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
-
-                            if(reply.failed())
-                            {
-                                log.error("Failed in deleting uuid");
-                            }
-                        });
-
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
-
-                        JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
-
-                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
-                        {
-                            if(reply.succeeded())
-                            {
-                                JsonObject result = (JsonObject) reply.result().body();
-
-                                if(ReplyHandler.isReplyOk(result))
-                                {
-                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
-
-                                    uuidList.removeIf(index -> (index == uuid));
-
-                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidList);
-
-                                    DeliveryOptions portFolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
-
-                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, portFolioOptions, portfolioFetch ->{
-
-                                        boolean updateCheck = true;
-
-                                        if (portfolioFetch.succeeded())
-                                        {
-                                            JsonObject updatePortfolio = (JsonObject) portfolioFetch.result().body();
-
-                                            if(ReplyHandler.isReplyOk(updatePortfolio) == false) updateCheck = false;
-                                        }
-                                        else {
-                                            updateCheck = false;
-                                        }
-
-                                        if(!updateCheck)
-                                        {
-                                            log.error("Update list of uuids to Portfolio Database failed");
-                                        }
-                                    });
-
-                                }
-                                else
-                                {
-                                    log.error("Retrieve uuid list failed");
-                                }
-                            }
-                        });
-
-                        message.reply(ReplyHandler.getFailedReply());
+                    else {
+                        SelectorHandler.putUUIDToRemove(projectName, uuid);
                     }
-                    }
+                }
 
             }
             else {
