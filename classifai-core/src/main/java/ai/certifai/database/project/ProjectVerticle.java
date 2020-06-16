@@ -18,12 +18,11 @@ package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
 import ai.certifai.database.portfolio.PortfolioSQLQuery;
-import ai.certifai.util.ConversionHandler;
-import ai.certifai.util.http.HTTPResponseHandler;
-import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
+import ai.certifai.util.ConversionHandler;
 import ai.certifai.util.ImageUtils;
+import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -36,7 +35,6 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.hsqldb.Server;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -193,7 +191,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    response = null;
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    log.error("Should not get null");
                 }
                 else
                 {
@@ -202,47 +201,24 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
 
-                    File file = new File(dataPath);
+                    boolean fileExist = true;
+                    String thumbnail = "";
 
-                    if((file.exists() == false) || (ImageUtils.getImageSize(file) == null))
-                    {
-                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+                    if(new File(dataPath).exists() == true) {
 
-                            if(reply.failed())
-                            {
-                                log.error("Failed in deleting uuid");
-                            }
+                        try {
+                            thumbnail = ImageUtils.getThumbNail(dataPath);
+                        }
+                        catch (Exception e) {
+                            fileExist = false;
+                        }
 
-                        });
-
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
-                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
-                        {
-                            if(reply.succeeded())
-                            {
-                                JsonObject result = (JsonObject) reply.result().body();
-
-                                if(ReplyHandler.isReplyOk(result))
-                                {
-                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
-
-                                    uuidList.removeIf(index -> (index == uuid));
-
-                                    //update data
-                                    DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
-
-
-                                }
-                                else
-                                {
-                                    log.error("Retrieve uuid list failed");
-                                }
-                            }
-                        });
-
-                        message.reply(ReplyHandler.getFailedReply());
                     }
-                    else
+                    else {
+                        fileExist = false;
+                    }
+
+                    if(fileExist)
                     {
                         response.put(ServerConfig.UUID_PARAM, uuid);
                         response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
@@ -255,12 +231,75 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
                         response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                         response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                        response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(dataPath));
+                        response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
 
                         response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
                         message.reply(response);
                     }
-                }
+                    else
+                    {
+                        System.out.println("Delete image of datapath: " + dataPath);
+
+                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+
+                            if(reply.failed())
+                            {
+                                log.error("Failed in deleting uuid");
+                            }
+                        });
+
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+
+                        JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+
+                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+                        {
+                            if(reply.succeeded())
+                            {
+                                JsonObject result = (JsonObject) reply.result().body();
+
+                                if(ReplyHandler.isReplyOk(result))
+                                {
+                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
+
+                                    uuidList.removeIf(index -> (index == uuid));
+
+                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+
+                                    DeliveryOptions portFolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
+
+                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, portFolioOptions, portfolioFetch ->{
+
+                                        boolean updateCheck = true;
+
+                                        if (portfolioFetch.succeeded())
+                                        {
+                                            JsonObject updatePortfolio = (JsonObject) portfolioFetch.result().body();
+
+                                            if(ReplyHandler.isReplyOk(updatePortfolio) == false) updateCheck = false;
+                                        }
+                                        else {
+                                            updateCheck = false;
+                                        }
+
+                                        if(!updateCheck)
+                                        {
+                                            log.error("Update list of uuids to Portfolio Database failed");
+                                        }
+                                    });
+
+                                }
+                                else
+                                {
+                                    log.error("Retrieve uuid list failed");
+                                }
+                            }
+                        });
+
+                        message.reply(ReplyHandler.getFailedReply());
+                    }
+                    }
+
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));

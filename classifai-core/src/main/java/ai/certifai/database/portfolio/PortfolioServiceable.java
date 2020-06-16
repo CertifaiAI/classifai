@@ -19,8 +19,6 @@ package ai.certifai.database.portfolio;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
-import java.util.List;
-
 
 public interface PortfolioServiceable
 {

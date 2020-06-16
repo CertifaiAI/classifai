@@ -16,25 +16,26 @@
 
 package ai.certifai.server;
 
-import ai.certifai.util.http.HTTPResponseHandler;
-import ai.certifai.util.message.ReplyHandler;
 import ai.certifai.database.portfolio.PortfolioSQLQuery;
 import ai.certifai.database.project.ProjectSQLQuery;
 import ai.certifai.selector.FileSelector;
 import ai.certifai.selector.FolderSelector;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.util.ConversionHandler;
+import ai.certifai.util.http.HTTPResponseHandler;
+import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Main server verticle routing different url requests

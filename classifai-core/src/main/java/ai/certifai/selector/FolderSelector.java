@@ -24,7 +24,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @Slf4j
 public class FolderSelector{

@@ -1,13 +1,8 @@
 package ai.certifai;
 
-import ai.certifai.database.DatabaseConfig;
-import ai.certifai.server.ServerConfig;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.AfterClass;
