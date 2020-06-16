@@ -191,8 +191,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    log.error("Should not get null");
+                    log.error("Read from database failed");
+                    message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), 2));
                 }
                 else
                 {
