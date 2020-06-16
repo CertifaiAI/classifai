@@ -181,6 +181,7 @@ public class ImageUtils
         catch(Exception e)
         {
             log.error("Error in reading image ", e);
+            return null;
         }
 
         return new ImmutablePair(width, height);

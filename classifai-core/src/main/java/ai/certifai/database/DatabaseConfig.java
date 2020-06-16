@@ -18,8 +18,6 @@ package ai.certifai.database;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-
 @Slf4j
 public class DatabaseConfig
 {

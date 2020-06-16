@@ -17,11 +17,11 @@
 package ai.certifai.database.portfolio;
 
 import ai.certifai.database.DatabaseConfig;
-import ai.certifai.util.message.ErrorCodes;
-import ai.certifai.util.message.ReplyHandler;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
 import ai.certifai.util.ConversionHandler;
+import ai.certifai.util.message.ErrorCodes;
+import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -91,6 +90,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         else if(action.equals(PortfolioSQLQuery.GET_UUID_LABEL_LIST))
         {
             this.getUUIDLabelList(message);
+        }
+        else if(action.equals(PortfolioSQLQuery.UPDATE_PROJECT))
+        {
+            this.updateUUIDList(message);
         }
         else
         {
@@ -295,28 +298,24 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName))
-        {
+        if(SelectorHandler.isProjectNameRegistered(projectName)) {
             JsonArray params = new JsonArray().add(projectName);
 
             portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_UUID_LABEL_LIST, params, fetch -> {
 
-                if(fetch.succeeded())
-                {
+                if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
                     JsonArray row = resultSet.getResults().get(0);
 
                     List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
                     List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
 
-                    JsonObject response = ReplyHandler.getOkReply();
-                    response.put(ServerConfig.LABEL_LIST_PARAM, labelList);
-                    response.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+                    JsonObject reply = ReplyHandler.getOkReply();
+                    reply.put(ServerConfig.LABEL_LIST_PARAM, labelList);
+                    reply.put(ServerConfig.UUID_LIST_PARAM, uuidList);
 
-                    message.reply(response);
-                }
-                else {
-                    //query database failed
+                    message.reply(reply);
+                } else {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
@@ -325,7 +324,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
-
     }
 
     public void getAllProjects(Message<JsonObject> message)
@@ -348,6 +346,31 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    public static void updateUUIDList(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        JsonArray uuidList = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+
+        if(SelectorHandler.isProjectNameRegistered(projectName))
+        {
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_PROJECT, new JsonArray().add(uuidList.toString()).add(projectName), fetch ->{
+
+                if(fetch.succeeded())
+                {
+                    message.reply(ReplyHandler.getOkReply());
+                }
+                else {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
+        }
+
     }
 
     public static void updateUUIDList(List<Integer> newUUIDList)

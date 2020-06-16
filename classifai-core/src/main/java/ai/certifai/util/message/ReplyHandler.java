@@ -62,7 +62,6 @@ public class ReplyHandler {
         return new JsonObject().put(MESSAGE_KEY, FAILED);
     }
 
-
     public static JsonObject reportUserDefinedError(String userDefinedMessage)
     {
         log.error(userDefinedMessage);

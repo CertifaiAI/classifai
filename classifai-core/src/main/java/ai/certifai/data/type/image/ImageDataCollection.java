@@ -19,12 +19,8 @@ package ai.certifai.data.type.image;
 import ai.certifai.annotation.AnnotationType;
 import ai.certifai.data.DataCollection;
 import ai.certifai.data.DataType;
-import ai.certifai.util.FileUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.util.List;
 
 @Slf4j
 public class ImageDataCollection extends DataCollection<ImageData>
