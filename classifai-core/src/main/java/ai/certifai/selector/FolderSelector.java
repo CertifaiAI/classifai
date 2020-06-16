@@ -37,12 +37,18 @@ public class FolderSelector{
                 @Override
                 public void run() {
                     Point pt = MouseInfo.getPointerInfo().getLocation();
+                    JFrame jf = new JFrame();
+                    jf.setAlwaysOnTop(true);
+                    jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    jf.setLocation(pt);
+                    jf.requestFocus();
+                    jf.setVisible(false);
+
                     JFileChooser fc = new JFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent)
                                 throws HeadlessException {
                             JDialog dialog = super.createDialog(parent);
-                            dialog.setLocation(pt);
                             dialog.setLocationByPlatform(true);
                             dialog.setAlwaysOnTop(true);
                             return dialog;
@@ -53,10 +59,10 @@ public class FolderSelector{
                     fc.setFileFilter(imgfilter);
                     fc.setDialogTitle("Select Directory");
                     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
+                    int res = fc.showOpenDialog(jf);
                     java.util.List<File> files = null;
-
-                    if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
+                    jf.dispose();
+                    if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File rootFolder =  fc.getSelectedFile().getAbsoluteFile();
 
