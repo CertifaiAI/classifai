@@ -16,14 +16,14 @@
 
 package ai.certifai.server;
 
-import ai.certifai.util.http.HTTPResponseHandler;
-import ai.certifai.util.message.ReplyHandler;
 import ai.certifai.database.portfolio.PortfolioSQLQuery;
 import ai.certifai.database.project.ProjectSQLQuery;
 import ai.certifai.selector.FileSelector;
 import ai.certifai.selector.FolderSelector;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.util.ConversionHandler;
+import ai.certifai.util.http.HTTPResponseHandler;
+import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -33,7 +33,9 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Main server verticle routing different url requests
@@ -128,6 +130,25 @@ public class ServerVerticle extends AbstractVerticle
         vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
         {
             if (reply.succeeded()) {
+
+                JsonObject object = (JsonObject) reply.result().body();
+
+                HTTPResponseHandler.configureOK(context, object);
+
+            } else {
+                HTTPResponseHandler.configureInternalServerError(context);
+            }
+        });
+    }
+
+    /*
+    String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
+
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+        {
+            if (reply.succeeded()) {
                 JsonObject result = (JsonObject) reply.result().body();
 
                 result.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
@@ -138,8 +159,7 @@ public class ServerVerticle extends AbstractVerticle
                 HTTPResponseHandler.configureInternalServerError(context);
             }
         });
-    }
-
+     */
 
 
     private void updateLabelInPortfolio(RoutingContext context)

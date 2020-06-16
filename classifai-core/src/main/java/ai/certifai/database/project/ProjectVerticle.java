@@ -17,13 +17,16 @@
 package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
-import ai.certifai.util.message.ErrorCodes;
+import ai.certifai.database.portfolio.PortfolioSQLQuery;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
+import ai.certifai.util.ConversionHandler;
 import ai.certifai.util.ImageUtils;
+import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -67,6 +70,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         else if(action.equals(ProjectSQLQuery.UPDATE_DATA))
         {
             this.updateData(message);
+        }
+        else if (action.equals(ProjectSQLQuery.RECOVER_DATA))
+        {
+            this.sanityCheckDataPath(message);
         }
         else
         {
@@ -184,36 +191,166 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    response = null;
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    log.error("Should not get null");
                 }
                 else
                 {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
-                    String imagePath = row.getString(counter++);
+                    String dataPath = row.getString(counter++);
 
-                    response.put(ServerConfig.UUID_PARAM, uuid);
-                    response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+                    boolean fileExist = true;
+                    String thumbnail = "";
 
-                    response.put(ServerConfig.IMAGE_PATH_PARAM, imagePath);
-                    response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
-                    response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
-                    response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(imagePath));
+                    if(new File(dataPath).exists() == true) {
 
-                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
+                        try {
+                            thumbnail = ImageUtils.getThumbNail(dataPath);
+                        }
+                        catch (Exception e) {
+                            fileExist = false;
+                        }
 
-                }
-                message.reply(response);
+                    }
+                    else {
+                        fileExist = false;
+                    }
+
+                    if(fileExist)
+                    {
+                        response.put(ServerConfig.UUID_PARAM, uuid);
+                        response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+
+                        response.put(ServerConfig.IMAGE_PATH_PARAM, dataPath);
+                        response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                        response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
+                        response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
+                        response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
+                        response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
+
+                        response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
+                        message.reply(response);
+                    }
+                    else
+                    {
+                        System.out.println("Delete image of datapath: " + dataPath);
+
+                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+
+                            if(reply.failed())
+                            {
+                                log.error("Failed in deleting uuid");
+                            }
+                        });
+
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+
+                        JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+
+                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+                        {
+                            if(reply.succeeded())
+                            {
+                                JsonObject result = (JsonObject) reply.result().body();
+
+                                if(ReplyHandler.isReplyOk(result))
+                                {
+                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
+
+                                    uuidList.removeIf(index -> (index == uuid));
+
+                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+
+                                    DeliveryOptions portFolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
+
+                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, portFolioOptions, portfolioFetch ->{
+
+                                        boolean updateCheck = true;
+
+                                        if (portfolioFetch.succeeded())
+                                        {
+                                            JsonObject updatePortfolio = (JsonObject) portfolioFetch.result().body();
+
+                                            if(ReplyHandler.isReplyOk(updatePortfolio) == false) updateCheck = false;
+                                        }
+                                        else {
+                                            updateCheck = false;
+                                        }
+
+                                        if(!updateCheck)
+                                        {
+                                            log.error("Update list of uuids to Portfolio Database failed");
+                                        }
+                                    });
+
+                                }
+                                else
+                                {
+                                    log.error("Retrieve uuid list failed");
+                                }
+                            }
+                        });
+
+                        message.reply(ReplyHandler.getFailedReply());
+                    }
+                    }
+
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
+        });
+    }
+
+    public void sanityCheckDataPath(Message<JsonObject> message)
+    {
+        JsonObject requestBody = message.body();
+
+        JsonArray params = new JsonArray().add(requestBody.getInteger(ServerConfig.UUID_PARAM))
+                                            .add(requestBody.getInteger(ServerConfig.PROJECT_ID_PARAM));
+
+        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+
+            if(fetch.succeeded()) {
+                ResultSet resultSet = fetch.result();
+
+                if (resultSet.getNumRows() != 0) {
+
+                    String imagePath = resultSet.getResults().get(0).getString(0);
+
+                    File imageFilePath = new File(imagePath);
+
+                    if (imageFilePath.exists() && (ImageUtils.getImageSize(imageFilePath) != null))
+                    {
+                        message.reply(ReplyHandler.getOkReply());
+                    }
+                    else {
+
+                        //this uuid has to be remove
+                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+                            if (!reply.succeeded()) {
+                                log.error("Delete uuid failed. This should not happened");
+                            }
+                        });
+
+                        message.reply(ReplyHandler.getFailedReply());
+                    }
+                }
+                else
+                {
+                    message.reply(ReplyHandler.getFailedReply());
+                }
+            }
+            else {
+                log.error("Request uuid failed. This should not happened");
+                message.reply(ReplyHandler.getFailedReply());
+            }
+
         });
     }
 

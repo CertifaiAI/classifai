@@ -23,6 +23,8 @@ public class ServerConfig
     public final static Integer SERVER_PORT = 9999;
 
     public final static String PROJECT_NAME_PARAM = "projectname";
+    public final static String PROJECT_ID_PARAM = "projectid";
+
     public final static String UUID_LIST_PARAM = "uuidlist";
     public final static String LABEL_LIST_PARAM = "labellist";
 
