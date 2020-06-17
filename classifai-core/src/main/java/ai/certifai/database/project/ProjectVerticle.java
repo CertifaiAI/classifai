@@ -17,7 +17,6 @@
 package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
-import ai.certifai.database.portfolio.PortfolioSQLQuery;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
 import ai.certifai.util.ConversionHandler;
@@ -26,7 +25,6 @@ import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -74,6 +72,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         else if (action.equals(ProjectSQLQuery.RECOVER_DATA))
         {
             this.sanityCheckDataPath(message);
+        }
+        else if (action.equals(ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
+        {
+            this.removeObsoleteUUID(message);
         }
         else
         {
@@ -236,6 +238,66 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     }
                     else {
                         SelectorHandler.putUUIDToRemove(projectName, uuid);
+
+                        /*
+                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+
+                            if(reply.failed())
+                            {
+                                log.error("Failed in deleting uuid");
+                            }
+                        });
+
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+
+                        JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+
+                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+                        {
+                            if(reply.succeeded())
+                            {
+                                JsonObject result = (JsonObject) reply.result().body();
+
+                                if(ReplyHandler.isReplyOk(result))
+                                {
+                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
+
+                                    uuidList.removeIf(index -> (index == uuid));
+
+                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+
+                                    DeliveryOptions portFolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
+
+                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, portFolioOptions, portfolioFetch ->{
+
+                                        boolean updateCheck = true;
+
+                                        if (portfolioFetch.succeeded())
+                                        {
+                                            JsonObject updatePortfolio = (JsonObject) portfolioFetch.result().body();
+
+                                            if(ReplyHandler.isReplyOk(updatePortfolio) == false) updateCheck = false;
+                                        }
+                                        else {
+                                            updateCheck = false;
+                                        }
+
+                                        if(!updateCheck)
+                                        {
+                                            log.error("Update list of uuids to Portfolio Database failed");
+                                        }
+                                    });
+
+                                }
+                                else
+                                {
+                                    log.error("Retrieve uuid list failed");
+                                }
+                            }
+                        });
+                        */
+                        message.reply(ReplyHandler.getFailedReply());
+
                     }
                 }
 
@@ -244,6 +306,31 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    public void removeObsoleteUUID(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName);
+
+        JsonArray uuidListArray = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+
+        List<Integer> uuidListToRemove = ConversionHandler.jsonArray2IntegerList(uuidListArray);
+
+        for(Integer uuid : uuidListToRemove)
+        {
+            JsonArray params = new JsonArray().add(uuid).add(projectID);
+
+            projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+
+                if(reply.failed())
+                {
+                    log.error("Failed to remove obsolete uuid from database");
+                }
+            });
+        }
+
+        message.reply(ReplyHandler.getOkReply());
     }
 
     public void sanityCheckDataPath(Message<JsonObject> message)

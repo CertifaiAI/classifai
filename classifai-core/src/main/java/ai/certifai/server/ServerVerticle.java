@@ -434,13 +434,19 @@ public class ServerVerticle extends AbstractVerticle
 
         List<Integer> uuidListToRemove = SelectorHandler.getUUIDListToRemove(projectName);
 
-        JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuidListToRemove)
+        if(uuidListToRemove.isEmpty())
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            return;
+        }
+
+        JsonObject request = new JsonObject().put(ServerConfig.UUID_LIST_PARAM, uuidListToRemove)
                 .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
+        DeliveryOptions portfolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
 
         //remove from portfolio database
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, portfolioOptions, reply ->
         {
             if(reply.succeeded())
             {
@@ -454,7 +460,26 @@ public class ServerVerticle extends AbstractVerticle
             }
         });
 
-        //remove from profile database.
+        DeliveryOptions projectOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
+
+        //remove from profile database
+        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, projectOptions, reply ->
+        {
+            if(reply.succeeded())
+            {
+                JsonObject body = (JsonObject) reply.result().body();
+
+                if(ReplyHandler.isReplyOk(body))
+                {
+                    HTTPResponseHandler.configureOK(context, body);
+                }
+                else
+                {
+                    HTTPResponseHandler.configureInternalServerError(context);
+                }
+            }
+        });
+
     }
 
     //GET http://localhost:8080/imgsrc?projectname=helloworld&uuid=1234

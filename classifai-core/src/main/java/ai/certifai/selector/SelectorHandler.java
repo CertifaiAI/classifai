@@ -95,7 +95,7 @@ public class SelectorHandler {
         projectNameIDDict.put(projectName, projectID);
         projectIDNameDict.put(projectID, projectName);
 
-        projectUUIDListRemoval.put(projectName, new ArrayList<>());
+        projectUUIDListRemoval.put(projectName, new ArrayList<Integer>());
     }
 
     public static void setUUIDGenerator(Integer integer)
@@ -119,12 +119,16 @@ public class SelectorHandler {
 
     public static void putUUIDToRemove(String projectName, Integer uuid)
     {
-        projectUUIDListRemoval.put(projectName, uuid);
+        List<Integer> array = (ArrayList) projectUUIDListRemoval.get(projectName);
+
+        array.add(uuid);
+
+        projectUUIDListRemoval.put(projectName, array);
     }
 
     public static List<Integer> getUUIDListToRemove(String projectName)
     {
-        return (List) projectUUIDListRemoval.get(projectName);
+        return (ArrayList) projectUUIDListRemoval.get(projectName);
     }
 
     public static boolean isProjectNameRegistered(String projectName)

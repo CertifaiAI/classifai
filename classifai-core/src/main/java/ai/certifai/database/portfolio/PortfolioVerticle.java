@@ -166,16 +166,47 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     public void removeObsoleteUUID(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        String uuidList = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        JsonArray uuidListArray = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
 
-        List<Integer> uuidListArray = ConversionHandler.string2IntegerList(uuidList);
+        List<Integer> uuidListToRemove = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        for(Integer i : uuidListArray)
+        if(SelectorHandler.isProjectNameRegistered(projectName))
         {
-            System.out.println(i);
-        }
+            JsonArray params = new JsonArray().add(projectName);
 
-        message.reply(ReplyHandler.getOkReply());
+            portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
+
+                if(fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
+                    JsonArray row = resultSet.getResults().get(0);
+
+                    List<Integer> uuidList =  ConversionHandler.string2IntegerList(row.getString(0));
+
+                    for(Integer uuid : uuidListToRemove) uuidList.removeIf(index -> (index == uuid));
+
+                    JsonArray updateParam = new JsonArray().add(uuidList.toString()).add(projectName);
+
+                    portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_PROJECT, updateParam, result ->
+                    {
+                        if(result.succeeded())
+                        {
+                            message.reply(ReplyHandler.getOkReply());
+                        }
+                        else
+                        {
+                            message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+
+                        }
+                    });
+                } else {
+                    //query database failed
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        } else {
+            message.reply(ReplyHandler.reportBadParamError(projectNameExistMessage));
+        }
     }
 
     public void getProjectUUIDList(Message<JsonObject> message)
