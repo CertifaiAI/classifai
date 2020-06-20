@@ -17,6 +17,8 @@
 package ai.certifai.selector;
 
 import ai.certifai.data.type.image.ImageFileType;
+import ai.certifai.database.loader.LoaderStatus;
+import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import lombok.Getter;
@@ -41,66 +43,109 @@ public class SelectorHandler {
     private static Map projectNameIDDict;
 
     private static Map projectUUIDListRemoval;
+    private static Map projectLoaderDict;
 
-    @Setter @Getter static Integer currentProcessingUUID;
+    @Setter
+    @Getter
+    static Integer currentProcessingUUID;
 
     private static AtomicInteger projectIDGenerator;
     private static AtomicInteger uuidGenerator;
 
-    @Getter private static String projectNameBuffer;
+    @Getter
+    private static String projectNameBuffer;
 
     private static boolean isWindowOpen = false;
-    @Getter private static String currentWindowSelection;//FILE FOLDER
+    @Getter
+    private static String currentWindowSelection;//FILE FOLDER
     private static boolean isDatabaseUpdating = false;
 
-    @Getter private static List<File> fileHolder;
+    @Getter
+    private static List<File> fileHolder;
 
-    @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
+    @Getter
+    private static final File rootSearchPath = new File(System.getProperty("user.home"));
 
     public static final String FILE = "file";
     public static final String FOLDER = "folder";
 
-    @Getter private static List<Integer> uuidList;
+    @Getter
+    private static List<Integer> uuidList;
 
-    static
-    {
+    static {
         projectIDNameDict = new HashMap<Integer, String>();
         projectNameIDDict = new HashMap<String, String>();
-        projectUUIDListRemoval = new HashMap<String, List<Integer>>();
+        projectUUIDListRemoval = new HashMap<String, List<Integer>>(); //FIXME: Obsolete
+        projectLoaderDict = new HashMap<String, ProjectLoader>();
 
         uuidList = new ArrayList<>();
 
-        projectIDGenerator =  new AtomicInteger(0);
-        uuidGenerator =  new AtomicInteger(0);
+        projectIDGenerator = new AtomicInteger(0);
+        uuidGenerator = new AtomicInteger(0);
     }
 
 
-    public static Integer getUUIDListSize()
-    {
+    public static Integer getUUIDListSize() {
         return uuidList.size();
     }
 
-    public static boolean isDatabaseUpdating()
-    {
+    public static void updateSanityUUIDItem(String projectName, Integer uuid) {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        projectLoader.updateSanityUUIDItem(uuid);
+    }
+
+    public static void setProjectLoaderStatus(String projectName, LoaderStatus status) {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        projectLoader.resetProjectLoader(status);
+    }
+
+    public static boolean isDatabaseUpdating() {
         return isDatabaseUpdating;
     }
 
-    public static boolean isWindowOpen()
+
+    public static void updateProgress(String projectName, Integer progress)
     {
+        ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        loader.updateProgress(progress);
+    }
+
+    public static ProjectLoader getProjectLoader(String projectName) {
+
+        if(projectLoaderDict.containsKey(projectName) == false)
+        {
+            return null;
+        }
+
+        return (ProjectLoader) projectLoaderDict.get(projectName);
+    }
+
+    public static boolean isWindowOpen() {
         return isWindowOpen;
     }
 
-    public static void setProjectNameNID(@NonNull String projectName,@NonNull Integer projectID)
-    {
+    public static void setProjectNameNID(@NonNull String projectName, @NonNull Integer projectID) {
         projectNameIDDict.put(projectName, projectID);
         projectIDNameDict.put(projectID, projectName);
 
         projectUUIDListRemoval.put(projectName, new ArrayList<Integer>());
+
+        projectLoaderDict.put(projectName, new ProjectLoader());
     }
 
-    public static void setUUIDGenerator(Integer integer)
-    {
+    public static void setUUIDGenerator(Integer integer) {
         uuidGenerator = new AtomicInteger(integer);
+    }
+
+
+    public static List<Integer> getProjectLoaderUUIDList(String projectName)
+    {
+        ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        return loader.getSanityUUIDList();
     }
 
     public static boolean initSelector(String selection)
@@ -115,15 +160,6 @@ public class SelectorHandler {
             return false;
         }
         return true;
-    }
-
-    public static void putUUIDToRemove(String projectName, Integer uuid)
-    {
-        List<Integer> array = (ArrayList) projectUUIDListRemoval.get(projectName);
-
-        array.add(uuid);
-
-        projectUUIDListRemoval.put(projectName, array);
     }
 
     public static List<Integer> getUUIDListToRemove(String projectName)

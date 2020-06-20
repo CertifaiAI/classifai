@@ -23,7 +23,7 @@ public interface ProjectServiceable
 {
 
     /*
-    GET http://localhost:8080/retrievedata/:uuid
+    GET http://localhost:{port}/retrievedata/:uuid
 
     Result:
     ImageName varchar(255)
@@ -39,7 +39,7 @@ public interface ProjectServiceable
 
 
     /*
-    PUT http://localhost:8080/updatedata
+    PUT http://localhost:{port}/updatedata
     Body:
     UUID
     BoundingBox varchar(2000)

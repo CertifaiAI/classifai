@@ -17,6 +17,8 @@
 package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
+import ai.certifai.database.loader.LoaderStatus;
+import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
 import ai.certifai.util.ConversionHandler;
@@ -71,7 +73,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
         else if (action.equals(ProjectSQLQuery.RECOVER_DATA))
         {
-            this.sanityCheckDataPath(message);
+            this.sanityCheckDataPath(message); //FIXME: OBSOLETE
         }
         else if (action.equals(ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
         {
@@ -176,7 +178,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     }
 
     /*
-    GET http://localhost:8080/retrievedata/:uuid
+    GET http://localhost:{port}/retrievedata/:uuid
     */
     public void retrieveData(Message<JsonObject> message)
     {
@@ -190,7 +192,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
-                JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
@@ -201,43 +202,25 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
+                    String thumbnail = ImageUtils.getThumbNail(dataPath);
 
-                    boolean fileExist = true;
-                    String thumbnail = "";
+                    JsonObject response = new JsonObject();
 
-                    if (new File(dataPath).exists() == true) {
+                    response.put(ServerConfig.UUID_PARAM, uuid);
+                    response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-                        try {
-                            thumbnail = ImageUtils.getThumbNail(dataPath);
-                        }
-                        catch (Exception e)
-                        {
-                            fileExist = false;
-                        }
+                    response.put(ServerConfig.IMAGE_PATH_PARAM, dataPath);
+                    response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                    response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
+                    response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
+                    response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
+                    response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
+                    response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
+                    response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
+                    response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
 
-                    } else {
-                        fileExist = false;
-                    }
-
-                    if (fileExist) {
-                        response.put(ServerConfig.UUID_PARAM, uuid);
-                        response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
-
-                        response.put(ServerConfig.IMAGE_PATH_PARAM, dataPath);
-                        response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
-                        response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
-                        response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
-                        response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
-                        response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
-                        response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                        response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                        response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
-
-                        response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
-                        message.reply(response);
-                    }
-                    else {
-                        SelectorHandler.putUUIDToRemove(projectName, uuid);
+                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
+                    message.reply(response);
 
                         /*
                         projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
@@ -296,9 +279,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                             }
                         });
                         */
-                        message.reply(ReplyHandler.getFailedReply());
 
-                    }
                 }
 
             }
@@ -308,29 +289,98 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         });
     }
 
+
     public void removeObsoleteUUID(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName);
+        Integer projectID  = SelectorHandler.getProjectID(projectName);
 
         JsonArray uuidListArray = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        List<Integer> uuidListToRemove = ConversionHandler.jsonArray2IntegerList(uuidListArray);
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        for(Integer uuid : uuidListToRemove)
+        if(oriUUIDList.isEmpty())
         {
-            JsonArray params = new JsonArray().add(uuid).add(projectID);
-
-            projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
-
-                if(reply.failed())
-                {
-                    log.error("Failed to remove obsolete uuid from database");
-                }
-            });
+            loader.setLoaderStatus(LoaderStatus.EMPTY);
+            message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.EMPTY.ordinal()));
+            return;
         }
+        else
+        {
+            loader.setLoaderStatus(LoaderStatus.LOADING);
+            loader.setTotalUUIDSize(oriUUIDList.size());
 
-        message.reply(ReplyHandler.getOkReply());
+            System.out.println("Original UUID Size: " + oriUUIDList.size());
+
+            Integer lastValue = oriUUIDList.get(oriUUIDList.size() - 1);
+
+            for(int i = 0; i < oriUUIDList.size(); ++i)
+            {
+                System.out.println("Current processing: " + i);
+                final Integer UUID = oriUUIDList.get(i);
+                JsonArray params = new JsonArray().add(UUID).add(projectID);
+
+                SelectorHandler.updateProgress(projectName, i + 1);
+
+                projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
+
+                    if (fetch.succeeded())
+                    {
+                        ResultSet resultSet = fetch.result();
+
+                        if (resultSet.getNumRows() == 0)
+                        {
+                            //check and remove on next round
+                            SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+                            log.error("Should not get zero row when retrieving data: " + UUID);
+                        }
+                        else {
+
+                            JsonArray row = resultSet.getResults().get(0);
+
+                            String dataPath = row.getString(0);
+
+                            if(ImageUtils.isImageReadable(dataPath) == false)
+                            {
+                                projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+
+                                    if(reply.failed())
+                                    {
+                                        //remove on next round
+                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+
+                                        log.error("Failed to remove obsolete uuid from database");
+                                    }
+                                });
+                            }
+                            else {
+                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+                            }
+
+                        }
+
+                        if (UUID == lastValue) {
+
+                            loader.setLoaderStatus(LoaderStatus.LOADED);
+
+                            message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal()));
+
+                            System.out.println("Checked all the list and send back");
+                        }
+                    }
+                    /*
+                    else
+                    {
+                        //check and remove on next round
+                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+
+                        log.error("Failed to retrieve uuid from database");
+                    }
+                    */
+                });
+            }
+        }
     }
 
     public void sanityCheckDataPath(Message<JsonObject> message)
@@ -351,6 +401,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     File imageFilePath = new File(imagePath);
 
+
                     if (imageFilePath.exists() && (ImageUtils.getImageSize(imageFilePath) != null))
                     {
                         message.reply(ReplyHandler.getOkReply());
@@ -359,7 +410,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                         //this uuid has to be remove
                         projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
-                            if (!reply.succeeded()) {
+                            if (reply.failed()) {
                                 log.error("Delete uuid failed. This should not happened");
                             }
                         });
@@ -380,7 +431,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         });
     }
 
-    //PUT http://localhost:8080/updatedata
+    //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
     {
         JsonObject requestBody = message.body();
@@ -434,8 +485,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     } else
                     {
-                        log.info("Project database connection success");
-
                         //the consumer methods registers an event bus destination handler
                         vertx.eventBus().consumer(ProjectSQLQuery.QUEUE, this::onMessage);
                         promise.complete();

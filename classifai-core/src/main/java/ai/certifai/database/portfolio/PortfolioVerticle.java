@@ -79,7 +79,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getProjectUUIDList(message);
         }
-        else if(action.equals(PortfolioSQLQuery.CHECK_PROJECT_VALIDITY))
+        else if(action.equals(PortfolioSQLQuery.CHECK_PROJECT_VALIDITY)) //FIXME: OBSOLETE?
         {
             this.checkProjectValidity(message);
         }
@@ -541,8 +541,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     } else
                     {
-                        log.info("Portfolio database connection success");
-
                         //the consumer methods registers an event bus destination handler
                         vertx.eventBus().consumer(PortfolioSQLQuery.QUEUE, this::onMessage);
 

@@ -16,6 +16,8 @@
 
 package ai.certifai.server;
 
+import ai.certifai.database.loader.LoaderStatus;
+import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.database.portfolio.PortfolioSQLQuery;
 import ai.certifai.database.project.ProjectSQLQuery;
 import ai.certifai.selector.FileSelector;
@@ -27,11 +29,13 @@ import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +68,7 @@ public class ServerVerticle extends AbstractVerticle
         threadfolder.start();
     }
 
-    //PUT http://localhost:8080/createproject/:projectname http://localhost:8080/createproject/helloworld
+    //PUT http://localhost:{port}/createproject/:projectname http://localhost:{port}/createproject/helloworld
     private void createProjectInPortfolio(RoutingContext context)
     {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
@@ -94,7 +98,7 @@ public class ServerVerticle extends AbstractVerticle
 
     }
 
-    //GET http://localhost:8080/project/:projectname http://localhost:8080/project/projectname
+    //GET http://localhost:{port}/project/:projectname http://localhost:{port}/project/projectname
     private void getProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
@@ -121,24 +125,192 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    //PUT http://localhost:8080/selectproject/:projectname http://localhost:8080/selectproject/helloworld
-    private void getUUIDListWithLabel(RoutingContext context) {
+    //PUT http://localhost:{port}/selectproject/:projectname http://localhost:{port}/selectproject/helloworld
+    private void selectProject(RoutingContext context)
+    {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+        if(!checkLoader(loader, context)) return;
+
+        LoaderStatus loaderStatus = loader.getLoaderStatus();
+
+        if((loaderStatus == LoaderStatus.LOADED) || (loaderStatus == LoaderStatus.LOADING))
         {
-            if (reply.succeeded()) {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+        }
+        else
+        {
+            JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-                JsonObject object = (JsonObject) reply.result().body();
+            //get uuid list for processing
+            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
 
-                HTTPResponseHandler.configureOK(context, object);
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+            {
+                if(reply.succeeded())
+                {
+                    JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
 
-            } else {
-                HTTPResponseHandler.configureInternalServerError(context);
-            }
-        });
+                    if(ReplyHandler.isReplyOk(oriUUIDResponse))
+                    {
+                        JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ServerConfig.UUID_LIST_PARAM);
+                        JsonObject removalObject = jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidListArray);
+
+                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
+
+                        //start checking uuid if it's path is still exist
+                        vertx.eventBus().request(ProjectSQLQuery.QUEUE, removalObject, removalOptions, fetch ->
+                        {
+                            if(fetch.succeeded())
+                            {
+                                JsonObject removalResponse = (JsonObject) reply.result().body();
+                                Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
+
+                                if(removalStatus == LoaderStatus.EMPTY.ordinal())
+                                {
+                                    HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                                }
+                                else if(removalStatus == LoaderStatus.LOADED.ordinal())
+                                {
+                                    //request on portfolio database
+                                    List<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
+
+                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidCheckedList);
+
+                                    DeliveryOptions updateOption = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
+
+                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, updateOption, updateFetch ->{
+
+                                        boolean healthCheck = true;
+                                        if (updateFetch.succeeded())
+                                        {
+                                            JsonObject updatePortfolio = (JsonObject) updateFetch.result().body();
+
+                                            if(ReplyHandler.isReplyFailed(updatePortfolio))
+                                            {
+                                                healthCheck = false;
+                                            }
+                                        }
+                                        else {
+                                            healthCheck = false;
+                                        }
+
+                                        if(healthCheck == false)
+                                        {
+                                            log.error("Update uuidlist to database failed");
+
+                                            setLoaderFailed(context, projectName);
+                                        }
+                                        else {
+                                            SelectorHandler.setProjectLoaderStatus(projectName, LoaderStatus.LOADED);
+
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                                        }
+
+                                    });
+                                }
+                            }
+                            else
+                            {
+                                setLoaderFailed(context, projectName);
+                            }
+                        });
+
+                        //TEMPORARY
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
+                    }
+                    else
+                    {
+                        setLoaderFailed(context, projectName);
+                    }
+                }
+                else
+                {
+                    setLoaderFailed(context, projectName);
+                }
+            });
+        }
+    }
+
+    private void setLoaderFailed(RoutingContext context, String projectName)
+    {
+        SelectorHandler.setProjectLoaderStatus(projectName, LoaderStatus.ERROR);
+
+        HTTPResponseHandler.configureOK(context, ReplyHandler.getFailedReply());
+    }
+
+    private boolean checkLoader(ProjectLoader loader, RoutingContext context)
+    {
+        if(loader == null)
+        {
+            JsonObject jsonObject = ReplyHandler.getFailedReply();
+            jsonObject.put(ReplyHandler.getMessageKey(), "Project name did not exist");
+            HTTPResponseHandler.configureBadRequest(context, jsonObject);
+            return false;
+        }
+
+        return true;
+    }
+
+    //PUT http://localhost:{port}/selectproject/status/:projectname
+    private void selectProjectStatus(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+
+        ProjectLoader projectLoader = SelectorHandler.getProjectLoader(projectName);
+
+        if(!checkLoader(projectLoader, context)) return;
+
+        LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
+
+        if(loaderStatus == LoaderStatus.ERROR)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getFailedReply());
+        }
+        else if(loaderStatus == LoaderStatus.LOADING)
+        {
+            JsonObject jsonObject = ReplyHandler.getOkReply();
+            jsonObject.put(ServerConfig.PROGRESS_METADATA, projectLoader.getProgress());
+
+            HTTPResponseHandler.configureOK(context, jsonObject);
+        }
+        else if((loaderStatus == LoaderStatus.LOADED)  || (loaderStatus == LoaderStatus.EMPTY))
+        {
+            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
+
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+            {
+                if (reply.succeeded()) {
+
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    if(ReplyHandler.isReplyOk(response))
+                    {
+                        response.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED);
+
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                    else
+                    {
+                        HTTPResponseHandler.configureBadRequest(context, response);
+                    }
+
+                } else {
+                    HTTPResponseHandler.configureInternalServerError(context);
+                }
+            });
+        }
+        else if(loaderStatus == LoaderStatus.DID_NOT_INITIATED)
+        {
+            JsonObject object = new JsonObject();
+            object.put(ReplyHandler.getMessageKey(), LoaderStatus.DID_NOT_INITIATED.ordinal());
+
+            HTTPResponseHandler.configureOK(context, object);
+        }
+
     }
 
 
@@ -173,7 +345,7 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    //GET http://localhost:8080/projects
+    //GET http://localhost:{port}/projects
     private void getAllProjectNamesInPortfolio(RoutingContext context)
     {
         DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
@@ -194,7 +366,7 @@ public class ServerVerticle extends AbstractVerticle
 
     }
 
-    //GET http://localhost:8080/select?projectname={projectname}&filetype={file/folder}
+    //GET http://localhost:{port}/select?projectname={projectname}&filetype={file/folder}
     private void selectFileType(RoutingContext context)
     {
         if(SelectorHandler.isDatabaseUpdating())
@@ -273,7 +445,7 @@ public class ServerVerticle extends AbstractVerticle
         }
     }
 
-    //GET http://localhost:8080/selectstatus/:projectname
+    //GET http://localhost:{port}/selectstatus/:projectname
     public void selectStatus(RoutingContext context) {
 
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
@@ -381,8 +553,8 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    //GET http://localhost:8080/thumbnail?projectname=helloworld&uuid=1234
-    public void getThumbnailwithMetadata(RoutingContext context)
+    //GET http://localhost:{port}/thumbnail?projectname=helloworld&uuid=1234
+    public void getThumbnailWithMetadata(RoutingContext context)
     {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
@@ -427,7 +599,9 @@ public class ServerVerticle extends AbstractVerticle
     }
 
 
-    //PUT http://localhost:8080/:projectname/loading/complete
+
+    //FIXME:Remove obsolete.
+    //PUT http://localhost:{port}/:projectname/loading/complete
     public void postLoading(RoutingContext context)
     {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
@@ -479,10 +653,9 @@ public class ServerVerticle extends AbstractVerticle
                 }
             }
         });
-
     }
 
-    //GET http://localhost:8080/imgsrc?projectname=helloworld&uuid=1234
+    //GET http://localhost:{port}/imgsrc?projectname=helloworld&uuid=1234
     public void getImageSource(RoutingContext context)
     {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
@@ -536,29 +709,29 @@ public class ServerVerticle extends AbstractVerticle
         router.get("/selectstatus/:projectname").handler(this::selectStatus);
 
         router.put("/createproject/:projectname").handler(this::createProjectInPortfolio);
-        router.put("/selectproject/:projectname").handler(this::getUUIDListWithLabel);
         router.put("/updatelabel/:projectname").handler(this::updateLabelInPortfolio);
+
+        router.put("/selectproject/:projectname").handler(this::selectProject);
+        router.get("/selectproject/status/:projectname").handler(this::selectProjectStatus);
 
         router.get("/project/:projectname").handler(this::getProject);
         router.get("/projects").handler(this::getAllProjectNamesInPortfolio);
 
-        router.get("/thumbnail").handler(this::getThumbnailwithMetadata);
+        router.get("/thumbnail").handler(this::getThumbnailWithMetadata);
 
         router.get("/imgsrc").handler(this::getImageSource);
         router.put("/update").handler(this::updateData);
-
-        router.put("/:projectname/loading/complete").handler(this::postLoading);
 
         vertx.createHttpServer()
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
                 .listen(ServerConfig.dynamicPort, r -> {
                     if (r.succeeded()) {
-                        log.info("HTTPServer start successfully");
+                        //log.info("HTTPServer start successfully");
                         promise.complete();
                     } else {
 
-                        log.info("HTTPServer failed to start");
+                        log.debug("HTTPServer failed to start");
                         promise.fail(r.cause());
                     }
                 });
