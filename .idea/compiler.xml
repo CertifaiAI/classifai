@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="classifai-core" />
+        <module name="classifai-api" />
+        <module name="classifai-uberjar" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="1.8">
+      <module name="classifai" target="1.8" />
+      <module name="classifai-api" target="1.8" />
+      <module name="classifai-core" target="1.8" />
+      <module name="classifai-uberjar" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,25 @@
+
+E
+java:S3740Ã"/Provide the parametrized type for this generic.(Í˜@
+P
+java:S1118#":Add a private constructor to hide the implicit public one.(ò’çÎ
+S
+java:S1854\"7Remove this useless assignment to local variable "img".(Îı¡}8Ü÷ıÔ¬.
+>
+java:S1148N"#Use a logger to log this exception.(€ÉÔ…ıÿÿÿÿ
+F
+java:S1125Z")Remove the literal "false" boolean value.(çœ¼Ÿ8Ü÷ıÔ¬.
+v
+java:S1488J"[Immediately return this expression instead of assigning it to the temporary variable "src".(Êº¥Ôÿÿÿÿÿ
+d
+java:S2095’"MUse try-with-resources or close this "FileInputStream" in a "finally" clause.(Ô¡
+D
+java:S1481\"(Remove this unused "img" local variable.(Îı¡}8Ü÷ıÔ¬.
+f
+java:S2674–"JCheck the return value of the "read" call to see how many bytes were read.(Ğéƒùÿÿÿÿ
+?
+java:S1148Ÿ"#Use a logger to log this exception.(€ÉÔ…ıÿÿÿÿ
+J
+java:S3740$"/Provide the parametrized type for this generic.(°³öïúÿÿÿÿ
+E
+java:S3740*"/Provide the parametrized type for this generic.(”şëé

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="3c512fad-30c8-4222-9985-fad257d01f21" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/.mvn/wrapper/MavenWrapperDownloader.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1dIvQxTYNScVN9s980K4UZfw74b" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/pom.xml" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="run.code.analysis.last.selected.profile" value="aDefault" />
+    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3c512fad-30c8-4222-9985-fad257d01f21" name="Default Changelist" comment="" />
+      <created>1592125409992</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1592125409992</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="328" y="106" key="#Project_Structure" timestamp="1592126002092">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="328" y="106" key="#Project_Structure/0.0.1680.1050@0.0.1680.1050" timestamp="1592126002092" />
+    <state x="-830" y="564" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1592317698017">
+      <screen x="-1080" y="-237" width="1080" height="1920" />
+    </state>
+    <state x="-830" y="564" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1440.900/-1080.-237.1080.1920@-1080.-237.1080.1920" timestamp="1592317698017" />
+    <state x="328" y="106" key="SettingsEditor" timestamp="1592618454894">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="328" y="106" key="SettingsEditor/0.0.1680.1050@0.0.1680.1050" timestamp="1592618454894" />
+    <state x="0" y="0" width="1680" height="1050" key="dock-window-1" timestamp="1592682416983">
+      <screen x="0" y="23" width="1623" height="1027" />
+    </state>
+    <state x="-1080" y="-237" width="1080" height="1920" key="dock-window-1/0.0.1440.900/-1080.-237.1080.1920@0.0.1440.900" timestamp="1592663399039" />
+    <state x="0" y="0" width="1680" height="1050" key="dock-window-1/0.23.1623.1027@0.23.1623.1027" timestamp="1592682416983" />
+    <state x="538" y="280" width="604" height="548" key="find.popup" timestamp="1592704235851">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="-734" y="275" width="556" height="1003" key="find.popup/0.0.1440.900/-1080.-237.1080.1920@-1080.-237.1080.1920" timestamp="1592681827259" />
+    <state x="538" y="280" width="604" height="548" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1592704235851" />
+  </component>
+</project>
