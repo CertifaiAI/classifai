@@ -79,10 +79,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getProjectUUIDList(message);
         }
-        else if(action.equals(PortfolioSQLQuery.CHECK_PROJECT_VALIDITY)) //FIXME: OBSOLETE?
-        {
-            this.checkProjectValidity(message);
-        }
         else if(action.equals(PortfolioSQLQuery.GET_THUMBNAIL_LIST))
         {
             this.getThumbNailList(message);
@@ -227,47 +223,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     response.put(ServerConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
                     message.reply(response);
-                }
-                else {
-                    //query database failed
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportBadParamError(projectNameExistMessage));
-        }
-    }
-
-    public void checkProjectValidity(Message<JsonObject> message)
-    {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-
-        if(SelectorHandler.isProjectNameRegistered(projectName))
-        {
-            JsonArray params = new JsonArray().add(projectName);
-
-            portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
-
-                if(fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
-
-                    List<Integer> listArray = ConversionHandler.string2IntegerList(row.getString(0));
-                    Integer uuidSpecific = message.body().getInteger(ServerConfig.UUID_PARAM);
-
-                    if(listArray.contains(uuidSpecific))
-                    {
-                        message.reply(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        message.reply(ReplyHandler.reportBadParamError("Selected UUID not found in the available database"));
-                    }
-
                 }
                 else {
                     //query database failed

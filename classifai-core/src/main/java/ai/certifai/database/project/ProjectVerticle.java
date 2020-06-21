@@ -71,10 +71,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         {
             this.updateData(message);
         }
-        else if (action.equals(ProjectSQLQuery.RECOVER_DATA))
-        {
-            this.sanityCheckDataPath(message); //FIXME: OBSOLETE
-        }
         else if (action.equals(ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
         {
             this.removeObsoleteUUID(message);
@@ -152,7 +148,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         .add((Integer)imgMetadata.getLeft())
                         .add((Integer)imgMetadata.getRight());
 
-
                 projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                     if(!fetch.succeeded())
                     {
@@ -221,65 +216,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
                     message.reply(response);
-
-                        /*
-                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
-
-                            if(reply.failed())
-                            {
-                                log.error("Failed in deleting uuid");
-                            }
-                        });
-
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
-
-                        JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
-
-                        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
-                        {
-                            if(reply.succeeded())
-                            {
-                                JsonObject result = (JsonObject) reply.result().body();
-
-                                if(ReplyHandler.isReplyOk(result))
-                                {
-                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(result.getJsonArray(ServerConfig.UUID_LIST_PARAM));
-
-                                    uuidList.removeIf(index -> (index == uuid));
-
-                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidList);
-
-                                    DeliveryOptions portFolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
-
-                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, portFolioOptions, portfolioFetch ->{
-
-                                        boolean updateCheck = true;
-
-                                        if (portfolioFetch.succeeded())
-                                        {
-                                            JsonObject updatePortfolio = (JsonObject) portfolioFetch.result().body();
-
-                                            if(ReplyHandler.isReplyOk(updatePortfolio) == false) updateCheck = false;
-                                        }
-                                        else {
-                                            updateCheck = false;
-                                        }
-
-                                        if(!updateCheck)
-                                        {
-                                            log.error("Update list of uuids to Portfolio Database failed");
-                                        }
-                                    });
-
-                                }
-                                else
-                                {
-                                    log.error("Retrieve uuid list failed");
-                                }
-                            }
-                        });
-                        */
-
                 }
 
             }
@@ -311,13 +247,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
-            System.out.println("Original UUID Size: " + oriUUIDList.size());
-
             Integer lastValue = oriUUIDList.get(oriUUIDList.size() - 1);
 
             for(int i = 0; i < oriUUIDList.size(); ++i)
             {
-                System.out.println("Current processing: " + i);
                 final Integer UUID = oriUUIDList.get(i);
                 JsonArray params = new JsonArray().add(UUID).add(projectID);
 
@@ -329,14 +262,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     {
                         ResultSet resultSet = fetch.result();
 
-                        if (resultSet.getNumRows() == 0)
+                        if (resultSet.getNumRows() != 0)
                         {
-                            //check and remove on next round
-                            SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-                            log.error("Should not get zero row when retrieving data: " + UUID);
-                        }
-                        else {
-
                             JsonArray row = resultSet.getResults().get(0);
 
                             String dataPath = row.getString(0);
@@ -363,10 +290,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         if (UUID == lastValue) {
 
                             loader.setLoaderStatus(LoaderStatus.LOADED);
+                            JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
 
-                            message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal()));
-
-                            System.out.println("Checked all the list and send back");
+                            message.reply(jsonObjectResponse);
                         }
                     }
                     /*
@@ -383,53 +309,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
     }
 
-    public void sanityCheckDataPath(Message<JsonObject> message)
-    {
-        JsonObject requestBody = message.body();
-
-        JsonArray params = new JsonArray().add(requestBody.getInteger(ServerConfig.UUID_PARAM))
-                                            .add(requestBody.getInteger(ServerConfig.PROJECT_ID_PARAM));
-
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
-
-            if(fetch.succeeded()) {
-                ResultSet resultSet = fetch.result();
-
-                if (resultSet.getNumRows() != 0) {
-
-                    String imagePath = resultSet.getResults().get(0).getString(0);
-
-                    File imageFilePath = new File(imagePath);
-
-
-                    if (imageFilePath.exists() && (ImageUtils.getImageSize(imageFilePath) != null))
-                    {
-                        message.reply(ReplyHandler.getOkReply());
-                    }
-                    else {
-
-                        //this uuid has to be remove
-                        projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
-                            if (reply.failed()) {
-                                log.error("Delete uuid failed. This should not happened");
-                            }
-                        });
-
-                        message.reply(ReplyHandler.getFailedReply());
-                    }
-                }
-                else
-                {
-                    message.reply(ReplyHandler.getFailedReply());
-                }
-            }
-            else {
-                log.error("Request uuid failed. This should not happened");
-                message.reply(ReplyHandler.getFailedReply());
-            }
-
-        });
-    }
 
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
@@ -449,6 +328,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ServerConfig.UUID_PARAM))
                 .add(SelectorHandler.getProjectID(projectName));
+
 
         projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())

@@ -42,7 +42,6 @@ public class SelectorHandler {
     //value: (Integer) Project ID
     private static Map projectNameIDDict;
 
-    private static Map projectUUIDListRemoval;
     private static Map projectLoaderDict;
 
     @Setter
@@ -75,7 +74,6 @@ public class SelectorHandler {
     static {
         projectIDNameDict = new HashMap<Integer, String>();
         projectNameIDDict = new HashMap<String, String>();
-        projectUUIDListRemoval = new HashMap<String, List<Integer>>(); //FIXME: Obsolete
         projectLoaderDict = new HashMap<String, ProjectLoader>();
 
         uuidList = new ArrayList<>();
@@ -131,8 +129,6 @@ public class SelectorHandler {
         projectNameIDDict.put(projectName, projectID);
         projectIDNameDict.put(projectID, projectName);
 
-        projectUUIDListRemoval.put(projectName, new ArrayList<Integer>());
-
         projectLoaderDict.put(projectName, new ProjectLoader());
     }
 
@@ -161,12 +157,6 @@ public class SelectorHandler {
         }
         return true;
     }
-
-    public static List<Integer> getUUIDListToRemove(String projectName)
-    {
-        return (ArrayList) projectUUIDListRemoval.get(projectName);
-    }
-
     public static boolean isProjectNameRegistered(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);

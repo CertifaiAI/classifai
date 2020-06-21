@@ -35,7 +35,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -165,7 +164,7 @@ public class ServerVerticle extends AbstractVerticle
                         {
                             if(fetch.succeeded())
                             {
-                                JsonObject removalResponse = (JsonObject) reply.result().body();
+                                JsonObject removalResponse = (JsonObject) fetch.result().body();
                                 Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
 
                                 if(removalStatus == LoaderStatus.EMPTY.ordinal())
@@ -190,7 +189,13 @@ public class ServerVerticle extends AbstractVerticle
 
                                             if(ReplyHandler.isReplyFailed(updatePortfolio))
                                             {
+                                                System.out.println("save updates to portfolio database failed");
+
                                                 healthCheck = false;
+                                            }
+                                            else
+                                            {
+                                                System.out.println("save updates to portfolio database success");
                                             }
                                         }
                                         else {
@@ -200,13 +205,9 @@ public class ServerVerticle extends AbstractVerticle
                                         if(healthCheck == false)
                                         {
                                             log.error("Update uuidlist to database failed");
-
-                                            setLoaderFailed(context, projectName);
                                         }
                                         else {
                                             SelectorHandler.setProjectLoaderStatus(projectName, LoaderStatus.LOADED);
-
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
                                         }
 
                                     });
@@ -218,7 +219,6 @@ public class ServerVerticle extends AbstractVerticle
                             }
                         });
 
-                        //TEMPORARY
                         HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
                     }
@@ -528,9 +528,8 @@ public class ServerVerticle extends AbstractVerticle
 
                     JsonObject body = (JsonObject) reply.result().body();
 
-                    if (ReplyHandler.isReplyOk(body) == false) {
-                        HTTPResponseHandler.configureBadRequest(context, body);
-                    } else {
+                    if (ReplyHandler.isReplyOk(body))
+                    {
                         DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.UPDATE_DATA);
 
                         io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
@@ -545,6 +544,8 @@ public class ServerVerticle extends AbstractVerticle
                                 HTTPResponseHandler.configureInternalServerError(context);
                             }
                         });
+                    } else {
+                        HTTPResponseHandler.configureBadRequest(context, body);
                     }
                 } else {
                     HTTPResponseHandler.configureInternalServerError(context);
@@ -600,101 +601,28 @@ public class ServerVerticle extends AbstractVerticle
 
 
 
-    //FIXME:Remove obsolete.
-    //PUT http://localhost:{port}/:projectname/loading/complete
-    public void postLoading(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
-
-        List<Integer> uuidListToRemove = SelectorHandler.getUUIDListToRemove(projectName);
-
-        if(uuidListToRemove.isEmpty())
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-            return;
-        }
-
-        JsonObject request = new JsonObject().put(ServerConfig.UUID_LIST_PARAM, uuidListToRemove)
-                .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
-
-        DeliveryOptions portfolioOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
-
-        //remove from portfolio database
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, portfolioOptions, reply ->
-        {
-            if(reply.succeeded())
-            {
-                JsonObject body = (JsonObject) reply.result().body();
-
-                if(!ReplyHandler.isReplyOk(body))
-                {
-                    HTTPResponseHandler.configureInternalServerError(context);
-                    return;
-                }
-            }
-        });
-
-        DeliveryOptions projectOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
-
-        //remove from profile database
-        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, projectOptions, reply ->
-        {
-            if(reply.succeeded())
-            {
-                JsonObject body = (JsonObject) reply.result().body();
-
-                if(ReplyHandler.isReplyOk(body))
-                {
-                    HTTPResponseHandler.configureOK(context, body);
-                }
-                else
-                {
-                    HTTPResponseHandler.configureInternalServerError(context);
-                }
-            }
-        });
-    }
-
     //GET http://localhost:{port}/imgsrc?projectname=helloworld&uuid=1234
-    public void getImageSource(RoutingContext context)
-    {
+    public void getImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
         Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
                 .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.CHECK_PROJECT_VALIDITY);
 
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
-        {
-            if (reply.succeeded())
-            {
-                JsonObject body = (JsonObject) reply.result().body();
+        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
 
-                if(ReplyHandler.isReplyOk(body))
-                {
-                    DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
+        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
 
-                    vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
+            if (fetch.succeeded()) {
 
-                        if (fetch.succeeded()) {
+                JsonObject imgSrcObject = (JsonObject) fetch.result().body();
+                HTTPResponseHandler.configureOK(context, imgSrcObject);
 
-                            JsonObject imgSrcObject = (JsonObject) fetch.result().body();
-                            HTTPResponseHandler.configureOK(context, imgSrcObject);
-
-                        } else {
-                            HTTPResponseHandler.configureInternalServerError(context);
-                        }
-                    });
-                }
-                else {
-                    HTTPResponseHandler.configureBadRequest(context, body);
-                }
-
+            } else {
+                HTTPResponseHandler.configureInternalServerError(context);
             }
         });
-
     }
 
 
