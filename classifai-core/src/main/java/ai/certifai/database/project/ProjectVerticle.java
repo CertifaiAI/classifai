@@ -251,10 +251,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
             for(int i = 0; i < oriUUIDList.size(); ++i)
             {
+                final Integer indexLength = i;
                 final Integer UUID = oriUUIDList.get(i);
                 JsonArray params = new JsonArray().add(UUID).add(projectID);
-
-                SelectorHandler.updateProgress(projectName, i + 1);
 
                 projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
 
@@ -279,6 +278,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                                         log.error("Failed to remove obsolete uuid from database");
                                     }
+
                                 });
                             }
                             else {
@@ -295,15 +295,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                             message.reply(jsonObjectResponse);
                         }
                     }
-                    /*
-                    else
-                    {
-                        //check and remove on next round
-                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
 
-                        log.error("Failed to retrieve uuid from database");
-                    }
-                    */
+                    SelectorHandler.updateProgress(projectName, indexLength + 1);
+
                 });
             }
         }
