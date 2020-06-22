@@ -3,13 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="3c512fad-30c8-4222-9985-fad257d01f21" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifai-api/classifai-api.iml" beforeDir="false" afterPath="$PROJECT_DIR$/classifai-api/classifai-api.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifai-core/classifai-core.iml" beforeDir="false" afterPath="$PROJECT_DIR$/classifai-core/classifai-core.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifai-core/src/main/java/ai/certifai/server/ServerVerticle.java" beforeDir="false" afterPath="$PROJECT_DIR$/classifai-core/src/main/java/ai/certifai/server/ServerVerticle.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/main-es2015.af832bef5afe72c5afa7.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/main-es5.af832bef5afe72c5afa7.js" beforeDir="false" afterPath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/main-es5.072a89c7c0562d549694.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifai-uberjar/classifai-uberjar.iml" beforeDir="false" afterPath="$PROJECT_DIR$/classifai-uberjar/classifai-uberjar.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/classifai.iml" beforeDir="false" afterPath="$PROJECT_DIR$/classifai.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/main-es2015.072a89c7c0562d549694.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/classifai-core/src/main/resources/webroot/main-es5.072a89c7c0562d549694.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,6 +15,19 @@
   </component>
   <component name="DefaultGradleProjectSettings">
     <option name="isMigrated" value="true" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/classifai-core/src/main/java/ai/certifai/server/ServerVerticle.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="127">
+              <caret line="288" selection-start-line="288" selection-end-line="288" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -28,6 +38,13 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/classifai-core/src/main/java/ai/certifai/server/ServerVerticle.java" />
+      </list>
+    </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-10" />
@@ -73,7 +90,26 @@
               <item name="classifai-core" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="resources" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="classifai" type="b2602c69:ProjectViewProjectNode" />
+              <item name="backend" type="462c0819:PsiDirectoryNode" />
+              <item name="classifai-core" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="certifai" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="classifai" type="b2602c69:ProjectViewProjectNode" />
+              <item name="backend" type="462c0819:PsiDirectoryNode" />
+              <item name="classifai-core" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="certifai" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="classifai" type="b2602c69:ProjectViewProjectNode" />
@@ -82,7 +118,6 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="resources" type="462c0819:PsiDirectoryNode" />
-              <item name="webroot" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -184,5 +219,14 @@
     </state>
     <state x="-734" y="275" width="556" height="1003" key="find.popup/0.0.1440.900/-1080.-237.1080.1920@-1080.-237.1080.1920" timestamp="1592681827259" />
     <state x="538" y="280" width="604" height="548" key="find.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1592704235851" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/classifai-core/src/main/java/ai/certifai/server/ServerVerticle.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="127">
+          <caret line="288" selection-start-line="288" selection-end-line="288" />
+        </state>
+      </provider>
+    </entry>
   </component>
 </project>
