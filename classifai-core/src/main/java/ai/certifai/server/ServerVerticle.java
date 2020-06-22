@@ -289,7 +289,7 @@ public class ServerVerticle extends AbstractVerticle
 
                     if(ReplyHandler.isReplyOk(response))
                     {
-                        response.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED);
+                        response.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
 
                         HTTPResponseHandler.configureOK(context, response);
                     }
