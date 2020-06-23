@@ -135,7 +135,7 @@ public class ServerVerticle extends AbstractVerticle
 
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
-        if((loaderStatus == LoaderStatus.LOADED) || (loaderStatus == LoaderStatus.LOADING))
+        if(loaderStatus == LoaderStatus.LOADING)
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }
