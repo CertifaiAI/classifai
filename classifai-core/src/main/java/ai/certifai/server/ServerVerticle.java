@@ -167,11 +167,7 @@ public class ServerVerticle extends AbstractVerticle
                                 JsonObject removalResponse = (JsonObject) fetch.result().body();
                                 Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
 
-                                if(removalStatus == LoaderStatus.EMPTY.ordinal())
-                                {
-                                    HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-                                }
-                                else if(removalStatus == LoaderStatus.LOADED.ordinal())
+                                if(removalStatus == LoaderStatus.LOADED.ordinal())
                                 {
                                     //request on portfolio database
                                     List<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
@@ -189,13 +185,9 @@ public class ServerVerticle extends AbstractVerticle
 
                                             if(ReplyHandler.isReplyFailed(updatePortfolio))
                                             {
-                                                System.out.println("save updates to portfolio database failed");
+                                                log.error("Save updates to portfolio database failed");
 
                                                 healthCheck = false;
-                                            }
-                                            else
-                                            {
-                                                System.out.println("save updates to portfolio database success");
                                             }
                                         }
                                         else {
