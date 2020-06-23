@@ -11,11 +11,5 @@
         <module name="classifai-uberjar" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.8">
-      <module name="classifai" target="1.8" />
-      <module name="classifai-api" target="1.8" />
-      <module name="classifai-core" target="1.8" />
-      <module name="classifai-uberjar" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
