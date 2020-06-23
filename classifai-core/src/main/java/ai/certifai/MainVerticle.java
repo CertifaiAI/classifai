@@ -31,7 +31,7 @@ public class MainVerticle extends AbstractVerticle
 {
     public void configureDatabase()
     {
-        File dataRootPath = new File(DatabaseConfig.getDatabaseRootPath());
+        File dataRootPath = new File(DatabaseConfig.DB_ROOT_PATH);
 
         log.info(dataRootPath.getAbsolutePath());
 

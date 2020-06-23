@@ -17,6 +17,7 @@
 package ai.certifai;
 
 import ai.certifai.config.PortSelector;
+import ai.certifai.database.DatabaseConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -24,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -31,6 +33,12 @@ public class ClassifaiApp
 {
     public static void main(String[] args)
     {
+        if((new File(DatabaseConfig.PORTFOLIO_LCKFILE).exists()) || new File(DatabaseConfig.PROJECT_DB).exists())
+        {
+            log.info("Database is being used. Probably another application is running. Abort.");
+            return;
+        }
+
         configure(args);
 
         VertxOptions vertxOptions = new VertxOptions();

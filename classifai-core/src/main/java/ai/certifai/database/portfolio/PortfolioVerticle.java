@@ -481,31 +481,33 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 .put("max_pool_size", 30));
 
         portfolioDbClient.getConnection(ar -> {
+                if (ar.succeeded()) {
 
-            if (ar.failed()) {
-                log.error("Could not open a portfolio database connection", ar.cause());
-                promise.fail(ar.cause());
+                    SQLConnection connection = ar.result();
+                    connection.execute(PortfolioSQLQuery.CREATE_PORTFOLIO_TABLE, create -> {
+                        connection.close();
 
-            } else {
+                        if (create.succeeded()) {
 
-                SQLConnection connection = ar.result();
-                connection.execute(PortfolioSQLQuery.CREATE_PORTFOLIO_TABLE, create -> {
-                    connection.close();
-                    if (create.failed()) {
-                        log.error("Portfolio database preparation error", create.cause());
-                        promise.fail(create.cause());
+                            //the consumer methods registers an event bus destination handler
+                            vertx.eventBus().consumer(PortfolioSQLQuery.QUEUE, this::onMessage);
 
-                    } else
-                    {
-                        //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(PortfolioSQLQuery.QUEUE, this::onMessage);
+                            configurePortfolioVerticle();
 
-                        configurePortfolioVerticle();
+                            promise.complete();
 
-                        promise.complete();
-                    }
-                });
-            }
+                        } else
+                        {
+                            log.error("Portfolio database preparation error", create.cause());
+                            promise.fail(create.cause());
+                        }
+                    });
+
+                } else {
+
+                    log.error("Could not open a portfolio database connection", ar.cause());
+                    promise.fail(ar.cause());
+                }
         });
     }
 }
