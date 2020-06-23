@@ -33,15 +33,6 @@ public class ClassifaiApp
     {
         configure(args);
 
-        /*try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch (Exception e)
-        {
-            log.error("Error in setting UIManager: ", e);
-        }
-        */
-
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
@@ -53,7 +44,6 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);
-
     }
 
     static void configure(String[] args)
@@ -71,5 +61,14 @@ public class ClassifaiApp
                 }
             }
         }
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e)
+        {
+            log.error("Error in setting UIManager: ", e);
+        }
+
     }
 }
