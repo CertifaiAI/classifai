@@ -1,0 +1,17 @@
+
+\
+java:S4973º"9Use the "equals" method if value comparison was intended.(ù¯ÖØùÿÿÿÿ8 áŸ€¬.
+n	java:S117²"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(‡´œû8ñÚâ«.
+T
+java:S2696Š"6Make the enclosing method "static" or remove this set.(Â¡Ïµ8…Ì¹á«.
+s	java:S117´"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¼¹­õûÿÿÿÿ8ñÚâ«.
+W
+java:S2209`"5Change this instance-reference to a static reference.(ıÁÅœùÿÿÿÿ8·äàÚ«.
+L
+java:S1125°")Remove the literal "false" boolean value.(à®­‰üÿÿÿÿ8ñÚâ«.
+u
+java:S3776É"RRefactor this method to reduce its Cognitive Complexity from 33 to the 15 allowed.(ÕÄ“¯úÿÿÿÿ8ñÚâ«.
+u
+java:S3776¦"RRefactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.(Ÿ¿…™ùÿÿÿÿ8Ù‘öí«.
+u
+java:S3776"RRefactor this method to reduce its Cognitive Complexity from 27 to the 15 allowed.(éÛ¸¬ıÿÿÿÿ8ñÚâ«.

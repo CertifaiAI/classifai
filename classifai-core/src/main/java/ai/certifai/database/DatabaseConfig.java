@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DatabaseConfig
 {
-    public final static String DB_ROOT_PATH = System.getProperty("user.home") + "/.data";
+    public final static String DB_ROOT_PATH = System.getProperty("user.home") + "/.classifai";
     public final static String PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
     public final static String PROJECT_DB = DB_ROOT_PATH + "/" + "project/projectdb";
 

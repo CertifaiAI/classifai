@@ -27,8 +27,26 @@ import javax.swing.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class ClassifaiApp {
+public class ClassifaiApp
+{
     public static void main(String[] args)
+    {
+        configure(args);
+
+        VertxOptions vertxOptions = new VertxOptions();
+
+        vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
+        vertxOptions.setMaxEventLoopExecuteTime(15); //for bulk images upload
+
+        DeploymentOptions opt = new DeploymentOptions();
+        opt.setWorker(true);
+        opt.setConfig(new JsonObject().put("http.port", ServerConfig.dynamicPort));
+
+        Vertx vertx = Vertx.vertx(vertxOptions);
+        vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);
+    }
+
+    static void configure(String[] args)
     {
         ServerConfig.dynamicPort = ServerConfig.SERVER_PORT;
 
@@ -52,16 +70,5 @@ public class ClassifaiApp {
             log.error("Error in setting UIManager: ", e);
         }
 
-        VertxOptions vertxOptions = new VertxOptions();
-
-        vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
-        vertxOptions.setMaxEventLoopExecuteTime(15); //for bulk images upload
-
-        DeploymentOptions opt = new DeploymentOptions();
-        opt.setWorker(true);
-        opt.setConfig(new JsonObject().put("http.port", ServerConfig.dynamicPort));
-
-        Vertx vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);
     }
 }

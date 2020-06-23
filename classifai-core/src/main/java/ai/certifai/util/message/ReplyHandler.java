@@ -95,4 +95,9 @@ public class ReplyHandler {
        return jsonObject.getInteger(MESSAGE_KEY) == SUCCESSFUL;
     }
 
+    public static boolean isReplyFailed(JsonObject jsonObject)
+    {
+        return jsonObject.getInteger(MESSAGE_KEY) == FAILED;
+    }
+
 }

@@ -16,6 +16,8 @@
 
 package ai.certifai.database.project;
 
+import ai.certifai.database.portfolio.PortfolioSQLQuery;
+
 public class ProjectSQLQuery
 {
     public final static String QUEUE = "project.queue";
@@ -33,5 +35,5 @@ public class ProjectSQLQuery
 
     public final static String DELETE_DATA = "delete from Project where uuid = ? and projectid = ?";
 
-    public final static String RECOVER_DATA = "Check database if image path still valid";
+    public final static String REMOVE_OBSOLETE_UUID_LIST = PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST;
 }
