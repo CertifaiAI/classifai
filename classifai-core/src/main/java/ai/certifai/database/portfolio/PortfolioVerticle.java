@@ -474,6 +474,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
+
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.PORTFOLIO_DB)
                 .put("driver_class", "org.hsqldb.jdbcDriver")
@@ -506,6 +507,5 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 });
             }
         });
-
     }
 }

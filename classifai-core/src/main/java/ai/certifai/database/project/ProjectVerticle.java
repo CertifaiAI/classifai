@@ -345,6 +345,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 
+
         projectJDBCClient.getConnection(ar -> {
             if (ar.failed()) {
                 log.error("Could not open a database connection", ar.cause());
@@ -366,5 +367,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 });
             }
         });
+
     }
 }
