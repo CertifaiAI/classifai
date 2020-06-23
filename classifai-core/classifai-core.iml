@@ -11,6 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="classifai-api" />
     <orderEntry type="library" name="Maven: io.vertx:vertx-jdbc-client:3.9.0" level="project" />
     <orderEntry type="library" name="Maven: io.vertx:vertx-sql-common:3.9.0" level="project" />
     <orderEntry type="library" name="Maven: com.mchange:c3p0:0.9.5.4" level="project" />

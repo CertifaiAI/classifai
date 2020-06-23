@@ -16,6 +16,7 @@
 
 package ai.certifai.server;
 
+import ai.certifai.config.PortSelector;
 import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.database.portfolio.PortfolioSQLQuery;
@@ -622,6 +623,7 @@ public class ServerVerticle extends AbstractVerticle
     public void start(Promise<Void> promise) throws Exception
     {
         Router router = Router.router(vertx);
+
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
@@ -645,7 +647,7 @@ public class ServerVerticle extends AbstractVerticle
         vertx.createHttpServer()
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
-                .listen(ServerConfig.dynamicPort, r -> {
+                .listen(PortSelector.getHostingPort(), r -> {
                     if (r.succeeded()) {
                         //log.info("HTTPServer start successfully");
                         promise.complete();

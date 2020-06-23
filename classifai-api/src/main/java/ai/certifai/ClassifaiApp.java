@@ -16,7 +16,7 @@
 
 package ai.certifai;
 
-import ai.certifai.server.ServerConfig;
+import ai.certifai.config.PortSelector;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -40,7 +40,7 @@ public class ClassifaiApp
 
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
-        opt.setConfig(new JsonObject().put("http.port", ServerConfig.dynamicPort));
+        opt.setConfig(new JsonObject().put("http.port", PortSelector.getHostingPort()));
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);
@@ -48,17 +48,12 @@ public class ClassifaiApp
 
     static void configure(String[] args)
     {
-        ServerConfig.dynamicPort = ServerConfig.SERVER_PORT;
-
-        for(int i=0; i < args.length; ++i)
+        for(int i = 0; i < args.length; ++i)
         {
             if(args[i].contains("--port="))
             {
                 String[] buffer = args[i].split("=");
-                if((buffer[1].length() > 0) && (buffer[1].matches("[0-9]+")))
-                {
-                    ServerConfig.dynamicPort = Integer.parseInt(buffer[1]);
-                }
+                PortSelector.configurePort(buffer[1]);
             }
         }
 
