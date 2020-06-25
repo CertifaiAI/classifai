@@ -34,6 +34,11 @@ public class ReplyHandler {
         return MESSAGE_KEY;
     }
 
+    public static String getErrorMesageKey()
+    {
+        return ERROR_MESSAGE;
+    }
+
     public static Integer getSuccessfulSignal()
     {
         return SUCCESSFUL;

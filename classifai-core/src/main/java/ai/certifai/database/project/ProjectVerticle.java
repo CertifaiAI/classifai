@@ -93,21 +93,23 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
-                JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    response = null;
+                    message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
                 }
                 else
                 {
+                    JsonObject response = ReplyHandler.getOkReply();
+
                     JsonArray row = resultSet.getResults().get(0);
 
                     String imagePath = row.getString(0);
 
                     response.put(ServerConfig.IMAGE_SRC_PARAM, ImageUtils.encodeFileToBase64Binary(new File(imagePath)));
 
+                    message.reply(response);
+
                 }
-                message.reply(response);
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
@@ -189,8 +191,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 ResultSet resultSet = fetch.result();
 
                 if (resultSet.getNumRows() == 0) {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                     log.error("Should not get null");
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
                 else {
                     JsonArray row = resultSet.getResults().get(0);
@@ -199,7 +201,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     String dataPath = row.getString(counter++);
                     String thumbnail = ImageUtils.getThumbNail(dataPath);
 
-                    JsonObject response = new JsonObject();
+                    JsonObject response = ReplyHandler.getOkReply();
 
                     response.put(ServerConfig.UUID_PARAM, uuid);
                     response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
@@ -213,8 +215,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
-
-                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
                     message.reply(response);
                 }
 

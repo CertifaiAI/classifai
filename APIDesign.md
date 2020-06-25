@@ -28,22 +28,18 @@ PUT http://localhost:{port}/createproject/:projectname
 **projectname**: String  
 Example: http://localhost:{port}/createproject/helloworld  
 
-**filetype**
-- file
-- folder
-
 **request payload**  
 null
 
 **return payload**
-- key: 
-    - string: 
-        - message
-
-- value:   
-    - integer:   
-        - 0 (fail)
-        - 1 (success)  
+- key:
+    - string:
+        - **message** integer (0 - failed, 1 - success)    
+        - **content** list
+    
+- key: (if message == 0)
+    - string:
+        - **errormessage** string  
 
 ----------------------------------------------------------------------------
 
@@ -59,13 +55,7 @@ null
 
 **return payload**
 - key: 
-    - string: 
-        - message
-
-- value:   
-    - integer:   
-        - 0 (fail)
-        - 1 (success)  
+    - **message** integer (0 - failed, 1 - success)
 ----------------------------------------------------------------------------
 
 **Functionality:**  
@@ -76,7 +66,7 @@ GET http://localhost:{port}/selectproject/status/:projectname
 **return payload**
 - key: 
     - string: 
-        - message
+        - **message**
 
 - value:   
     - integer:   
@@ -88,7 +78,7 @@ GET http://localhost:{port}/selectproject/status/:projectname
         
 - key: (if message == 1)  
   - string: 
-      - progress (list)  
+      - **progress**  
 
 - value:     
   - string:  
@@ -96,9 +86,9 @@ GET http://localhost:{port}/selectproject/status/:projectname
                  
 - key: (if message == 2)  
     - string:   
-        - uuidlist
+        - **uuidlist**
     - string:
-        - labellist  
+        - **labellist**  
   
 - value:     
     - string:     
@@ -151,21 +141,8 @@ null
 **return payload**
 - key: 
     - string: 
-        - message
-
-- value:   
-    - integer:   
-        - 0 (fail)
-        - 1 (success)  
-        
-- key:
-    - string:   
-        - uuidlist  
-  
-- value:     
-    - string:     
-        - array of uuids
-        - []
+        - **message** integer (0 - failed, 1 - success)
+        - **uuidlist** array of uuids/[]  
  
 ----------------------------------------------------------------------------
 
@@ -180,11 +157,12 @@ null
 **return payload**
 - key:
     - string:
-        - content
-        
-- value:
-    - array of project name
+        - **message** integer (0 - failed, 1 - success)    
+        - **content** list
     
+- key: (if message == 0)
+    - string:
+        - **errormessage** string  
 ----------------------------------------------------------------------------
 
 **Functionality:**  
@@ -205,14 +183,7 @@ null
 **return payload**
 - key: 
     - string: 
-        - message
-
-- value:   
-    - integer:   
-        - 0 (fail)
-        - 1 (success)  
-        - 2 (window opened / database updating)  //FIXTHIS
-
+        - **message** integer (0 - failed, 1 - success, 2 - window opened / database updating) //FIX THIS 
 ----------------------------------------------------------------------------
 **Functionality:**  
 Check  
@@ -228,8 +199,7 @@ null
 
 **return payload**  
 - key:
-    - string:   
-        - message  
+    - **message**
   
 - value:     
     - integer:     
@@ -283,9 +253,11 @@ null
  - **imgOriW** integer
  - **imgOriH** integer
  - **imgthumbnail**  string
-  
  
-
+- key: (if message == 0)
+    - string:
+        - **errormessage** string  
+  
 ----------------------------------------------------------------------------
 **Functionality:**  
 Get base64 image of the requested project name and uuid
@@ -297,8 +269,13 @@ Example: http://localhost:{port}/imgsrc?projectname=helloworld&uuid=12345
 **request payload**  
 null        
        
-**return payload**    
-    - **imgsrc**  string     
+**return payload**
+    - **message** integer (0 - failed, 1 - success)    
+    - **imgsrc**  string  
+
+- key: (if message == 0)
+    - string:
+        - **errormessage** string  
         
 ----------------------------------------------------------------------------
 **Functionality:**  
@@ -318,14 +295,11 @@ Example: http://localhost:{port}/update?projectname=helloworld&uuid=12345
  - **imgOriH** integer
   
 **return payload**
-- key: 
-    - string: 
-        - message
+    - **message** integer (0 - failed, 1 - success)    
 
-- value:   
-    - integer:   
-        - 0 (fail)
-        - 1 (success)
+- key: (if message == 0)
+    - string:
+        - **errormessage** string 
 ----------------------------------------------------------------------------
 **Error Handling:**  
 Message failed comes with **errorcode** and **errormessage**  

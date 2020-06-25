@@ -229,7 +229,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
-
         }
         else
         {
@@ -343,7 +342,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .sorted()
                         .collect(Collectors.toList());
 
-                JsonObject response = new JsonObject().put(ServerConfig.CONTENT, projectNameList);
+                JsonObject response = ReplyHandler.getOkReply();
+                response.put(ServerConfig.CONTENT, projectNameList);
 
                 message.reply(response);
             }
