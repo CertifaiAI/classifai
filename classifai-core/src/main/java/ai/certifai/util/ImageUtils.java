@@ -32,15 +32,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 @Slf4j
-public class ImageUtils
-{
+public class ImageUtils {
     private static Map base64header;
 
     private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
 
-    static
-    {
+    static {
         base64header = new HashMap();
         base64header.put("jpg", "data:image/jpeg;base64,");
         base64header.put("jpeg", "data:image/jpeg;base64,");
@@ -48,20 +46,17 @@ public class ImageUtils
 
     }
 
-    private static String getImageHeader(String input)
-    {
+    private static String getImageHeader(String input) {
         Integer lastIndex = input.length();
 
         Iterator<Map.Entry<String, String>> itr = base64header.entrySet().iterator();
 
-        while(itr.hasNext())
-        {
+        while (itr.hasNext()) {
             Map.Entry<String, String> entry = itr.next();
 
             String fileFormat = input.substring(lastIndex - entry.getKey().length(), lastIndex);
 
-            if(fileFormat.equals(entry.getKey()))
-            {
+            if (fileFormat.equals(entry.getKey())) {
                 return entry.getValue();
             }
         }
@@ -70,10 +65,8 @@ public class ImageUtils
         return null;
     }
 
-    private static String base64FromBufferedImage(BufferedImage img)
-    {
-        try
-        {
+    private static String base64FromBufferedImage(BufferedImage img) {
+        try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ImageIO.write(img, "PNG", out);
             byte[] bytes = out.toByteArray();
@@ -81,14 +74,29 @@ public class ImageUtils
             String src = "data:image/png;base64," + base64bytes;
 
             return src;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             log.error("error in base64FromBufferedImage");
             return "";
         }
 
+    }
+
+    public static boolean isImageReadable(String imagePath)
+    {
+        try {
+            File file = new File(imagePath);
+
+            if(file.exists() == false) return false;
+
+            BufferedImage img = ImageIO.read(file);
+        }
+        catch(Exception e)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public static String getThumbNail(String imageAbsPath)
@@ -181,6 +189,7 @@ public class ImageUtils
         catch(Exception e)
         {
             log.error("Error in reading image ", e);
+            return null;
         }
 
         return new ImmutablePair(width, height);

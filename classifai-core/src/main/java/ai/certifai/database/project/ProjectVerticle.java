@@ -17,10 +17,13 @@
 package ai.certifai.database.project;
 
 import ai.certifai.database.DatabaseConfig;
-import ai.certifai.util.message.ErrorCodes;
+import ai.certifai.database.loader.LoaderStatus;
+import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ServerConfig;
+import ai.certifai.util.ConversionHandler;
 import ai.certifai.util.ImageUtils;
+import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -68,6 +71,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         {
             this.updateData(message);
         }
+        else if (action.equals(ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
+        {
+            this.removeObsoleteUUID(message);
+        }
         else
         {
             log.error("Project query error: Action did not found follow up with function");
@@ -86,21 +93,23 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
-                JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    response = null;
+                    message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
                 }
                 else
                 {
+                    JsonObject response = ReplyHandler.getOkReply();
+
                     JsonArray row = resultSet.getResults().get(0);
 
                     String imagePath = row.getString(0);
 
                     response.put(ServerConfig.IMAGE_SRC_PARAM, ImageUtils.encodeFileToBase64Binary(new File(imagePath)));
 
+                    message.reply(response);
+
                 }
-                message.reply(response);
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
@@ -123,6 +132,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         for(int i = 0 ; i < fileHolder.size(); ++i)
         {
+            SelectorHandler.setCurrentProcessingUUID(i + 1);
+
             Pair imgMetadata = ImageUtils.getImageSize(fileHolder.get(i));
 
             if(imgMetadata != null)
@@ -138,7 +149,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         .add(0) //imgH
                         .add((Integer)imgMetadata.getLeft())
                         .add((Integer)imgMetadata.getRight());
-
 
                 projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                     if(!fetch.succeeded())
@@ -165,7 +175,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     }
 
     /*
-    GET http://localhost:8080/retrievedata/:uuid
+    GET http://localhost:{port}/retrievedata/:uuid
     */
     public void retrieveData(Message<JsonObject> message)
     {
@@ -179,22 +189,24 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
-                JsonObject response = new JsonObject();
 
                 if (resultSet.getNumRows() == 0) {
-                    response = null;
+                    log.error("Should not get null");
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
-                else
-                {
+                else {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
-                    String imagePath = row.getString(counter++);
+                    String dataPath = row.getString(counter++);
+                    String thumbnail = ImageUtils.getThumbNail(dataPath);
+
+                    JsonObject response = ReplyHandler.getOkReply();
 
                     response.put(ServerConfig.UUID_PARAM, uuid);
                     response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
 
-                    response.put(ServerConfig.IMAGE_PATH_PARAM, imagePath);
+                    response.put(ServerConfig.IMAGE_PATH_PARAM, dataPath);
                     response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
                     response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
@@ -202,12 +214,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
                     response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                     response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, ImageUtils.getThumbNail(imagePath));
-
-                    response.put(ReplyHandler.getMessageKey(), ReplyHandler.getSuccessfulSignal());
-
+                    response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
+                    message.reply(response);
                 }
-                message.reply(response);
+
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
@@ -215,7 +225,86 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         });
     }
 
-    //PUT http://localhost:8080/updatedata
+
+    public void removeObsoleteUUID(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        Integer projectID  = SelectorHandler.getProjectID(projectName);
+
+        JsonArray uuidListArray = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
+
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+
+        if(oriUUIDList.isEmpty())
+        {
+            loader.setLoaderStatus(LoaderStatus.EMPTY);
+            message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.EMPTY.ordinal()));
+            return;
+        }
+        else
+        {
+            loader.setLoaderStatus(LoaderStatus.LOADING);
+            loader.setTotalUUIDSize(oriUUIDList.size());
+
+            Integer lastValue = oriUUIDList.get(oriUUIDList.size() - 1);
+
+            for(int i = 0; i < oriUUIDList.size(); ++i)
+            {
+                final Integer indexLength = i;
+                final Integer UUID = oriUUIDList.get(i);
+                JsonArray params = new JsonArray().add(UUID).add(projectID);
+
+                projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
+
+                    if (fetch.succeeded())
+                    {
+                        ResultSet resultSet = fetch.result();
+
+                        if (resultSet.getNumRows() != 0)
+                        {
+                            JsonArray row = resultSet.getResults().get(0);
+
+                            String dataPath = row.getString(0);
+
+                            if(ImageUtils.isImageReadable(dataPath) == false)
+                            {
+                                projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+
+                                    if(reply.failed())
+                                    {
+                                        //remove on next round
+                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+
+                                        log.error("Failed to remove obsolete uuid from database");
+                                    }
+
+                                });
+                            }
+                            else {
+                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+                            }
+
+                        }
+
+                        if (UUID == lastValue) {
+
+                            loader.setLoaderStatus(LoaderStatus.LOADED);
+                            JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+
+                            message.reply(jsonObjectResponse);
+                        }
+                    }
+
+                    SelectorHandler.updateProgress(projectName, indexLength + 1);
+
+                });
+            }
+        }
+    }
+
+
+    //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
     {
         JsonObject requestBody = message.body();
@@ -233,6 +322,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ServerConfig.UUID_PARAM))
                 .add(SelectorHandler.getProjectID(projectName));
+
 
         projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
@@ -255,6 +345,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 
+
         projectJDBCClient.getConnection(ar -> {
             if (ar.failed()) {
                 log.error("Could not open a database connection", ar.cause());
@@ -269,8 +360,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     } else
                     {
-                        log.info("Project database connection success");
-
                         //the consumer methods registers an event bus destination handler
                         vertx.eventBus().consumer(ProjectSQLQuery.QUEUE, this::onMessage);
                         promise.complete();
@@ -278,5 +367,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 });
             }
         });
+
     }
 }

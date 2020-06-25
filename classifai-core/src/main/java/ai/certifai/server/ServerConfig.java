@@ -18,11 +18,8 @@ package ai.certifai.server;
 
 public class ServerConfig
 {
-    public static Integer dynamicPort;
-
-    public final static Integer SERVER_PORT = 9999;
-
     public final static String PROJECT_NAME_PARAM = "projectname";
+
     public final static String UUID_LIST_PARAM = "uuidlist";
     public final static String LABEL_LIST_PARAM = "labellist";
 
@@ -32,7 +29,6 @@ public class ServerConfig
     public final static String IMAGE_PATH_PARAM = "imgpath";
 
     public final static String EMPTY_ARRAY = "[]";
-
     public final static String IMAGE_THUMBNAIL_PARAM = "imgthumbnail";
     public final static String IMAGE_SRC_PARAM = "imgsrc";
     public final static String BOUNDING_BOX_PARAM = "bndbox";
@@ -47,5 +43,7 @@ public class ServerConfig
 
     public final static String ACTION_KEYWORD = "action";
     public final static String CONTENT = "content";
+
+    public final static String PROGRESS_METADATA = "progress";
 
 }

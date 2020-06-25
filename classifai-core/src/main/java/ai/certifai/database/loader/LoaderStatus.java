@@ -14,9 +14,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.certifai.annotator;
+package ai.certifai.database.loader;
 
-public class YoloAnnotator
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public enum LoaderStatus
 {
-
+    ERROR,
+    LOADING,
+    LOADED,
+    DID_NOT_INITIATED,
+    EMPTY
 }

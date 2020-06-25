@@ -34,6 +34,11 @@ public class ReplyHandler {
         return MESSAGE_KEY;
     }
 
+    public static String getErrorMesageKey()
+    {
+        return ERROR_MESSAGE;
+    }
+
     public static Integer getSuccessfulSignal()
     {
         return SUCCESSFUL;
@@ -61,7 +66,6 @@ public class ReplyHandler {
     {
         return new JsonObject().put(MESSAGE_KEY, FAILED);
     }
-
 
     public static JsonObject reportUserDefinedError(String userDefinedMessage)
     {
@@ -94,6 +98,11 @@ public class ReplyHandler {
     public static boolean isReplyOk(JsonObject jsonObject)
     {
        return jsonObject.getInteger(MESSAGE_KEY) == SUCCESSFUL;
+    }
+
+    public static boolean isReplyFailed(JsonObject jsonObject)
+    {
+        return jsonObject.getInteger(MESSAGE_KEY) == FAILED;
     }
 
 }

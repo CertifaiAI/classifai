@@ -17,10 +17,13 @@
 package ai.certifai.selector;
 
 import ai.certifai.data.type.image.ImageFileType;
+import ai.certifai.database.loader.LoaderStatus;
+import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -39,55 +42,106 @@ public class SelectorHandler {
     //value: (Integer) Project ID
     private static Map projectNameIDDict;
 
+    private static Map projectLoaderDict;
+
+    @Setter
+    @Getter
+    static Integer currentProcessingUUID;
+
     private static AtomicInteger projectIDGenerator;
     private static AtomicInteger uuidGenerator;
 
-    @Getter private static String projectNameBuffer;
+    @Getter
+    private static String projectNameBuffer;
 
     private static boolean isWindowOpen = false;
-    @Getter private static String currentWindowSelection;//FILE FOLDER
+    @Getter
+    private static String currentWindowSelection;//FILE FOLDER
     private static boolean isDatabaseUpdating = false;
 
-    @Getter private static List<File> fileHolder;
+    @Getter
+    private static List<File> fileHolder;
 
-    @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
+    @Getter
+    private static final File rootSearchPath = new File(System.getProperty("user.home"));
 
     public static final String FILE = "file";
     public static final String FOLDER = "folder";
 
-    @Getter private static List<Integer> uuidList;
+    @Getter
+    private static List<Integer> uuidList;
 
-    static
-    {
+    static {
         projectIDNameDict = new HashMap<Integer, String>();
         projectNameIDDict = new HashMap<String, String>();
+        projectLoaderDict = new HashMap<String, ProjectLoader>();
 
         uuidList = new ArrayList<>();
 
-        projectIDGenerator =  new AtomicInteger(0);
-        uuidGenerator =  new AtomicInteger(0);
+        projectIDGenerator = new AtomicInteger(0);
+        uuidGenerator = new AtomicInteger(0);
     }
 
 
-    public static boolean isDatabaseUpdating()
-    {
+    public static Integer getUUIDListSize() {
+        return uuidList.size();
+    }
+
+    public static void updateSanityUUIDItem(String projectName, Integer uuid) {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        projectLoader.updateSanityUUIDItem(uuid);
+    }
+
+    public static void setProjectLoaderStatus(String projectName, LoaderStatus status) {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        projectLoader.resetProjectLoader(status);
+    }
+
+    public static boolean isDatabaseUpdating() {
         return isDatabaseUpdating;
     }
 
-    public static boolean isWindowOpen()
+
+    public static void updateProgress(String projectName, Integer progress)
     {
+        ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        loader.updateProgress(progress);
+    }
+
+    public static ProjectLoader getProjectLoader(String projectName) {
+
+        if(projectLoaderDict.containsKey(projectName) == false)
+        {
+            return null;
+        }
+
+        return (ProjectLoader) projectLoaderDict.get(projectName);
+    }
+
+    public static boolean isWindowOpen() {
         return isWindowOpen;
     }
 
-    public static void setProjectNameNID(@NonNull String projectName,@NonNull Integer projectID)
-    {
+    public static void setProjectNameNID(@NonNull String projectName, @NonNull Integer projectID) {
         projectNameIDDict.put(projectName, projectID);
         projectIDNameDict.put(projectID, projectName);
+
+        projectLoaderDict.put(projectName, new ProjectLoader());
     }
 
-    public static void setUUIDGenerator(Integer integer)
-    {
+    public static void setUUIDGenerator(Integer integer) {
         uuidGenerator = new AtomicInteger(integer);
+    }
+
+
+    public static List<Integer> getProjectLoaderUUIDList(String projectName)
+    {
+        ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        return loader.getSanityUUIDList();
     }
 
     public static boolean initSelector(String selection)
@@ -103,7 +157,6 @@ public class SelectorHandler {
         }
         return true;
     }
-
     public static boolean isProjectNameRegistered(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);
@@ -124,24 +177,14 @@ public class SelectorHandler {
         projectNameBuffer = projectName;
     }
 
-    public static void configureDatabaseUpdate(List<File> file)
+    public static void processSelectorOutput(List<File> file)
     {
-        setWindowState(false);
-
         if((file != null) && (!file.isEmpty()) && (file.get(0) != null))
         {
-            isDatabaseUpdating = true;
+            uuidList = new ArrayList<>();
+            currentProcessingUUID = 0;
             fileHolder = file;
-        }
-        else
-        {
-            fileHolder = null;
-        }
-    }
-    public static void processSelectorOutput()
-    {
-        if((fileHolder != null) && (!fileHolder.isEmpty()) && (fileHolder.get(0) != null))
-        {
+
             if(currentWindowSelection.equals(FILE))
             {
                 generateUUID(fileHolder);
@@ -150,6 +193,9 @@ public class SelectorHandler {
             {
                 generateUUIDwithIteration(fileHolder.get(0));
             }
+
+            isDatabaseUpdating = true;
+            setWindowState(false);
 
             if(uuidList.size() == fileHolder.size())
             {
@@ -164,6 +210,9 @@ public class SelectorHandler {
             isDatabaseUpdating = false;
 
             clearProjectNameBuffer();
+        }
+        else {
+            setWindowState(false);
         }
     }
 
@@ -196,8 +245,6 @@ public class SelectorHandler {
 
     public static void generateUUID(List<File> filesList)
     {
-        uuidList = new ArrayList<>();
-
         for(File item : filesList)
         {
             uuidList.add(generateUUID());
@@ -207,7 +254,6 @@ public class SelectorHandler {
     public static void generateUUIDwithIteration(@NonNull File rootDataPath)
     {
         fileHolder = new ArrayList<>();
-        uuidList = new ArrayList<>();
         Stack<File> folderStack = new Stack<>();
 
         folderStack.push(rootDataPath);

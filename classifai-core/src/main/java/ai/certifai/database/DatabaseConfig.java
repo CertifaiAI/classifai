@@ -18,18 +18,21 @@ package ai.certifai.database;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-
 @Slf4j
 public class DatabaseConfig
 {
-    public final static String DB_ROOT_PATH = System.getProperty("user.home") + "/.data";
-    public final static String PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
-    public final static String PROJECT_DB = DB_ROOT_PATH + "/" + "project/projectdb";
+    public final static String DB_ROOT_PATH;
+    public final static String PORTFOLIO_DB;
+    public final static String PROJECT_DB;
+    public final static String PORTFOLIO_LCKFILE;
+    public final static String PROJECT_LCKFILE;
 
-    public static String getDatabaseRootPath()
+    static
     {
-        return DB_ROOT_PATH;
+        DB_ROOT_PATH = System.getProperty("user.home") + "/.classifai";
+        PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
+        PROJECT_DB = DB_ROOT_PATH + "/" + "project/projectdb";
+        PORTFOLIO_LCKFILE = PORTFOLIO_DB + ".lck";
+        PROJECT_LCKFILE = PROJECT_DB + ".lck";
     }
-
 }
