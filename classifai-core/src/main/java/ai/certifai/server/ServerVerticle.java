@@ -284,7 +284,6 @@ public class ServerVerticle extends AbstractVerticle
         }
     }
 
-
     private void updateLabelInPortfolio(RoutingContext context)
     {
         String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
@@ -632,7 +631,7 @@ public class ServerVerticle extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
-        router.put("/selectproject/:projectname").handler(this::selectProject);
+        router.get("/selectproject/:projectname").handler(this::selectProject);
         router.get("/selectproject/status/:projectname").handler(this::selectProjectStatus);
 
         router.get("/select").handler(this::selectFileType);

@@ -1,22 +1,20 @@
 PUT http://localhost:{port}/createproject/:projectname  
-PUT http://localhost:{port}/selectproject/:projectname
+GET http://localhost:{port}/selectproject/:projectname
 
-GET http://localhost:{port}/selectproject/status/:projectname
+GET http://localhost:{port}/selectproject/status/:projectname 
 
-PUT http://localhost:{port}/updatelabel/:projectname
+PUT http://localhost:{port}/updatelabel/:projectname 
 
 GET http://localhost:{port}/project/:projectname  
 GET http://localhost:{port}/projects  
     
-GET http://localhost:{port}/select?projectname={projectname}&filetype={file/folder}  
-GET http://localhost:{port}/selectstatus/:projectname
+GET http://localhost:{port}/select?projectname={projectname}&filetype={file/folder} 
+GET http://localhost:{port}/selectstatus/:projectname 
 
-GET http://localhost:{port}/thumbnail?projectname={projectname}&uuid={uuid}  
+GET http://localhost:{port}/thumbnail?projectname={projectname}&uuid={uuid} 
 GET http://localhost:{port}/imgsrc?projectname={projectname}&uuid={uuid}
 
 PUT http://localhost:{port}/update?projectname={projectname}&uuid={uuid}
-
-PUT http://localhost:{port}/:projectname/loading/complete
 
 ----------------------------------------------------------------------------
 
@@ -46,7 +44,7 @@ null
 **Functionality:**  
 Select existing project with project name
 
-PUT http://localhost:{port}/selectproject/:projectname  
+GET http://localhost:{port}/selectproject/:projectname  
 
 **projectname**: String  
 
