@@ -15,6 +15,7 @@
  */
 package ai.certifai.config;
 
+import ai.certifai.server.ParamConfig;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ public class PortSelector {
 
     static
     {
-        hostingPort = DEFAULT_PORT;
+        setHostingPort(DEFAULT_PORT);
 
         checkPort();
     }
@@ -73,11 +74,17 @@ public class PortSelector {
 
                 if(socket != null)
                 {
-                    hostingPort = socket.getLocalPort();
+                    setHostingPort(socket.getLocalPort());
                     break;
                 }
             }
         }
+    }
+
+    private static void setHostingPort(Integer port)
+    {
+        hostingPort = port;
+        ParamConfig.setHostingPort(port);
     }
 
     private static Integer getRandomNumberInRange(Integer min, Integer max) {

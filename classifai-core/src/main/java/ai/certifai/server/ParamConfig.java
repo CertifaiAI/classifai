@@ -16,7 +16,16 @@
 
 package ai.certifai.server;
 
-public class ServerConfig
+
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Parameter for server in general
+ *
+ * @author Chiawei Lim
+ */
+public class ParamConfig
 {
     public final static String PROJECT_NAME_PARAM = "projectname";
 
@@ -45,5 +54,7 @@ public class ServerConfig
     public final static String CONTENT = "content";
 
     public final static String PROGRESS_METADATA = "progress";
+
+    @Getter @Setter private static Integer hostingPort;
 
 }

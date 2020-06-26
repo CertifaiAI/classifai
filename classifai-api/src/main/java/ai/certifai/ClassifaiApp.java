@@ -16,8 +16,9 @@
 
 package ai.certifai;
 
+import ai.certifai.config.DbConfig;
 import ai.certifai.config.PortSelector;
-import ai.certifai.database.DatabaseConfig;
+import ai.certifai.server.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -25,7 +26,6 @@ import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -33,13 +33,13 @@ public class ClassifaiApp
 {
     public static void main(String[] args)
     {
-        if((new File(DatabaseConfig.PORTFOLIO_LCKFILE).exists()) || new File(DatabaseConfig.PROJECT_DB).exists())
+        boolean isConfigured = configure(args);
+
+        if(isConfigured == false)
         {
-            log.info("Database is being used. Probably another application is running. Abort.");
+            log.info("Classifai failed to configure. Abort.");
             return;
         }
-
-        configure(args);
 
         VertxOptions vertxOptions = new VertxOptions();
 
@@ -54,16 +54,27 @@ public class ClassifaiApp
         vertx.deployVerticle(ai.certifai.MainVerticle.class.getName(), opt);
     }
 
-    static void configure(String[] args)
+    static boolean configure(String[] args)
     {
+        boolean removeDbLock = false;
+
         for(int i = 0; i < args.length; ++i)
         {
-            if(args[i].contains("--port="))
+            String arg = args[i];
+            if(arg.contains("--port="))
             {
                 String[] buffer = args[i].split("=");
                 PortSelector.configurePort(buffer[1]);
             }
+            else if(arg.contains("--unlockdb="))
+            {
+                String[] buffer = args[i].split("=");
+
+                removeDbLock = buffer[1].equals("true") ? true : false;
+            }
         }
+
+        if(DbConfig.checkDatabase(removeDbLock) == false) return false;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -72,6 +83,8 @@ public class ClassifaiApp
         {
             log.error("Error in setting UIManager: ", e);
         }
+
+        return true;
 
     }
 }
