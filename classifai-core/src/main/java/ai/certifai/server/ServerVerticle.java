@@ -444,7 +444,7 @@ public class ServerVerticle extends AbstractVerticle
             //HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
 
             JsonObject object = new JsonObject();
-            object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR);
+            object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
             object.put(ReplyHandler.getErrorMesageKey(), "Project name did not exist");
             HTTPResponseHandler.configureOK(context, object);
         }
@@ -452,7 +452,7 @@ public class ServerVerticle extends AbstractVerticle
         {
             if(SelectorHandler.isWindowOpen())
             {
-                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_OPEN));
+                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_OPEN.ordinal()));
             }
             else if (SelectorHandler.isDatabaseUpdating())
             {
@@ -460,7 +460,7 @@ public class ServerVerticle extends AbstractVerticle
 
                 List metadata = new ArrayList<>(Arrays.asList(SelectorHandler.getCurrentProcessingUUID(), SelectorHandler.getUUIDListSize()));
                 res.put(ServerConfig.PROGRESS_METADATA, metadata);
-                res.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATING);
+                res.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATING.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);
             }
@@ -481,19 +481,19 @@ public class ServerVerticle extends AbstractVerticle
 
                             if(intList.isEmpty())
                             {
-                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_NOT_CREATED);
+                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_NOT_CREATED.ordinal());
                                 HTTPResponseHandler.configureOK(context, response);
                             }
                             else
                             {
-                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATED);
+                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATED.ordinal());
                                 HTTPResponseHandler.configureOK(context, response);
                             }
                         }
                         else
                         {
                             //temporary fix to fit this function
-                            response.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR);
+                            response.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
                             HTTPResponseHandler.configureOK(context, response);
                         }
                     }
@@ -501,7 +501,7 @@ public class ServerVerticle extends AbstractVerticle
                     {
                         JsonObject object = new JsonObject();
 
-                        object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR);
+                        object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
                         object.put(ReplyHandler.getErrorMesageKey(), "Failed in getting thumbnail list");
 
                         HTTPResponseHandler.configureOK(context, object);
