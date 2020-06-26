@@ -25,6 +25,11 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 
+/**
+ * Open browser to select folder with importing list of data points in the folder
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class FolderSelector{
 

@@ -32,6 +32,7 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 /**
  * Portfolio is a collection of projects
  * Each projects contains respective UUIDs
+ *
+ * @author Chiawei Lim
  */
 @Slf4j
 public class PortfolioVerticle extends AbstractVerticle implements PortfolioServiceable
@@ -466,6 +469,14 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             }
         });
+    }
+
+    @Override
+    public void stop(Promise<Void> promise) throws Exception
+    {
+        File lockFile = new File(DatabaseConfig.PORTFOLIO_LCKFILE);
+
+        if(lockFile.exists()) lockFile.deleteOnExit();
     }
 
 

@@ -40,7 +40,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Project contains details of every data point
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ProjectVerticle extends AbstractVerticle implements ProjectServiceable
 {
@@ -333,6 +337,14 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    @Override
+    public void stop(Promise<Void> promise) throws Exception
+    {
+        File lockFile = new File(DatabaseConfig.PROJECT_LCKFILE);
+
+        if(lockFile.exists()) lockFile.deleteOnExit();
     }
 
     //obtain a JDBC client connection,
