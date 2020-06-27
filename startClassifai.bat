@@ -5,4 +5,4 @@ call mvnw -Puberjar -Dmaven.test.skip=true clean package
 set "portnumber=%~2"
 if "%portnumber%"=="" set "portnumber={port}"
 
-java -jar %JAR% --port=%portnumber%
+java -jar %JAR% %1 %2

@@ -37,20 +37,20 @@ Install [Java JDK 8](https://www.oracle.com/java/technologies/javase/javase-jdk8
 ## On Mac/Linux
 Run  
 ```
-./startClassifai.sh --port=8888
+./startClassifai.sh --port=8888 --unlockdb=false  
 ```
 
 ## On Windows
 Run  
 ```
-startClassifai.bat --port=8888
+startClassifai.bat --port=8888 --unlockdb=false  
 ```
 
 ## Alternatively
 ```
 ./mvnw -Puberjar -Dmaven.test.skip=true clean package  
 cd classifai-uberjar/target  
-java -jar classifai-uberjar-1.0-SNAPSHOT-dev.jar  
+java -jar classifai-uberjar-1.0-SNAPSHOT-dev.jar --port=8888 --unlockdb=false  
 ```
 
 This repo is tested on both Windows and Mac in current stage.  

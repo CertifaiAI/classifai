@@ -35,22 +35,16 @@ public class DbConfig
             File portfolioLockPath = new File(DatabaseConfig.PORTFOLIO_LCKFILE);
             File projectLockPath = new File(DatabaseConfig.PROJECT_LCKFILE);
 
-            if(portfolioLockPath.exists())
-            {
-                portfolioLockPath.delete();
-            }
+            if(portfolioLockPath.exists()) portfolioLockPath.delete();
 
-            if(projectLockPath.exists())
-            {
-                projectLockPath.delete();
-            }
-
+            if(projectLockPath.exists()) projectLockPath.delete();
         }
         else
         {
             if((new File(DatabaseConfig.PORTFOLIO_LCKFILE).exists()) || new File(DatabaseConfig.PROJECT_DB).exists())
             {
-                log.info("Database is locked. Use --unlockdb=true to unlock the database");
+                log.info("Database is locked. Try with --unlockdb=true. \n" +
+                        "WARNING: This might impose be hazardaous to have multiple access to the database.");
 
                 return false;
             }
