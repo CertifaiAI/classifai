@@ -13,20 +13,40 @@
   ~
   ~  SPDX-License-Identifier: Apache-2.0
 -->
-<configuration scan="true" scanPeriod="30 seconds">
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+<configuration>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>classifai.log</file>
+        <append>true</append>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>50MB</maxFileSize>
+        </triggeringPolicy>
+
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d %-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <logger name="ai.certifai" level="INFO"/>
-    <logger name="io.vertx" level="INFO"/>
-    <logger name="io.netty" level="INFO"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <logger name="com.mchange.v2" level="warn"/>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
+    <root level="ERROR">
+        <appender-ref ref="FILE" />
     </root>
 
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
 </configuration>
