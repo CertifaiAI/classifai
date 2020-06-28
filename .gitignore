@@ -30,3 +30,5 @@ target/
 *.iml
 *.tmp
 
+#log file
+classifai.log
