@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Main server verticle routing different url requests
@@ -130,6 +131,7 @@ public class ServerVerticle extends AbstractVerticle
     //PUT http://localhost:{port}/selectproject/:projectname http://localhost:{port}/selectproject/helloworld
     private void selectProject(RoutingContext context)
     {
+
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
@@ -166,11 +168,12 @@ public class ServerVerticle extends AbstractVerticle
                                 JsonObject removalResponse = (JsonObject) fetch.result().body();
                                 Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
 
-                                if (removalStatus == LoaderStatus.LOADED.ordinal()) {
+                                if (removalStatus == LoaderStatus.LOADED.ordinal())
+                                {
                                     //request on portfolio database
-                                    List<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
+                                    Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
 
-                                    jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidCheckedList);
+                                    jsonObject.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.set2List(uuidCheckedList));
 
                                     DeliveryOptions updateOption = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
 

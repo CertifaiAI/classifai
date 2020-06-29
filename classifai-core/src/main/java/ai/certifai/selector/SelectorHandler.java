@@ -137,7 +137,7 @@ public class SelectorHandler {
     }
 
 
-    public static List<Integer> getProjectLoaderUUIDList(String projectName)
+    public static Set<Integer> getProjectLoaderUUIDList(String projectName)
     {
         ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
 

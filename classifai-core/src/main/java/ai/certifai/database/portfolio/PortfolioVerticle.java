@@ -322,6 +322,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     reply.put(ParamConfig.UUID_LIST_PARAM, uuidList);
 
                     message.reply(reply);
+
                 } else {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
