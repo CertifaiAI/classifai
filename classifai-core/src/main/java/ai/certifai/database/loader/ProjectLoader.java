@@ -19,8 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class per project for managing the loading of project
@@ -31,7 +30,7 @@ import java.util.List;
 public class ProjectLoader
 {
     @Getter @Setter private LoaderStatus loaderStatus;
-    @Getter private List<Integer> sanityUUIDList;
+    @Getter private Set<Integer> sanityUUIDList;
     private Integer currentProcessedLength;
     @Setter private Integer totalUUIDSize;
 
@@ -43,7 +42,7 @@ public class ProjectLoader
     private void setProjectLoader(LoaderStatus status)
     {
         loaderStatus = status;
-        sanityUUIDList = new ArrayList<>();
+        sanityUUIDList = new HashSet<>();
         currentProcessedLength = 0;
     }
 

@@ -18,6 +18,11 @@ package ai.certifai.database;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Configurations for files and paths of database
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class DatabaseConfig
 {

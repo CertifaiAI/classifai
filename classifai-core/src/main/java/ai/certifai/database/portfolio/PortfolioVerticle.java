@@ -18,7 +18,7 @@ package ai.certifai.database.portfolio;
 
 import ai.certifai.database.DatabaseConfig;
 import ai.certifai.selector.SelectorHandler;
-import ai.certifai.server.ServerConfig;
+import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
@@ -32,6 +32,7 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 /**
  * Portfolio is a collection of projects
  * Each projects contains respective UUIDs
+ *
+ * @author Chiawei Lim
  */
 @Slf4j
 public class PortfolioVerticle extends AbstractVerticle implements PortfolioServiceable
@@ -51,17 +54,17 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void onMessage(Message<JsonObject> message)
     {
-        if (!message.headers().contains(ServerConfig.ACTION_KEYWORD))
+        if (!message.headers().contains(ParamConfig.ACTION_KEYWORD))
         {
             log.error("No action header specified for message with headers {} and body {}",
                     message.headers(), message.body().encodePrettily());
 
-            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ServerConfig.ACTION_KEYWORD + " specified");
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.ACTION_KEYWORD + " specified");
 
             return;
         }
 
-        String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
+        String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
         if(action.equals(PortfolioSQLQuery.CREATE_NEW_PROJECT))
         {
@@ -106,7 +109,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         JsonObject request = message.body();
 
-        String projectName = request.getString(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = request.getString(ParamConfig.PROJECT_NAME_PARAM);
 
         if(!SelectorHandler.isProjectNameRegistered(projectName)) {
 
@@ -114,7 +117,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             Integer projectID = SelectorHandler.generateProjectID();
 
-            JsonArray params = new JsonArray().add(projectID).add(projectName).add(ServerConfig.EMPTY_ARRAY).add(0).add(ServerConfig.EMPTY_ARRAY);
+            JsonArray params = new JsonArray().add(projectID).add(projectName).add(ParamConfig.EMPTY_ARRAY).add(0).add(ParamConfig.EMPTY_ARRAY);
 
             portfolioDbClient.queryWithParams(PortfolioSQLQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
@@ -137,8 +140,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void updateLabel(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        JsonArray labelList = message.body().getJsonArray(ServerConfig.LABEL_LIST_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
         if(SelectorHandler.isProjectNameRegistered(projectName))
         {
@@ -161,8 +164,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void removeObsoleteUUID(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        JsonArray uuidListArray = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
         List<Integer> uuidListToRemove = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
@@ -207,7 +210,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getProjectUUIDList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
         if(SelectorHandler.isProjectNameRegistered(projectName))
         {
@@ -221,7 +224,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     JsonArray row = resultSet.getResults().get(0);
                     JsonObject response = ReplyHandler.getOkReply();
 
-                    response.put(ServerConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
+                    response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
                     message.reply(response);
                 }
                 else {
@@ -238,7 +241,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getThumbNailList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
         if(SelectorHandler.isProjectNameRegistered(projectName))
         {
@@ -281,7 +284,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     }
                     JsonObject response = ReplyHandler.getOkReply();
-                    response.put(ServerConfig.UUID_LIST_PARAM, subList);
+                    response.put(ParamConfig.UUID_LIST_PARAM, subList);
                     message.reply(response);
 
                 }
@@ -300,7 +303,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getUUIDLabelList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
         if(SelectorHandler.isProjectNameRegistered(projectName)) {
             JsonArray params = new JsonArray().add(projectName);
@@ -315,10 +318,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
 
                     JsonObject reply = ReplyHandler.getOkReply();
-                    reply.put(ServerConfig.LABEL_LIST_PARAM, labelList);
-                    reply.put(ServerConfig.UUID_LIST_PARAM, uuidList);
+                    reply.put(ParamConfig.LABEL_LIST_PARAM, labelList);
+                    reply.put(ParamConfig.UUID_LIST_PARAM, uuidList);
 
                     message.reply(reply);
+
                 } else {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
@@ -343,7 +347,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .collect(Collectors.toList());
 
                 JsonObject response = ReplyHandler.getOkReply();
-                response.put(ServerConfig.CONTENT, projectNameList);
+                response.put(ParamConfig.CONTENT, projectNameList);
 
                 message.reply(response);
             }
@@ -355,8 +359,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public static void updateUUIDList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        JsonArray uuidList = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        JsonArray uuidList = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
         if(SelectorHandler.isProjectNameRegistered(projectName))
         {
@@ -466,6 +470,14 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             }
         });
+    }
+
+    @Override
+    public void stop(Promise<Void> promise) throws Exception
+    {
+        File lockFile = new File(DatabaseConfig.PORTFOLIO_LCKFILE);
+
+        if(lockFile.exists()) lockFile.deleteOnExit();
     }
 
 

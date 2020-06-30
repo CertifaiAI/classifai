@@ -32,6 +32,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ConversionHandler
 {
+
+    public static List<Integer> set2List(Set<Integer> setList)
+    {
+        List<Integer> list = new ArrayList<>();
+
+        for (Integer t : setList) list.add(t);
+
+        return list;
+    }
+
     //JSONObject -> .json
     public static void saveJson2File(org.json.simple.JSONObject jsonInput, File outputFilePath)
     {

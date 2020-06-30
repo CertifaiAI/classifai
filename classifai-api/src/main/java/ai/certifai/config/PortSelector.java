@@ -15,6 +15,7 @@
  */
 package ai.certifai.config;
 
+import ai.certifai.server.ParamConfig;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ public class PortSelector {
 
     static
     {
-        hostingPort = DEFAULT_PORT;
+        setHostingPort(DEFAULT_PORT);
 
         checkPort();
     }
@@ -47,7 +48,7 @@ public class PortSelector {
     {
         if((inputArg != null) && (inputArg.length() > 0) && (inputArg.matches("[0-9]+")))
         {
-            hostingPort = Integer.parseInt(inputArg);
+            setHostingPort(Integer.parseInt(inputArg));
         }
 
         checkPort();
@@ -67,18 +68,26 @@ public class PortSelector {
     {
         if(checkPortSanity(hostingPort) == null)
         {
-            for(int i = 0 ; i < 10; ++i) // try 10 times to get a port to host
+            for(int i = 0 ; i < 50; ++i) // try 50 times to get a port to host
             {
                 ServerSocket socket = checkPortSanity(getRandomNumberInRange(MIN, MAX));
 
                 if(socket != null)
                 {
-                    hostingPort = socket.getLocalPort();
+                    setHostingPort(socket.getLocalPort());
                     break;
                 }
             }
+
+            log.error("Error: Port could not be correctly configured. Program expected to not work fine.");
         }
     }
+
+    private static void setHostingPort(Integer port) {
+        hostingPort = port;
+        ParamConfig.setHostingPort(port);
+    }
+
 
     private static Integer getRandomNumberInRange(Integer min, Integer max) {
 

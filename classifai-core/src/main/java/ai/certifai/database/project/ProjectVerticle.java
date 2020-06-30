@@ -20,7 +20,7 @@ import ai.certifai.database.DatabaseConfig;
 import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.selector.SelectorHandler;
-import ai.certifai.server.ServerConfig;
+import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
 import ai.certifai.util.ImageUtils;
 import ai.certifai.util.message.ErrorCodes;
@@ -40,7 +40,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Project contains details of every data point
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ProjectVerticle extends AbstractVerticle implements ProjectServiceable
 {
@@ -49,15 +53,15 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     public void onMessage(Message<JsonObject> message) {
 
-        if (!message.headers().contains(ServerConfig.ACTION_KEYWORD))
+        if (!message.headers().contains(ParamConfig.ACTION_KEYWORD))
         {
             log.error("No action header specified for message with headers {} and body {}",
                     message.headers(), message.body().encodePrettily());
 
-            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ServerConfig.ACTION_KEYWORD + " specified");
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.ACTION_KEYWORD + " specified");
             return;
         }
-        String action = message.headers().get(ServerConfig.ACTION_KEYWORD);
+        String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
         if(action.equals(ProjectSQLQuery.RETRIEVE_DATA))
         {
@@ -84,8 +88,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     public void retrieveDataPath(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        Integer uuid = message.body().getInteger(ServerConfig.UUID_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
@@ -105,7 +109,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     String imagePath = row.getString(0);
 
-                    response.put(ServerConfig.IMAGE_SRC_PARAM, ImageUtils.encodeFileToBase64Binary(new File(imagePath)));
+                    response.put(ParamConfig.IMAGE_SRC_PARAM, ImageUtils.encodeFileToBase64Binary(new File(imagePath)));
 
                     message.reply(response);
 
@@ -179,8 +183,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     */
     public void retrieveData(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
-        Integer uuid = message.body().getInteger(ServerConfig.UUID_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
@@ -203,18 +207,18 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     JsonObject response = ReplyHandler.getOkReply();
 
-                    response.put(ServerConfig.UUID_PARAM, uuid);
-                    response.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+                    response.put(ParamConfig.UUID_PARAM, uuid);
+                    response.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-                    response.put(ServerConfig.IMAGE_PATH_PARAM, dataPath);
-                    response.put(ServerConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ServerConfig.IMAGEX_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEY_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEW_PARAM, row.getDouble(counter++));
-                    response.put(ServerConfig.IMAGEH_PARAM, row.getDouble(counter++));
-                    response.put(ServerConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ServerConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
+                    response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
+                    response.put(ParamConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                    response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
+                    response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
+                    response.put(ParamConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
                     message.reply(response);
                 }
 
@@ -228,10 +232,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     public void removeObsoleteUUID(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         Integer projectID  = SelectorHandler.getProjectID(projectName);
 
-        JsonArray uuidListArray = message.body().getJsonArray(ServerConfig.UUID_LIST_PARAM);
+        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
@@ -309,18 +313,18 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     {
         JsonObject requestBody = message.body();
         
-        String projectName = requestBody.getString(ServerConfig.PROJECT_NAME_PARAM);
-        String boundingBox = requestBody.getJsonArray(ServerConfig.BOUNDING_BOX_PARAM).encode();
+        String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
+        String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
 
         JsonArray params = new JsonArray()
                 .add(boundingBox)
-                .add(requestBody.getInteger(ServerConfig.IMAGEX_PARAM))
-                .add(requestBody.getInteger(ServerConfig.IMAGEY_PARAM))
-                .add(requestBody.getDouble(ServerConfig.IMAGEW_PARAM))
-                .add(requestBody.getDouble(ServerConfig.IMAGEH_PARAM))
-                .add(requestBody.getInteger(ServerConfig.IMAGEORIW_PARAM))
-                .add(requestBody.getInteger(ServerConfig.IMAGEORIH_PARAM))
-                .add(requestBody.getInteger(ServerConfig.UUID_PARAM))
+                .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
+                .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
+                .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
+                .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
+                .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
+                .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
+                .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
                 .add(SelectorHandler.getProjectID(projectName));
 
 
@@ -333,6 +337,14 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    @Override
+    public void stop(Promise<Void> promise) throws Exception
+    {
+        File lockFile = new File(DatabaseConfig.PROJECT_LCKFILE);
+
+        if(lockFile.exists()) lockFile.deleteOnExit();
     }
 
     //obtain a JDBC client connection,

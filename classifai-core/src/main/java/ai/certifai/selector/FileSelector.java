@@ -25,7 +25,11 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 
-
+/**
+ * Open browser to select files
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());

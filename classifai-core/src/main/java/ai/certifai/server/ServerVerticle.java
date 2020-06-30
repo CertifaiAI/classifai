@@ -16,7 +16,6 @@
 
 package ai.certifai.server;
 
-import ai.certifai.config.PortSelector;
 import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.database.portfolio.PortfolioSQLQuery;
@@ -41,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Main server verticle routing different url requests
@@ -72,12 +72,12 @@ public class ServerVerticle extends AbstractVerticle
     //PUT http://localhost:{port}/createproject/:projectname http://localhost:{port}/createproject/helloworld
     private void createProjectInPortfolio(RoutingContext context)
     {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
-        JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
         context.request().bodyHandler(h -> {
 
-            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.CREATE_NEW_PROJECT);
+            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.CREATE_NEW_PROJECT);
 
             vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, createOptions, reply -> {
 
@@ -103,11 +103,11 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:{port}/project/:projectname http://localhost:{port}/project/projectname
     private void getProject(RoutingContext context)
     {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+        JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
 
         vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
         {
@@ -131,7 +131,8 @@ public class ServerVerticle extends AbstractVerticle
     //PUT http://localhost:{port}/selectproject/:projectname http://localhost:{port}/selectproject/helloworld
     private void selectProject(RoutingContext context)
     {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
@@ -141,10 +142,10 @@ public class ServerVerticle extends AbstractVerticle
 
         if(loaderStatus != LoaderStatus.LOADING)
         {
-            JsonObject jsonObject = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
             //get uuid list for processing
-            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
 
             vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
             {
@@ -154,10 +155,10 @@ public class ServerVerticle extends AbstractVerticle
 
                     if(ReplyHandler.isReplyOk(oriUUIDResponse))
                     {
-                        JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ServerConfig.UUID_LIST_PARAM);
-                        JsonObject removalObject = jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidListArray);
+                        JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
+                        JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
 
-                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
+                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
 
                         //start checking uuid if it's path is still exist
                         vertx.eventBus().request(ProjectSQLQuery.QUEUE, removalObject, removalOptions, fetch ->
@@ -167,13 +168,14 @@ public class ServerVerticle extends AbstractVerticle
                                 JsonObject removalResponse = (JsonObject) fetch.result().body();
                                 Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
 
-                                if (removalStatus == LoaderStatus.LOADED.ordinal()) {
+                                if (removalStatus == LoaderStatus.LOADED.ordinal())
+                                {
                                     //request on portfolio database
-                                    List<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
+                                    Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
 
-                                    jsonObject.put(ServerConfig.UUID_LIST_PARAM, uuidCheckedList);
+                                    jsonObject.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.set2List(uuidCheckedList));
 
-                                    DeliveryOptions updateOption = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
+                                    DeliveryOptions updateOption = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
 
                                     vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, updateOption, updateFetch -> {
 
@@ -226,7 +228,7 @@ public class ServerVerticle extends AbstractVerticle
     //PUT http://localhost:{port}/selectproject/status/:projectname
     private void selectProjectStatus(RoutingContext context)
     {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         ProjectLoader projectLoader = SelectorHandler.getProjectLoader(projectName);
 
@@ -241,15 +243,15 @@ public class ServerVerticle extends AbstractVerticle
         else if(loaderStatus == LoaderStatus.LOADING)
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
-            jsonObject.put(ServerConfig.PROGRESS_METADATA, projectLoader.getProgress());
+            jsonObject.put(ParamConfig.PROGRESS_METADATA, projectLoader.getProgress());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
         }
         else if((loaderStatus == LoaderStatus.LOADED)  || (loaderStatus == LoaderStatus.EMPTY))
         {
-            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
 
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
             {
                 if (reply.succeeded()) {
 
@@ -286,15 +288,15 @@ public class ServerVerticle extends AbstractVerticle
 
     private void updateLabelInPortfolio(RoutingContext context)
     {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         context.request().bodyHandler(h ->
         {
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-            jsonObject.put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+            jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
 
             vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
             {
@@ -319,7 +321,7 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:{port}/projects
     private void getAllProjectNamesInPortfolio(RoutingContext context)
     {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
 
         vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject(), options, reply -> {
 
@@ -370,8 +372,8 @@ public class ServerVerticle extends AbstractVerticle
         }
         else
         {
-            String fileType = context.request().getParam(ServerConfig.FILETYPE_PARAM);
-            String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+            String fileType = context.request().getParam(ParamConfig.FILETYPE_PARAM);
+            String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
             if(SelectorHandler.isProjectNameRegistered(projectName) == false)
             {
@@ -395,8 +397,8 @@ public class ServerVerticle extends AbstractVerticle
                 else
                 {
                     //set uuid generator
-                    DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
-                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+                    DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
                     {
                         if(reply.succeeded())
                         {
@@ -404,7 +406,7 @@ public class ServerVerticle extends AbstractVerticle
 
                             if(ReplyHandler.isReplyOk(response))
                             {
-                                List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ServerConfig.UUID_LIST_PARAM));
+                                List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
                                 //this is to initiate the generator id to the end of existing list
                                 SelectorHandler.configureUUIDGenerator(uuidList);
                                 SelectorHandler.setWindowState(true);
@@ -436,7 +438,7 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:{port}/selectstatus/:projectname
     public void selectStatus(RoutingContext context) {
 
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         //check project name if exist
         if(SelectorHandler.isProjectNameRegistered(projectName) == false)
@@ -444,7 +446,7 @@ public class ServerVerticle extends AbstractVerticle
             //HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
 
             JsonObject object = new JsonObject();
-            object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR);
+            object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
             object.put(ReplyHandler.getErrorMesageKey(), "Project name did not exist");
             HTTPResponseHandler.configureOK(context, object);
         }
@@ -452,22 +454,22 @@ public class ServerVerticle extends AbstractVerticle
         {
             if(SelectorHandler.isWindowOpen())
             {
-                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_OPEN));
+                HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_OPEN.ordinal()));
             }
             else if (SelectorHandler.isDatabaseUpdating())
             {
                 JsonObject res = new JsonObject();
 
                 List metadata = new ArrayList<>(Arrays.asList(SelectorHandler.getCurrentProcessingUUID(), SelectorHandler.getUUIDListSize()));
-                res.put(ServerConfig.PROGRESS_METADATA, metadata);
-                res.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATING);
+                res.put(ParamConfig.PROGRESS_METADATA, metadata);
+                res.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATING.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);
             }
             else {
-                JsonObject request = new JsonObject().put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+                JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-                DeliveryOptions options = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_THUMBNAIL_LIST);
+                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_THUMBNAIL_LIST);
 
                 vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
                 {
@@ -477,23 +479,23 @@ public class ServerVerticle extends AbstractVerticle
 
                         if(ReplyHandler.isReplyOk(response))
                         {
-                            List<Integer> intList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ServerConfig.UUID_LIST_PARAM));
+                            List<Integer> intList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
 
                             if(intList.isEmpty())
                             {
-                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_NOT_CREATED);
+                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_NOT_CREATED.ordinal());
                                 HTTPResponseHandler.configureOK(context, response);
                             }
                             else
                             {
-                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATED);
+                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATED.ordinal());
                                 HTTPResponseHandler.configureOK(context, response);
                             }
                         }
                         else
                         {
                             //temporary fix to fit this function
-                            response.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR);
+                            response.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
                             HTTPResponseHandler.configureOK(context, response);
                         }
                     }
@@ -501,7 +503,7 @@ public class ServerVerticle extends AbstractVerticle
                     {
                         JsonObject object = new JsonObject();
 
-                        object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR);
+                        object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
                         object.put(ReplyHandler.getErrorMesageKey(), "Failed in getting thumbnail list");
 
                         HTTPResponseHandler.configureOK(context, object);
@@ -513,15 +515,15 @@ public class ServerVerticle extends AbstractVerticle
 
 
     private void updateData(RoutingContext context) {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
-        Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         context.request().bodyHandler(h ->
         {
-            JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
-                    .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+            JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
+                    .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.UPDATE_DATA);
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
@@ -552,13 +554,13 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:{port}/thumbnail?projectname=helloworld&uuid=1234
     public void getThumbnailWithMetadata(RoutingContext context)
     {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
-        Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
-        JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
-                                             .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+        JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
+                                             .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA);
+        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA);
 
         vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, thumbnailOptions, fetch -> {
 
@@ -589,14 +591,14 @@ public class ServerVerticle extends AbstractVerticle
 
     //GET http://localhost:{port}/imgsrc?projectname=helloworld&uuid=1234
     public void getImageSource(RoutingContext context) {
-        String projectName = context.request().getParam(ServerConfig.PROJECT_NAME_PARAM);
-        Integer uuid = Integer.parseInt(context.request().getParam(ServerConfig.UUID_PARAM));
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
-        JsonObject request = new JsonObject().put(ServerConfig.UUID_PARAM, uuid)
-                .put(ServerConfig.PROJECT_NAME_PARAM, projectName);
+        JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
 
-        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ServerConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
+        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
 
         vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
 
@@ -652,7 +654,7 @@ public class ServerVerticle extends AbstractVerticle
         vertx.createHttpServer()
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
-                .listen(PortSelector.getHostingPort(), r -> {
+                .listen(ParamConfig.getHostingPort(), r -> {
                     if (r.succeeded()) {
                         //log.info("HTTPServer start successfully");
                         promise.complete();
