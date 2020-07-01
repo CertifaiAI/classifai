@@ -41,7 +41,6 @@ public class FileUtils
 
     public static Integer generateUniqueId()
     {
-        ;
         return (fileCount += 1);
     }
 

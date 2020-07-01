@@ -18,7 +18,7 @@ package ai.certifai.data.type.image;
 
 public class ImageFileType
 {
-    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg"};
+    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "pdf"};
 
     public static String[] getImageFileTypes()
     {

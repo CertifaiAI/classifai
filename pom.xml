@@ -64,6 +64,7 @@
         <slf4j.version>1.7.26</slf4j.version>
         <hsqldb.version>2.3.4</hsqldb.version>
         <commons.io.version>2.6</commons.io.version>
+        <pdfbox.version>2.0.20</pdfbox.version>
         <logback.version>1.2.3</logback.version>
         <org.json.version>20190722</org.json.version>
         <google.json.version>1.1.1</google.json.version>
@@ -164,6 +165,16 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
                 <version>${commons.collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox-tools</artifactId>
+                <version>${pdfbox.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

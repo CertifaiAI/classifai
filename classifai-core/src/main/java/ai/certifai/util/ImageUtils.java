@@ -43,7 +43,6 @@ public class ImageUtils {
         base64header.put("jpg", "data:image/jpeg;base64,");
         base64header.put("jpeg", "data:image/jpeg;base64,");
         base64header.put("png", "data:image/png;base64,");
-
     }
 
     private static String getImageHeader(String input) {
