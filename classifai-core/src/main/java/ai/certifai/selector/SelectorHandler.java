@@ -21,6 +21,7 @@ import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
+import ai.certifai.util.PdfHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -245,10 +246,33 @@ public class SelectorHandler {
 
     public static void generateUUID(List<File> filesList)
     {
+        List<File> tempFileHolder = new ArrayList<>();
+
         for(File item : filesList)
         {
-            uuidList.add(generateUUID());
+            String fullPath = item.getAbsolutePath();
+
+            if(PdfHandler.isPdf(fullPath)) //handler for pdf
+            {
+                List<File> pdfImages = PdfHandler.savePdf2Image(fullPath);
+
+                if(pdfImages.isEmpty() == false)
+                {
+                    for(File imagePath : pdfImages)
+                    {
+                        uuidList.add(generateUUID());
+                        tempFileHolder.add(imagePath);
+                    }
+                }
+            }
+            else
+            {
+                uuidList.add(generateUUID());
+                tempFileHolder.add(item);
+            }
         }
+
+        fileHolder = tempFileHolder;
     }
 
     public static void generateUUIDwithIteration(@NonNull File rootDataPath)
@@ -258,6 +282,7 @@ public class SelectorHandler {
 
         folderStack.push(rootDataPath);
 
+        //need to fix this
         List<String> acceptableFileFormats = new ArrayList<>(Arrays.asList(ImageFileType.getImageFileTypes()));
 
         while(folderStack.isEmpty() != true)
@@ -284,7 +309,21 @@ public class SelectorHandler {
                             {
                                 String currentFormat = absPath.substring(absPath.length()  - allowedFormat.length());
 
-                                if(currentFormat.equals(allowedFormat))
+                                if(currentFormat.equals(PdfHandler.getPDFFORMAT()))
+                                {
+                                    List<File> pdfImages = PdfHandler.savePdf2Image(absPath);
+
+                                    if(pdfImages.isEmpty() == false)
+                                    {
+                                        for(File imagePath : pdfImages)
+                                        {
+                                            fileHolder.add(imagePath);
+                                            uuidList.add(generateUUID());
+                                            break;
+                                        }
+                                    }
+                                }
+                                else if(currentFormat.equals(allowedFormat) && (currentFormat.equals(PdfHandler.getPDFFORMAT()) == false))
                                 {
                                     fileHolder.add(file);
                                     uuidList.add(generateUUID());
