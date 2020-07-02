@@ -18,16 +18,38 @@ package ai.certifai.data.type.image;
 
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Support images & documents
  */
 @NoArgsConstructor
-public class ImageFileType
-{
-    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "pdf", "JPG", "PNG", "JPEG"};
+public class ImageFileType {
+
+    private static final Map base64header;
+
+    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
+
+    static
+    {
+        base64header = new HashMap();
+        base64header.put("jpg", "data:image/jpeg;base64,");
+        base64header.put("JPG", "data:image/jpeg;base64,");
+        base64header.put("jpeg", "data:image/png;base64,");
+        base64header.put("JPEG", "data:image/jpeg;base64,");
+        base64header.put("png", "data:image/jpeg;base64,");
+        base64header.put("PNG", "data:image/png;base64,");
+        base64header.put("bmp", "data:image/bmp;base64,");
+    }
 
     public static String[] getImageFileTypes()
     {
         return ALLOWED_FILE_TYPES;
+    }
+
+    public static Map getBase64header()
+    {
+        return base64header;
     }
 }

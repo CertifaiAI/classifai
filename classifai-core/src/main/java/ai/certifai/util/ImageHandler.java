@@ -20,7 +20,6 @@ import ai.certifai.data.type.image.ImageFileType;
 import ai.certifai.data.type.image.PdfHandler;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
-import ai.certifai.selector.SelectorHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,27 +37,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class ImageHandler {
-    private static Map base64header;
 
     private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
 
-    private static final String[] FORMAT_TYPE;
 
-    static {
-
-        FORMAT_TYPE = ImageFileType.getImageFileTypes();
-
-        base64header = new HashMap();
-        base64header.put("jpg", "data:image/jpeg;base64,");
-        base64header.put("jpeg", "data:image/jpeg;base64,");
-        base64header.put("png", "data:image/png;base64,");
-    }
-
-    private static String getImageHeader(String input) {
+    private static String getImageHeader(String input)
+    {
         Integer lastIndex = input.length();
 
-        Iterator<Map.Entry<String, String>> itr = base64header.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> itr = ImageFileType.getBase64header().entrySet().iterator();
 
         while (itr.hasNext()) {
             Map.Entry<String, String> entry = itr.next();
@@ -206,7 +194,7 @@ public class ImageHandler {
 
     private static boolean isfileSupported(String file)
     {
-        for(String format : FORMAT_TYPE)
+        for(String format : ImageFileType.getImageFileTypes())
         {
             Integer beginIndex = file.length() - format.length();
             Integer endIndex = file.length();

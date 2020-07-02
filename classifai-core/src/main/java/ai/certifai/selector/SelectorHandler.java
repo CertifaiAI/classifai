@@ -50,7 +50,7 @@ public class SelectorHandler {
     private static boolean isWindowOpen = false;
     private static boolean isDatabaseUpdating = false;
 
-    @Getter @Setter private static List<Integer> progressUpdate;
+    @Setter @Getter private static List<Integer> progressUpdate;
 
     @Getter
     private static String currentWindowSelection;//FILE FOLDER
@@ -68,7 +68,13 @@ public class SelectorHandler {
         projectLoaderDict = new HashMap<String, ProjectLoader>();
 
         projectIDGenerator = new AtomicInteger(0);
-        progressUpdate = new ArrayList<>(Arrays.asList(0, 1));
+        progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
+
+    }
+
+    public static List<Integer> getProgressUpdate()
+    {
+        return progressUpdate;
     }
 
     public static void updateSanityUUIDItem(String projectName, Integer uuid) {
@@ -165,7 +171,16 @@ public class SelectorHandler {
 
     public static void configureOpenWindow(Integer uuidGenerator)
     {
-        progressUpdate = new ArrayList<>(Arrays.asList(0, uuidGenerator)); //not putting 0 to prevent Nan
+        if(uuidGenerator == 0)
+        {
+            //prevent nan
+            progressUpdate = new ArrayList<>(Arrays.asList(0, 1));
+        }
+        else
+        {
+            progressUpdate = new ArrayList<>(Arrays.asList(0, uuidGenerator));
+        }
+
         isWindowOpen = true;
     }
 
