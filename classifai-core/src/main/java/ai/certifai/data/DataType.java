@@ -16,9 +16,14 @@
 
 package ai.certifai.data;
 
-public enum DataType {
+/**
+ * Manage data types
+ *
+ * @author Chiawei Lim
+ */
+public enum DataType
+{
     IMAGE ,
-    DOCUMENT,
     VIDEO
 }
 

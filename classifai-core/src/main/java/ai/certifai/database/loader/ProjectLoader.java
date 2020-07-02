@@ -15,6 +15,7 @@
  */
 package ai.certifai.database.loader;
 
+import ai.certifai.data.DataType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,8 @@ public class ProjectLoader
     @Getter private Set<Integer> sanityUUIDList;
     private Integer currentProcessedLength;
     @Setter private Integer totalUUIDSize;
+
+    @Getter private DataType dataType = DataType.IMAGE;
 
     public ProjectLoader()
     {

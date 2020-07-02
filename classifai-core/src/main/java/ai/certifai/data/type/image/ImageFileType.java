@@ -16,6 +16,12 @@
 
 package ai.certifai.data.type.image;
 
+import lombok.NoArgsConstructor;
+
+/**
+ * Support images & documents
+ */
+@NoArgsConstructor
 public class ImageFileType
 {
     private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "pdf"};
@@ -24,5 +30,4 @@ public class ImageFileType
     {
         return ALLOWED_FILE_TYPES;
     }
-
 }

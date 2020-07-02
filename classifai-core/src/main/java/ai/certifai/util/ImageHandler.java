@@ -18,9 +18,12 @@ package ai.certifai.util;
 
 import ai.certifai.data.type.image.ImageFileType;
 import ai.certifai.data.type.image.PdfHandler;
+import ai.certifai.database.portfolio.PortfolioVerticle;
+import ai.certifai.database.project.ProjectVerticle;
+import ai.certifai.selector.SelectorHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -31,15 +34,21 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class ImageUtils {
+public class ImageHandler {
     private static Map base64header;
 
     private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
 
+    private static final String[] FORMAT_TYPE;
+
     static {
+
+        FORMAT_TYPE = ImageFileType.getImageFileTypes();
+
         base64header = new HashMap();
         base64header.put("jpg", "data:image/jpeg;base64,");
         base64header.put("jpeg", "data:image/jpeg;base64,");
@@ -167,7 +176,7 @@ public class ImageUtils {
      * @param file
      * @return width, height
      */
-    public static ImmutablePair<Integer, Integer> getImageSize(File file)
+    public static Pair<Integer, Integer> getImageSize(File file)
     {
         Integer width = 0;
         Integer height = 0;
@@ -192,12 +201,28 @@ public class ImageUtils {
             return null;
         }
 
-        return new ImmutablePair(width, height);
+        return Pair.of(width, height);
     }
 
-    public static void generateUUID(java.util.List<File> filesList)
+    private static boolean isfileSupported(String file)
     {
-        java.util.List<File> tempFileHolder = new ArrayList<>();
+        for(String format : FORMAT_TYPE)
+        {
+            Integer beginIndex = file.length() - format.length();
+            Integer endIndex = file.length();
+
+            if(file.substring(beginIndex, endIndex).equals(format))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void processFile(@NonNull List<File> filesList, AtomicInteger uuidGenerator)
+    {
+        List<File> fileHolder = new ArrayList<>();
+        List<Integer> uuidList = new ArrayList<>();
 
         for(File item : filesList)
         {
@@ -207,34 +232,47 @@ public class ImageUtils {
             {
                 java.util.List<File> pdfImages = PdfHandler.savePdf2Image(fullPath);
 
-                if(pdfImages.isEmpty() == false)
+                for(File imagePath : pdfImages)
                 {
-                    for(File imagePath : pdfImages)
-                    {
-                        uuidList.add(generateUUID());
-                        tempFileHolder.add(imagePath);
-                    }
+                    uuidList.add(uuidGenerator.incrementAndGet());
+                    fileHolder.add(imagePath);
                 }
             }
             else
             {
-                uuidList.add(generateUUID());
-                tempFileHolder.add(item);
+                uuidList.add(uuidGenerator.incrementAndGet());
+                fileHolder.add(item);
             }
         }
 
-        fileHolder = tempFileHolder;
+        postProcess(fileHolder, uuidList);
+
     }
 
-    public static void generateUUIDwithIteration(@NonNull File rootDataPath)
+    public static void postProcess(@NonNull List<File> fileHolder, @NonNull List<Integer> uuidList)
     {
-        fileHolder = new ArrayList<>();
+        if((uuidList.size() == fileHolder.size()) && (uuidList.isEmpty() == false))
+        {
+            //update project table
+            List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
+
+            //update portfolio table
+            PortfolioVerticle.updateUUIDList(uuidListVerified);
+        }
+        else if(uuidList.size() != fileHolder.size())
+        {
+            log.error("Something is really wrong when uuidList.size() != fileHolder.size()");
+        }
+    }
+
+    public static void processFolder(@NonNull File rootPath, AtomicInteger uuidGenerator)
+    {
+        List<File> fileHolder = new ArrayList<>();
+        List<Integer> uuidList = new ArrayList<>();
+
         Stack<File> folderStack = new Stack<>();
 
-        folderStack.push(rootDataPath);
-
-        //need to fix this
-        java.util.List<String> acceptableFileFormats = new ArrayList<>(Arrays.asList(ImageFileType.getImageFileTypes()));
+        folderStack.push(rootPath);
 
         while(folderStack.isEmpty() != true)
         {
@@ -254,32 +292,21 @@ public class ImageUtils {
                     {
                         String absPath = file.getAbsolutePath();
 
-                        for (String allowedFormat : acceptableFileFormats)
+                        if(isfileSupported(absPath))
                         {
-                            if(absPath.length() > allowedFormat.length())
+                            if(PdfHandler.isPdf(absPath))
                             {
-                                String currentFormat = absPath.substring(absPath.length()  - allowedFormat.length());
+                                List<File> pdfImages = PdfHandler.savePdf2Image(absPath);
 
-                                if(currentFormat.equals(PdfHandler.getPDFFORMAT()))
+                                for(File imagePath : pdfImages)
                                 {
-                                    List<File> pdfImages = PdfHandler.savePdf2Image(absPath);
-
-                                    if(pdfImages.isEmpty() == false)
-                                    {
-                                        for(File imagePath : pdfImages)
-                                        {
-                                            fileHolder.add(imagePath);
-                                            uuidList.add(generateUUID());
-                                            break;
-                                        }
-                                    }
+                                    fileHolder.add(imagePath);
+                                    uuidList.add(uuidGenerator.incrementAndGet());
                                 }
-                                else if(currentFormat.equals(allowedFormat) && (currentFormat.equals(PdfHandler.getPDFFORMAT()) == false))
-                                {
-                                    fileHolder.add(file);
-                                    uuidList.add(generateUUID());
-                                    break;
-                                }
+                            }
+                            else {
+                                fileHolder.add(file);
+                                uuidList.add(uuidGenerator.incrementAndGet());
                             }
                         }
                     }
@@ -289,7 +316,9 @@ public class ImageUtils {
             {
                 log.info("Error occured while iterating data paths: ", e);
             }
-
         }
+
+        postProcess(fileHolder, uuidList);
     }
+
 }

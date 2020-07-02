@@ -16,14 +16,16 @@
 
 package ai.certifai.selector;
 
+import ai.certifai.data.DataType;
 import ai.certifai.data.type.image.ImageFileType;
+import ai.certifai.util.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -35,7 +37,7 @@ public class FolderSelector{
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFolderSelector() {
+    public void runFolderSelector(String projectName, AtomicInteger uuidGenerator) {
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -65,16 +67,31 @@ public class FolderSelector{
                     fc.setDialogTitle("Select Directory");
                     fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = fc.showOpenDialog(jf);
-                    java.util.List<File> files = null;
                     jf.dispose();
+
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File rootFolder =  fc.getSelectedFile().getAbsoluteFile();
 
-                        files = new ArrayList<>(java.util.Arrays.asList(rootFolder));
+                        if((rootFolder != null) && (rootFolder.exists()))
+                        {
+                            SelectorHandler.startDatabaseUpdate(projectName);
+
+                            DataType dataType = SelectorHandler.getProjectDataType(projectName);
+
+                            if (dataType == DataType.IMAGE)
+                            {
+                                ImageHandler.processFolder(rootFolder, uuidGenerator);
+                            }
+
+                            SelectorHandler.stopDatabaseUpdate();
+                        }
+                    }
+                    else
+                    {
+                        SelectorHandler.setWindowState(false);
                     }
 
-                    SelectorHandler.processSelectorOutput(files);
                 }
             });
         }

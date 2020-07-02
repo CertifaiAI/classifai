@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Main server verticle routing different url requests
@@ -53,7 +54,8 @@ public class ServerVerticle extends AbstractVerticle
     private FileSelector fileSelector;
     private FolderSelector folderSelector;
 
-    public ServerVerticle(){
+    public ServerVerticle()
+    {
         Thread threadfile = new Thread(){
             public void run(){
                 fileSelector = new FileSelector();
@@ -406,18 +408,20 @@ public class ServerVerticle extends AbstractVerticle
 
                             if(ReplyHandler.isReplyOk(response))
                             {
-                                List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
                                 //this is to initiate the generator id to the end of existing list
-                                SelectorHandler.configureUUIDGenerator(uuidList);
-                                SelectorHandler.setWindowState(true);
+                                List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
+
+                                Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size() + 1;
+
+                                SelectorHandler.configureOpenWindow(seedNumber);
 
                                 if (fileType.equals(SelectorHandler.FILE))
                                 {
-                                    fileSelector.runFileSelector();
+                                    fileSelector.runFileSelector(projectName, new AtomicInteger(seedNumber));
                                 }
                                 else if (fileType.equals(SelectorHandler.FOLDER))
                                 {
-                                    folderSelector.runFolderSelector();
+                                    folderSelector.runFolderSelector(projectName, new AtomicInteger(seedNumber));
                                 }
 
                                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
@@ -460,8 +464,7 @@ public class ServerVerticle extends AbstractVerticle
             {
                 JsonObject res = new JsonObject();
 
-                List metadata = new ArrayList<>(Arrays.asList(SelectorHandler.getCurrentProcessingUUID(), SelectorHandler.getUUIDListSize()));
-                res.put(ParamConfig.PROGRESS_METADATA, metadata);
+                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate());
                 res.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATING.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);
@@ -633,13 +636,13 @@ public class ServerVerticle extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
-        router.get("/selectproject/:projectname").handler(this::selectProject);
+        router.put("/createproject/:projectname").handler(this::createProjectInPortfolio);
+
+        router.get("/selectproject/imglbl/:projectname").handler(this::selectProject);
         router.get("/selectproject/status/:projectname").handler(this::selectProjectStatus);
 
         router.get("/select").handler(this::selectFileType);
         router.get("/selectstatus/:projectname").handler(this::selectStatus);
-
-        router.put("/createproject/:projectname").handler(this::createProjectInPortfolio);
 
         router.put("/updatelabel/:projectname").handler(this::updateLabelInPortfolio);
 

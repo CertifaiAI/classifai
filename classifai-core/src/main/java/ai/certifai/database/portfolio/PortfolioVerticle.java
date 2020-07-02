@@ -122,7 +122,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             portfolioDbClient.queryWithParams(PortfolioSQLQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
                 if (fetch.succeeded()) {
-                    SelectorHandler.setUUIDGenerator(0);
                     SelectorHandler.setProjectNameNID(projectName, projectID);
                     message.reply(ReplyHandler.getOkReply());
                 } else {

@@ -16,12 +16,9 @@
 
 package ai.certifai.selector;
 
-import ai.certifai.data.type.image.ImageFileType;
+import ai.certifai.data.DataType;
 import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
-import ai.certifai.database.portfolio.PortfolioVerticle;
-import ai.certifai.database.project.ProjectVerticle;
-import ai.certifai.util.PdfHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -45,23 +42,18 @@ public class SelectorHandler {
 
     private static Map projectLoaderDict;
 
-    @Setter
-    @Getter
-    static Integer currentProcessingUUID;
-
     private static AtomicInteger projectIDGenerator;
-    private static AtomicInteger uuidGenerator;
 
     @Getter
     private static String projectNameBuffer;
 
     private static boolean isWindowOpen = false;
-    @Getter
-    private static String currentWindowSelection;//FILE FOLDER
     private static boolean isDatabaseUpdating = false;
 
+    @Getter @Setter private static List<Integer> progressUpdate;
+
     @Getter
-    private static List<File> fileHolder;
+    private static String currentWindowSelection;//FILE FOLDER
 
     @Getter
     private static final File rootSearchPath = new File(System.getProperty("user.home"));
@@ -69,23 +61,14 @@ public class SelectorHandler {
     public static final String FILE = "file";
     public static final String FOLDER = "folder";
 
-    @Getter
-    private static List<Integer> uuidList;
 
     static {
         projectIDNameDict = new HashMap<Integer, String>();
         projectNameIDDict = new HashMap<String, String>();
         projectLoaderDict = new HashMap<String, ProjectLoader>();
 
-        uuidList = new ArrayList<>();
-
         projectIDGenerator = new AtomicInteger(0);
-        uuidGenerator = new AtomicInteger(0);
-    }
-
-
-    public static Integer getUUIDListSize() {
-        return uuidList.size();
+        progressUpdate = new ArrayList<>(Arrays.asList(0, 1));
     }
 
     public static void updateSanityUUIDItem(String projectName, Integer uuid) {
@@ -133,10 +116,6 @@ public class SelectorHandler {
         projectLoaderDict.put(projectName, new ProjectLoader());
     }
 
-    public static void setUUIDGenerator(Integer integer) {
-        uuidGenerator = new AtomicInteger(integer);
-    }
-
 
     public static Set<Integer> getProjectLoaderUUIDList(String projectName)
     {
@@ -178,50 +157,29 @@ public class SelectorHandler {
         projectNameBuffer = projectName;
     }
 
-    public static void processSelectorOutput(List<File> file)
+    public static DataType getProjectDataType(String projectName)
     {
-        if((file != null) && (!file.isEmpty()) && (file.get(0) != null))
-        {
-            uuidList = new ArrayList<>();
-            currentProcessingUUID = 0;
-            fileHolder = file;
+        return ((ProjectLoader) projectLoaderDict.get(projectName)).getDataType();
 
-            if(currentWindowSelection.equals(FILE))
-            {
-                generateUUID(fileHolder);
-            }
-            else if(currentWindowSelection.equals(FOLDER))
-            {
-                generateUUIDwithIteration(fileHolder.get(0));
-            }
-
-            isDatabaseUpdating = true;
-            setWindowState(false);
-
-            if(uuidList.size() == fileHolder.size())
-            {
-                //update project table
-                List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
-
-                //update portfolio table
-                PortfolioVerticle.updateUUIDList(uuidListVerified);
-            }
-
-            //it's important to set database updating as false here as front end will start retrieving these
-            isDatabaseUpdating = false;
-
-            clearProjectNameBuffer();
-        }
-        else {
-            setWindowState(false);
-        }
     }
 
-    private static void clearProjectNameBuffer()
+    public static void configureOpenWindow(Integer uuidGenerator)
+    {
+        progressUpdate = new ArrayList<>(Arrays.asList(0, uuidGenerator)); //not putting 0 to prevent Nan
+        isWindowOpen = true;
+    }
+
+    public static void startDatabaseUpdate(@NonNull String projectName) {
+        projectNameBuffer = projectName;
+        isDatabaseUpdating = true;
+        isWindowOpen = false;
+    }
+
+    public static void stopDatabaseUpdate()
     {
         projectNameBuffer = "";
+        isDatabaseUpdating = false;
     }
-
     /**
      * @param state true = open, false = close
      */
@@ -230,126 +188,9 @@ public class SelectorHandler {
         isWindowOpen = state;
     }
 
-    public static void configureUUIDGenerator(List<Integer> uuidList)
-    {
-        if(uuidList.isEmpty())
-        {
-            setUUIDGenerator(0);
-        }
-        else
-        {
-            Integer currentMaxUUID = Collections.max(uuidList);
-
-            setUUIDGenerator(currentMaxUUID);
-        }
-    }
-
-    public static void generateUUID(List<File> filesList)
-    {
-        List<File> tempFileHolder = new ArrayList<>();
-
-        for(File item : filesList)
-        {
-            String fullPath = item.getAbsolutePath();
-
-            if(PdfHandler.isPdf(fullPath)) //handler for pdf
-            {
-                List<File> pdfImages = PdfHandler.savePdf2Image(fullPath);
-
-                if(pdfImages.isEmpty() == false)
-                {
-                    for(File imagePath : pdfImages)
-                    {
-                        uuidList.add(generateUUID());
-                        tempFileHolder.add(imagePath);
-                    }
-                }
-            }
-            else
-            {
-                uuidList.add(generateUUID());
-                tempFileHolder.add(item);
-            }
-        }
-
-        fileHolder = tempFileHolder;
-    }
-
-    public static void generateUUIDwithIteration(@NonNull File rootDataPath)
-    {
-        fileHolder = new ArrayList<>();
-        Stack<File> folderStack = new Stack<>();
-
-        folderStack.push(rootDataPath);
-
-        //need to fix this
-        List<String> acceptableFileFormats = new ArrayList<>(Arrays.asList(ImageFileType.getImageFileTypes()));
-
-        while(folderStack.isEmpty() != true)
-        {
-            File currentFolderPath = folderStack.pop();
-
-            File[] folderList = currentFolderPath.listFiles();
-
-            try
-            {
-                for(File file : folderList)
-                {
-                    if (file.isDirectory())
-                    {
-                        folderStack.push(file);
-                    }
-                    else
-                    {
-                        String absPath = file.getAbsolutePath();
-
-                        for (String allowedFormat : acceptableFileFormats)
-                        {
-                            if(absPath.length() > allowedFormat.length())
-                            {
-                                String currentFormat = absPath.substring(absPath.length()  - allowedFormat.length());
-
-                                if(currentFormat.equals(PdfHandler.getPDFFORMAT()))
-                                {
-                                    List<File> pdfImages = PdfHandler.savePdf2Image(absPath);
-
-                                    if(pdfImages.isEmpty() == false)
-                                    {
-                                        for(File imagePath : pdfImages)
-                                        {
-                                            fileHolder.add(imagePath);
-                                            uuidList.add(generateUUID());
-                                            break;
-                                        }
-                                    }
-                                }
-                                else if(currentFormat.equals(allowedFormat) && (currentFormat.equals(PdfHandler.getPDFFORMAT()) == false))
-                                {
-                                    fileHolder.add(file);
-                                    uuidList.add(generateUUID());
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch(Exception e)
-            {
-                log.info("Error occured while iterating data paths: ", e);
-            }
-
-        }
-    }
-
     public static Integer generateProjectID()
     {
         return projectIDGenerator.incrementAndGet();
-    }
-
-    private static Integer generateUUID()
-    {
-        return uuidGenerator.incrementAndGet();
     }
 
     public static void setProjectIDGenerator(Integer seedNumber)

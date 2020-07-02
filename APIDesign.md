@@ -21,7 +21,7 @@ PUT http://localhost:{port}/update?projectname={projectname}&uuid={uuid}
 **Functionality:**  
 Create new project with project name
 
-PUT http://localhost:{port}/createproject/:projectname  
+PUT http://localhost:{port}/createproject/:projectname  -> PUT http://localhost:{port}/createproject/imglbl/:projectnam
 
 **projectname**: String  
 Example: http://localhost:{port}/createproject/helloworld  
