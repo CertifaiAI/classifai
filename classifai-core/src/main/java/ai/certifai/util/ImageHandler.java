@@ -16,6 +16,9 @@
 
 package ai.certifai.util;
 
+import ai.certifai.data.type.image.ImageFileType;
+import ai.certifai.data.type.image.PdfHandler;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -26,10 +29,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 @Slf4j
 public class ImageUtils {
@@ -192,5 +193,103 @@ public class ImageUtils {
         }
 
         return new ImmutablePair(width, height);
+    }
+
+    public static void generateUUID(java.util.List<File> filesList)
+    {
+        java.util.List<File> tempFileHolder = new ArrayList<>();
+
+        for(File item : filesList)
+        {
+            String fullPath = item.getAbsolutePath();
+
+            if(PdfHandler.isPdf(fullPath)) //handler for pdf
+            {
+                java.util.List<File> pdfImages = PdfHandler.savePdf2Image(fullPath);
+
+                if(pdfImages.isEmpty() == false)
+                {
+                    for(File imagePath : pdfImages)
+                    {
+                        uuidList.add(generateUUID());
+                        tempFileHolder.add(imagePath);
+                    }
+                }
+            }
+            else
+            {
+                uuidList.add(generateUUID());
+                tempFileHolder.add(item);
+            }
+        }
+
+        fileHolder = tempFileHolder;
+    }
+
+    public static void generateUUIDwithIteration(@NonNull File rootDataPath)
+    {
+        fileHolder = new ArrayList<>();
+        Stack<File> folderStack = new Stack<>();
+
+        folderStack.push(rootDataPath);
+
+        //need to fix this
+        java.util.List<String> acceptableFileFormats = new ArrayList<>(Arrays.asList(ImageFileType.getImageFileTypes()));
+
+        while(folderStack.isEmpty() != true)
+        {
+            File currentFolderPath = folderStack.pop();
+
+            File[] folderList = currentFolderPath.listFiles();
+
+            try
+            {
+                for(File file : folderList)
+                {
+                    if (file.isDirectory())
+                    {
+                        folderStack.push(file);
+                    }
+                    else
+                    {
+                        String absPath = file.getAbsolutePath();
+
+                        for (String allowedFormat : acceptableFileFormats)
+                        {
+                            if(absPath.length() > allowedFormat.length())
+                            {
+                                String currentFormat = absPath.substring(absPath.length()  - allowedFormat.length());
+
+                                if(currentFormat.equals(PdfHandler.getPDFFORMAT()))
+                                {
+                                    List<File> pdfImages = PdfHandler.savePdf2Image(absPath);
+
+                                    if(pdfImages.isEmpty() == false)
+                                    {
+                                        for(File imagePath : pdfImages)
+                                        {
+                                            fileHolder.add(imagePath);
+                                            uuidList.add(generateUUID());
+                                            break;
+                                        }
+                                    }
+                                }
+                                else if(currentFormat.equals(allowedFormat) && (currentFormat.equals(PdfHandler.getPDFFORMAT()) == false))
+                                {
+                                    fileHolder.add(file);
+                                    uuidList.add(generateUUID());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                log.info("Error occured while iterating data paths: ", e);
+            }
+
+        }
     }
 }
