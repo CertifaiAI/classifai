@@ -633,13 +633,13 @@ public class ServerVerticle extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
-        router.get("/selectproject/:projectname").handler(this::selectProject);
+        router.get("/selectproject/imglbl/:projectname").handler(this::selectProject);
         router.get("/selectproject/status/:projectname").handler(this::selectProjectStatus);
 
         router.get("/select").handler(this::selectFileType);
         router.get("/selectstatus/:projectname").handler(this::selectStatus);
 
-        router.put("/createproject/:projectname").handler(this::createProjectInPortfolio);
+        router.put("/createproject/imglbl/:projectname").handler(this::createProjectInPortfolio);
 
         router.put("/updatelabel/:projectname").handler(this::updateLabelInPortfolio);
 
