@@ -209,7 +209,6 @@ public class ImageHandler {
 
     public static void processFile(@NonNull List<File> filesList, AtomicInteger uuidGenerator)
     {
-        List<File> fileHolder = new ArrayList<>();
         List<Integer> uuidList = new ArrayList<>();
 
         for(File item : filesList)
@@ -222,18 +221,28 @@ public class ImageHandler {
 
                 for(File imagePath : pdfImages)
                 {
-                    uuidList.add(uuidGenerator.incrementAndGet());
-                    fileHolder.add(imagePath);
+                    Integer uuid = uuidGenerator.incrementAndGet();
+
+                    boolean bSaveUUIDSuccess = ProjectVerticle.updateUUID(imagePath, uuid);
+
+                    if(bSaveUUIDSuccess) uuidList.add(uuid); //else project save uuid failed
                 }
             }
             else
             {
-                uuidList.add(uuidGenerator.incrementAndGet());
-                fileHolder.add(item);
-            }
+                //uuidList.add(uuidGenerator.incrementAndGet());
+
+                Integer uuid = uuidGenerator.incrementAndGet();
+
+                boolean bSaveUUIDSuccess = ProjectVerticle.updateUUID(item, uuidGenerator.incrementAndGet());
+
+                if(bSaveUUIDSuccess) uuidList.add(uuid); //else project save uuid failed
+             }
         }
 
-        postProcess(fileHolder, uuidList);
+        //save to portfolio
+        //postProcess(fileHolder, uuidList);
+        PortfolioVerticle.updateUUIDList(uuidList);
 
     }
 

@@ -123,6 +123,40 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     }
 
+    public static boolean updateUUID(File file, Integer UUID)
+    {
+        //FIXME after done.
+        //SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(i + 1, fileHolder.size())));
+
+        Pair imgMetadata = ImageHandler.getImageSize(file);
+
+        if(imgMetadata != null)
+        {
+            JsonArray params = new JsonArray()
+                    .add(UUID) //uuid
+                    .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
+                    .add(file.getAbsolutePath()) //imgpath
+                    .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                    .add(0) //imgX
+                    .add(0) //imgY
+                    .add(0) //imgW
+                    .add(0) //imgH
+                    .add((Integer)imgMetadata.getLeft())
+                    .add((Integer)imgMetadata.getRight());
+
+            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
+                if(!fetch.succeeded())
+                {
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                }
+            });
+
+            return true;
+        }
+
+        return false;
+    }
+
     public static List<Integer> updateUUIDList(List<File> fileHolder, List<Integer> UUIDList)
     {
         if(fileHolder.size() != UUIDList.size())

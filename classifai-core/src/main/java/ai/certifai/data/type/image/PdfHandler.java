@@ -16,7 +16,6 @@
 
 package ai.certifai.data.type.image;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
@@ -32,11 +31,6 @@ import java.util.List;
 public class PdfHandler
 {
     private static String PDFFORMAT = "pdf";
-
-    public static String getPdfFormat()
-    {
-        return PDFFORMAT;
-    }
 
     public static boolean isPdf(String pdfFileName)
     {
@@ -67,12 +61,13 @@ public class PdfHandler
             Integer pathLength = pdfFileName.length() - fullPathName.length();
             String pathToSave = pdfFileName.substring(0, pathLength);
 
+            String pathFirstHalf = pathToSave + fileName[0];
+
             for (int page = 0; page < document.getNumberOfPages(); ++page)
             {
                 BufferedImage bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
 
-                //FIXME: NEED OPTIMIZATION
-                String imageSavedFullPath = pathToSave + fileName[0] + (page+1) + ".png";
+                String imageSavedFullPath = pathFirstHalf + (page+1) + ".png";
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
