@@ -31,6 +31,7 @@ import java.util.List;
 public class PdfHandler
 {
     private static String PDFFORMAT = "pdf";
+    private static Integer dotsPerInch = 300; //standard dots per inch is 300
 
     public static boolean isPdf(String pdfFileName)
     {
@@ -65,18 +66,18 @@ public class PdfHandler
 
             for (int page = 0; page < document.getNumberOfPages(); ++page)
             {
-                BufferedImage bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
-
-                String imageSavedFullPath = pathFirstHalf + (page+1) + ".png";
+                String imageSavedFullPath = pathFirstHalf + "_" + (page+1) + ".png";
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
                 if(fImageSavedFullPath.exists() == false)
                 {
+                    BufferedImage bim = pdfRenderer.renderImageWithDPI(page, dotsPerInch, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
+
                     pdf2Images.add(fImageSavedFullPath);
 
                     // suffix in filename will be used as the file format
-                    ImageIOUtil.writeImage(bim, imageSavedFullPath, 300);
+                    ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
                 }
             }
 

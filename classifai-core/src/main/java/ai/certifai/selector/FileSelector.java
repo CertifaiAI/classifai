@@ -80,9 +80,7 @@ public class FileSelector{
 
                             DataType dataType = SelectorHandler.getProjectDataType(projectName);
 
-                            if (dataType == DataType.IMAGE) {
-                                ImageHandler.processFile(files, uuidGenerator);
-                            }
+                            if (dataType == DataType.IMAGE) ImageHandler.processFile(files, uuidGenerator);
 
                             SelectorHandler.stopDatabaseUpdate();
                         }

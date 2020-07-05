@@ -79,10 +79,7 @@ public class FolderSelector{
 
                             DataType dataType = SelectorHandler.getProjectDataType(projectName);
 
-                            if (dataType == DataType.IMAGE)
-                            {
-                                ImageHandler.processFolder(rootFolder, uuidGenerator);
-                            }
+                            if (dataType == DataType.IMAGE) ImageHandler.processFolder(rootFolder, uuidGenerator);
 
                             SelectorHandler.stopDatabaseUpdate();
                         }

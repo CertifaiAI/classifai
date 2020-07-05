@@ -20,6 +20,7 @@ import ai.certifai.data.type.image.ImageFileType;
 import ai.certifai.data.type.image.PdfHandler;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
+import ai.certifai.selector.SelectorHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -81,11 +82,11 @@ public class ImageHandler {
 
     public static boolean isImageReadable(String imagePath)
     {
+        File file = new File(imagePath);
+
+        if(file.exists() == false) return false;
+
         try {
-            File file = new File(imagePath);
-
-            if(file.exists() == false) return false;
-
             BufferedImage img = ImageIO.read(file);
         }
         catch(Exception e)
@@ -207,69 +208,75 @@ public class ImageHandler {
         return false;
     }
 
-    public static void processFile(@NonNull List<File> filesList, AtomicInteger uuidGenerator)
+    public static List<File> checkFile(@NonNull File file)
     {
-        List<Integer> uuidList = new ArrayList<>();
+        List<File> verifiedFilesList = new ArrayList<>();
 
-        for(File item : filesList)
+        String currentFileFullPath = file.getAbsolutePath();
+
+        if(isfileSupported(currentFileFullPath))
         {
-            String fullPath = item.getAbsolutePath();
+            if(PdfHandler.isPdf(currentFileFullPath)) {
 
-            if(PdfHandler.isPdf(fullPath)) //handler for pdf
-            {
-                java.util.List<File> pdfImages = PdfHandler.savePdf2Image(fullPath);
+                java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
 
-                for(File imagePath : pdfImages)
-                {
-                    Integer uuid = uuidGenerator.incrementAndGet();
-
-                    boolean bSaveUUIDSuccess = ProjectVerticle.updateUUID(imagePath, uuid);
-
-                    if(bSaveUUIDSuccess) uuidList.add(uuid); //else project save uuid failed
-                }
+                verifiedFilesList.addAll(pdf2ImagePaths);
             }
             else
             {
-                //uuidList.add(uuidGenerator.incrementAndGet());
+                verifiedFilesList.add(file);
+            }
 
-                Integer uuid = uuidGenerator.incrementAndGet();
-
-                boolean bSaveUUIDSuccess = ProjectVerticle.updateUUID(item, uuidGenerator.incrementAndGet());
-
-                if(bSaveUUIDSuccess) uuidList.add(uuid); //else project save uuid failed
-             }
         }
 
-        //save to portfolio
-        //postProcess(fileHolder, uuidList);
-        PortfolioVerticle.updateUUIDList(uuidList);
-
+        return verifiedFilesList;
     }
 
-    public static void postProcess(@NonNull List<File> fileHolder, @NonNull List<Integer> uuidList)
-    {
-        if((uuidList.size() == fileHolder.size()) && (uuidList.isEmpty() == false))
-        {
-            //update project table
-            List<Integer> uuidListVerified = ProjectVerticle.updateUUIDList(fileHolder, uuidList);
 
-            //update portfolio table
-            PortfolioVerticle.updateUUIDList(uuidListVerified);
-        }
-        else if(uuidList.size() != fileHolder.size())
+    public static void saveToDatabase(@NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
+    {
+        List<Integer> uuidList = new ArrayList<>();
+
+        AtomicInteger progressCounter = new AtomicInteger(0);
+
+        for(File item : filesCollection)
         {
-            log.error("Something is really wrong when uuidList.size() != fileHolder.size()");
+            Integer uuid = uuidGenerator.incrementAndGet();
+
+            boolean bSaveUUIDSuccess = ProjectVerticle.updateUUID(item, uuid);
+
+            if (bSaveUUIDSuccess) uuidList.add(uuid);
+
+            //update progress
+            SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
         }
+
+        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(uuidList);
+    }
+
+    public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)
+    {
+        List<File> validatedFilesList = new ArrayList<>();
+
+        //FIXME INITIATE LOADING FILE IN SELECTOR STATUS
+        for(File file : filesInput)
+        {
+            List<File> files = checkFile(file);
+            validatedFilesList.addAll(files);
+        }
+
+        saveToDatabase(validatedFilesList, uuidGenerator);
     }
 
     public static void processFolder(@NonNull File rootPath, AtomicInteger uuidGenerator)
     {
-        List<File> fileHolder = new ArrayList<>();
-        List<Integer> uuidList = new ArrayList<>();
+        List<File> totalFilelist = new ArrayList<>();
 
         Stack<File> folderStack = new Stack<>();
 
         folderStack.push(rootPath);
+
+        //FIXME INITIATE LOADING FILE IN SELECTOR STATUS
 
         while(folderStack.isEmpty() != true)
         {
@@ -277,45 +284,20 @@ public class ImageHandler {
 
             File[] folderList = currentFolderPath.listFiles();
 
-            try
+            for(File file : folderList)
             {
-                for(File file : folderList)
+                if (file.isDirectory())
                 {
-                    if (file.isDirectory())
-                    {
-                        folderStack.push(file);
-                    }
-                    else
-                    {
-                        String absPath = file.getAbsolutePath();
-
-                        if(isfileSupported(absPath))
-                        {
-                            if(PdfHandler.isPdf(absPath))
-                            {
-                                List<File> pdfImages = PdfHandler.savePdf2Image(absPath);
-
-                                for(File imagePath : pdfImages)
-                                {
-                                    fileHolder.add(imagePath);
-                                    uuidList.add(uuidGenerator.incrementAndGet());
-                                }
-                            }
-                            else {
-                                fileHolder.add(file);
-                                uuidList.add(uuidGenerator.incrementAndGet());
-                            }
-                        }
-                    }
+                    folderStack.push(file);
                 }
-            }
-            catch(Exception e)
-            {
-                log.info("Error occured while iterating data paths: ", e);
+                else
+                {
+                    List<File> files = checkFile(file);
+                    totalFilelist.addAll(files);
+                }
             }
         }
 
-        postProcess(fileHolder, uuidList);
+        saveToDatabase(totalFilelist, uuidGenerator);
     }
-
 }

@@ -125,8 +125,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     public static boolean updateUUID(File file, Integer UUID)
     {
-        //FIXME after done.
-        //SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(i + 1, fileHolder.size())));
 
         Pair imgMetadata = ImageHandler.getImageSize(file);
 
@@ -157,6 +155,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         return false;
     }
 
+    /*
     public static List<Integer> updateUUIDList(List<File> fileHolder, List<Integer> UUIDList)
     {
         if(fileHolder.size() != UUIDList.size())
@@ -212,6 +211,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         return UUIDList;
     }
+    */
 
     /*
     GET http://localhost:{port}/retrievedata/:uuid

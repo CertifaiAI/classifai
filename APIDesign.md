@@ -202,10 +202,11 @@ null
 - value:     
     - integer:     
         - 0 (window open)
-        - 1 (window close and no UUIDs created)  
-        - 2 (window close and UUIDs creating)
-        - 3 (window close and UUIDs created)  
-        - 4 (error)
+        - 1 (window close and no UUIDs created)
+        - 2 (window close and loading files)  
+        - 3 (window close and database updating)
+        - 4 (window close and database updated)  
+        - 5 (error)
   
 - key:
   - string: (if message == 2)  
