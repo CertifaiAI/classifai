@@ -18,7 +18,6 @@ package ai.certifai;
 
 import ai.certifai.config.DbConfig;
 import ai.certifai.config.PortSelector;
-import ai.certifai.server.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
