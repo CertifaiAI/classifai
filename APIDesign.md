@@ -202,7 +202,7 @@ null
 - value:     
     - integer:     
         - 0 (window open)
-        - 1 (window close and no UUIDs created)
+        - 1 (window close and database not updated)
         - 2 (window close and loading files)  
         - 3 (window close and database updating)
         - 4 (window close and database updated)  

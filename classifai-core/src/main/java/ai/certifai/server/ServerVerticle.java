@@ -37,8 +37,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -352,7 +350,7 @@ public class ServerVerticle extends AbstractVerticle
     //GET http://localhost:{port}/select?projectname={projectname}&filetype={file/folder}
     private void selectFileType(RoutingContext context)
     {
-        if(SelectorHandler.isDatabaseUpdating())
+        if(SelectorHandler.isLoaderProcessing()) //file or folder selecting and updating
         {
             JsonObject jsonObject = new JsonObject();
             jsonObject.put(ReplyHandler.getMessageKey(), 2);
@@ -460,12 +458,14 @@ public class ServerVerticle extends AbstractVerticle
             {
                 HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_OPEN.ordinal()));
             }
-            else if (SelectorHandler.isDatabaseUpdating())
+            else if (SelectorHandler.isLoaderProcessing())
             {
                 JsonObject res = new JsonObject();
 
+                SelectorStatus selectorStatus = SelectorHandler.getSelectorStatus();
+
                 res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate());
-                res.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATING.ordinal());
+                res.put(ReplyHandler.getMessageKey(), selectorStatus.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);
             }
@@ -486,12 +486,12 @@ public class ServerVerticle extends AbstractVerticle
 
                             if(intList.isEmpty())
                             {
-                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_NOT_CREATED.ordinal());
+                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED.ordinal());
                                 HTTPResponseHandler.configureOK(context, response);
                             }
                             else
                             {
-                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_UUID_CREATED.ordinal());
+                                response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_DATABASE_UPDATED.ordinal());
                                 HTTPResponseHandler.configureOK(context, response);
                             }
                         }

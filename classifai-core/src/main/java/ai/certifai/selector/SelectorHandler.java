@@ -48,7 +48,8 @@ public class SelectorHandler {
     private static String projectNameBuffer;
 
     private static boolean isWindowOpen = false;
-    private static boolean isDatabaseUpdating = false;
+    @Getter private static boolean isLoaderProcessing = false;
+    @Setter @Getter private static SelectorStatus selectorStatus;
 
     @Setter @Getter private static List<Integer> progressUpdate;
 
@@ -83,11 +84,6 @@ public class SelectorHandler {
 
         projectLoader.resetProjectLoader(status);
     }
-
-    public static boolean isDatabaseUpdating() {
-        return isDatabaseUpdating;
-    }
-
 
     public static void updateProgress(String projectName, Integer progress)
     {
@@ -181,14 +177,15 @@ public class SelectorHandler {
 
     public static void startDatabaseUpdate(@NonNull String projectName) {
         projectNameBuffer = projectName;
-        isDatabaseUpdating = true;
+        selectorStatus = SelectorStatus.WINDOW_CLOSE_LOADING_FILES;
+        isLoaderProcessing = true;
         isWindowOpen = false;
     }
 
     public static void stopDatabaseUpdate()
     {
         projectNameBuffer = "";
-        isDatabaseUpdating = false;
+        isLoaderProcessing = false;
     }
     /**
      * @param state true = open, false = close

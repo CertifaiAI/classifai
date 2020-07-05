@@ -21,6 +21,7 @@ import ai.certifai.data.type.image.PdfHandler;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import ai.certifai.selector.SelectorHandler;
+import ai.certifai.selector.SelectorStatus;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -235,6 +236,8 @@ public class ImageHandler {
 
     public static void saveToDatabase(@NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
     {
+        SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+
         List<Integer> uuidList = new ArrayList<>();
 
         AtomicInteger progressCounter = new AtomicInteger(0);
@@ -258,7 +261,8 @@ public class ImageHandler {
     {
         List<File> validatedFilesList = new ArrayList<>();
 
-        //FIXME INITIATE LOADING FILE IN SELECTOR STATUS
+        //SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_LOADING_FILES);
+
         for(File file : filesInput)
         {
             List<File> files = checkFile(file);
@@ -276,7 +280,7 @@ public class ImageHandler {
 
         folderStack.push(rootPath);
 
-        //FIXME INITIATE LOADING FILE IN SELECTOR STATUS
+        //SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_LOADING_FILES);
 
         while(folderStack.isEmpty() != true)
         {
