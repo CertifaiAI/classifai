@@ -22,7 +22,7 @@ import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
-import ai.certifai.util.ImageUtils;
+import ai.certifai.util.ImageHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -37,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -109,7 +108,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     String imagePath = row.getString(0);
 
-                    response.put(ParamConfig.IMAGE_SRC_PARAM, ImageUtils.encodeFileToBase64Binary(new File(imagePath)));
+                    response.put(ParamConfig.IMAGE_SRC_PARAM, ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
 
                     message.reply(response);
 
@@ -122,6 +121,39 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     }
 
+    public static boolean updateUUID(File file, Integer UUID)
+    {
+
+        Pair imgMetadata = ImageHandler.getImageSize(file);
+
+        if(imgMetadata != null)
+        {
+            JsonArray params = new JsonArray()
+                    .add(UUID) //uuid
+                    .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
+                    .add(file.getAbsolutePath()) //imgpath
+                    .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                    .add(0) //imgX
+                    .add(0) //imgY
+                    .add(0) //imgW
+                    .add(0) //imgH
+                    .add((Integer)imgMetadata.getLeft())
+                    .add((Integer)imgMetadata.getRight());
+
+            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
+                if(!fetch.succeeded())
+                {
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                }
+            });
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
     public static List<Integer> updateUUIDList(List<File> fileHolder, List<Integer> UUIDList)
     {
         if(fileHolder.size() != UUIDList.size())
@@ -136,9 +168,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         for(int i = 0 ; i < fileHolder.size(); ++i)
         {
-            SelectorHandler.setCurrentProcessingUUID(i + 1);
+            SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(i + 1, fileHolder.size())));
 
-            Pair imgMetadata = ImageUtils.getImageSize(fileHolder.get(i));
+            Pair imgMetadata = ImageHandler.getImageSize(fileHolder.get(i));
 
             if(imgMetadata != null)
             {
@@ -177,6 +209,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         return UUIDList;
     }
+    */
 
     /*
     GET http://localhost:{port}/retrievedata/:uuid
@@ -203,7 +236,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
-                    String thumbnail = ImageUtils.getThumbNail(dataPath);
+                    String thumbnail = ImageHandler.getThumbNail(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
 
@@ -271,7 +304,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                             String dataPath = row.getString(0);
 
-                            if(ImageUtils.isImageReadable(dataPath) == false)
+                            if(ImageHandler.isImageReadable(dataPath) == false)
                             {
                                 projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
 

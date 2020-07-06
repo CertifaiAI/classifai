@@ -16,7 +16,9 @@
 
 package ai.certifai.selector;
 
+import ai.certifai.data.DataType;
 import ai.certifai.data.type.image.ImageFileType;
+import ai.certifai.util.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -24,6 +26,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Open browser to select files
@@ -34,7 +37,7 @@ import java.util.ArrayList;
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFileSelector() {
+    public void runFileSelector(String projectName, AtomicInteger uuidGenerator) {
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -65,19 +68,33 @@ public class FileSelector{
                     fc.setMultiSelectionEnabled(true);
                     fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     int res = fc.showOpenDialog(jf);
-                    java.util.List<File> files = null;
                     jf.dispose();
 
                     if (res == JFileChooser.APPROVE_OPTION) {
-                        files = new ArrayList<>(java.util.Arrays.asList(fc.getSelectedFiles()));
+                        java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(fc.getSelectedFiles()));
+
+                        if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
+                        {
+                            SelectorHandler.startDatabaseUpdate(projectName);
+
+                            DataType dataType = SelectorHandler.getProjectDataType(projectName);
+
+                            if (dataType == DataType.IMAGE) ImageHandler.processFile(files, uuidGenerator);
+
+                            SelectorHandler.stopDatabaseUpdate();
+                        }
+                    }else
+                    {
+                        SelectorHandler.setWindowState(false);
                     }
 
-                    SelectorHandler.processSelectorOutput(files);
+
                 }
             });
         }
         catch (Exception e){
             SelectorHandler.setWindowState(false);
+
             log.debug("Select files failed to open", e);
         }
 

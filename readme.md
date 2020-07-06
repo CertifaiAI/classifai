@@ -1,7 +1,7 @@
 # Classifai
 
 <p align="center">
-  <img align="middle" src="metadata/sample.gif" width="700" height="425"/>
+  <img align="middle" src="metadata/Classifai.gif" width="700" height="425"/>
 </p>
 
 Classifai is a deep learning powered data annotator toolkit.  

@@ -33,8 +33,6 @@ public class MainVerticle extends AbstractVerticle
     {
         File dataRootPath = new File(DatabaseConfig.DB_ROOT_PATH);
 
-        log.info(dataRootPath.getAbsolutePath());
-
         if(!dataRootPath.exists())
         {
             boolean databaseIsBuild = dataRootPath.mkdir();
