@@ -474,9 +474,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
+        log.info("Portfolio Verticle stopping...");
+
         File lockFile = new File(DatabaseConfig.PORTFOLIO_LCKFILE);
 
-        if(lockFile.exists()) lockFile.deleteOnExit();
+        if(lockFile.exists()) lockFile.delete();
     }
 
 

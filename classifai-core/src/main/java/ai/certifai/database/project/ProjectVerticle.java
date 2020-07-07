@@ -375,9 +375,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
+        log.info("Project Verticle stopping...");
+
         File lockFile = new File(DatabaseConfig.PROJECT_LCKFILE);
 
-        if(lockFile.exists()) lockFile.deleteOnExit();
+        if(lockFile.exists()) lockFile.delete();
     }
 
     //obtain a JDBC client connection,
