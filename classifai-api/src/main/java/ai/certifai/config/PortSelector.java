@@ -61,7 +61,7 @@ public class PortSelector {
         }
         catch (IOException ex) {
             // if the program gets here, no port in the range was found
-            log.error("IOException error during configure port, ", ex);
+            log.error("IOException error during configure port " + port, ex);
             return null;
         }
     }
