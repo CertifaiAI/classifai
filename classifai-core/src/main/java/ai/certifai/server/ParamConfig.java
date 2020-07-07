@@ -55,6 +55,8 @@ public class ParamConfig
 
     public final static String PROGRESS_METADATA = "progress";
 
+    public final static String IMAGE_DEPTH = "imgDepth";
+
     @Getter @Setter private static Integer hostingPort;
 
 }

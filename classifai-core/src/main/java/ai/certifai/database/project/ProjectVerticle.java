@@ -34,10 +34,10 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Project contains details of every data point
@@ -124,7 +124,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     public static boolean updateUUID(File file, Integer UUID)
     {
 
-        Pair imgMetadata = ImageHandler.getImageSize(file);
+        Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
         {
@@ -133,12 +133,13 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                    .add((Integer)imgMetadata.get("depth")) //imgDepth
                     .add(0) //imgX
                     .add(0) //imgY
                     .add(0) //imgW
                     .add(0) //imgH
-                    .add((Integer)imgMetadata.getLeft())
-                    .add((Integer)imgMetadata.getRight());
+                    .add((Integer)imgMetadata.get("width"))
+                    .add((Integer)imgMetadata.get("height"));
 
             projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
@@ -245,6 +246,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
                     response.put(ParamConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                    response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
