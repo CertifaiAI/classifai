@@ -58,8 +58,10 @@ public class PortSelector {
     {
         try {
             return new ServerSocket(port);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             // if the program gets here, no port in the range was found
+            log.error("IOException error during configure port, ", ex);
             return null;
         }
     }
