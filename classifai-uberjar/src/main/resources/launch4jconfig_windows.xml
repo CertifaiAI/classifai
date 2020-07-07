@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>/Users/wei/Documents/certifai/classifai/classifai-uberjar/target/classifai-uberjar-1.0-SNAPSHOT-dev.jar</jar>
-  <outfile>/Users/wei/Desktop/temp/classifai.exe</outfile>
+  <jar>D:\Users\chiawei\Documents\classifai\classifai-uberjar\target\classifai-uberjar-1.0-SNAPSHOT-dev.jar</jar>
+  <outfile>C:\Users\Admin\OneDrive\Desktop\classifai.exe</outfile>
   <errTitle>Install java to run classifai.</errTitle>
   <cmdLine>--unlockdb=true --port=9999</cmdLine>
   <chdir></chdir>
@@ -13,12 +13,16 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>/Users/wei/Documents/certifai/classifai/metadata/ico/Classifai_Favicon_Light_512px.ico</icon>
+  <icon>D:\Users\chiawei\Documents\classifai\metadata\ico\Classifai_Favicon_Light_32px.ico</icon>
+  <singleInstance>
+    <mutexName>classifai</mutexName>
+    <windowTitle>classifai</windowTitle>
+  </singleInstance>
   <jre>
     <path></path>
     <bundledJre64Bit>false</bundledJre64Bit>
     <bundledJreAsFallback>false</bundledJreAsFallback>
-    <minVersion>1.8.0_221</minVersion>
+    <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64</runtimeBits>
