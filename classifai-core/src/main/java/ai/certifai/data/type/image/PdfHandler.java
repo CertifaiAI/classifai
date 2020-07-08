@@ -48,28 +48,36 @@ public class PdfHandler
         }
     }
 
-    public static List<File> savePdf2Image(String pdfFileName)
+    public static String getPathToFile(String pdfFileName)
     {
         String[] subString = pdfFileName.split("/");
         String fullPathName = subString[subString.length - 1];
+
+        String[] separator = fullPathName.split("\\.");
+
+        int fileEndIndex = fullPathName.length() -  separator[(separator.length - 1)].length() - 1;
+        String fileName = fullPathName.substring(0, fileEndIndex);
+
+        Integer pathLength = pdfFileName.length() - fullPathName.length();
+        String pathToSave = pdfFileName.substring(0, pathLength);
+
+        fileName = fileName.replace(".", "_"); //replace any possible "." with "_"
+        fileName = fileName.replace(" ", ""); //replace any possible " " with ""
+
+        String pathFirstHalf = pathToSave + fileName;
+
+        return pathFirstHalf;
+    }
+
+    public static List<File> savePdf2Image(String pdfFileName)
+    {
 
         try {
             PDDocument document = PDDocument.load(new File(pdfFileName));
             PDFRenderer pdfRenderer = new PDFRenderer(document);
             List<File> pdf2Images = new ArrayList<>();
 
-            String[] separator = fullPathName.split("\\.");
-
-            int fileEndIndex = fullPathName.length() -  separator[(separator.length - 1)].length() - 1;
-            String fileName = fullPathName.substring(0, fileEndIndex);
-
-            Integer pathLength = pdfFileName.length() - fullPathName.length();
-            String pathToSave = pdfFileName.substring(0, pathLength);
-
-            fileName = fileName.replace(".", "_"); //replace any possible "." with "_"
-            fileName = fileName.replace(" ", ""); //replace any possible " " with ""
-
-            String pathFirstHalf = pathToSave + fileName;
+            String pathFirstHalf = getPathToFile(pdfFileName);
 
             for (int page = 0; page < document.getNumberOfPages(); ++page)
             {
@@ -94,7 +102,7 @@ public class PdfHandler
         }
         catch(Exception e)
         {
-            log.info("PDF Skipped. Failed to read in pdf: " + fullPathName);
+            log.info("PDF Skipped. Failed to read in pdf: " + pdfFileName);
             log.error("Error: ", e);
         }
 
