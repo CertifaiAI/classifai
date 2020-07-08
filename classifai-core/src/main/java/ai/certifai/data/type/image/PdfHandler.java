@@ -67,6 +67,8 @@ public class PdfHandler
             String pathToSave = pdfFileName.substring(0, pathLength);
 
             fileName = fileName.replace(".", "_"); //replace any possible "." with "_"
+            fileName = fileName.replace(" ", ""); //replace any possible "." with "_"
+
 
             String pathFirstHalf = pathToSave + fileName;
 
