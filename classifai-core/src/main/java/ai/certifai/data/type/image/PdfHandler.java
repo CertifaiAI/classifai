@@ -58,11 +58,15 @@ public class PdfHandler
             PDFRenderer pdfRenderer = new PDFRenderer(document);
             List<File> pdf2Images = new ArrayList<>();
 
-            String[] fileName = fullPathName.split("\\.");
+            String[] separator = fullPathName.split("\\.");
+
+            int fileEndIndex = fullPathName.length() -  separator[(separator.length - 1)].length() - 1;
+            String fileName = fullPathName.substring(0, fileEndIndex);
+
             Integer pathLength = pdfFileName.length() - fullPathName.length();
             String pathToSave = pdfFileName.substring(0, pathLength);
 
-            String pathFirstHalf = pathToSave + fileName[0];
+            String pathFirstHalf = pathToSave + fileName;
 
             for (int page = 0; page < document.getNumberOfPages(); ++page)
             {
