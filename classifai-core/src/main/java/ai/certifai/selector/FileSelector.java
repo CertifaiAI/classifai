@@ -18,7 +18,7 @@ package ai.certifai.selector;
 
 import ai.certifai.data.DataType;
 import ai.certifai.data.type.image.ImageFileType;
-import ai.certifai.util.ImageHandler;
+import ai.certifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;

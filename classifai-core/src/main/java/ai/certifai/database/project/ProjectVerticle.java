@@ -23,7 +23,7 @@ import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
-import ai.certifai.util.ImageHandler;
+import ai.certifai.util.image.ImageHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -232,18 +232,14 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    System.out.println("Should not get null");
-
                     log.debug("Should not get null");
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
                 }
                 else {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
-
-                    System.out.println("DataPath: " + dataPath);
 
                     String thumbnail = ImageHandler.getThumbNail(dataPath);
 
@@ -267,7 +263,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
             }
             else {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
             }
         });
     }
@@ -327,7 +323,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                                         log.error("Failed to remove obsolete uuid from database");
                                     }
-
                                 });
                             }
                             else {
@@ -335,24 +330,17 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                             }
 
                         }
-
-                        if (UUID == lastValue) {
-
-                            //request on portfolio database
-                            Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                            PortfolioVerticle.updateUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-
-                            loader.setLoaderStatus(LoaderStatus.LOADED);
-
-                            //JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
-
-                            //message.reply(jsonObjectResponse);
-                        }
                     }
 
                     SelectorHandler.updateProgress(projectName, indexLength + 1);
 
+                    if (UUID == lastValue) {
+
+                        //request on portfolio database
+                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
+
+                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
+                    }
                 });
             }
         }
