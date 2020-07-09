@@ -42,8 +42,11 @@
     </appender>
 
     <logger name="com.mchange.v2" level="warn"/>
+    <!--<logger name="org.apache.pdfbox.pdmodel.font.PDFont" level="fatal"/> -->
 
-    <!-- ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
+    <!--
+    Debug having the most authorative access
+    ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
     <root level="DEBUG">
         <appender-ref ref="FILE" />
     </root>

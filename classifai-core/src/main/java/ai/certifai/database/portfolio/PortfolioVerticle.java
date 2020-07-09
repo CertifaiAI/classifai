@@ -20,6 +20,7 @@ import ai.certifai.database.DatabaseConfig;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
+import ai.certifai.util.ListHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -393,7 +394,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 UUIDListString.addAll(newUUIDList);
 
-                JsonArray jsonUpdateBody = new JsonArray().add(UUIDListString.toString()).add(projectName);
+                List<Integer> verifiedUUIDListString = ListHandler.convertListToUniqueList(UUIDListString);
+
+                JsonArray jsonUpdateBody = new JsonArray().add(verifiedUUIDListString.toString()).add(projectName);
 
                 portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
 
@@ -410,7 +413,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    
+
 
     public void configurePortfolioVerticle()
     {

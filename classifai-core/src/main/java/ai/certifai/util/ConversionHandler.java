@@ -33,11 +33,11 @@ import java.util.stream.Collectors;
 public class ConversionHandler
 {
 
-    public static List<Integer> set2List(Set<Integer> setList)
+    public static <T> List<T> set2List(Set<T> setList)
     {
-        List<Integer> list = new ArrayList<>();
+        List<T> list = new ArrayList<T>();
 
-        for (Integer t : setList) list.add(t);
+        for (T t : setList) list.add(t);
 
         return list;
     }
