@@ -24,10 +24,10 @@ import ai.certifai.selector.SelectorHandler;
 import ai.certifai.selector.SelectorStatus;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -164,12 +164,15 @@ public class ImageHandler {
     /**
      *
      * @param file
-     * @return width, height
+     * @return width, height, depth
      */
-    public static Pair<Integer, Integer> getImageSize(File file)
+    public static Map<String, Integer> getImageMetadata(File file)
     {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+
         Integer width = 0;
         Integer height = 0;
+        Integer depth = -1;
 
         try{
             BufferedImage bimg = ImageIO.read(file);
@@ -183,6 +186,15 @@ public class ImageHandler {
             {
                 width = bimg.getWidth();
                 height = bimg.getHeight();
+
+                int type = bimg.getColorModel().getColorSpace().getType();
+                boolean grayscale = (type==ColorSpace.TYPE_GRAY || type==ColorSpace.CS_GRAY);
+
+                depth = grayscale ? 1 : 3;
+
+                map.put("width", width);
+                map.put("height", height);
+                map.put("depth", depth);
             }
         }
         catch(Exception e)
@@ -191,7 +203,7 @@ public class ImageHandler {
             return null;
         }
 
-        return Pair.of(width, height);
+        return map;
     }
 
     private static boolean isfileSupported(String file)
@@ -221,13 +233,15 @@ public class ImageHandler {
 
                 java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
 
-                verifiedFilesList.addAll(pdf2ImagePaths);
+                if(pdf2ImagePaths != null)
+                {
+                    verifiedFilesList.addAll(pdf2ImagePaths);
+                }
             }
             else
             {
                 verifiedFilesList.add(file);
             }
-
         }
 
         return verifiedFilesList;
@@ -254,7 +268,7 @@ public class ImageHandler {
             SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
         }
 
-        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(uuidList);
+        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
     }
 
     public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)

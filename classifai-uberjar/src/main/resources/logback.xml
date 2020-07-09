@@ -34,7 +34,8 @@
         </encoder>
     </appender>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+
         <encoder>
            <charset>UTF-8</charset>
             <pattern>%logger{35} - %msg%n</pattern>
@@ -42,12 +43,19 @@
     </appender>
 
     <logger name="com.mchange.v2" level="warn"/>
+    <logger name="io.netty" level="warn"/>
 
-    <root level="ERROR">
-        <appender-ref ref="FILE" />
-    </root>
+    <logger name="ai.certifai.data.type.image" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
 
+    <!--
+    Debug having the most authorative access
+    ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
+
+
 </configuration>

@@ -245,6 +245,7 @@ null
  - **projectname** varchar(255)  
  - **imgpath** varchar(255)  
  - **bndbox** varchar(2000)
+ - **imgDepth** integer
  - **imgX** integer
  - **imgY** integer
  - **imgW** double

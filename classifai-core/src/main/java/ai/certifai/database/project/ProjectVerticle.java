@@ -19,6 +19,7 @@ package ai.certifai.database.project;
 import ai.certifai.database.DatabaseConfig;
 import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
+import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
@@ -34,10 +35,11 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Project contains details of every data point
@@ -124,7 +126,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     public static boolean updateUUID(File file, Integer UUID)
     {
 
-        Pair imgMetadata = ImageHandler.getImageSize(file);
+        Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
         {
@@ -133,12 +135,13 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                    .add((Integer)imgMetadata.get("depth")) //imgDepth
                     .add(0) //imgX
                     .add(0) //imgY
                     .add(0) //imgW
                     .add(0) //imgH
-                    .add((Integer)imgMetadata.getLeft())
-                    .add((Integer)imgMetadata.getRight());
+                    .add((Integer)imgMetadata.get("width"))
+                    .add((Integer)imgMetadata.get("height"));
 
             projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
@@ -245,6 +248,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
                     response.put(ParamConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                    response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
@@ -276,11 +280,13 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         if(oriUUIDList.isEmpty())
         {
             loader.setLoaderStatus(LoaderStatus.EMPTY);
-            message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.EMPTY.ordinal()));
+            message.reply(ReplyHandler.getOkReply());
             return;
         }
         else
         {
+            message.reply(ReplyHandler.getOkReply());
+
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
@@ -326,10 +332,16 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                         if (UUID == lastValue) {
 
-                            loader.setLoaderStatus(LoaderStatus.LOADED);
-                            JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+                            //request on portfolio database
+                            Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
 
-                            message.reply(jsonObjectResponse);
+                            PortfolioVerticle.updateUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
+
+                            loader.setLoaderStatus(LoaderStatus.LOADED);
+
+                            //JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+
+                            //message.reply(jsonObjectResponse);
                         }
                     }
 
@@ -375,9 +387,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
+        log.info("Project Verticle stopping...");
+
         File lockFile = new File(DatabaseConfig.PROJECT_LCKFILE);
 
-        if(lockFile.exists()) lockFile.deleteOnExit();
+        if(lockFile.exists()) lockFile.delete();
     }
 
     //obtain a JDBC client connection,

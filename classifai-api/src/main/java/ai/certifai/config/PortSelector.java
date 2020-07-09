@@ -41,7 +41,7 @@ public class PortSelector {
     {
         setHostingPort(DEFAULT_PORT);
 
-        checkPort();
+        //checkPort();
     }
 
     public static void configurePort(@NonNull String inputArg)
@@ -51,15 +51,17 @@ public class PortSelector {
             setHostingPort(Integer.parseInt(inputArg));
         }
 
-        checkPort();
+        //checkPort();
     }
 
     private static ServerSocket checkPortSanity(Integer port)
     {
         try {
             return new ServerSocket(port);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             // if the program gets here, no port in the range was found
+            log.error("IOException error during configure port " + port, ex);
             return null;
         }
     }
