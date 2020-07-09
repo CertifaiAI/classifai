@@ -268,7 +268,7 @@ public class ImageHandler {
             SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
         }
 
-        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(uuidList);
+        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
     }
 
     public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)

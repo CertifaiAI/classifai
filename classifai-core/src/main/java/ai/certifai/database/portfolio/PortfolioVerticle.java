@@ -410,6 +410,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
+    
+
     public void configurePortfolioVerticle()
     {
         portfolioDbClient.query(PortfolioSQLQuery.GET_PROJECT_ID_LIST, fetch -> {
