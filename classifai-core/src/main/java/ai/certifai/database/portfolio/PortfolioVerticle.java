@@ -400,7 +400,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
             loader.setLoaderStatus(LoaderStatus.LOADED);
-
+            
          });
     }
 

@@ -288,7 +288,7 @@ public class ImageHandler {
             if (bSaveUUIDSuccess) uuidList.add(uuid);
 
             //update progress
-            SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+            SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
         }
 
         if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);

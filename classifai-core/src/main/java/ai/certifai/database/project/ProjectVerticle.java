@@ -332,10 +332,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         }
                     }
 
-                    SelectorHandler.updateProgress(projectName, currentLength + 1);
+                    SelectorHandler.updateProgress(projectName, currentLength);
 
-                    if (currentLength == maxSize) {
-
+                    if(currentLength.equals(maxSize))
+                    {
                         //request on portfolio database
                         Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
 

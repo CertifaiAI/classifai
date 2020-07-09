@@ -380,7 +380,7 @@ public class ServerVerticle extends AbstractVerticle
 
                                 Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size() + 1;
 
-                                SelectorHandler.configureOpenWindow(seedNumber);
+                                SelectorHandler.configureOpenWindow(projectName, seedNumber);
 
                                 if (fileType.equals(SelectorHandler.FILE))
                                 {
@@ -433,7 +433,7 @@ public class ServerVerticle extends AbstractVerticle
 
                 SelectorStatus selectorStatus = SelectorHandler.getSelectorStatus();
 
-                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate());
+                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate(projectName));
                 res.put(ReplyHandler.getMessageKey(), selectorStatus.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);
