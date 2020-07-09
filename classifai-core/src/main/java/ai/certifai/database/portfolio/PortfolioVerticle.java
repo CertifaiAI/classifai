@@ -429,7 +429,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 if(projectIDList.isEmpty())
                 {
-                    log.info("Project ID List is empty. Initiate generator id from 0");
+                    log.debug("Project ID List is empty. Initiate generator id from 0");
                     SelectorHandler.setProjectIDGenerator(0);
                 }
                 else {
