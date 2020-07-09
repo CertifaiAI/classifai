@@ -381,10 +381,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     }
 
-    public static void updateUUIDList(List<Integer> newUUIDList)
+    public static void updateUUIDList(String projectName, List<Integer> newUUIDList)
     {
-        String projectName = SelectorHandler.getProjectNameBuffer();
-
         portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectName), fetch ->{
 
             if(fetch.succeeded())

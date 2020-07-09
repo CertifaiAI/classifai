@@ -131,7 +131,6 @@ public class ServerVerticle extends AbstractVerticle
     //PUT http://localhost:{port}/selectproject/:projectname http://localhost:{port}/selectproject/helloworld
     private void selectProject(RoutingContext context)
     {
-
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
@@ -163,42 +162,15 @@ public class ServerVerticle extends AbstractVerticle
                         //start checking uuid if it's path is still exist
                         vertx.eventBus().request(ProjectSQLQuery.QUEUE, removalObject, removalOptions, fetch ->
                         {
-                            if(fetch.succeeded())
+                            JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                            if(ReplyHandler.isReplyOk(removalResponse))
                             {
-                                JsonObject removalResponse = (JsonObject) fetch.result().body();
-                                Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
-
-                                if (removalStatus == LoaderStatus.LOADED.ordinal())
-                                {
-                                    //request on portfolio database
-                                    Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                                    jsonObject.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.set2List(uuidCheckedList));
-
-                                    DeliveryOptions updateOption = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
-
-                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, updateOption, updateFetch -> {
-
-                                        if (updateFetch.succeeded())
-                                        {
-                                            JsonObject updatePortfolio = (JsonObject) updateFetch.result().body();
-
-                                            if (ReplyHandler.isReplyFailed(updatePortfolio))
-                                            {
-                                                log.error("Project " + projectName + ": Save updates to portfolio database failed");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            log.error("Project " + projectName + ": Failed to receive reply from remove obsolete uuid list from portfolio database");
-                                        }
-
-                                    });
-                                }
+                                log.info("Loading project: " + projectName);
                             }
                             else
                             {
-                                log.error("Project " + projectName + ": Failed to receive reply from remove obsolete uuid");
+                                log.info("Failed to load project: " + projectName);
                             }
                         });
                     }

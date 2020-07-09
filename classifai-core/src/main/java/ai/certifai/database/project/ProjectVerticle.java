@@ -19,6 +19,7 @@ package ai.certifai.database.project;
 import ai.certifai.database.DatabaseConfig;
 import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
+import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
@@ -38,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Project contains details of every data point
@@ -278,11 +280,13 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         if(oriUUIDList.isEmpty())
         {
             loader.setLoaderStatus(LoaderStatus.EMPTY);
-            message.reply(new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.EMPTY.ordinal()));
+            message.reply(ReplyHandler.getOkReply());
             return;
         }
         else
         {
+            message.reply(ReplyHandler.getOkReply());
+
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
@@ -328,10 +332,16 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                         if (UUID == lastValue) {
 
-                            loader.setLoaderStatus(LoaderStatus.LOADED);
-                            JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+                            //request on portfolio database
+                            Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
 
-                            message.reply(jsonObjectResponse);
+                            PortfolioVerticle.updateUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
+
+                            loader.setLoaderStatus(LoaderStatus.LOADED);
+
+                            //JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+
+                            //message.reply(jsonObjectResponse);
                         }
                     }
 
