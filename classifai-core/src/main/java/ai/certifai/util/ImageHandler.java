@@ -233,13 +233,15 @@ public class ImageHandler {
 
                 java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
 
-                verifiedFilesList.addAll(pdf2ImagePaths);
+                if(pdf2ImagePaths != null)
+                {
+                    verifiedFilesList.addAll(pdf2ImagePaths);
+                }
             }
             else
             {
                 verifiedFilesList.add(file);
             }
-
         }
 
         return verifiedFilesList;

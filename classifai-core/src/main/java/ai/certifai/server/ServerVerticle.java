@@ -185,12 +185,12 @@ public class ServerVerticle extends AbstractVerticle
 
                                             if (ReplyHandler.isReplyFailed(updatePortfolio))
                                             {
-                                                log.error("Save updates to portfolio database failed");
+                                                log.error("Project " + projectName + ": Save updates to portfolio database failed");
                                             }
                                         }
                                         else
                                         {
-                                            log.error("Remove obsolete uuid list failed");
+                                            log.error("Project " + projectName + ": Failed to receive reply from remove obsolete uuid list from portfolio database");
                                         }
 
                                     });
@@ -198,13 +198,13 @@ public class ServerVerticle extends AbstractVerticle
                             }
                             else
                             {
-                                log.error("Remove obsolete uuid item failed");
+                                log.error("Project " + projectName + ": Failed to receive reply from remove obsolete uuid");
                             }
                         });
                     }
                     else
                     {
-                        log.error("Remove obsolete list resulted in error");
+                        log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
                     }
                 }
             });
