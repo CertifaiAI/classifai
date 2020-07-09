@@ -230,8 +230,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             {
                 ResultSet resultSet = fetch.result();
 
-                if (resultSet.getNumRows() == 0) {
-                    log.error("Should not get null");
+                if (resultSet.getNumRows() == 0)
+                {
+                    System.out.println("Should not get null");
+
+                    log.debug("Should not get null");
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
                 else {
@@ -239,6 +242,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
+
+                    System.out.println("DataPath: " + dataPath);
+
                     String thumbnail = ImageHandler.getThumbNail(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
