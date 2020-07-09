@@ -292,11 +292,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
-            Integer lastValue = oriUUIDList.get(oriUUIDList.size() - 1);
+            final Integer maxSize = oriUUIDList.size() - 1;
 
             for(int i = 0; i < oriUUIDList.size(); ++i)
             {
-                final Integer indexLength = i;
+                final Integer currentLength = i;
                 final Integer UUID = oriUUIDList.get(i);
                 JsonArray params = new JsonArray().add(UUID).add(projectID);
 
@@ -332,9 +332,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                         }
                     }
 
-                    SelectorHandler.updateProgress(projectName, indexLength + 1);
+                    SelectorHandler.updateProgress(projectName, currentLength + 1);
 
-                    if (UUID == lastValue) {
+                    if (currentLength == maxSize) {
 
                         //request on portfolio database
                         Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);

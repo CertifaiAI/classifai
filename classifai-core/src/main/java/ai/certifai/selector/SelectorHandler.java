@@ -79,11 +79,6 @@ public class SelectorHandler {
         projectLoader.updateSanityUUIDItem(uuid);
     }
 
-    public static void setProjectLoaderStatus(String projectName, LoaderStatus status) {
-        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
-
-        projectLoader.resetProjectLoader(status);
-    }
 
     public static void updateProgress(String projectName, Integer progress)
     {

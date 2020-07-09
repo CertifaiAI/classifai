@@ -45,6 +45,13 @@ public class ProjectLoader
         setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
     }
 
+    public void resetLoaderStatus()
+    {
+        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
+        currentProcessedLength = 0;
+        sanityUUIDList.clear();
+    }
+
     private void setProjectLoader(LoaderStatus status)
     {
         loaderStatus = status;

@@ -231,7 +231,7 @@ public class ImageHandler {
             }
             else if((bimg.getWidth() > ImageFileType.getMaxWidth()) || (bimg.getHeight() > ImageFileType.getMaxHeight()))
             {
-                log.info("Image size too big. Skipped " + filePath.getAbsolutePath());
+                log.info("Image size bigger than maximum allowed input size. Skipped " + filePath.getAbsolutePath());
                 return false;
             }
         }

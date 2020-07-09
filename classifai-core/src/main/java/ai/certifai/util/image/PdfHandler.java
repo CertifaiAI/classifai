@@ -92,10 +92,7 @@ public class PdfHandler
 
                 if(fImageSavedFullPath.exists() == false)
                 {
-                    //BufferedImage bim = pdfRenderer.renderImageWithDPI(page, dotsPerInch, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
-
-                    BufferedImage bim = pdfRenderer.renderImage(page, (float) 0.8, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
-
+                    BufferedImage bim = pdfRenderer.renderImageWithDPI(page, dotsPerInch, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
 
                     if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {

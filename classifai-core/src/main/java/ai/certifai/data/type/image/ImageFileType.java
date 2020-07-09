@@ -27,8 +27,8 @@ import java.util.Map;
 @NoArgsConstructor
 public class ImageFileType {
 
-    private static final Integer MAX_WIDTH = 4000;
-    private static final Integer MAX_HEIGHT = 4000;
+    private static final Integer MAX_WIDTH = 5000;
+    private static final Integer MAX_HEIGHT = 5000;
 
     private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
