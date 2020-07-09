@@ -71,7 +71,6 @@ public class PdfHandler
 
     public static List<File> savePdf2Image(String pdfFileName)
     {
-
         try {
             PDDocument document = PDDocument.load(new File(pdfFileName));
             PDFRenderer pdfRenderer = new PDFRenderer(document);
@@ -103,7 +102,7 @@ public class PdfHandler
         catch(Exception e)
         {
             log.info("PDF Skipped. Failed to read in pdf: " + pdfFileName);
-            log.error("Error: ", e);
+            log.debug("Error: ", e);
         }
 
         return null;

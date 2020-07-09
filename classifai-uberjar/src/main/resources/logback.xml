@@ -43,7 +43,8 @@
 
     <logger name="com.mchange.v2" level="warn"/>
 
-    <root level="ERROR">
+    <!-- ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
+    <root level="DEBUG">
         <appender-ref ref="FILE" />
     </root>
 
