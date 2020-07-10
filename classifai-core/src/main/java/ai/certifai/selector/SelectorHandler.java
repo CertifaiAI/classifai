@@ -18,8 +18,6 @@ package ai.certifai.selector;
 
 import ai.certifai.data.DataType;
 import ai.certifai.database.loader.ProjectLoader;
-import ai.certifai.database.portfolio.PortfolioVerticle;
-import ai.certifai.util.ConversionHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
