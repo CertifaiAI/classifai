@@ -131,17 +131,24 @@ public class ServerVerticle extends AbstractVerticle
     //PUT http://localhost:{port}/selectproject/:projectname http://localhost:{port}/selectproject/helloworld
     private void selectProject(RoutingContext context)
     {
-
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        if(!checkLoader(loader, context)) return;
+        if(loader == null)
+        {
+            JsonObject jsonObject = ReplyHandler.getFailedReply();
+            jsonObject.put(ReplyHandler.getMessageKey(), "Project name did not exist");
+            HTTPResponseHandler.configureBadRequest(context, jsonObject);
+            return;
+        }
 
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
         if(loaderStatus != LoaderStatus.LOADING)
         {
+            loader.setLoaderStatus(LoaderStatus.LOADING);
+
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
             //get uuid list for processing
@@ -163,42 +170,15 @@ public class ServerVerticle extends AbstractVerticle
                         //start checking uuid if it's path is still exist
                         vertx.eventBus().request(ProjectSQLQuery.QUEUE, removalObject, removalOptions, fetch ->
                         {
-                            if(fetch.succeeded())
+                            JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                            if(ReplyHandler.isReplyOk(removalResponse))
                             {
-                                JsonObject removalResponse = (JsonObject) fetch.result().body();
-                                Integer removalStatus = removalResponse.getInteger(ReplyHandler.getMessageKey());
-
-                                if (removalStatus == LoaderStatus.LOADED.ordinal())
-                                {
-                                    //request on portfolio database
-                                    Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                                    jsonObject.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.set2List(uuidCheckedList));
-
-                                    DeliveryOptions updateOption = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_PROJECT);
-
-                                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, updateOption, updateFetch -> {
-
-                                        if (updateFetch.succeeded())
-                                        {
-                                            JsonObject updatePortfolio = (JsonObject) updateFetch.result().body();
-
-                                            if (ReplyHandler.isReplyFailed(updatePortfolio))
-                                            {
-                                                log.error("Project " + projectName + ": Save updates to portfolio database failed");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            log.error("Project " + projectName + ": Failed to receive reply from remove obsolete uuid list from portfolio database");
-                                        }
-
-                                    });
-                                }
+                                log.info("Loading project: " + projectName);
                             }
                             else
                             {
-                                log.error("Project " + projectName + ": Failed to receive reply from remove obsolete uuid");
+                                log.info("Failed to load project: " + projectName);
                             }
                         });
                     }
@@ -212,18 +192,6 @@ public class ServerVerticle extends AbstractVerticle
         HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()); //FIXME: This is terrible
     }
 
-    private boolean checkLoader(ProjectLoader loader, RoutingContext context)
-    {
-        if(loader == null)
-        {
-            JsonObject jsonObject = ReplyHandler.getFailedReply();
-            jsonObject.put(ReplyHandler.getMessageKey(), "Project name did not exist");
-            HTTPResponseHandler.configureBadRequest(context, jsonObject);
-            return false;
-        }
-
-        return true;
-    }
 
     //PUT http://localhost:{port}/selectproject/status/:projectname
     private void selectProjectStatus(RoutingContext context)
@@ -232,15 +200,13 @@ public class ServerVerticle extends AbstractVerticle
 
         ProjectLoader projectLoader = SelectorHandler.getProjectLoader(projectName);
 
-        if(!checkLoader(projectLoader, context)) return;
-
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
         if(loaderStatus == LoaderStatus.ERROR)
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
         }
-        else if(loaderStatus == LoaderStatus.LOADING)
+        else if((loaderStatus == LoaderStatus.LOADING) || (loaderStatus == LoaderStatus.DID_NOT_INITIATED))
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
             jsonObject.put(ParamConfig.PROGRESS_METADATA, projectLoader.getProgress());
@@ -260,6 +226,9 @@ public class ServerVerticle extends AbstractVerticle
                     if(ReplyHandler.isReplyOk(response))
                     {
                         response.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+
+                        //reset
+                        projectLoader.resetLoaderStatus();
 
                         HTTPResponseHandler.configureOK(context, response);
                     }
@@ -411,7 +380,7 @@ public class ServerVerticle extends AbstractVerticle
 
                                 Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size() + 1;
 
-                                SelectorHandler.configureOpenWindow(seedNumber);
+                                SelectorHandler.configureOpenWindow(projectName, seedNumber);
 
                                 if (fileType.equals(SelectorHandler.FILE))
                                 {
@@ -464,7 +433,7 @@ public class ServerVerticle extends AbstractVerticle
 
                 SelectorStatus selectorStatus = SelectorHandler.getSelectorStatus();
 
-                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate());
+                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate(projectName));
                 res.put(ReplyHandler.getMessageKey(), selectorStatus.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);

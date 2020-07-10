@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.certifai.data.type.image;
+package ai.certifai.util.image;
 
+import ai.certifai.data.type.image.ImageFileType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
@@ -31,6 +32,7 @@ import java.util.List;
 public class PdfHandler
 {
     private static String PDFFORMAT = "pdf";
+    private static final Integer MAX_ALLOWED_PAGES = 10; //only allow max 10 pages per document
     private static Integer dotsPerInch = 300; //standard dots per inch is 300
 
     public static boolean isPdf(String pdfFileName)
@@ -48,6 +50,7 @@ public class PdfHandler
         }
     }
 
+    //FIXME: Poorly written
     public static String getPathToFile(String pdfFileName)
     {
         String[] subString = pdfFileName.split("/");
@@ -71,15 +74,17 @@ public class PdfHandler
 
     public static List<File> savePdf2Image(String pdfFileName)
     {
-
         try {
             PDDocument document = PDDocument.load(new File(pdfFileName));
             PDFRenderer pdfRenderer = new PDFRenderer(document);
             List<File> pdf2Images = new ArrayList<>();
 
+            int maxPages = document.getNumberOfPages();
+            if(maxPages > MAX_ALLOWED_PAGES) maxPages = MAX_ALLOWED_PAGES;
+
             String pathFirstHalf = getPathToFile(pdfFileName);
 
-            for (int page = 0; page < document.getNumberOfPages(); ++page)
+            for (int page = 0; page < maxPages; ++page)
             {
                 String imageSavedFullPath = pathFirstHalf + "_" + (page+1) + ".png";
 
@@ -88,6 +93,12 @@ public class PdfHandler
                 if(fImageSavedFullPath.exists() == false)
                 {
                     BufferedImage bim = pdfRenderer.renderImageWithDPI(page, dotsPerInch, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
+
+                    if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
+                    {
+                        document.close();
+                        throw new Exception("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
+                    }
 
                     pdf2Images.add(fImageSavedFullPath);
 
@@ -103,7 +114,7 @@ public class PdfHandler
         catch(Exception e)
         {
             log.info("PDF Skipped. Failed to read in pdf: " + pdfFileName);
-            log.error("Error: ", e);
+            log.debug("Error: ", e);
         }
 
         return null;

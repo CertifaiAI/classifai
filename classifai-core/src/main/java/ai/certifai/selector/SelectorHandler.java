@@ -17,8 +17,9 @@
 package ai.certifai.selector;
 
 import ai.certifai.data.DataType;
-import ai.certifai.database.loader.LoaderStatus;
 import ai.certifai.database.loader.ProjectLoader;
+import ai.certifai.database.portfolio.PortfolioVerticle;
+import ai.certifai.util.ConversionHandler;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -51,8 +52,6 @@ public class SelectorHandler {
     @Getter private static boolean isLoaderProcessing = false;
     @Setter @Getter private static SelectorStatus selectorStatus;
 
-    @Setter @Getter private static List<Integer> progressUpdate;
-
     @Getter
     private static String currentWindowSelection;//FILE FOLDER
 
@@ -69,8 +68,6 @@ public class SelectorHandler {
         projectLoaderDict = new HashMap<String, ProjectLoader>();
 
         projectIDGenerator = new AtomicInteger(0);
-        progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
-
     }
 
     public static void updateSanityUUIDItem(String projectName, Integer uuid) {
@@ -79,17 +76,13 @@ public class SelectorHandler {
         projectLoader.updateSanityUUIDItem(uuid);
     }
 
-    public static void setProjectLoaderStatus(String projectName, LoaderStatus status) {
-        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
-
-        projectLoader.resetProjectLoader(status);
-    }
 
     public static void updateProgress(String projectName, Integer progress)
     {
         ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
 
         loader.updateProgress(progress);
+
     }
 
     public static ProjectLoader getProjectLoader(String projectName) {
@@ -160,19 +153,36 @@ public class SelectorHandler {
 
     }
 
-    public static void configureOpenWindow(Integer uuidGenerator)
+    public static void configureOpenWindow(String projectName, Integer uuidGenerator)
     {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
         if(uuidGenerator == 0)
         {
             //prevent nan
-            progressUpdate = new ArrayList<>(Arrays.asList(0, 1));
+            projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, 1)));
         }
         else
         {
-            progressUpdate = new ArrayList<>(Arrays.asList(0, uuidGenerator));
+            projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, uuidGenerator)));
+
         }
 
         isWindowOpen = true;
+    }
+
+    public static List<Integer> getProgressUpdate(String projectName)
+    {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        return projectLoader.getProgressUpdate();
+    }
+
+    public static void setProgressUpdate(@NonNull String projectName, List<Integer> progressUpdate)
+    {
+        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+
+        projectLoader.setProgressUpdate(progressUpdate);
     }
 
     public static void startDatabaseUpdate(@NonNull String projectName) {

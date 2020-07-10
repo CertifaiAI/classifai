@@ -14,10 +14,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.certifai.util;
+package ai.certifai.util.image;
 
 import ai.certifai.data.type.image.ImageFileType;
-import ai.certifai.data.type.image.PdfHandler;
 import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.database.project.ProjectVerticle;
 import ai.certifai.selector.SelectorHandler;
@@ -40,17 +39,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class ImageHandler {
 
-    private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
-    private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
-
-
     private static String getImageHeader(String input)
     {
         Integer lastIndex = input.length();
 
         Iterator<Map.Entry<String, String>> itr = ImageFileType.getBase64header().entrySet().iterator();
 
-        while (itr.hasNext()) {
+        while (itr.hasNext())
+        {
             Map.Entry<String, String> entry = itr.next();
 
             String fileFormat = input.substring(lastIndex - entry.getKey().length(), lastIndex);
@@ -109,8 +105,8 @@ public class ImageHandler {
             Integer oriHeight = img.getHeight();
             Integer oriWidth = img.getWidth();
 
-            Integer thumbnailWidth = FIXED_THUMBNAIL_WIDTH;
-            Integer thumbnailHeight = FIXED_THUMBNAIL_HEIGHT;
+            Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
+            Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
 
             if(oriHeight > oriWidth)
             {
@@ -168,7 +164,7 @@ public class ImageHandler {
      */
     public static Map<String, Integer> getImageMetadata(File file)
     {
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        Map<String, Integer> map = new HashMap<>();
 
         Integer width = 0;
         Integer height = 0;
@@ -221,6 +217,33 @@ public class ImageHandler {
         return false;
     }
 
+    private static boolean isImageFileValid(String file)
+    {
+        try {
+            File filePath = new File(file);
+
+            BufferedImage bimg = ImageIO.read(filePath);
+
+            if (bimg == null)
+            {
+                log.info("Failed in reading. Skipped " + filePath.getAbsolutePath());
+                return false;
+            }
+            else if((bimg.getWidth() > ImageFileType.getMaxWidth()) || (bimg.getHeight() > ImageFileType.getMaxHeight()))
+            {
+                log.info("Image size bigger than maximum allowed input size. Skipped " + filePath.getAbsolutePath());
+                return false;
+            }
+        }
+        catch(Exception e)
+        {
+            log.debug("Error: ", e);
+            return false;
+        }
+
+        return true;
+    }
+
     public static List<File> checkFile(@NonNull File file)
     {
         List<File> verifiedFilesList = new ArrayList<>();
@@ -238,7 +261,7 @@ public class ImageHandler {
                     verifiedFilesList.addAll(pdf2ImagePaths);
                 }
             }
-            else
+            else if(isImageFileValid(currentFileFullPath))
             {
                 verifiedFilesList.add(file);
             }
@@ -265,10 +288,10 @@ public class ImageHandler {
             if (bSaveUUIDSuccess) uuidList.add(uuid);
 
             //update progress
-            SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+            SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
         }
 
-        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(uuidList);
+        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
     }
 
     public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)
