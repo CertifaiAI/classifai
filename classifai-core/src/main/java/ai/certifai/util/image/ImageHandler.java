@@ -289,7 +289,15 @@ public class ImageHandler {
             SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
         }
 
-        if(uuidList.isEmpty() == false) PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
+        while(true)
+        {
+            if((uuidList.size() == filesCollection.size()) || (!SelectorHandler.isLoaderProcessing()))
+            {
+                PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
+                break;
+            }
+        }
+
     }
 
     public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)
