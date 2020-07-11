@@ -123,9 +123,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     }
 
-    public static boolean updateUUID(File file, Integer UUID)
+    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
     {
-
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
@@ -148,12 +147,12 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 {
                     log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
+                else
+                {
+                    uuidList.add(UUID);
+                }
             });
-
-            return true;
         }
-
-        return false;
     }
 
     /*
