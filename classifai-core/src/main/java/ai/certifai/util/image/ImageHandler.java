@@ -283,9 +283,7 @@ public class ImageHandler {
         {
             Integer uuid = uuidGenerator.incrementAndGet();
 
-            boolean bSaveUUIDSuccess = ProjectVerticle.updateUUID(item, uuid);
-
-            if (bSaveUUIDSuccess) uuidList.add(uuid);
+            ProjectVerticle.updateUUID(uuidList, item, uuid);
 
             //update progress
             SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));

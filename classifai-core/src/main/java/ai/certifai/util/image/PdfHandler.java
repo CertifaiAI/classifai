@@ -32,7 +32,7 @@ import java.util.List;
 public class PdfHandler
 {
     private static String PDFFORMAT = "pdf";
-    private static final Integer MAX_ALLOWED_PAGES = 10; //only allow max 10 pages per document
+    private static final Integer MAX_ALLOWED_PAGES = 20; //only allow max 20 pages per document
     private static Integer dotsPerInch = 300; //standard dots per inch is 300
 
     public static boolean isPdf(String pdfFileName)

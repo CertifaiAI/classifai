@@ -1,7 +1,5 @@
 package ai.certifai.util;
 
-import ch.qos.logback.core.pattern.ConverterUtil;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
