@@ -23,7 +23,7 @@ import ai.certifai.database.portfolio.PortfolioVerticle;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
-import ai.certifai.util.ImageHandler;
+import ai.certifai.util.image.ImageHandler;
 import ai.certifai.util.message.ErrorCodes;
 import ai.certifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -123,9 +123,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
     }
 
-    public static boolean updateUUID(File file, Integer UUID)
+    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
     {
-
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
@@ -148,12 +147,12 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 {
                     log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
+                else
+                {
+                    uuidList.add(UUID);
+                }
             });
-
-            return true;
         }
-
-        return false;
     }
 
     /*
@@ -230,15 +229,17 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             {
                 ResultSet resultSet = fetch.result();
 
-                if (resultSet.getNumRows() == 0) {
-                    log.error("Should not get null");
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                if (resultSet.getNumRows() == 0)
+                {
+                    log.debug("Should not get null");
+                    message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
                 }
                 else {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
+
                     String thumbnail = ImageHandler.getThumbNail(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
@@ -261,7 +262,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
             }
             else {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
             }
         });
     }
@@ -290,11 +291,11 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
-            Integer lastValue = oriUUIDList.get(oriUUIDList.size() - 1);
+            final Integer maxSize = oriUUIDList.size() - 1;
 
             for(int i = 0; i < oriUUIDList.size(); ++i)
             {
-                final Integer indexLength = i;
+                final Integer currentLength = i;
                 final Integer UUID = oriUUIDList.get(i);
                 JsonArray params = new JsonArray().add(UUID).add(projectID);
 
@@ -321,7 +322,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                                         log.error("Failed to remove obsolete uuid from database");
                                     }
-
                                 });
                             }
                             else {
@@ -329,24 +329,17 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                             }
 
                         }
-
-                        if (UUID == lastValue) {
-
-                            //request on portfolio database
-                            Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                            PortfolioVerticle.updateUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-
-                            loader.setLoaderStatus(LoaderStatus.LOADED);
-
-                            //JsonObject jsonObjectResponse = new JsonObject().put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
-
-                            //message.reply(jsonObjectResponse);
-                        }
                     }
 
-                    SelectorHandler.updateProgress(projectName, indexLength + 1);
+                    SelectorHandler.updateProgress(projectName, currentLength);
 
+                    if(currentLength.equals(maxSize))
+                    {
+                        //request on portfolio database
+                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
+
+                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
+                    }
                 });
             }
         }

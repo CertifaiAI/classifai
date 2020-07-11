@@ -45,7 +45,7 @@
     <logger name="com.mchange.v2" level="warn"/>
     <logger name="io.netty" level="warn"/>
 
-    <logger name="ai.certifai.data.type.image" level="DEBUG" additivity="false">
+    <logger name="ai.certifai.util.image" level="DEBUG" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>
 

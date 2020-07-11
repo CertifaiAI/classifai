@@ -17,6 +17,8 @@
 package ai.certifai.database.portfolio;
 
 import ai.certifai.database.DatabaseConfig;
+import ai.certifai.database.loader.LoaderStatus;
+import ai.certifai.database.loader.ProjectLoader;
 import ai.certifai.selector.SelectorHandler;
 import ai.certifai.server.ParamConfig;
 import ai.certifai.util.ConversionHandler;
@@ -380,6 +382,26 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
 
+    }
+
+    public static void resetUUIDList(String projectName, List<Integer> newUUIDList)
+    {
+        List<Integer> verifiedUUIDListString = ListHandler.convertListToUniqueList(newUUIDList);
+
+        JsonArray jsonUpdateBody = new JsonArray().add(verifiedUUIDListString.toString()).add(projectName);
+
+        portfolioDbClient.queryWithParams(PortfolioSQLQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
+
+            if(!reply.succeeded())
+            {
+                log.error("Update list of uuids to Portfolio Database failed");
+            }
+
+            ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+
+            loader.setLoaderStatus(LoaderStatus.LOADED);
+            
+         });
     }
 
     public static void updateUUIDList(String projectName, List<Integer> newUUIDList)
