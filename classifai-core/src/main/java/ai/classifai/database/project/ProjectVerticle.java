@@ -50,6 +50,8 @@ import java.util.Set;
 @Slf4j
 public class ProjectVerticle extends AbstractVerticle implements ProjectServiceable
 {
+    TinyYoloLoader loader = new TinyYoloLoader();
+
     //connection to database
     private static JDBCClient projectJDBCClient;
 
@@ -115,7 +117,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     //FIXME: Quick test
                     log.info("retrieveData: Initialization of TinyYoloLoader");
                     System.out.println("retrieveData: Initialization of TinyYoloLoader");
-                    TinyYoloLoader loader = new TinyYoloLoader();
                     loader.getInference(imagePath);
 
 
@@ -196,7 +197,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     //FIXME: Quick test
                     log.info("retrieveThumbnail: Initialization of TinyYoloLoader");
                     System.out.println("retrieveThumbnail: Initialization of TinyYoloLoader");
-                    TinyYoloLoader loader = new TinyYoloLoader();
+
                     loader.getInference(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
