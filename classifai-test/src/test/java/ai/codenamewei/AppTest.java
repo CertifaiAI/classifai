@@ -1,4 +1,4 @@
-package ai.certifai;
+package ai.classifai;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -12,6 +12,6 @@ public class AppTest
     @Test
     public void initializeAppSuccessfully()
     {
-        ai.certifai.IntellibelApp.main(null);
+        ai.classifai.IntellibelApp.main(null);
     }
 }
