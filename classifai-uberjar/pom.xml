@@ -17,7 +17,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>ai.certifai.classifai</groupId>
+        <groupId>ai.classifai</groupId>
         <artifactId>classifai</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -31,12 +31,12 @@
             <id>uberjar</id>
             <dependencies>
                 <dependency>
-                    <groupId>ai.certifai.classifai</groupId>
+                    <groupId>ai.classifai</groupId>
                     <artifactId>classifai-core</artifactId>
                     <version>1.0-SNAPSHOT</version>
                 </dependency>
                 <dependency>
-                    <groupId>ai.certifai.classifai</groupId>
+                    <groupId>ai.classifai</groupId>
                     <artifactId>classifai-api</artifactId>
                     <version>1.0-SNAPSHOT</version>
                 </dependency>
@@ -83,7 +83,7 @@
                                                 implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                         <transformer
                                                 implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                            <mainClass>ai.certifai.ClassifaiApp</mainClass>
+                                            <mainClass>ai.classifai.ClassifaiApp</mainClass>
                                         </transformer>
                                     </transformers>
                                 </configuration>
