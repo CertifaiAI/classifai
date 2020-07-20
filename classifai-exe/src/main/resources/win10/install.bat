@@ -1,5 +1,4 @@
-@echo on
-mkdir %APPDATA%\classifai
-move classifai.lnk %USERPROFILE%\Desktop
-move classifai.bat %APPDATA%\classifai
-move classifai-uberjar-1.0-SNAPSHOT-dev.jar %APPDATA%\classifai
+@echo off
+
+rem copy classifai shortcut to desktop
+copy classifai.lnk %USERPROFILE%\Desktop

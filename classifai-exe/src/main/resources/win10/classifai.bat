@@ -1,1 +1,1 @@
-java -jar %APPDATA%\classifai\classifai-uberjar-1.0-SNAPSHOT-dev.jar --unlockdb=true --port=1234
+java -jar classifai-uberjar-1.0-SNAPSHOT-dev.jar --unlockdb=true --port=1234
