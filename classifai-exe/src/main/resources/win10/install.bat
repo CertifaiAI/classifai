@@ -16,9 +16,20 @@ copy classifai-uberjar-1.0-SNAPSHOT-dev.jar %APPDATA%\classifai
 
 rem get %desktop%
 
-for /f "usebackq tokens=3*" %%D IN (`reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v Desktop`) do set DESKTOP=%%D >nul 2>nul
+rem for /f "usebackq tokens=3*" %%D IN (`reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v Desktop`) do set DESKTOP=%%D >nul 2>nul
 
-if not defined %DESKTOP% SET DESKTOP=%USERPROFILE%\Desktop
+
+if exist %USERPROFILE%\Desktop (
+    SET DESKTOP=%USERPROFILE%\Desktop
+) else if exist C:\Users\Admin\OneDrive\Desktop (
+    SET DESKTOP=C:\Users\Admin\OneDrive\Desktop
+) else (
+    echo Desktop path not found
+    goto :ABORT
+)
+
+echo %DESKTOP%
+
 
 rem create classifai shortcut
 
