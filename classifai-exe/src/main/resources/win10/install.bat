@@ -13,23 +13,18 @@ mkdir %APPDATA%\classifai
 
 copy classifai.bat %APPDATA%\classifai
 copy classifai-uberjar-1.0-SNAPSHOT-dev.jar %APPDATA%\classifai
+copy Classifai_Favicon_Light_512px.ico %APPDATA%\classifai
 
 rem get %desktop%
 
-rem for /f "usebackq tokens=3*" %%D IN (`reg query "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v Desktop`) do set DESKTOP=%%D >nul 2>nul
-
-
 if exist %USERPROFILE%\Desktop (
     SET DESKTOP=%USERPROFILE%\Desktop
-) else if exist C:\Users\Admin\OneDrive\Desktop (
-    SET DESKTOP=C:\Users\Admin\OneDrive\Desktop
+rem ) else if exist C:\Users\Admin\OneDrive\Desktop (
+rem    SET DESKTOP=C:\Users\Admin\OneDrive\Desktop
 ) else (
     echo Desktop path not found
     goto :ABORT
 )
-
-echo %DESKTOP%
-
 
 rem create classifai shortcut
 
@@ -39,6 +34,7 @@ echo Set oWS = WScript.CreateObject("WScript.Shell") >> %SCRIPT%
 echo sLinkFile = "%DESKTOP%\classifai.lnk" >> %SCRIPT%
 echo Set oLink = oWS.CreateShortcut(sLinkFile) >> %SCRIPT%
 echo oLink.TargetPath = "%APPDATA%\classifai\classifai.bat" >> %SCRIPT%
+echo oLink.IconLocation = "%APPDATA%\classifai\Classifai_Favicon_Light_512px.ico" >> %SCRIPT%
 echo oLink.Save >> %SCRIPT%
 
 cscript /nologo %SCRIPT%
