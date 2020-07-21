@@ -13,7 +13,7 @@ mkdir %APPDATA%\classifai
 
 copy classifai.bat %APPDATA%\classifai
 copy classifai-uberjar-1.0-SNAPSHOT-dev.jar %APPDATA%\classifai
-copy Classifai_Favicon_Light_512px.ico %APPDATA%\classifai
+copy Classifai_Favicon_Dark_512px.ico %APPDATA%\classifai
 
 rem get %desktop%
 
