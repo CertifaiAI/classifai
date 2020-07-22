@@ -41,11 +41,15 @@ cscript /nologo %SCRIPT%
 del %SCRIPT%
 
 echo Installation of Classifai completed. Success!
+set url="http://localhost:9999/"
+start chrome %url%
 endlocal
 goto CLOSE
 
 :ABORT
 echo Installation of Classifai abort.
+echo File an issue on https://github.com/CertifaiAI/classifai
+echo or contact dev team through email helloannotation@certifai.ai.
 goto CLOSE
 
 :CLOSE
