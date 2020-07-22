@@ -41,8 +41,8 @@ cscript /nologo %SCRIPT%
 del %SCRIPT%
 
 echo Installation of Classifai completed. Success!
-set url="http://localhost:9999/"
-start chrome %url%
+
+rem start classifai
 endlocal
 goto CLOSE
 
