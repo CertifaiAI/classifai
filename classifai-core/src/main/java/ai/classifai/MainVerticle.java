@@ -64,8 +64,19 @@ public class MainVerticle extends AbstractVerticle
         }).onComplete(ar ->
         {
             if (ar.succeeded()) {
+
+                String url = "http://localhost:" + config().getInteger("http.port");
+
                 log.info("Classifai started successfully");
-                log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
+                log.info("Go on and open " + url);
+
+                try {
+                    Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start chrome " + url});
+                }
+                catch (Exception e)
+                {
+                    log.debug("Chrome failed to start.");
+                }
 
                 promise.complete();
             } else {
