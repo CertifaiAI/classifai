@@ -20,6 +20,7 @@ import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.project.ProjectVerticle;
 import ai.classifai.server.ServerVerticle;
+import ai.classifai.util.BrowserHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class MainVerticle extends AbstractVerticle
     }
 
     @Override
-    public void start(Promise<Void> promise) throws Exception {
+    public void start(Promise<Void> promise) {
 
         configureDatabase();
 
@@ -74,22 +75,17 @@ public class MainVerticle extends AbstractVerticle
                 try
                 {
                     //delay opening chrome for 3 seconds
-                    TimeUnit.SECONDS.sleep(3);
+                    TimeUnit.SECONDS.sleep(2);
                 }
                 catch(InterruptedException e)
                 {
                     log.debug("Exception while pause, ", e);
                 }
 
-                try {
-                    Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start chrome " + url});
-                }
-                catch (Exception e)
-                {
-                    log.debug("Chrome failed to start.");
-                }
+                BrowserHandler.openOnBrowser(url);
 
                 promise.complete();
+
             } else {
                 promise.fail(ar.cause());
             }

@@ -13,7 +13,7 @@ mkdir %APPDATA%\classifai
 
 copy classifai.bat %APPDATA%\classifai
 copy classifai-win-1.0-SNAPSHOT-dev.jar %APPDATA%\classifai
-copy Classifai_Favicon_Dark_512px.ico %APPDATA%\classifai
+copy classifai_win.ico %APPDATA%\classifai
 
 rem get %desktop%
 
