@@ -34,7 +34,7 @@ echo Set oWS = WScript.CreateObject("WScript.Shell") >> %SCRIPT%
 echo sLinkFile = "%DESKTOP%\classifai.lnk" >> %SCRIPT%
 echo Set oLink = oWS.CreateShortcut(sLinkFile) >> %SCRIPT%
 echo oLink.TargetPath = "%APPDATA%\classifai\classifai.bat" >> %SCRIPT%
-echo oLink.IconLocation = "%APPDATA%\classifai\Classifai_Favicon_Dark_512px.ico" >> %SCRIPT%
+echo oLink.IconLocation = "%APPDATA%\classifai\classifai_win.ico" >> %SCRIPT%
 echo oLink.Save >> %SCRIPT%
 
 cscript /nologo %SCRIPT%
