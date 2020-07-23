@@ -26,9 +26,7 @@
 
     <modules>
         <module>classifai-core</module>
-        <module>classifai-uberjar</module>
         <module>classifai-api</module>
-        <module>classifai-win</module>
         <!--<module>classifai-test</module>-->
     </modules>
 
@@ -209,6 +207,18 @@
             <id>test</id>
             <modules>
                 <module>classifai-test</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>window</id>
+            <modules>
+                <module>classifai-win</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>uberjar</id>
+            <modules>
+                <module>classifai-uberjar</module>
             </modules>
         </profile>
     </profiles>

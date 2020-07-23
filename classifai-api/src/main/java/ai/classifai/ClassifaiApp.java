@@ -21,8 +21,8 @@ import ai.classifai.config.PortSelector;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import io.vertx.core.json.JsonObject;
 
 import javax.swing.*;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +30,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
+    public static void main(String[] args)
+    {
+        boolean isConfigured = configure(args);
 
         if (isConfigured == false) {
             log.info("Classifai failed to configure. Abort.");
