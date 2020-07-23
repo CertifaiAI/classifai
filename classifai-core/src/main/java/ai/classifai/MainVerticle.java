@@ -71,10 +71,10 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Classifai started successfully");
                 log.info("Go on and open " + url);
 
-                //delay opening chrome for 1 second
                 try
                 {
-                    TimeUnit.SECONDS.sleep(2);
+                    //delay opening chrome for 3 seconds
+                    TimeUnit.SECONDS.sleep(3);
                 }
                 catch(InterruptedException e)
                 {

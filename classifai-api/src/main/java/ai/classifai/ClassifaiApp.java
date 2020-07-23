@@ -30,12 +30,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    public static void main(String[] args) {
-
-        ClassifaiApp app = new ClassifaiApp();
-        app.configure();
-
-        boolean isConfigured = configure(args);
 
         if (isConfigured == false) {
             log.info("Classifai failed to configure. Abort.");
@@ -56,10 +50,6 @@ public class ClassifaiApp
 
     }
 
-    private void configure()
-    {
-        System.setProperty("LOG_PATH", "C:\\Users\\chiaw\\Mirror");
-    }
 
     static boolean configure(String[] args)
     {
