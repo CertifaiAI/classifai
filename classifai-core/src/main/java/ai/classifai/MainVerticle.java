@@ -25,6 +25,7 @@ import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class MainVerticle extends AbstractVerticle
@@ -69,6 +70,16 @@ public class MainVerticle extends AbstractVerticle
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open " + url);
+
+                //delay opening chrome for 1 second
+                try
+                {
+                    TimeUnit.SECONDS.sleep(2);
+                }
+                catch(InterruptedException e)
+                {
+                    log.debug("Exception while pause, ", e);
+                }
 
                 try {
                     Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start chrome " + url});
