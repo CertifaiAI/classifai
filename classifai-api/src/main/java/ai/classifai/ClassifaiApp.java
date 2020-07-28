@@ -17,6 +17,7 @@
 package ai.classifai;
 
 import ai.classifai.config.DbConfig;
+import ai.classifai.config.LogFileConfig;
 import ai.classifai.config.PortSelector;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -56,6 +57,8 @@ public class ClassifaiApp
 
     static boolean configure(String[] args)
     {
+        //new LogFileConfig().initiate();
+
         boolean removeDbLock = false;
 
         for(int i = 0; i < args.length; ++i)
