@@ -27,7 +27,7 @@
     <modules>
         <module>classifai-core</module>
         <module>classifai-api</module>
-        <!--<module>classifai-test</module>-->
+        <module>classifai-uberjar</module>
     </modules>
 
     <name>classifai</name>
