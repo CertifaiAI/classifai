@@ -17,13 +17,12 @@
 package ai.classifai;
 
 import ai.classifai.config.DbConfig;
-import ai.classifai.config.LogFileConfig;
 import ai.classifai.config.PortSelector;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import lombok.extern.slf4j.Slf4j;
 import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.util.concurrent.TimeUnit;
@@ -57,8 +56,6 @@ public class ClassifaiApp
 
     static boolean configure(String[] args)
     {
-        //new LogFileConfig().initiate();
-
         boolean removeDbLock = false;
 
         for(int i = 0; i < args.length; ++i)
