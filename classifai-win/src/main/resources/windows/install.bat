@@ -29,6 +29,7 @@ rem    SET DESKTOP=C:\Users\Admin\OneDrive\Desktop
 rem create classifai shortcut
 
 set SCRIPT="%TEMP%\%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs"
+setx CLASSIFAI_HOME %APPDATA%\classifai
 
 echo Set oWS = WScript.CreateObject("WScript.Shell") >> %SCRIPT%
 echo sLinkFile = "%DESKTOP%\classifai.lnk" >> %SCRIPT%
