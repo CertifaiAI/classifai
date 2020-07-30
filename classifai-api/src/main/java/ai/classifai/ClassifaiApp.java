@@ -34,8 +34,7 @@ public class ClassifaiApp
     {
         boolean isConfigured = configure(args);
 
-        if(isConfigured == false)
-        {
+        if (isConfigured == false) {
             log.info("Classifai failed to configure. Abort.");
             return;
         }
@@ -51,7 +50,9 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
+
     }
+
 
     static boolean configure(String[] args)
     {
