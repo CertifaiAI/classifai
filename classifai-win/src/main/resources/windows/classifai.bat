@@ -1,12 +1,16 @@
-@echo on
+@ECHO OFF
 
-rem echo %AppData%\Roaming\classifai
-rem set logpath=%AppData%\Roaming\classifai
+REM set classifai jar name
+SET CLASSIFAI_JAR=classifai-uberjar-1.0-SNAPSHOT-dev.jar
 
-rem echo ${logpath}
-rem pause
+REM set installation path
+SET INSTALLED_PATH=%APPDATA%\classifai\%CLASSIFAI_JAR%
 
-rem start java -DLOG_PATH=${logpath} -jar %APPDATA%\classifai\classifai-win-1.0-SNAPSHOT-dev.jar  --unlockdb=true --port=9999
+IF EXIST "%INSTALLED_PATH%" (
+    start java -jar -Dlog.dir=%CLASSIFAI_HOME% %INSTALLED_PATH% --unlockdb=true --port=9999
+) ELSE (
+    REM fall back into finding jar file in current path, log in the same path too
+    start java -jar -Dlog.dir=%cd% %CLASSIFAI_JAR% --unlockdb=true --port=9999
+)
 
-start java -jar -Dlog.dir=%CLASSIFAI_HOME% %APPDATA%\classifai\classifai-uberjar-1.0-SNAPSHOT-dev.jar  --unlockdb=true --port=9999
 

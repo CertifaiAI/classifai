@@ -22,7 +22,7 @@ public class ProjectSQLQuery
 {
     public final static String QUEUE = "project.queue";
 
-    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, projectid integer, imagepath varchar(1000), bndbox varchar(5000), imgDepth integer, " +
+    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, projectid integer, imagepath varchar(2000), bndbox varchar(20000), imgDepth integer, " +
             "imageX integer, imageY integer, imageW double, imageH double, imageOriW integer, imageOriH integer, primary key(uuid, projectid))";
 
     public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
