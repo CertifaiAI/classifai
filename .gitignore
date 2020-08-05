@@ -32,3 +32,8 @@ target/
 
 #log file
 classifai.log
+
+#classifai-distro
+output/*
+*.msi
+*.exe
