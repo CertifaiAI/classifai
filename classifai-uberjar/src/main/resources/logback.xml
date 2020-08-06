@@ -16,7 +16,7 @@
 <configuration>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${java.io.tmpdir}/classifai.log</file>
+        <file>${user.home}/classifai.log</file>
         <append>true</append>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -44,7 +44,6 @@
 
     <logger name="com.mchange.v2" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
-
     <logger name="ai.classifai.util.image" level="DEBUG" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>
