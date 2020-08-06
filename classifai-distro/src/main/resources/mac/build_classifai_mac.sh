@@ -11,6 +11,7 @@ jpackage --type pkg \
          --main-jar classifai-uberjar-1.0-SNAPSHOT-dev.jar \
          --main-class ai.classifai.ClassifaiApp \
          --arguments --unlockdb=true --arguments --port=9999 \
+         --icon metadata\classifai.ico \
          --resource-dir metadata \
          --verbose
 
