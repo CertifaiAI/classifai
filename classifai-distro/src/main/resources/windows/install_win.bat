@@ -6,6 +6,8 @@ REM clean up output
 rmdir /s/q %OUTPUT_DIR%
 mkdir %OUTPUT_DIR%
 
+REM jlink --output java8_runtime --add-modules java.se --module-path "C:\Program Files\AdoptOpenJDK\jdk-8.0.262.10-hotspot"
+
 REM
 jpackage --type msi^
          --name classifai^
@@ -15,7 +17,8 @@ jpackage --type msi^
          --main-jar classifai-uberjar-1.0-SNAPSHOT-dev.jar^
          --main-class ai.classifai.ClassifaiApp^
          --arguments --unlockdb=true --arguments --port=9999^
-         --runtime-image jdk-8.0.262.10-hotspot^
          --icon classifai.ico^
          --verbose^
          --win-shortcut --win-dir-chooser --win-menu --win-console
+
+
