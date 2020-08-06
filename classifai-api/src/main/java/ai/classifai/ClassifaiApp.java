@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
         boolean isConfigured = configure(args);
 
@@ -52,8 +52,9 @@ public class ClassifaiApp
 
         Console.start();
 
-        //Vertx vertx = Vertx.vertx(vertxOptions);
-        //vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
+        Vertx vertx = Vertx.vertx(vertxOptions);
+        vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
+
     }
 
 
