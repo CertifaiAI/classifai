@@ -35,5 +35,14 @@ classifai.log
 
 #classifai-distro
 output/*
+#windows
 *.msi
 *.exe
+
+#mac
+*.pkg
+*.dmg
+
+#linux
+*.deb
+*.rpm
