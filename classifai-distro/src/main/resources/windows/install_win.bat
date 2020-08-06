@@ -17,7 +17,7 @@ jpackage --type msi^
          --main-jar classifai-uberjar-1.0-SNAPSHOT-dev.jar^
          --main-class ai.classifai.ClassifaiApp^
          --arguments --unlockdb=true --arguments --port=9999^
-         --icon classifai.ico^
+         --resource-dir metadata^
          --verbose^
          --win-shortcut --win-dir-chooser --win-menu --win-console
 
