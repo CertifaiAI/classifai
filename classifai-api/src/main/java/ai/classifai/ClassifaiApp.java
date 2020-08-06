@@ -18,6 +18,7 @@ package ai.classifai;
 
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
+import ai.classifai.ui.Console;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -34,7 +35,8 @@ public class ClassifaiApp
     {
         boolean isConfigured = configure(args);
 
-        if (isConfigured == false) {
+        if (isConfigured == false)
+        {
             log.info("Classifai failed to configure. Abort.");
             return;
         }
@@ -51,6 +53,7 @@ public class ClassifaiApp
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
 
+        Console.start();
     }
 
 
