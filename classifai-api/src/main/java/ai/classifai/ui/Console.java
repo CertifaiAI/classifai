@@ -98,12 +98,14 @@ public class Console
 
     static void openBrowser()
     {
+        //Also delay the opening of chrome when opening multiple times.
+        log.info("FIX THIS!!!");
         String url = "http://localhost:9999";// + config().getInteger("http.port"); //FIX THIS
 
         try
         {
             //delay opening chrome for 3 seconds
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch(InterruptedException e)
         {
