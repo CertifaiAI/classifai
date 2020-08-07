@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.util;
+package ai.classifai.ui;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +46,7 @@ public class BrowserHandler {
         {
             try
             {
-                Runtime.getRuntime().exec(new String[]{"/usr/bin/open", "-a", "/Applications/Google Chrome.app", url});
+                Runtime.getRuntime().exec(new String[]{"/usr/bin/open", "-a", "/Users/wei/Downloads/chrome-mac/Chromium.app", url});
 
             }
             catch(Exception e)

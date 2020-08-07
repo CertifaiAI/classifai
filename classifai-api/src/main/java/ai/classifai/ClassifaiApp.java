@@ -57,7 +57,6 @@ public class ClassifaiApp
 
     }
 
-
     static boolean configure(String[] args)
     {
         boolean removeDbLock = false;
@@ -89,6 +88,5 @@ public class ClassifaiApp
         }
 
         return true;
-
     }
 }
