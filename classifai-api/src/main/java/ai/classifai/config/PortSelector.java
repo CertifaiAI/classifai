@@ -41,7 +41,7 @@ public class PortSelector {
     {
         setHostingPort(DEFAULT_PORT);
 
-        //checkPort();
+        checkPort();
     }
 
     public static void configurePort(@NonNull String inputArg)
@@ -51,7 +51,7 @@ public class PortSelector {
             setHostingPort(Integer.parseInt(inputArg));
         }
 
-        //checkPort();
+        checkPort();
     }
 
     private static ServerSocket checkPortSanity(Integer port)
@@ -89,7 +89,6 @@ public class PortSelector {
         hostingPort = port;
         ParamConfig.setHostingPort(port);
     }
-
 
     private static Integer getRandomNumberInRange(Integer min, Integer max) {
 

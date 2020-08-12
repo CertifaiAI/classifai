@@ -16,6 +16,7 @@
 
 package ai.classifai.ui;
 
+import ai.classifai.server.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -47,7 +48,6 @@ public class WelcomeConsole
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
-
 
     public static void addComponentsToPane(Container pane)
     {
@@ -100,7 +100,7 @@ public class WelcomeConsole
     {
         //Also delay the opening of chrome when opening multiple times.
         log.info("FIX THIS!!!");
-        String url = "http://localhost:9999";// + config().getInteger("http.port"); //FIX THIS
+        String url = "http://localhost:" + ParamConfig.getHostingPort();
 
         try
         {
