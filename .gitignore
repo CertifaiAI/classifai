@@ -35,13 +35,16 @@ classifai.log
 
 #classifai-distro
 output/*
+
 #windows
 *.msi
 *.exe
 
-#mac
+#mac-distro
 *.pkg
 *.dmg
+chrome-mac/*
+Chromium.app
 
 #linux
 *.deb
