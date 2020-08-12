@@ -18,6 +18,8 @@ package ai.classifai.ui;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+
 /***
  * Handler to open classifai in browser
  *
@@ -26,61 +28,67 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ChromiumHandler {
 
-    public static void openOnBrowser(String url)
+    private static final String WIN_CHROMIUM_PATH = "app\\chrome-win\\chrome.exe";
+
+    //FIXME: Is there a way to fix this coded path?
+    private static final String MAC_CHROMIUM_PATH = "/Applications/classifai.app/Contents/app/chrome-mac/Chromium.app";
+
+    public static void openOnBrowser(String url, OSManager osManager)
     {
-        String OS = System.getProperty("os.name").toLowerCase();
+        String[] commandPath = null;
 
-        if(isWindows(OS)) //windows
+        OS currentOS = osManager.getCurrentOS();
+
+        //https://stackoverflow.com/questions/45660482/open-a-url-in-chrome-using-java-in-linux-and-mac/45660804
+        if(currentOS.equals(OS.MAC))
         {
-            try
+            if(isBrowserFileExist(MAC_CHROMIUM_PATH))
             {
-                Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start app\\chrome-win\\chrome.exe " + url});
+                commandPath = new String[]{"/usr/bin/open", "-a", System.getProperty("user.dir") + "/" + MAC_CHROMIUM_PATH, url};
             }
-            catch(Exception e)
+            else
             {
-                log.debug("Windows: Failed to open in browser. ", e);
+                //open chrome , else failed
             }
-
         }
-        else if(isMac(OS))//mac
+        else if(currentOS.equals(OS.WINDOWS))
         {
-            try
+            if(isBrowserFileExist(WIN_CHROMIUM_PATH))
             {
-                Runtime.getRuntime().exec(new String[]{"/usr/bin/open", "-a", "chrome-mac/Chromium.app", url});
-
+                commandPath = new String[]{"cmd", "/c", "start " + WIN_CHROMIUM_PATH + " " + url};
             }
-            catch(Exception e)
+            else
             {
-                log.debug("Failed to open in browser. ", e);
+                //open chrome , else failed
             }
         }
         else
         {
-            log.debug("Browser not supported");
+            log.info("Browser in " + currentOS.toString() + " not supported yet");
+
+            return;
+        }
+
+        try
+        {
+            Runtime.getRuntime().exec(commandPath);
+
+        }
+        catch(Exception e)
+        {
+            log.info(currentOS.toString() + " - Failed to open classifai. ", e);
         }
     }
 
-    private static boolean isWindows(String OS) {
+    public static boolean isBrowserFileExist(String appPath)
+    {
+        if(new File(appPath).exists() == false)
+        {
+            log.info("Chromium browser not found.");
 
-        return (OS.indexOf("win") >= 0);
+            return false;
+        }
 
-    }
-
-    private static boolean isMac(String OS) {
-
-        return (OS.indexOf("mac") >= 0);
-
-    }
-
-    private static boolean isUnix(String OS) {
-
-        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 );
-
-    }
-
-    private static boolean isSolaris(String OS) {
-
-        return (OS.indexOf("sunos") >= 0);
-
+        return true;
     }
 }

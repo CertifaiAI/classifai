@@ -28,6 +28,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class WelcomeConsole
 {
+    private static String browserURL;
+    private static OSManager osManager;
+
     final static boolean shouldFill = true;
     final static boolean RIGHT_TO_LEFT = false;
 
@@ -36,8 +39,16 @@ public class WelcomeConsole
 
     final static int PADDING_HEIGHT = 40;
 
+    public static void configure()
+    {
+        browserURL = "http://localhost:" + ParamConfig.getHostingPort();
+        osManager = new OSManager();
+    }
+
     public static void start()
     {
+        configure();
+
         JFrame frame = new JFrame("Classifai");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -63,7 +74,7 @@ public class WelcomeConsole
             c.fill = GridBagConstraints.HORIZONTAL;
         }
 
-        JButton openButton = new JButton("Open in Chromium");
+        JButton openButton = new JButton("Open In Browser");
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -100,7 +111,6 @@ public class WelcomeConsole
     {
         //Also delay the opening of chrome when opening multiple times.
         log.info("FIX THIS!!!");
-        String url = "http://localhost:" + ParamConfig.getHostingPort();
 
         try
         {
@@ -112,6 +122,6 @@ public class WelcomeConsole
             log.debug("Exception while pause, ", e);
         }
 
-        ChromiumHandler.openOnBrowser(url);
+        ChromiumHandler.openOnBrowser(browserURL, osManager);
     }
 }

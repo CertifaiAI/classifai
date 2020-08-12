@@ -18,7 +18,6 @@ package ai.classifai;
 
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
-import ai.classifai.ui.WelcomeConsole;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -49,8 +48,6 @@ public class ClassifaiApp
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
         opt.setConfig(new JsonObject().put("http.port", PortSelector.getHostingPort()));
-
-        WelcomeConsole.start();
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);

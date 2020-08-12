@@ -20,6 +20,7 @@ import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.project.ProjectVerticle;
 import ai.classifai.server.ServerVerticle;
+import ai.classifai.ui.WelcomeConsole;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -65,8 +66,12 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
+                WelcomeConsole.start();
+
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
+
+                System.out.println("Debugging: " + System.getProperty("user.dir"));
 
                 promise.complete();
 
