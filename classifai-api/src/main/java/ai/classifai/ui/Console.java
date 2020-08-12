@@ -104,7 +104,7 @@ public class Console
 
         try
         {
-            //delay opening chrome for 3 seconds
+            //delay opening chrome for 1 seconds
             TimeUnit.SECONDS.sleep(1);
         }
         catch(InterruptedException e)

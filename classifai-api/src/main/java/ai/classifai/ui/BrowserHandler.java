@@ -38,7 +38,7 @@ public class BrowserHandler {
             }
             catch(Exception e)
             {
-                log.debug("Windows: Failed to open in browser");
+                log.debug("Windows: Failed to open in browser. ", e);
             }
 
         }
@@ -46,12 +46,12 @@ public class BrowserHandler {
         {
             try
             {
-                Runtime.getRuntime().exec(new String[]{"/usr/bin/open", "-a", "/Users/wei/Downloads/chrome-mac/Chromium.app", url});
+                Runtime.getRuntime().exec(new String[]{"/usr/bin/open", "-a", "chrome-mac/Chromium.app", url});
 
             }
             catch(Exception e)
             {
-                log.debug("Failed to open in browser");
+                log.debug("Failed to open in browser. ", e);
             }
         }
         else
