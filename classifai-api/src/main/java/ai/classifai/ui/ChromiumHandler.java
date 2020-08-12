@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Chiawei Lim
  */
 @Slf4j
-public class BrowserHandler {
+public class ChromiumHandler {
 
     public static void openOnBrowser(String url)
     {
@@ -34,7 +34,7 @@ public class BrowserHandler {
         {
             try
             {
-                Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start chrome " + url});
+                Runtime.getRuntime().exec(new String[]{"cmd", "/c", "start app\\chrome-win\\chrome.exe " + url});
             }
             catch(Exception e)
             {

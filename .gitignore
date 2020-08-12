@@ -36,9 +36,10 @@ classifai.log
 #classifai-distro
 output/*
 
-#windows
+#windows-distro
 *.msi
 *.exe
+chrome-win/*
 
 #mac-distro
 *.pkg

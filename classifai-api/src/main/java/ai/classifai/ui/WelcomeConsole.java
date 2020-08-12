@@ -25,7 +25,7 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class Console
+public class WelcomeConsole
 {
     final static boolean shouldFill = true;
     final static boolean RIGHT_TO_LEFT = false;
@@ -112,6 +112,6 @@ public class Console
             log.debug("Exception while pause, ", e);
         }
 
-        BrowserHandler.openOnBrowser(url);
+        ChromiumHandler.openOnBrowser(url);
     }
 }
