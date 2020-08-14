@@ -71,8 +71,6 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
-                System.out.println("Debugging: " + System.getProperty("user.dir"));
-
                 promise.complete();
 
             } else {

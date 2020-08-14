@@ -17,8 +17,17 @@
 package ai.classifai.ui;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
+import javax.swing.*;
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import static javax.swing.JOptionPane.showMessageDialog;
+
 
 /***
  * Handler to open classifai in browser
@@ -28,10 +37,38 @@ import java.io.File;
 @Slf4j
 public class ChromiumHandler {
 
-    private static final String WIN_CHROMIUM_PATH = "app\\chrome-win\\chrome.exe";
+    private final static String PRIMARY_KEY = "chromium";
+    private final static String SECONDARY_KEY = "chrome";
+    private final static String ICON_KEY = "icon";
 
-    //FIXME: Is there a way to fix this coded path?
-    private static final String MAC_CHROMIUM_PATH = "/Applications/classifai.app/Contents/app/chrome-mac/Chromium.app";
+    private static Map<String, String> macBrowserKey;
+    private static Map<String, String> winBrowserKey;
+
+    static
+    {
+        macBrowserKey = new HashMap<>();
+        winBrowserKey = new HashMap<>();
+
+        //FIXME: Is there a way to fix this coded path?
+        macBrowserKey.put(PRIMARY_KEY, "/Applications/classifai.app/Contents/app/chrome-mac/Chromium.app");
+        macBrowserKey.put(SECONDARY_KEY, "/Applications/Google Chrome.app");
+
+        InputStream iconStream = ChromiumHandler.class.getClassLoader().getResourceAsStream("icon/Classifai_Favicon_Dark_32px1.png");
+
+        try {
+            File iconPath = new File("iconBuffer.png");
+            FileUtils.copyInputStreamToFile(iconStream, iconPath);
+            macBrowserKey.put(ICON_KEY, iconPath.getAbsolutePath());
+            winBrowserKey.put(ICON_KEY, iconPath.getAbsolutePath());
+        }
+        catch (Exception e)
+        {
+            log.debug("Icon not found, ", e);
+        }
+
+        winBrowserKey.put(PRIMARY_KEY, "app\\chrome-win\\chromium.exe");
+        winBrowserKey.put(SECONDARY_KEY, "app\\chrome-win\\chrome.exe");
+    }
 
     public static void openOnBrowser(String url, OSManager osManager)
     {
@@ -40,26 +77,41 @@ public class ChromiumHandler {
         OS currentOS = osManager.getCurrentOS();
 
         //https://stackoverflow.com/questions/45660482/open-a-url-in-chrome-using-java-in-linux-and-mac/45660804
+        //chromium primary, chrome secondary, else failure
         if(currentOS.equals(OS.MAC))
         {
-            if(isBrowserFileExist(MAC_CHROMIUM_PATH))
+            String param1 = "/usr/bin/open";
+            String param2 = "-a";
+
+            if(isBrowserFileExist(macBrowserKey.get(PRIMARY_KEY)))
             {
-                commandPath = new String[]{"/usr/bin/open", "-a", System.getProperty("user.dir") + "/" + MAC_CHROMIUM_PATH, url};
+                commandPath = new String[]{param1, param2, macBrowserKey.get(PRIMARY_KEY), url};
+            }
+            else if(isBrowserFileExist(macBrowserKey.get(SECONDARY_KEY)))
+            {
+                commandPath = new String[]{param1, param2, macBrowserKey.get(SECONDARY_KEY), url};
             }
             else
             {
-                //open chrome , else failed
+                showBrowserNotFound(url, macBrowserKey.get(ICON_KEY));
             }
         }
         else if(currentOS.equals(OS.WINDOWS))
         {
-            if(isBrowserFileExist(WIN_CHROMIUM_PATH))
+            String param1 = "cmd";
+            String param2 = "/c";
+
+            if(isBrowserFileExist(winBrowserKey.get(PRIMARY_KEY)))
             {
-                commandPath = new String[]{"cmd", "/c", "start " + WIN_CHROMIUM_PATH + " " + url};
+                commandPath = new String[]{param1, param2, "start " + winBrowserKey.get(PRIMARY_KEY) + " " + url};
+            }
+            else if(isBrowserFileExist(winBrowserKey.get(SECONDARY_KEY)))
+            {
+
             }
             else
             {
-                //open chrome , else failed
+                showBrowserNotFound(url, winBrowserKey.get(ICON_KEY));
             }
         }
         else
@@ -72,11 +124,10 @@ public class ChromiumHandler {
         try
         {
             Runtime.getRuntime().exec(commandPath);
-
         }
         catch(Exception e)
         {
-            log.info(currentOS.toString() + " - Failed to open classifai. ", e);
+            log.debug(currentOS.toString() + " - Failed to open classifai. ", e);
         }
     }
 
@@ -84,11 +135,25 @@ public class ChromiumHandler {
     {
         if(new File(appPath).exists() == false)
         {
-            log.info("Chromium browser not found.");
+            log.debug("Chromium browser not found.");
 
             return false;
         }
 
         return true;
+    }
+
+    public static void showBrowserNotFound(String url, String iconPath)
+    {
+        ImageIcon icon = null;
+
+        if(iconPath != null)
+        {
+            icon = new ImageIcon(iconPath);
+        }
+
+
+        showMessageDialog(null, "Browser not found.\nProceed to open " + url + " in other browser",
+                "Oops!", JOptionPane.INFORMATION_MESSAGE, icon);
     }
 }

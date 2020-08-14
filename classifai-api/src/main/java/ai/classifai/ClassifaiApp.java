@@ -51,7 +51,6 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
-
     }
 
     static boolean configure(String[] args)
