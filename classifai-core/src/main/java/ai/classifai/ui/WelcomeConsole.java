@@ -78,7 +78,7 @@ public class WelcomeConsole
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                openBrowser();
+                ChromiumHandler.openOnBrowser(browserURL, osManager);
             }
         });
 
@@ -105,23 +105,5 @@ public class WelcomeConsole
         c.gridy = 0;
         pane.add(closeButton, c);
 
-    }
-
-    static void openBrowser()
-    {
-        //Also delay the opening of chrome when opening multiple times.
-        log.info("FIX THIS!!!");
-
-        try
-        {
-            //delay opening chrome for 1 seconds
-            TimeUnit.SECONDS.sleep(1);
-        }
-        catch(InterruptedException e)
-        {
-            log.debug("Exception while pause, ", e);
-        }
-
-        ChromiumHandler.openOnBrowser(browserURL, osManager);
     }
 }
