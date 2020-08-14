@@ -22,12 +22,10 @@ import org.apache.commons.io.FileUtils;
 import javax.swing.*;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import static javax.swing.JOptionPane.showMessageDialog;
-
 
 /***
  * Handler to open classifai in browser
