@@ -54,20 +54,23 @@ public class ChromiumHandler {
 
         String chromeNativePath = System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe";
 
-        winBrowserKey.put(PRIMARY_KEY, "app\\chrome-win\\chromium.exe");
+        winBrowserKey.put(PRIMARY_KEY, "app\\chrome-win\\chrome.exe");
         winBrowserKey.put(SECONDARY_KEY, chromeNativePath);
 
         InputStream iconStream = ChromiumHandler.class.getClassLoader().getResourceAsStream("icon/Classifai_Favicon_Dark_32px.png");
 
         try {
-            File iconPath = new File("iconBuffer.png");
+
+            File iconPath = new File(System.getProperty("java.io.tmpdir") + File.separator +  "iconBuffer.png");
+
             FileUtils.copyInputStreamToFile(iconStream, iconPath);
+
             macBrowserKey.put(ICON_KEY, iconPath.getAbsolutePath());
             winBrowserKey.put(ICON_KEY, iconPath.getAbsolutePath());
         }
         catch (Exception e)
         {
-            log.debug("Icon not found, ", e);
+            log.info("Icon not found, ", e);
         }
     }
 
