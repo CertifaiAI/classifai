@@ -90,7 +90,6 @@ public class PortSelector {
         ParamConfig.setHostingPort(port);
     }
 
-
     private static Integer getRandomNumberInRange(Integer min, Integer max) {
 
         if (min >= max) {

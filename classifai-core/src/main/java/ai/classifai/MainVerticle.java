@@ -20,13 +20,12 @@ import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.project.ProjectVerticle;
 import ai.classifai.server.ServerVerticle;
-import ai.classifai.util.BrowserHandler;
+import ai.classifai.ui.WelcomeConsole;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class MainVerticle extends AbstractVerticle
@@ -67,22 +66,10 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
-                String url = "http://localhost:" + config().getInteger("http.port");
+                WelcomeConsole.start();
 
                 log.info("Classifai started successfully");
-                log.info("Go on and open " + url);
-
-                try
-                {
-                    //delay opening chrome for 3 seconds
-                    TimeUnit.SECONDS.sleep(2);
-                }
-                catch(InterruptedException e)
-                {
-                    log.debug("Exception while pause, ", e);
-                }
-
-                BrowserHandler.openOnBrowser(url);
+                log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
                 promise.complete();
 
@@ -90,10 +77,7 @@ public class MainVerticle extends AbstractVerticle
                 promise.fail(ar.cause());
             }
         });
-
     }
-
-
 
     @Override
     public void stop(Promise<Void> promise) throws Exception
