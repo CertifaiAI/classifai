@@ -45,13 +45,19 @@ public class ChromiumHandler {
     static
     {
         macBrowserKey = new HashMap<>();
-        winBrowserKey = new HashMap<>();
 
         //FIXME: Is there a way to fix this coded path?
         macBrowserKey.put(PRIMARY_KEY, "/Applications/classifai.app/Contents/app/chrome-mac/Chromium.app");
         macBrowserKey.put(SECONDARY_KEY, "/Applications/Google Chrome.app");
 
-        InputStream iconStream = ChromiumHandler.class.getClassLoader().getResourceAsStream("icon/Classifai_Favicon_Dark_32px1.png");
+        winBrowserKey = new HashMap<>();
+
+        String chromeNativePath = System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe";
+
+        winBrowserKey.put(PRIMARY_KEY, "app\\chrome-win\\chromium.exe");
+        winBrowserKey.put(SECONDARY_KEY, chromeNativePath);
+
+        InputStream iconStream = ChromiumHandler.class.getClassLoader().getResourceAsStream("icon/Classifai_Favicon_Dark_32px.png");
 
         try {
             File iconPath = new File("iconBuffer.png");
@@ -63,14 +69,13 @@ public class ChromiumHandler {
         {
             log.debug("Icon not found, ", e);
         }
-
-        winBrowserKey.put(PRIMARY_KEY, "app\\chrome-win\\chromium.exe");
-        winBrowserKey.put(SECONDARY_KEY, "app\\chrome-win\\chrome.exe");
     }
 
     public static void openOnBrowser(String url, OSManager osManager)
     {
         String[] commandPath = null;
+        String browserNotFoundMessage = "Browser not found.\nProceed to open " + url + " in other browser";
+        String osNotSupportedMessage = "OS not supported.\nProceed to open " + url + " in other browser";
 
         OS currentOS = osManager.getCurrentOS();
 
@@ -91,7 +96,8 @@ public class ChromiumHandler {
             }
             else
             {
-                showBrowserNotFound(url, macBrowserKey.get(ICON_KEY));
+
+                failToOpenBrowserMessage(url, macBrowserKey.get(ICON_KEY), browserNotFoundMessage);
             }
         }
         else if(currentOS.equals(OS.WINDOWS))
@@ -105,28 +111,32 @@ public class ChromiumHandler {
             }
             else if(isBrowserFileExist(winBrowserKey.get(SECONDARY_KEY)))
             {
-
+                commandPath = new String[]{param1, param2, "start " + winBrowserKey.get(SECONDARY_KEY) + " " + url};
             }
             else
             {
-                showBrowserNotFound(url, winBrowserKey.get(ICON_KEY));
+                failToOpenBrowserMessage(url, winBrowserKey.get(ICON_KEY), browserNotFoundMessage);
             }
         }
         else
         {
-            log.info("Browser in " + currentOS.toString() + " not supported yet");
-
+            log.debug("Browser in " + currentOS.toString() + " not supported yet");
+            failToOpenBrowserMessage(url, winBrowserKey.get(ICON_KEY), osNotSupportedMessage);
             return;
         }
 
-        try
+        if(commandPath != null)
         {
-            Runtime.getRuntime().exec(commandPath);
+            try
+            {
+                Runtime.getRuntime().exec(commandPath);
+            }
+            catch(Exception e)
+            {
+                log.debug(currentOS.toString() + " - Failed to open classifai. ", e);
+            }
         }
-        catch(Exception e)
-        {
-            log.debug(currentOS.toString() + " - Failed to open classifai. ", e);
-        }
+
     }
 
     public static boolean isBrowserFileExist(String appPath)
@@ -141,17 +151,16 @@ public class ChromiumHandler {
         return true;
     }
 
-    public static void showBrowserNotFound(String url, String iconPath)
+    public static void failToOpenBrowserMessage(String url, String iconPath, String message)
     {
-        ImageIcon icon = null;
+        ImageIcon messageIcon = null;
 
         if(iconPath != null)
         {
-            icon = new ImageIcon(iconPath);
+            messageIcon = new ImageIcon(iconPath);
         }
 
-
-        showMessageDialog(null, "Browser not found.\nProceed to open " + url + " in other browser",
-                "Oops!", JOptionPane.INFORMATION_MESSAGE, icon);
+        showMessageDialog(null, message,
+                "Oops!", JOptionPane.INFORMATION_MESSAGE, messageIcon);
     }
 }
