@@ -68,15 +68,8 @@ public class ServerVerticle extends AbstractVerticle
         threadfolder.start();
     }
 
-    /**
-     * Create new project under the category of bounding box
-     * PUT http://localhost:{port}/boundingbox/newproject/:projectname
-     *
-     * Example:
-     * PUT http://localhost:{port}/boundingbox/newproject/helloworld
-     *
-     */
-    private void createNewProject(RoutingContext context)
+    //PUT http://localhost:{port}/createproject/:projectname http://localhost:{port}/createproject/helloworld
+    private void createProjectInPortfolio(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
         JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
@@ -134,16 +127,8 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    /**
-     * Description: load existing project from the database
-     *
-     * GET http://localhost:{port}/boundingbox/projects/:projectname
-     *
-     * Example:
-     * GET http://localhost:{port}/boundingbox/projects/helloworld
-     *
-     */
-    private void loadExistingProject(RoutingContext context)
+    //PUT http://localhost:{port}/selectproject/:projectname http://localhost:{port}/selectproject/helloworld
+    private void selectProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -619,15 +604,13 @@ public class ServerVerticle extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
-        router.put("/boundingbox/newproject/:project_name").handler(this::createNewProject);
-
-        router.get("/boundingbox/projects/:project_name").handler(this::loadExistingProject);
-
+        router.get("/selectproject/imglbl/:projectname").handler(this::selectProject);
         router.get("/selectproject/status/:projectname").handler(this::selectProjectStatus);
 
         router.get("/select").handler(this::selectFileType);
         router.get("/selectstatus/:projectname").handler(this::selectStatus);
 
+        router.put("/createproject/imglbl/:projectname").handler(this::createProjectInPortfolio);
 
         router.put("/updatelabel/:projectname").handler(this::updateLabelInPortfolio);
 
