@@ -223,13 +223,19 @@ public class ServerVerticle extends AbstractVerticle
 
         ProjectLoader projectLoader = SelectorHandler.getProjectLoader(projectName);
 
+        if(projectLoader == null)
+        {
+            HTTPResponseHandler.configureBadRequest(context,  ReplyHandler.reportProjectNameError());
+            return;
+        }
+
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
         if(loaderStatus == LoaderStatus.ERROR)
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
         }
-        else if((loaderStatus == LoaderStatus.LOADING) || (loaderStatus == LoaderStatus.DID_NOT_INITIATED))
+        else if(loaderStatus == LoaderStatus.LOADING)
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
             jsonObject.put(ParamConfig.PROGRESS_METADATA, projectLoader.getProgress());
