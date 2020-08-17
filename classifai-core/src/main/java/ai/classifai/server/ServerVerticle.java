@@ -156,9 +156,7 @@ public class ServerVerticle extends AbstractVerticle
 
         if(loader == null)
         {
-            JsonObject jsonObject = ReplyHandler.getFailedReply();
-            jsonObject.put(ReplyHandler.getMessageKey(), "Project name did not exist");
-            HTTPResponseHandler.configureBadRequest(context, jsonObject);
+            HTTPResponseHandler.configureBadRequest(context,  ReplyHandler.reportProjectNameError());
             return;
         }
 
