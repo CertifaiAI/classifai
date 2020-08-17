@@ -69,14 +69,47 @@ public class ServerVerticle extends AbstractVerticle
     }
 
     /**
-     * Create new project under the category of bounding box
-     * PUT http://localhost:{port}/boundingbox/newproject/:projectname
-     *
-     * Example:
-     * PUT http://localhost:{port}/boundingbox/newproject/helloworld
+     * Get a list of all projects under the category of bounding box
+     * PUT http://localhost:{port}/bndbox/projects
      *
      */
-    private void createNewProject(RoutingContext context)
+    private void getAllBoundingBoxProjects(RoutingContext context)
+    {
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
+
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject(), options, reply -> {
+
+            if(reply.succeeded())
+            {
+                JsonObject response = (JsonObject) reply.result().body();
+
+                if(ReplyHandler.isReplyOk(response))
+                {
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+                else {
+                    //soft fail
+                    HTTPResponseHandler.configureOK(context, response);
+                    //HTTPResponseHandler.configureBadRequest(context, response);
+                }
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed in getting all the projects"));
+            }
+        });
+
+    }
+
+    /**
+     * Create new project under the category of bounding box
+     * PUT http://localhost:{port}/bndbox/newproject/:project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/bndbox/newproject/helloworld
+     *
+     */
+    private void createBoundingBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
         JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
@@ -106,44 +139,16 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    //GET http://localhost:{port}/project/:projectname http://localhost:{port}/project/projectname
-    private void getProject(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-
-        JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
-
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
-        {
-            if(reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-
-                if(ReplyHandler.isReplyOk(response))
-                {
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-                else
-                {
-                    //soft fail
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            }
-        });
-    }
-
     /**
-     * Description: load existing project from the database
+     * Load existing project from the database
      *
-     * GET http://localhost:{port}/boundingbox/projects/:projectname
+     * GET http://localhost:{port}/bndbox/projects/:project_name
      *
      * Example:
-     * GET http://localhost:{port}/boundingbox/projects/helloworld
+     * GET http://localhost:{port}/bndbox/projects/helloworld
      *
      */
-    private void loadExistingProject(RoutingContext context)
+    private void loadBndBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -206,9 +211,15 @@ public class ServerVerticle extends AbstractVerticle
         HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()); //FIXME: This is terrible
     }
 
-
-    //PUT http://localhost:{port}/selectproject/status/:projectname
-    private void selectProjectStatus(RoutingContext context)
+    /**
+     * Get status of loading a project
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/loadingstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld/loadingstatus
+     */
+    private void loadBndBoxProjectStatus(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -269,69 +280,16 @@ public class ServerVerticle extends AbstractVerticle
         }
     }
 
-    private void updateLabelInPortfolio(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-
-        context.request().bodyHandler(h ->
-        {
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-
-            jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
-
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    if (ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        //soft fail
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                }
-            });
-        });
-    }
-
-    //GET http://localhost:{port}/projects
-    private void getAllProjectNamesInPortfolio(RoutingContext context)
-    {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
-
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject(), options, reply -> {
-
-            if(reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-
-                if(ReplyHandler.isReplyOk(response))
-                {
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-                else {
-                    //soft fail
-                    HTTPResponseHandler.configureOK(context, response);
-                    //HTTPResponseHandler.configureBadRequest(context, response);
-                }
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed in getting all the projects"));
-            }
-        });
-
-    }
-
-    //GET http://localhost:{port}/select?projectname={projectname}&filetype={file/folder}
-    private void selectFileType(RoutingContext context)
+    /**
+     * Open file system (file/folder)  for a specific project
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/filesys/:file_sys
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld/filesys/file
+     * GET http://localhost:{port}/bndbox/projects/helloworld/filesys/folder
+     */
+    private void selectFileSystemType(RoutingContext context)
     {
         if(SelectorHandler.isLoaderProcessing()) //file or folder selecting and updating
         {
@@ -355,8 +313,8 @@ public class ServerVerticle extends AbstractVerticle
         }
         else
         {
-            String fileType = context.request().getParam(ParamConfig.FILETYPE_PARAM);
             String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+            String fileType = context.request().getParam(ParamConfig.FILE_SYS_PARAM);
 
             if(SelectorHandler.isProjectNameRegistered(projectName) == false)
             {
@@ -420,8 +378,15 @@ public class ServerVerticle extends AbstractVerticle
         }
     }
 
-    //GET http://localhost:{port}/selectstatus/:projectname
-    public void selectStatus(RoutingContext context) {
+    /**
+     * Get file system (file/folder) status for a specific project
+     * GET http://localhost:{port}/bndbox/projects/:project_name/filesysstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
+     *
+     */
+    public void getFileSystemStatus(RoutingContext context) {
 
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -499,7 +464,136 @@ public class ServerVerticle extends AbstractVerticle
         }
     }
 
+    /**
+     * Create new label for bounding box annotation project
+     *
+     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
+     *
+     * Example:
+     * PUT http://localhost:{port}/bndbox/projects/helloworld/newlabels
+     */
+    private void createNewLabel(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
+        context.request().bodyHandler(h ->
+        {
+            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+            jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
+
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+            {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    if (ReplyHandler.isReplyOk(response))
+                    {
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                    else
+                    {
+                        //soft fail
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Retrieve thumbnail with metadata
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
+     *
+     */
+    public void getThumbnailWithMetadata(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
+
+        JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+
+        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA);
+
+        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, thumbnailOptions, fetch -> {
+
+            if (fetch.succeeded())
+            {
+                JsonObject result = (JsonObject) fetch.result().body();
+
+                if(ReplyHandler.isReplyOk(result))
+                {
+                    HTTPResponseHandler.configureOK(context, result);
+
+                }
+                else {
+                    //soft fail
+                    HTTPResponseHandler.configureOK(context, result);
+                    //HTTPResponseHandler.configureBadRequest(context, result);
+                }
+
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed in retrieving thumbnail"));
+            }
+        });
+    }
+
+
+    /***
+     *
+     * Get Image Source
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/imgsrc
+     *
+     */
+    public void getImageSource(RoutingContext context) {
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
+
+        JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+
+
+        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
+
+        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
+
+            if (fetch.succeeded()) {
+
+                JsonObject result = (JsonObject) fetch.result().body();
+
+                if(ReplyHandler.isReplyOk(result))
+                {
+                    HTTPResponseHandler.configureOK(context, result);
+                }
+                else
+                {
+                    //soft fail
+                    HTTPResponseHandler.configureOK(context, result);
+                    //HTTPResponseHandler.configureBadRequest(context, result);
+                }
+
+            }
+            else {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed to get image source."));
+            }
+        });
+    }
+
+    /***
+     *
+     * Update bounding box labelling information
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/update
+     *
+     */
     private void updateData(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
@@ -537,79 +631,6 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    //GET http://localhost:{port}/thumbnail?projectname=helloworld&uuid=1234
-    public void getThumbnailWithMetadata(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
-
-        JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
-
-        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA);
-
-        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, thumbnailOptions, fetch -> {
-
-            if (fetch.succeeded())
-            {
-                JsonObject result = (JsonObject) fetch.result().body();
-
-                if(ReplyHandler.isReplyOk(result))
-                {
-                    HTTPResponseHandler.configureOK(context, result);
-
-                }
-                else {
-                    //soft fail
-                    HTTPResponseHandler.configureOK(context, result);
-                    //HTTPResponseHandler.configureBadRequest(context, result);
-                }
-
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed in retrieving thumbnail"));
-            }
-        });
-    }
-
-
-
-    //GET http://localhost:{port}/imgsrc?projectname=helloworld&uuid=1234
-    public void getImageSource(RoutingContext context) {
-        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
-
-        JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
-
-
-        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
-
-        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
-
-            if (fetch.succeeded()) {
-
-                JsonObject result = (JsonObject) fetch.result().body();
-
-                if(ReplyHandler.isReplyOk(result))
-                {
-                    HTTPResponseHandler.configureOK(context, result);
-                }
-                else
-                {
-                    //soft fail
-                    HTTPResponseHandler.configureOK(context, result);
-                    //HTTPResponseHandler.configureBadRequest(context, result);
-                }
-
-            }
-            else {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed to get image source."));
-            }
-        });
-    }
-
 
     @Override
     public void start(Promise<Void> promise)
@@ -619,34 +640,35 @@ public class ServerVerticle extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
-        router.put("/boundingbox/newproject/:project_name").handler(this::createNewProject);
+        router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
 
-        router.get("/boundingbox/projects/:project_name").handler(this::loadExistingProject);
+        router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
 
-        router.get("/selectproject/status/:projectname").handler(this::selectProjectStatus);
+        router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
 
-        router.get("/select").handler(this::selectFileType);
-        router.get("/selectstatus/:projectname").handler(this::selectStatus);
+        router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
+        router.get("/bndbox/projects/:project_name/filesys/:file_sys").handler(this::selectFileSystemType);
 
-        router.put("/updatelabel/:projectname").handler(this::updateLabelInPortfolio);
+        router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
 
-        router.get("/project/:projectname").handler(this::getProject);
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewLabel);
 
-        router.get("/projects").handler(this::getAllProjectNamesInPortfolio);
-        router.get("/thumbnail").handler(this::getThumbnailWithMetadata);
+        router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getThumbnailWithMetadata);
 
-        router.get("/imgsrc").handler(this::getImageSource);
-        router.put("/update").handler(this::updateData);
+        router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getImageSource);
+
+        router.get("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
 
         vertx.createHttpServer()
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
                 .listen(ParamConfig.getHostingPort(), r -> {
-                    if (r.succeeded()) {
-                        //log.info("HTTPServer start successfully");
+                    if (r.succeeded())
+                    {
                         promise.complete();
-                    } else {
+                    }
+                    else {
 
                         log.debug("HTTPServer failed to start");
                         promise.fail(r.cause());
