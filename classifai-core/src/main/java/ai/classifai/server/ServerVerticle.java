@@ -635,6 +635,45 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
+    /***
+     *
+     * Update labels
+     *
+     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
+     *
+     */
+    private void updateLabel(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+
+        context.request().bodyHandler(h ->
+        {
+            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+            jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
+
+            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+            {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    if (ReplyHandler.isReplyOk(response))
+                    {
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                    else
+                    {
+                        //soft fail
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                }
+            });
+        });
+    }
+
 
     @Override
     public void start(Promise<Void> promise)
@@ -663,6 +702,8 @@ public class ServerVerticle extends AbstractVerticle
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getImageSource);
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
+
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabel);
 
         vertx.createHttpServer()
                 .requestHandler(router)
