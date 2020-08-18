@@ -595,10 +595,11 @@ public class ServerVerticle extends AbstractVerticle
      *
      * Update bounding box labelling information
      *
-     * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/update
+     * PUT http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/update
      *
      */
-    private void updateData(RoutingContext context) {
+    private void updateData(RoutingContext context)
+    {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
@@ -701,7 +702,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getImageSource);
 
-        router.get("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
+        router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabel);
 
