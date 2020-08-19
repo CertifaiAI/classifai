@@ -20,25 +20,25 @@ public class PortfolioSQLQuery
 {
     public final static String QUEUE = "portfolio.queue";
 
-    public final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (projectid integer identity primary key, projectname varchar(255), labellist varchar(500), thumbnailmax integer, uuidlist clob)";
+    public final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (projectid integer identity primary key, project_name varchar(255), labellist varchar(1000), thumbnailmax integer, uuidlist clob)";
     public final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?)";
 
-    public final static String UPDATE_PROJECT = "update Portfolio set uuidlist = ? where projectname = ?";
-    public final static String UPDATE_LABEL = "update Portfolio set labellist = ? where projectname = ?";
+    public final static String UPDATE_PROJECT = "update Portfolio set uuidlist = ? where project_name = ?";
+    public final static String UPDATE_LABEL = "update Portfolio set labellist = ? where project_name = ?";
 
-    public final static String GET_UUID_LABEL_LIST = "select labellist, uuidlist from Portfolio where projectname = ?";
+    public final static String GET_UUID_LABEL_LIST = "select labellist, uuidlist from Portfolio where project_name = ?";
 
     public final static String GET_PROJECT_ID_LIST = "select projectid from Portfolio";
-    public final static String GET_PROJECT_NAME = "select projectname from Portfolio where projectid = ?";
+    public final static String GET_PROJECT_NAME = "select project_name from Portfolio where projectid = ?";
 
-    public final static String GET_PROJECT_UUID_LIST = "select uuidlist from Portfolio where projectname = ?";
+    public final static String GET_PROJECT_UUID_LIST = "select uuidlist from Portfolio where project_name = ?";
 
     public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
 
-    public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnailmax = ? where projectname = ?";
+    public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnailmax = ? where project_name = ?";
 
-    public final static String GET_THUMBNAIL_LIST = "select uuidlist, thumbnailmax from Portfolio where projectname = ?";
+    public final static String GET_THUMBNAIL_LIST = "select uuidlist, thumbnailmax from Portfolio where project_name = ?";
 
-    public final static String GET_ALL_PROJECTS = "select projectname from Portfolio";
+    public final static String GET_ALL_PROJECTS = "select project_name from Portfolio";
 }
 

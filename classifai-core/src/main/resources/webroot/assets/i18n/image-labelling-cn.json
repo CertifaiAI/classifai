@@ -1,0 +1,31 @@
+{
+  "modal": {
+    "header": "分类图像标签工具",
+    "existing": {
+      "header": "来自现有项目",
+      "label": "项目名称 : ",
+      "option" : "没有",
+      "button": "提交"
+    },
+    "create": {
+      "header": "建立新专案",
+      "label": "新项目名称 : ",
+      "inputPlaceholder": "您的新编号 ....",
+      "subLabel": "标签列表文件 (*.txt): ",
+      "button": "创造"
+    }
+  },
+  "loading": "由Skymind提供支持",
+  "saveFormat": {
+    "currImg": "当前图像",
+    "bulkSaving": "大量节省",
+    "pascalVoc": "帕斯卡VOC",
+    "textOcr": "文本",
+    "label": "标签"
+  },
+  "sideNav": {
+    "imgList": "图片清单",
+    "labelList": "标签清单",
+    "boundBox": "边界框"
+  }
+}

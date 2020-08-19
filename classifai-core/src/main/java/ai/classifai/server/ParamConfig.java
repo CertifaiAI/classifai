@@ -28,6 +28,7 @@ import lombok.Setter;
 public class ParamConfig
 {
     public final static String PROJECT_NAME_PARAM = "project_name";
+    public final static String FILE_SYS_PARAM = "file_sys";
 
     public final static String UUID_LIST_PARAM = "uuidlist";
     public final static String LABEL_LIST_PARAM = "labellist";
