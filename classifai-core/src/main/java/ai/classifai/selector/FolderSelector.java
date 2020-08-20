@@ -44,14 +44,14 @@ public class FolderSelector{
                 @Override
                 public void run() {
                     Point pt = MouseInfo.getPointerInfo().getLocation();
-                    JFrame jf = new JFrame();
-                    jf.setAlwaysOnTop(true);
-                    jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    jf.setLocation(pt);
-                    jf.requestFocus();
-                    jf.setVisible(false);
+                    JFrame frame = new JFrame();
+                    frame.setAlwaysOnTop(true);
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setLocation(pt);
+                    frame.requestFocus();
+                    frame.setVisible(false);
 
-                    JFileChooser fc = new JFileChooser() {
+                    JFileChooser chooser = new JFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent)
                                 throws HeadlessException {
@@ -62,16 +62,16 @@ public class FolderSelector{
                         }
                     };
 
-                    fc.setCurrentDirectory(SelectorHandler.getRootSearchPath());
-                    fc.setFileFilter(imgfilter);
-                    fc.setDialogTitle("Select Directory");
-                    fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    int res = fc.showOpenDialog(jf);
-                    jf.dispose();
+                    chooser.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    chooser.setFileFilter(imgfilter);
+                    chooser.setDialogTitle("Select Directory");
+                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        File rootFolder =  fc.getSelectedFile().getAbsoluteFile();
+                        File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {

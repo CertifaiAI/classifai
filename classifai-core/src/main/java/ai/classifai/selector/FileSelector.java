@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,15 +44,16 @@ public class FileSelector{
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    Point pt = MouseInfo.getPointerInfo().getLocation();
-                    JFrame jf = new JFrame();
-                    jf.setAlwaysOnTop(true);
-                    jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    jf.setLocation(pt);
-                    jf.requestFocus();
-                    jf.setVisible(false);
 
-                    JFileChooser fc = new JFileChooser() {
+                    Point pt = MouseInfo.getPointerInfo().getLocation();
+                    JFrame frame = new JFrame();
+                    frame.setAlwaysOnTop(true);
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setLocation(pt);
+                    frame.requestFocus();
+                    frame.setVisible(false);
+
+                    JFileChooser chooser = new JFileChooser() {
                         @Override
                         protected JDialog createDialog(Component parent)
                                 throws HeadlessException {
@@ -62,16 +64,16 @@ public class FileSelector{
                         }
                     };
 
-                    fc.setCurrentDirectory(SelectorHandler.getRootSearchPath());
-                    fc.setFileFilter(imgfilter);
-                    fc.setDialogTitle("Select Files");
-                    fc.setMultiSelectionEnabled(true);
-                    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    int res = fc.showOpenDialog(jf);
-                    jf.dispose();
+                    chooser.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    chooser.setFileFilter(imgfilter);
+                    chooser.setDialogTitle("Select Files");
+                    chooser.setMultiSelectionEnabled(true);
+                    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
 
                     if (res == JFileChooser.APPROVE_OPTION) {
-                        java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(fc.getSelectedFiles()));
+                        java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(chooser.getSelectedFiles()));
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
