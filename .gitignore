@@ -32,3 +32,21 @@ target/
 
 #log file
 classifai.log
+
+#classifai-distro
+output/*
+
+#windows-distro
+*.msi
+*.exe
+chrome-win/*
+
+#mac-distro
+*.pkg
+*.dmg
+chrome-mac/*
+Chromium.app
+
+#linux
+*.deb
+*.rpm

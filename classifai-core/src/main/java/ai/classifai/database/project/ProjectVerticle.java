@@ -400,8 +400,10 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         projectJDBCClient.getConnection(ar -> {
             if (ar.failed()) {
+
                 log.error("Could not open a database connection", ar.cause());
                 promise.fail(ar.cause());
+
             } else {
                 SQLConnection connection = ar.result();
                 connection.execute(ProjectSQLQuery.CREATE_PROJECT, create -> {

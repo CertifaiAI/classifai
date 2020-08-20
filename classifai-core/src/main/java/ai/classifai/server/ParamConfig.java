@@ -16,7 +16,6 @@
 
 package ai.classifai.server;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
