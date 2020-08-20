@@ -16,24 +16,24 @@
 
 package ai.classifai.database.project;
 
-import ai.classifai.database.portfolio.PortfolioSQLQuery;
+import ai.classifai.database.portfoliodb.PortfolioSQLQuery;
 
 public class ProjectSQLQuery
 {
     public final static String QUEUE = "project.queue";
 
-    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, projectid integer, imagepath varchar(2000), bndbox varchar(20000), imgDepth integer, " +
-            "imageX integer, imageY integer, imageW double, imageH double, imageOriW integer, imageOriH integer, primary key(uuid, projectid))";
+    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, project_id integer, imagepath varchar(2000), bndbox varchar(20000), imgDepth integer, " +
+            "imageX integer, imageY integer, imageW double, imageH double, imageOriW integer, imageOriH integer, primary key(uuid, project_id))";
 
     public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    public final static String RETRIEVE_DATA = "select imagepath, bndbox, imgDepth, imageX, imageY, imageW, imageH, imageOriW, imageOriH from Project where uuid = ? and projectid = ?";
+    public final static String RETRIEVE_DATA = "select imagepath, bndbox, imgDepth, imageX, imageY, imageW, imageH, imageOriW, imageOriH from Project where uuid = ? and project_id = ?";
 
-    public final static String RETRIEVE_DATA_PATH = "select imagepath from Project where uuid = ? and projectid = ?";
+    public final static String RETRIEVE_DATA_PATH = "select imagepath from Project where uuid = ? and project_id = ?";
 
-    public final static String UPDATE_DATA = "update Project set bndbox = ?, imageX = ?, imageY = ?, imageW = ?, imageH = ?, imageOriW = ?, imageOriH = ? where uuid = ? and projectid = ?";
+    public final static String UPDATE_DATA = "update Project set bndbox = ?, imageX = ?, imageY = ?, imageW = ?, imageH = ?, imageOriW = ?, imageOriH = ? where uuid = ? and project_id = ?";
 
-    public final static String DELETE_DATA = "delete from Project where uuid = ? and projectid = ?";
+    public final static String DELETE_DATA = "delete from Project where uuid = ? and project_id = ?";
 
     public final static String REMOVE_OBSOLETE_UUID_LIST = PortfolioSQLQuery.REMOVE_OBSOLETE_UUID_LIST;
 }

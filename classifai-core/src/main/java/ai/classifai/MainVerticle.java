@@ -17,7 +17,7 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.project.ProjectVerticle;
 import ai.classifai.server.ServerVerticle;
 import ai.classifai.ui.WelcomeConsole;

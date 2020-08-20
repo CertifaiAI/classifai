@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.database.portfolio;
+package ai.classifai.database.portfoliodb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
@@ -73,9 +73,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.createNewProject(message);
         }
-        else if(action.equals(PortfolioSQLQuery.GET_ALL_PROJECTS))
+        else if(action.equals(PortfolioSQLQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE))
         {
-            this.getAllProjects(message);
+            this.getAllProjectsForAnnotationType(message);
         }
         else if(action.equals(PortfolioSQLQuery.UPDATE_LABEL))
         {
@@ -107,12 +107,12 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
     }
 
-
     public void createNewProject(Message<JsonObject> message)
     {
         JsonObject request = message.body();
 
         String projectName = request.getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer annotationType = request.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
         if(!SelectorHandler.isProjectNameRegistered(projectName)) {
 
@@ -120,7 +120,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             Integer projectID = SelectorHandler.generateProjectID();
 
-            JsonArray params = new JsonArray().add(projectID).add(projectName).add(ParamConfig.EMPTY_ARRAY).add(0).add(ParamConfig.EMPTY_ARRAY);
+            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.EMPTY_ARRAY).add(0).add(ParamConfig.EMPTY_ARRAY);
 
             portfolioDbClient.queryWithParams(PortfolioSQLQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
@@ -336,9 +336,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
     }
 
-    public void getAllProjects(Message<JsonObject> message)
+    public void getAllProjectsForAnnotationType(Message<JsonObject> message)
     {
-        portfolioDbClient.query(PortfolioSQLQuery.GET_ALL_PROJECTS, fetch -> {
+        Integer annotationType = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+        portfolioDbClient.queryWithParams(PortfolioSQLQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE, new JsonArray().add(annotationType), fetch -> {
             if (fetch.succeeded()) {
 
                 List<String> projectNameList = fetch.result()

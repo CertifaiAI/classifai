@@ -17,7 +17,7 @@
 package ai.classifai.util.image;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.project.ProjectVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;

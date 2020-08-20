@@ -29,10 +29,10 @@ public class ParamConfig
     public final static String PROJECT_NAME_PARAM = "project_name";
     public final static String FILE_SYS_PARAM = "file_sys";
 
-    public final static String UUID_LIST_PARAM = "uuidlist";
-    public final static String LABEL_LIST_PARAM = "labellist";
+    public final static String ANNOTATE_TYPE_PARAM = "annotation_type";
 
-    public final static String FILETYPE_PARAM = "filetype";
+    public final static String UUID_LIST_PARAM = "uuid_list";
+    public final static String LABEL_LIST_PARAM = "label_list";
 
     public final static String UUID_PARAM = "uuid";
     public final static String IMAGE_PATH_PARAM = "imgpath";

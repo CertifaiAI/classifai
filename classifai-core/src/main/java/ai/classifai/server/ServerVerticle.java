@@ -16,9 +16,10 @@
 
 package ai.classifai.server;
 
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfolio.PortfolioSQLQuery;
+import ai.classifai.database.portfoliodb.PortfolioSQLQuery;
 import ai.classifai.database.project.ProjectSQLQuery;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
@@ -75,9 +76,12 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void getAllBoundingBoxProjects(RoutingContext context)
     {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS);
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE);
 
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject(), options, reply -> {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
+
+        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply -> {
 
             if(reply.succeeded())
             {
@@ -90,7 +94,6 @@ public class ServerVerticle extends AbstractVerticle
                 else {
                     //soft fail
                     HTTPResponseHandler.configureOK(context, response);
-                    //HTTPResponseHandler.configureBadRequest(context, response);
                 }
             }
             else
@@ -112,7 +115,9 @@ public class ServerVerticle extends AbstractVerticle
     private void createBoundingBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
+                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
         context.request().bodyHandler(h -> {
 
@@ -130,11 +135,10 @@ public class ServerVerticle extends AbstractVerticle
                     }
                     else
                     {
-                        //soft fail
                         HTTPResponseHandler.configureOK(context, response);
-                        //HTTPResponseHandler.configureBadRequest(context, response);
                     }
                 }
+
             });
         });
     }
