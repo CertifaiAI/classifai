@@ -46,8 +46,8 @@ public class DatabaseConfig
         DB_ROOT_PATH = System.getProperty("user.home") + "/.classifai";
 
         PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
-        BNDBOX_DB = DB_ROOT_PATH + "/" + "boundingbox/boundingboxdb";
-        SEGMENTATION_DB = DB_ROOT_PATH + "/" + "segmentation/segmentationdb";
+        BNDBOX_DB = DB_ROOT_PATH + "/" + "bbproject/bbprojectdb";
+        SEGMENTATION_DB = DB_ROOT_PATH + "/" + "segproject/segprojectdb";
 
         PORTFOLIO_DB_LCKFILE = PORTFOLIO_DB + LCK_FILE_EXTENSION;
         BNDBOX_DB_LCKFILE = BNDBOX_DB + LCK_FILE_EXTENSION;
