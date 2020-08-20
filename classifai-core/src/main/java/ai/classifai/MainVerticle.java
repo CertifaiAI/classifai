@@ -19,6 +19,7 @@ package ai.classifai;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.server.ServerVerticle;
 import ai.classifai.ui.WelcomeConsole;
 import io.vertx.core.AbstractVerticle;
@@ -52,9 +53,15 @@ public class MainVerticle extends AbstractVerticle
 
         portfolioDeployment.future().compose(id_ -> {
 
-            Promise<String> profileDeployment = Promise.promise();
-            vertx.deployVerticle(new BoundingBoxVerticle(), profileDeployment);
-            return profileDeployment.future();
+            Promise<String> bndBoxDeployment = Promise.promise();
+            vertx.deployVerticle(new BoundingBoxVerticle(), bndBoxDeployment);
+            return bndBoxDeployment.future();
+
+        }).compose(id_ -> {
+
+            Promise<String> segDeployment = Promise.promise();
+            vertx.deployVerticle(new SegVerticle(), segDeployment);
+            return segDeployment.future();
 
         }).compose(id_ -> {
 

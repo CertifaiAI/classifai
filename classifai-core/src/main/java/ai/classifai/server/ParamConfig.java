@@ -40,7 +40,9 @@ public class ParamConfig
     public final static String EMPTY_ARRAY = "[]";
     public final static String IMAGE_THUMBNAIL_PARAM = "imgthumbnail";
     public final static String IMAGE_SRC_PARAM = "imgsrc";
+
     public final static String BOUNDING_BOX_PARAM = "bnd_box";
+    public final static String SEGMENTATION_PARAM = "seg_content";
 
     public final static String IMAGEX_PARAM = "imgX";
     public final static String IMAGEY_PARAM = "imgY";

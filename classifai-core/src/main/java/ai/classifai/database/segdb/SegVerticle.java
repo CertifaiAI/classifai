@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.database.boundingboxdb;
+package ai.classifai.database.segdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
@@ -42,12 +42,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Bounding Box Verticle
+ * Segmentation Verticle
  *
  * @author Chiawei Lim
  */
 @Slf4j
-public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBoxDbServiceable
+public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 {
     //connection to database
     private static JDBCClient projectJDBCClient;
@@ -64,19 +64,19 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         }
         String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
-        if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA))
+        if(action.equals(SegDbQuery.RETRIEVE_DATA))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA_PATH))
+        else if(action.equals(SegDbQuery.RETRIEVE_DATA_PATH))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(BoundingBoxDbQuery.UPDATE_DATA))
+        else if(action.equals(SegDbQuery.UPDATE_DATA))
         {
             this.updateData(message);
         }
-        else if (action.equals(BoundingBoxDbQuery.REMOVE_OBSOLETE_UUID_LIST))
+        else if (action.equals(SegDbQuery.REMOVE_OBSOLETE_UUID_LIST))
         {
             this.removeObsoleteUUID(message);
         }
@@ -94,7 +94,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+        projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -134,7 +134,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                    .add((Integer)imgMetadata.get("depth")) //imgDepth
+                    .add((Integer)imgMetadata.get("depth")) //img_depth
                     .add(0) //imgX
                     .add(0) //imgY
                     .add(0) //imgW
@@ -142,7 +142,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
                 {
                     log.error("Update metadata in database failed: " + fetch.cause().getMessage());
@@ -165,7 +165,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -190,7 +190,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     response.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
                     response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
-                    response.put(ParamConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
+                    response.put(ParamConfig.SEGMENTATION_PARAM, new JsonArray(row.getString(counter++)));
                     response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
@@ -241,7 +241,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 final Integer UUID = oriUUIDList.get(i);
                 JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+                projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
                     if (fetch.succeeded())
                     {
@@ -255,7 +255,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                             if(ImageHandler.isImageReadable(dataPath) == false)
                             {
-                                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.DELETE_DATA, params, reply -> {
+                                projectJDBCClient.queryWithParams(SegDbQuery.DELETE_DATA, params, reply -> {
 
                                     if(reply.failed())
                                     {
@@ -292,12 +292,12 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void updateData(Message<JsonObject> message)
     {
         JsonObject requestBody = message.body();
-        
+
         String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
-        String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
+        String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
 
         JsonArray params = new JsonArray()
-                .add(boundingBox)
+                .add(segContent)
                 .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
                 .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
                 .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
@@ -308,7 +308,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 .add(SelectorHandler.getProjectID(projectName));
 
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
                 message.reply(ReplyHandler.getOkReply());
@@ -322,9 +322,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
-        log.info("Project Verticle stopping...");
+        log.info("SegVerticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
+        File lockFile = new File(DatabaseConfig.SEGMENTATION_DB_LCKFILE);
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -335,7 +335,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void start(Promise<Void> promise) throws Exception
     {
         projectJDBCClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.BNDBOX_DB)
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.SEGMENTATION_DB)
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 
@@ -343,21 +343,21 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         projectJDBCClient.getConnection(ar -> {
             if (ar.failed()) {
 
-                log.error("Could not open a database connection", ar.cause());
+                log.error("Could not open a database connection for SegVerticle", ar.cause());
                 promise.fail(ar.cause());
 
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(BoundingBoxDbQuery.CREATE_PROJECT, create -> {
+                connection.execute(SegDbQuery.CREATE_PROJECT, create -> {
                     connection.close();
                     if (create.failed()) {
-                        log.error("BoundingBoxVerticle database preparation error", create.cause());
+                        log.error("SegVerticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
                     } else
                     {
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(BoundingBoxDbQuery.QUEUE, this::onMessage);
+                        vertx.eventBus().consumer(SegDbQuery.QUEUE, this::onMessage);
                         promise.complete();
                     }
                 });
