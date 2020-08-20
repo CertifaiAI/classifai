@@ -27,17 +27,31 @@ import lombok.extern.slf4j.Slf4j;
 public class DatabaseConfig
 {
     public final static String DB_ROOT_PATH;
+
+    public final static String LCK_FILE_EXTENSION;
+
     public final static String PORTFOLIO_DB;
-    public final static String PROJECT_DB;
-    public final static String PORTFOLIO_LCKFILE;
-    public final static String PROJECT_LCKFILE;
+    public final static String BNDBOX_DB;
+    public final static String SEGMENTATION_DB;
+
+
+    public final static String PORTFOLIO_DB_LCKFILE;
+    public final static String BNDBOX_DB_LCKFILE;
+    public final static String SEGMENTATION_DB_LCKFILE;
 
     static
     {
+        LCK_FILE_EXTENSION = ".lck";
+
         DB_ROOT_PATH = System.getProperty("user.home") + "/.classifai";
+
         PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
-        PROJECT_DB = DB_ROOT_PATH + "/" + "project/projectdb";
-        PORTFOLIO_LCKFILE = PORTFOLIO_DB + ".lck";
-        PROJECT_LCKFILE = PROJECT_DB + ".lck";
+        BNDBOX_DB = DB_ROOT_PATH + "/" + "boundingbox/boundingboxdb";
+        SEGMENTATION_DB = DB_ROOT_PATH + "/" + "segmentation/segmentationdb";
+
+        PORTFOLIO_DB_LCKFILE = PORTFOLIO_DB + LCK_FILE_EXTENSION;
+        BNDBOX_DB_LCKFILE = BNDBOX_DB + LCK_FILE_EXTENSION;
+        SEGMENTATION_DB_LCKFILE = SEGMENTATION_DB + LCK_FILE_EXTENSION;
+
     }
 }

@@ -30,5 +30,4 @@ public interface PortfolioServiceable
 
     void getThumbNailList(Message<JsonObject> message);
 
-
 }

@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.database.project;
+package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
@@ -47,7 +47,7 @@ import java.util.Set;
  * @author Chiawei Lim
  */
 @Slf4j
-public class ProjectVerticle extends AbstractVerticle implements ProjectServiceable
+public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBoxDbServiceable
 {
     //connection to database
     private static JDBCClient projectJDBCClient;
@@ -64,19 +64,19 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
         String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
-        if(action.equals(ProjectSQLQuery.RETRIEVE_DATA))
+        if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(ProjectSQLQuery.RETRIEVE_DATA_PATH))
+        else if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA_PATH))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(ProjectSQLQuery.UPDATE_DATA))
+        else if(action.equals(BoundingBoxDbQuery.UPDATE_DATA))
         {
             this.updateData(message);
         }
-        else if (action.equals(ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
+        else if (action.equals(BoundingBoxDbQuery.REMOVE_OBSOLETE_UUID_LIST))
         {
             this.removeObsoleteUUID(message);
         }
@@ -94,7 +94,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -142,7 +142,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
-            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch -> {
                 if(!fetch.succeeded())
                 {
                     log.error("Update metadata in database failed: " + fetch.cause().getMessage());
@@ -165,7 +165,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -241,7 +241,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 final Integer UUID = oriUUIDList.get(i);
                 JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-                projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
+                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
                     if (fetch.succeeded())
                     {
@@ -255,7 +255,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
                             if(ImageHandler.isImageReadable(dataPath) == false)
                             {
-                                projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
+                                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.DELETE_DATA, params, reply -> {
 
                                     if(reply.failed())
                                     {
@@ -308,7 +308,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(SelectorHandler.getProjectID(projectName));
 
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
                 message.reply(ReplyHandler.getOkReply());
@@ -324,7 +324,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     {
         log.info("Project Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.PROJECT_LCKFILE);
+        File lockFile = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -335,7 +335,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     public void start(Promise<Void> promise) throws Exception
     {
         projectJDBCClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.PROJECT_DB)
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.BNDBOX_DB)
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 
@@ -348,7 +348,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(ProjectSQLQuery.CREATE_PROJECT, create -> {
+                connection.execute(BoundingBoxDbQuery.CREATE_PROJECT, create -> {
                     connection.close();
                     if (create.failed()) {
                         log.error("Project database preparation error", create.cause());
@@ -357,7 +357,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     } else
                     {
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(ProjectSQLQuery.QUEUE, this::onMessage);
+                        vertx.eventBus().consumer(BoundingBoxDbQuery.QUEUE, this::onMessage);
                         promise.complete();
                     }
                 });

@@ -19,8 +19,8 @@ package ai.classifai.server;
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioSQLQuery;
-import ai.classifai.database.project.ProjectSQLQuery;
+import ai.classifai.database.portfoliodb.PortfolioDbQuery;
+import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
 import ai.classifai.selector.SelectorHandler;
@@ -76,12 +76,12 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void getAllBoundingBoxProjects(RoutingContext context)
     {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE);
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE);
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
-        vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply -> {
+        vertx.eventBus().request(PortfolioDbQuery.QUEUE, request, options, reply -> {
 
             if(reply.succeeded())
             {
@@ -121,9 +121,9 @@ public class ServerVerticle extends AbstractVerticle
 
         context.request().bodyHandler(h -> {
 
-            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.CREATE_NEW_PROJECT);
+            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.CREATE_NEW_PROJECT);
 
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, createOptions, reply -> {
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, request, createOptions, reply -> {
 
                 if(reply.succeeded())
                 {
@@ -173,9 +173,9 @@ public class ServerVerticle extends AbstractVerticle
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
             //get uuid list for processing
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
 
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
             {
                 if(reply.succeeded())
                 {
@@ -186,10 +186,10 @@ public class ServerVerticle extends AbstractVerticle
                         JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
                         JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
 
-                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST);
+                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.REMOVE_OBSOLETE_UUID_LIST);
 
                         //start checking uuid if it's path is still exist
-                        vertx.eventBus().request(ProjectSQLQuery.QUEUE, removalObject, removalOptions, fetch ->
+                        vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, removalObject, removalOptions, fetch ->
                         {
                             JsonObject removalResponse = (JsonObject) fetch.result().body();
 
@@ -248,9 +248,9 @@ public class ServerVerticle extends AbstractVerticle
         }
         else if((loaderStatus == LoaderStatus.LOADED)  || (loaderStatus == LoaderStatus.EMPTY))
         {
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_UUID_LABEL_LIST);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_UUID_LABEL_LIST);
 
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
             {
                 if (reply.succeeded()) {
 
@@ -346,8 +346,8 @@ public class ServerVerticle extends AbstractVerticle
                 else
                 {
                     //set uuid generator
-                    DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_PROJECT_UUID_LIST);
-                    vertx.eventBus().request(PortfolioSQLQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+                    DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
+                    vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
                     {
                         if(reply.succeeded())
                         {
@@ -428,9 +428,9 @@ public class ServerVerticle extends AbstractVerticle
             else {
                 JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.GET_THUMBNAIL_LIST);
+                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_THUMBNAIL_LIST);
 
-                vertx.eventBus().request(PortfolioSQLQuery.QUEUE, request, options, reply ->
+                vertx.eventBus().request(PortfolioDbQuery.QUEUE, request, options, reply ->
                 {
                     if(reply.succeeded())
                     {
@@ -490,9 +490,9 @@ public class ServerVerticle extends AbstractVerticle
 
             jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL);
 
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
             {
                 if(reply.succeeded())
                 {
@@ -526,9 +526,9 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
                 .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA);
+        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.RETRIEVE_DATA);
 
-        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, thumbnailOptions, fetch -> {
+        vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, request, thumbnailOptions, fetch -> {
 
             if (fetch.succeeded())
             {
@@ -569,9 +569,9 @@ public class ServerVerticle extends AbstractVerticle
                 .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
 
-        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.RETRIEVE_DATA_PATH);
+        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.RETRIEVE_DATA_PATH);
 
-        vertx.eventBus().request(ProjectSQLQuery.QUEUE, request, imgSrcOptions, fetch -> {
+        vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, request, imgSrcOptions, fetch -> {
 
             if (fetch.succeeded()) {
 
@@ -612,11 +612,11 @@ public class ServerVerticle extends AbstractVerticle
             JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
                     .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, ProjectSQLQuery.UPDATE_DATA);
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-            vertx.eventBus().request(ProjectSQLQuery.QUEUE, jsonObject, updateOptions, fetch ->
+            vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
                 if (fetch.succeeded()) {
                     JsonObject response = (JsonObject) fetch.result().body();
@@ -657,9 +657,9 @@ public class ServerVerticle extends AbstractVerticle
 
             jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioSQLQuery.UPDATE_LABEL);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL);
 
-            vertx.eventBus().request(PortfolioSQLQuery.QUEUE, jsonObject, options, reply ->
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
             {
                 if(reply.succeeded())
                 {

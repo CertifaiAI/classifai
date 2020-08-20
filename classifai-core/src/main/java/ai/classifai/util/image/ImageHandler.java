@@ -18,7 +18,7 @@ package ai.classifai.util.image;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.project.ProjectVerticle;
+import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;
 import lombok.NonNull;
@@ -283,7 +283,7 @@ public class ImageHandler {
         {
             Integer uuid = uuidGenerator.incrementAndGet();
 
-            ProjectVerticle.updateUUID(uuidList, item, uuid);
+            BoundingBoxVerticle.updateUUID(uuidList, item, uuid);
 
             //update progress
             SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));

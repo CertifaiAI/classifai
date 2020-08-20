@@ -16,7 +16,7 @@
 
 package ai.classifai.database.portfoliodb;
 
-public class PortfolioSQLQuery
+public class PortfolioDbQuery
 {
     public final static String QUEUE = "portfolio.queue";
 
