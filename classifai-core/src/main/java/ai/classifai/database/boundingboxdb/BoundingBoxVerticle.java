@@ -269,7 +269,6 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                             else {
                                 SelectorHandler.updateSanityUUIDItem(projectName, UUID);
                             }
-
                         }
                     }
 
@@ -322,7 +321,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
-        log.info("Project Verticle stopping...");
+        log.info("Bounding Box Verticle stopping...");
 
         File lockFile = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
 

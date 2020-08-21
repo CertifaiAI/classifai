@@ -227,6 +227,7 @@ public class ServerVerticle extends AbstractVerticle
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
         if (loaderStatus != LoaderStatus.LOADING) {
+
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
@@ -239,7 +240,8 @@ public class ServerVerticle extends AbstractVerticle
                 if (reply.succeeded()) {
                     JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
 
-                    if (ReplyHandler.isReplyOk(oriUUIDResponse)) {
+                    if (ReplyHandler.isReplyOk(oriUUIDResponse))
+                    {
                         JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
                         JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
 
@@ -871,7 +873,6 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
 
-        //FIXME: BUG
         router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateBndBoxData);
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabels);
@@ -896,7 +897,6 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getSegImageSource);
 
-        //FIXME: BUG
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateLabels);
