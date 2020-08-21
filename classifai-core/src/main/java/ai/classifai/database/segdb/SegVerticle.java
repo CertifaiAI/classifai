@@ -99,7 +99,8 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
             {
                 ResultSet resultSet = fetch.result();
 
-                if (resultSet.getNumRows() == 0) {
+                if (resultSet.getNumRows() == 0)
+                {
                     message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
                 }
                 else
@@ -201,9 +202,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
                     message.reply(response);
                 }
-
             }
-            else {
+            else
+            {
                 message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
             }
         });

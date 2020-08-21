@@ -176,7 +176,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     log.debug("Should not get null");
                     message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
                 }
-                else {
+                else
+                {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;

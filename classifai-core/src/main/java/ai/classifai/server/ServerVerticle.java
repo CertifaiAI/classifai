@@ -348,7 +348,7 @@ public class ServerVerticle extends AbstractVerticle
 
 
     /**
-     * Open file system (file/folder)  for a specific project
+     * Open file system (file/folder) for a specific bounding box project
      *
      * GET http://localhost:{port}/bndbox/projects/:project_name/filesys/:file_sys
      *
@@ -356,7 +356,26 @@ public class ServerVerticle extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesys/file
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesys/folder
      */
-    private void selectFileSystemType(RoutingContext context)
+    private void selectBndBoxFileSystemType(RoutingContext context)
+    {
+        selectFileSystemType(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Open file system (file/folder) for a specific segmentation project
+     *
+     * GET http://localhost:{port}/seg/projects/:project_name/filesys/:file_sys
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/filesys/file
+     * GET http://localhost:{port}/seg/projects/helloworld/filesys/folder
+     */
+    private void selectSegFileSystemType(RoutingContext context)
+    {
+        selectFileSystemType(context, AnnotationType.SEGMENTATION);
+    }
+
+    private void selectFileSystemType(RoutingContext context, AnnotationType annotationType)
     {
         if(SelectorHandler.isLoaderProcessing()) //file or folder selecting and updating
         {
@@ -417,11 +436,11 @@ public class ServerVerticle extends AbstractVerticle
 
                                 if (fileType.equals(SelectorHandler.FILE))
                                 {
-                                    fileSelector.runFileSelector(projectName, new AtomicInteger(seedNumber));
+                                    fileSelector.runFileSelector(annotationType, projectName, new AtomicInteger(seedNumber));
                                 }
                                 else if (fileType.equals(SelectorHandler.FOLDER))
                                 {
-                                    folderSelector.runFolderSelector(projectName, new AtomicInteger(seedNumber));
+                                    folderSelector.runFolderSelector(annotationType, projectName, new AtomicInteger(seedNumber));
                                 }
 
                                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
@@ -455,8 +474,6 @@ public class ServerVerticle extends AbstractVerticle
         //check project name if exist
         if(SelectorHandler.isProjectNameRegistered(projectName) == false)
         {
-            //HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
-
             JsonObject object = new JsonObject();
             object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
             object.put(ReplyHandler.getErrorMesageKey(), "Project name did not exist");
@@ -863,7 +880,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadProjectStatus);
 
-        router.get("/bndbox/projects/:project_name/filesys/:file_sys").handler(this::selectFileSystemType);
+        router.get("/bndbox/projects/:project_name/filesys/:file_sys").handler(this::selectBndBoxFileSystemType);
 
         router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
 
@@ -887,7 +904,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadProjectStatus);
 
-        router.get("/seg/projects/:project_name/filesys/:file_sys").handler(this::selectFileSystemType);
+        router.get("/seg/projects/:project_name/filesys/:file_sys").handler(this::selectSegFileSystemType);
 
         router.get("/seg/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
 
