@@ -644,7 +644,7 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
                 .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-        getImageSource(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.RETRIEVE_DATA, request);
+        getImageSource(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.RETRIEVE_DATA_PATH, request);
     }
 
     /***
@@ -661,7 +661,7 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
                 .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-        getImageSource(context, SegDbQuery.QUEUE, SegDbQuery.RETRIEVE_DATA, request);
+        getImageSource(context, SegDbQuery.QUEUE, SegDbQuery.RETRIEVE_DATA_PATH, request);
     }
 
     public void getImageSource(RoutingContext context, String queue, String query, JsonObject request)
