@@ -771,9 +771,10 @@ public class ServerVerticle extends AbstractVerticle
      * Update labels
      *
      * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
+     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
      *
      */
-    private void updateLabel(RoutingContext context)
+    private void updateLabels(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -815,6 +816,7 @@ public class ServerVerticle extends AbstractVerticle
         router.route().handler(StaticHandler.create());
 
         //*******************************Bounding Box*******************************
+
         router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
 
         router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
@@ -833,11 +835,13 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
 
+        //FIXME: BUG
         router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabel);
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabels);
 
         //*******************************Segmentation*******************************
+
         router.get("/seg/projects").handler(this::getAllSegmentationProjects);
 
         router.put("/seg/newproject/:project_name").handler(this::createSegmentationProject);
@@ -856,10 +860,10 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getSegImageSource);
 
+        //FIXME: BUG
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
 
-
-
+        router.put("/seg/projects/:project_name/newlabels").handler(this::updateLabels);
 
         vertx.createHttpServer()
                 .requestHandler(router)
