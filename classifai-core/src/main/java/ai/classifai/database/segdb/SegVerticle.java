@@ -269,7 +269,6 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                             else {
                                 SelectorHandler.updateSanityUUIDItem(projectName, UUID);
                             }
-
                         }
                     }
 
