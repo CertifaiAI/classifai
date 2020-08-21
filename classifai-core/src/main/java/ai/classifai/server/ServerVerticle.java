@@ -698,11 +698,8 @@ public class ServerVerticle extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/update
      *
      */
-    private void updateData(RoutingContext context)
+    private void updateBndBoxData(RoutingContext context)
     {
-        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
-
         context.request().bodyHandler(h ->
         {
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.UPDATE_DATA);
@@ -710,6 +707,45 @@ public class ServerVerticle extends AbstractVerticle
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
             vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
+            {
+                if (fetch.succeeded()) {
+                    JsonObject response = (JsonObject) fetch.result().body();
+
+                    if(ReplyHandler.isReplyOk(response))
+                    {
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                    else
+                    {
+                        //soft fail
+                        HTTPResponseHandler.configureOK(context, response);
+                        //HTTPResponseHandler.configureBadRequest(context, response);
+                    }
+
+                }
+                else {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Update database failed"));
+                }
+            });
+        });
+    }
+
+    /***
+     *
+     * Update segmentation labelling information
+     *
+     * PUT http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/update
+     *
+     */
+    private void updateSegData(RoutingContext context)
+    {
+        context.request().bodyHandler(h ->
+        {
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, SegDbQuery.UPDATE_DATA);
+
+            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+            vertx.eventBus().request(SegDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
                 if (fetch.succeeded()) {
                     JsonObject response = (JsonObject) fetch.result().body();
@@ -836,7 +872,7 @@ public class ServerVerticle extends AbstractVerticle
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
 
         //FIXME: BUG
-        router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
+        router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateBndBoxData);
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabels);
 
@@ -861,7 +897,7 @@ public class ServerVerticle extends AbstractVerticle
         router.get("/seg/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getSegImageSource);
 
         //FIXME: BUG
-        router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateData);
+        router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateLabels);
 
