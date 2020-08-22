@@ -89,6 +89,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getThumbNailList(message);
         }
+        else if(action.equals(PortfolioDbQuery.GET_PROJECT_LABEL_LIST)
+        {
+            this.getLabelList(message);
+        }
+        //FIXME: obsolete, remove this
         else if(action.equals(PortfolioDbQuery.GET_UUID_LABEL_LIST))
         {
             this.getUUIDLabelList(message);
@@ -303,11 +308,41 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
     }
 
+    public void getLabelList(Message<JsonObject> message)
+    {
+        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+
+        if (SelectorHandler.isProjectNameRegistered(projectName))
+        {
+            JsonArray params = new JsonArray().add(projectName);
+
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_LABEL_LIST, params, fetch -> {
+
+                if (fetch.succeeded()) {
+                    ResultSet resultSet = fetch.result();
+                    JsonArray row = resultSet.getResults().get(0);
+
+                    List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
+
+                    ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+                    loader.setLabelList(labelList);
+
+                    message.reply(ReplyHandler.getOkReply());
+
+                } else
+                {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+    }
+
     public void getUUIDLabelList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName)) {
+        if(SelectorHandler.isProjectNameRegistered(projectName))
+        {
             JsonArray params = new JsonArray().add(projectName);
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_UUID_LABEL_LIST, params, fetch -> {

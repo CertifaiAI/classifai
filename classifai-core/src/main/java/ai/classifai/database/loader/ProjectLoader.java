@@ -31,7 +31,10 @@ import java.util.*;
 public class ProjectLoader
 {
     @Getter @Setter private LoaderStatus loaderStatus;
+
+    @Getter @Setter private List<String> labelList;
     @Getter private Set<Integer> sanityUUIDList;
+
     private Integer currentProcessedLength;
     @Setter private Integer totalUUIDSize;
 

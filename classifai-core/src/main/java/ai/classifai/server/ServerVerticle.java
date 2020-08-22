@@ -232,44 +232,62 @@ public class ServerVerticle extends AbstractVerticle
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            //get uuid list for processing
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
-
-            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
+            //load label list
+            DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_LABEL_LIST);
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, labelOptions, labelReply ->
             {
-                if (reply.succeeded()) {
-                    JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
+                if (labelReply.succeeded()) {
+                    JsonObject labelResponse = (JsonObject) labelReply.result().body();
 
-                    if (ReplyHandler.isReplyOk(oriUUIDResponse))
+                    if (ReplyHandler.isReplyOk(labelResponse))
                     {
-                        JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
-                        JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
+                        //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
 
-                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
-
-                        //start checking uuid if it's path is still exist
-                        vertx.eventBus().request(queue, removalObject, removalOptions, fetch ->
+                        vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
                         {
-                            JsonObject removalResponse = (JsonObject) fetch.result().body();
-
-                            if (ReplyHandler.isReplyOk(removalResponse))
+                            if (reply.succeeded())
                             {
-                                log.info("Loading project: " + projectName);
+                                JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
 
-                            } else {
-                                log.info("Failed to load project: " + projectName);
+                                if (ReplyHandler.isReplyOk(oriUUIDResponse)) {
+                                    JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
+                                    JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
+
+                                    DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
+
+                                    //start checking uuid if it's path is still exist
+                                    vertx.eventBus().request(queue, removalObject, removalOptions, fetch ->
+                                    {
+                                        JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                                        if (ReplyHandler.isReplyOk(removalResponse)) {
+                                            log.info("Loading project: " + projectName);
+
+                                        } else {
+                                            log.info("Failed to load project: " + projectName);
+                                        }
+                                    });
+                                } else {
+                                    log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
+                                }
+                            }
+                            else
+                            {
+
                             }
                         });
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()); //FIXME: This is terrible
                     }
                     else
                     {
-                        log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Get label list for project failed. Loading project aborted."));
                     }
+                } else {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for label list when loading project. Loading project aborted"));
                 }
             });
         }
-
-        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()); //FIXME: This is terrible
     }
 
 
@@ -309,6 +327,11 @@ public class ServerVerticle extends AbstractVerticle
         }
         else if((loaderStatus == LoaderStatus.LOADED)  || (loaderStatus == LoaderStatus.EMPTY))
         {
+            //uuidList
+            //labelList
+            //ok response
+            projectLoader.resetLoaderStatus();
+            /*
             DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_UUID_LABEL_LIST);
 
             vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
@@ -335,6 +358,8 @@ public class ServerVerticle extends AbstractVerticle
                     HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to get reply for uuid label list"));
                 }
             });
+
+            */
         }
         else if(loaderStatus == LoaderStatus.DID_NOT_INITIATED)
         {

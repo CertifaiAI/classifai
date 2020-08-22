@@ -28,6 +28,8 @@ public class PortfolioDbQuery
 
     public final static String UPDATE_LABEL = "update Portfolio set label_list = ? where project_name = ?";
 
+    public final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_name = ?";
+
     public final static String GET_UUID_LABEL_LIST = "select label_list, uuid_list from Portfolio where project_name = ?";
 
     public final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";

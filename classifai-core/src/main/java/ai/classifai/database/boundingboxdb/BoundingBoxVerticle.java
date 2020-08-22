@@ -95,11 +95,13 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
         projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
 
-                if (resultSet.getNumRows() == 0) {
+                if (resultSet.getNumRows() == 0)
+                {
                     message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
                 }
                 else
@@ -120,7 +122,6 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
-
     }
 
     public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
@@ -254,7 +255,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                             String dataPath = row.getString(0);
 
-                            if(ImageHandler.isImageReadable(dataPath) == false)
+                            if(ImageHandler.isImageReadable(dataPath) == false) SelectorHandler.updateSanityUUIDItem(projectName, UUID);
+
+                            /*
                             {
                                 projectJDBCClient.queryWithParams(BoundingBoxDbQuery.DELETE_DATA, params, reply -> {
 
@@ -270,6 +273,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                             else {
                                 SelectorHandler.updateSanityUUIDItem(projectName, UUID);
                             }
+
+                            */
                         }
                     }
 
