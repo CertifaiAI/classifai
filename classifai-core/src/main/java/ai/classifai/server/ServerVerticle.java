@@ -39,6 +39,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -327,39 +328,14 @@ public class ServerVerticle extends AbstractVerticle
         }
         else if((loaderStatus == LoaderStatus.LOADED)  || (loaderStatus == LoaderStatus.EMPTY))
         {
-            //uuidList
-            //labelList
-            //ok response
+            JsonObject jsonObject = ReplyHandler.getOkReply();
+            jsonObject.put(ParamConfig.LABEL_LIST_PARAM, projectLoader.getLabelList());
+            jsonObject.put(ParamConfig.UUID_LIST_PARAM, new ArrayList<>(projectLoader.getSanityUUIDList()));
+
             projectLoader.resetLoaderStatus();
-            /*
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_UUID_LABEL_LIST);
 
-            vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
-            {
-                if (reply.succeeded()) {
+            HTTPResponseHandler.configureOK(context, jsonObject);
 
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        response.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
-
-                        //reset
-                        projectLoader.resetLoaderStatus();
-
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-
-                } else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to get reply for uuid label list"));
-                }
-            });
-
-            */
         }
         else if(loaderStatus == LoaderStatus.DID_NOT_INITIATED)
         {

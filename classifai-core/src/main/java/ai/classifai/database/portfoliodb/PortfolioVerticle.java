@@ -89,14 +89,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getThumbNailList(message);
         }
-        else if(action.equals(PortfolioDbQuery.GET_PROJECT_LABEL_LIST)
+        else if(action.equals(PortfolioDbQuery.GET_PROJECT_LABEL_LIST))
         {
             this.getLabelList(message);
-        }
-        //FIXME: obsolete, remove this
-        else if(action.equals(PortfolioDbQuery.GET_UUID_LABEL_LIST))
-        {
-            this.getUUIDLabelList(message);
         }
         else if(action.equals(PortfolioDbQuery.UPDATE_PROJECT))
         {
@@ -334,40 +329,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
-        }
-    }
-
-    public void getUUIDLabelList(Message<JsonObject> message)
-    {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-
-        if(SelectorHandler.isProjectNameRegistered(projectName))
-        {
-            JsonArray params = new JsonArray().add(projectName);
-
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_UUID_LABEL_LIST, params, fetch -> {
-
-                if (fetch.succeeded()) {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
-
-                    List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
-                    List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
-
-                    JsonObject reply = ReplyHandler.getOkReply();
-                    reply.put(ParamConfig.LABEL_LIST_PARAM, labelList);
-                    reply.put(ParamConfig.UUID_LIST_PARAM, uuidList);
-
-                    message.reply(reply);
-
-                } else {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
     }
 
