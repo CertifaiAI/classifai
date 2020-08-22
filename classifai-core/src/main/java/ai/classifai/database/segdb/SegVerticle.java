@@ -19,7 +19,6 @@ package ai.classifai.database.segdb;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
@@ -234,8 +233,6 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
-            final Integer maxSize = oriUUIDList.size() - 1;
-
             for(int i = 0; i < oriUUIDList.size(); ++i)
             {
                 final Integer currentLength = i;
@@ -254,39 +251,15 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                             String dataPath = row.getString(0);
 
-                            if(ImageHandler.isImageReadable(dataPath) == false)
-                            {
-                                projectJDBCClient.queryWithParams(SegDbQuery.DELETE_DATA, params, reply -> {
-
-                                    if(reply.failed())
-                                    {
-                                        //remove on next round
-                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-
-                                        log.error("Failed to remove obsolete uuid from database");
-                                    }
-                                });
-                            }
-                            else {
-                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-                            }
+                            if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
                         }
                     }
 
-                    SelectorHandler.updateProgress(projectName, currentLength);
-
-                    if(currentLength.equals(maxSize))
-                    {
-                        //request on portfolio database
-                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-                    }
+                    loader.updateProgress(currentLength);
                 });
             }
         }
     }
-
 
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)

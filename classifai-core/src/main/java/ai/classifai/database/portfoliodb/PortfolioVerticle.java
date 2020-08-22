@@ -17,7 +17,6 @@
 package ai.classifai.database.portfoliodb;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
@@ -77,9 +76,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getAllProjectsForAnnotationType(message);
         }
-        else if(action.equals(PortfolioDbQuery.UPDATE_LABEL))
+        else if(action.equals(PortfolioDbQuery.UPDATE_LABEL_LIST))
         {
-            this.updateLabel(message);
+            this.updateLabelList(message);
         }
         else if(action.equals(PortfolioDbQuery.GET_PROJECT_UUID_LIST))
         {
@@ -140,14 +139,19 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     }
 
-    public void updateLabel(Message<JsonObject> message)
+    public void updateLabelList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
+        if(labelList == null)
+        {
+            System.out.println("Something is wrong, null label list");
+        }
+
         if(SelectorHandler.isProjectNameRegistered(projectName))
         {
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
 
                 if(fetch.succeeded())
                 {
@@ -370,7 +374,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 {
                     message.reply(ReplyHandler.getOkReply());
                 }
-                else {
+                else
+                    {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
@@ -380,26 +385,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
         }
 
-    }
-
-    public static void resetUUIDList(String projectName, List<Integer> newUUIDList)
-    {
-        List<Integer> verifiedUUIDListString = ListHandler.convertListToUniqueList(newUUIDList);
-
-        JsonArray jsonUpdateBody = new JsonArray().add(verifiedUUIDListString.toString()).add(projectName);
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
-
-            if(!reply.succeeded())
-            {
-                log.error("Update list of uuids to Portfolio Database failed");
-            }
-
-            ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
-
-            loader.setLoaderStatus(LoaderStatus.LOADED);
-            
-         });
     }
 
     public static void updateUUIDList(String projectName, List<Integer> newUUIDList)
@@ -420,7 +405,14 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
 
-                    if(!reply.succeeded())
+                    if(reply.succeeded())
+                    {
+                        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+
+                        loader.setSanityUUIDList(verifiedUUIDListString);
+
+                    }
+                    else
                     {
                         log.error("Update list of uuids to Portfolio Database failed");
                     }
@@ -432,6 +424,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             }
         });
     }
+
 
 
 

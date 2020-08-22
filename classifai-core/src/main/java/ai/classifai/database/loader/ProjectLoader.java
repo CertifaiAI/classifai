@@ -1,4 +1,4 @@
-/*System.out.println
+/*
  * Copyright (c) 2020 CertifAI
  *
  * This program and the accompanying materials are made available under the
@@ -32,8 +32,10 @@ public class ProjectLoader
 {
     @Getter @Setter private LoaderStatus loaderStatus;
 
+    private Set<Integer> sanityUUIDSet;
+
+    @Getter @Setter private List<Integer> sanityUUIDList;
     @Getter @Setter private List<String> labelList;
-    @Getter private Set<Integer> sanityUUIDList;
 
     private Integer currentProcessedLength;
     @Setter private Integer totalUUIDSize;
@@ -45,23 +47,23 @@ public class ProjectLoader
     public ProjectLoader()
     {
         setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
-
-        progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
     }
 
     public void resetLoaderStatus()
     {
-        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
-        currentProcessedLength = 0;
-        sanityUUIDList.clear();
-        labelList.clear();
+        setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
     }
 
     private void setProjectLoader(LoaderStatus status)
     {
         loaderStatus = status;
-        sanityUUIDList = new HashSet<>();
+
+        progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
         currentProcessedLength = 0;
+        totalUUIDSize = 0;
+        sanityUUIDSet = new HashSet<>();
+        sanityUUIDList = new ArrayList<>();
+        labelList = new ArrayList<>();
     }
 
     public List<Integer> getProgress()
@@ -74,14 +76,27 @@ public class ProjectLoader
         return progressBar;
     }
 
-    public void updateSanityUUIDItem(Integer uuid)
-    {
-        sanityUUIDList.add(uuid);
+    public void updateProgress(Integer lengthNow) {
+        currentProcessedLength = lengthNow;
+
+        //if done, offload set to list
+        if (lengthNow == (totalUUIDSize - 1))
+        {
+            getUpdatedUUIDList();
+            loaderStatus = LoaderStatus.LOADED;
+        }
     }
 
-    public void updateProgress(Integer lengthNow)
+    public void pushToUUIDSet(Integer uuid)
     {
-        currentProcessedLength = lengthNow;
+        sanityUUIDSet.add(uuid);
     }
+
+    public void getUpdatedUUIDList()
+    {
+        sanityUUIDList = new ArrayList<>(sanityUUIDSet);
+        sanityUUIDSet.clear();
+    }
+
 
 }

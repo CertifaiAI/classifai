@@ -26,7 +26,7 @@ public class PortfolioDbQuery
 
     public final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_name = ?";
 
-    public final static String UPDATE_LABEL = "update Portfolio set label_list = ? where project_name = ?";
+    public final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_name = ?";
 
     public final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_name = ?";
 

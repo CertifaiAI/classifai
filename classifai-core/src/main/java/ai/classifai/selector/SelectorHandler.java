@@ -68,21 +68,6 @@ public class SelectorHandler {
         projectIDGenerator = new AtomicInteger(0);
     }
 
-    public static void updateSanityUUIDItem(String projectName, Integer uuid) {
-        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
-
-        projectLoader.updateSanityUUIDItem(uuid);
-    }
-
-
-    public static void updateProgress(String projectName, Integer progress)
-    {
-        ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
-
-        loader.updateProgress(progress);
-
-    }
-
     public static ProjectLoader getProjectLoader(String projectName) {
 
         if(projectLoaderDict.containsKey(projectName) == false)
@@ -102,14 +87,6 @@ public class SelectorHandler {
         projectIDNameDict.put(projectID, projectName);
 
         projectLoaderDict.put(projectName, new ProjectLoader());
-    }
-
-
-    public static Set<Integer> getProjectLoaderUUIDList(String projectName)
-    {
-        ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
-
-        return loader.getSanityUUIDList();
     }
 
     public static boolean initSelector(String selection)

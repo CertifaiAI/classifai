@@ -19,7 +19,6 @@ package ai.classifai.database.boundingboxdb;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
@@ -143,14 +142,15 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch -> {
-                if(!fetch.succeeded())
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
+            {
+                if(fetch.succeeded())
                 {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                    uuidList.add(UUID);
                 }
                 else
                 {
-                    uuidList.add(UUID);
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
             });
         }
@@ -235,8 +235,6 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
             loader.setLoaderStatus(LoaderStatus.LOADING);
             loader.setTotalUUIDSize(oriUUIDList.size());
 
-            final Integer maxSize = oriUUIDList.size() - 1;
-
             for(int i = 0; i < oriUUIDList.size(); ++i)
             {
                 final Integer currentLength = i;
@@ -255,38 +253,11 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                             String dataPath = row.getString(0);
 
-                            if(ImageHandler.isImageReadable(dataPath) == false) SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-
-                            /*
-                            {
-                                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.DELETE_DATA, params, reply -> {
-
-                                    if(reply.failed())
-                                    {
-                                        //remove on next round
-                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-
-                                        log.error("Failed to remove obsolete uuid from database");
-                                    }
-                                });
-                            }
-                            else {
-                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-                            }
-
-                            */
+                            if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
                         }
                     }
 
-                    SelectorHandler.updateProgress(projectName, currentLength);
-
-                    if(currentLength.equals(maxSize))
-                    {
-                        //request on portfolio database
-                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-                    }
+                    loader.updateProgress(currentLength);
                 });
             }
         }
