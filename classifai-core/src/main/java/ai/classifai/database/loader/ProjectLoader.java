@@ -15,7 +15,7 @@
  */
 package ai.classifai.database.loader;
 
-import ai.classifai.data.DataType;
+import ai.classifai.annotation.AnnotationType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -38,29 +38,20 @@ public class ProjectLoader
     @Getter @Setter private List<String> labelList;
 
     private Integer currentProcessedLength;
-    @Setter private Integer totalUUIDSize;
+    private Integer totalUUIDSize; //only used when going through uuid for valid path
 
-    @Getter private DataType dataType = DataType.IMAGE;
+    private AnnotationType annotationType; //TODO
 
     @Setter @Getter private List<Integer> progressUpdate;
 
     public ProjectLoader()
     {
-        setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
-    }
-
-    public void resetLoaderStatus()
-    {
-        setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
-    }
-
-    private void setProjectLoader(LoaderStatus status)
-    {
-        loaderStatus = status;
+        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
 
         progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
+
         currentProcessedLength = 0;
-        totalUUIDSize = 0;
+        totalUUIDSize = -1;
         sanityUUIDSet = new HashSet<>();
         sanityUUIDList = new ArrayList<>();
         labelList = new ArrayList<>();
@@ -76,11 +67,27 @@ public class ProjectLoader
         return progressBar;
     }
 
-    public void updateProgress(Integer lengthNow) {
-        currentProcessedLength = lengthNow;
+    public void setTotalUUIDSize(Integer totalUUIDSizeBuffer)
+    {
+        totalUUIDSize = totalUUIDSizeBuffer;
+
+        if(totalUUIDSize == 0)
+        {
+            loaderStatus = LoaderStatus.EMPTY;
+        }
+        else if(totalUUIDSize < 0)
+        {
+            loaderStatus = LoaderStatus.ERROR;
+        }
+
+    }
+
+    public void updateProgress(Integer index)
+    {
+        currentProcessedLength = index;
 
         //if done, offload set to list
-        if (lengthNow == (totalUUIDSize - 1))
+        if ((index + 1) == totalUUIDSize)
         {
             getUpdatedUUIDList();
             loaderStatus = LoaderStatus.LOADED;
@@ -96,7 +103,7 @@ public class ProjectLoader
     {
         sanityUUIDList = new ArrayList<>(sanityUUIDSet);
         sanityUUIDSet.clear();
+
+        totalUUIDSize = -1;
     }
-
-
 }

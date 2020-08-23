@@ -35,5 +35,6 @@ public class BoundingBoxDbQuery
 
     public final static String DELETE_DATA = "delete from Project where uuid = ? and project_id = ?";
 
-    public final static String REMOVE_OBSOLETE_UUID_LIST = PortfolioDbQuery.REMOVE_OBSOLETE_UUID_LIST;
+    //FIXME: Segmentaion and this can use inheritance
+    public final static String LOAD_VALID_PROJECT_UUID = "load valid project uuid";
 }

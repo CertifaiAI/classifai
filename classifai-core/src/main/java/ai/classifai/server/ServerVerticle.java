@@ -196,7 +196,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadBndBoxProject(RoutingContext context)
     {
-        loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.REMOVE_OBSOLETE_UUID_LIST);
+        loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.LOAD_VALID_PROJECT_UUID);
     }
 
     /**
@@ -210,7 +210,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadSegProject(RoutingContext context)
     {
-        loadProject(context, SegDbQuery.QUEUE, SegDbQuery.REMOVE_OBSOLETE_UUID_LIST);
+        loadProject(context, SegDbQuery.QUEUE, SegDbQuery.LOAD_VALID_PROJECT_UUID);
     }
 
     private void loadProject(RoutingContext context, String queue, String query)
@@ -219,15 +219,16 @@ public class ServerVerticle extends AbstractVerticle
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        if (loader == null) {
+        if (loader == null)
+        {
             HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
             return;
         }
 
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
-        if (loaderStatus != LoaderStatus.LOADING) {
-
+        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
+        {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
@@ -239,20 +240,18 @@ public class ServerVerticle extends AbstractVerticle
                 if (labelReply.succeeded()) {
                     JsonObject labelResponse = (JsonObject) labelReply.result().body();
 
-                    if (ReplyHandler.isReplyOk(labelResponse))
-                    {
+                    if (ReplyHandler.isReplyOk(labelResponse)) {
                         //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
                         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
 
                         vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
                         {
-                            if (reply.succeeded())
-                            {
+                            if (reply.succeeded()) {
                                 JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
 
-                                if (ReplyHandler.isReplyOk(oriUUIDResponse))
-                                {
+                                if (ReplyHandler.isReplyOk(oriUUIDResponse)) {
                                     JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
+
                                     JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
 
                                     DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
@@ -262,33 +261,37 @@ public class ServerVerticle extends AbstractVerticle
                                     {
                                         JsonObject removalResponse = (JsonObject) fetch.result().body();
 
-                                        if (ReplyHandler.isReplyOk(removalResponse))
-                                        {
+                                        if (ReplyHandler.isReplyOk(removalResponse)) {
                                             log.info("Loading project: " + projectName);
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
                                         } else {
                                             log.info("Failed to load project: " + projectName);
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project. Check validity of data points failed"));
                                         }
                                     });
                                 } else {
                                     log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
                                 }
-                            }
-                            else
-                            {
+                            } else {
 
+                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project. Get list of uuid data points failed"));
                             }
                         });
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()); //FIXME: This is terrible
+                    } else {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for label list when loading project. Loading project aborted"));
+
                     }
-                    else
-                    {
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Get label list for project failed. Loading project aborted."));
-                    }
-                } else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for label list when loading project. Loading project aborted"));
                 }
             });
+        }
+        else if(loaderStatus.equals(LoaderStatus.LOADED) || loaderStatus.equals(LoaderStatus.EMPTY) | loaderStatus.equals(LoaderStatus.LOADING))
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+        }
+        else if(loaderStatus.equals(LoaderStatus.ERROR))
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for uuid list when loading project. Loading project aborted"));
         }
     }
 
@@ -316,11 +319,8 @@ public class ServerVerticle extends AbstractVerticle
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
-        if(loaderStatus == LoaderStatus.ERROR)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
-        }
-        else if(loaderStatus == LoaderStatus.LOADING)
+
+        if(loaderStatus == LoaderStatus.LOADING)
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
             jsonObject.put(ParamConfig.PROGRESS_METADATA, projectLoader.getProgress());
@@ -330,6 +330,7 @@ public class ServerVerticle extends AbstractVerticle
         else if(loaderStatus == LoaderStatus.LOADED)
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
+
             jsonObject.put(ParamConfig.LABEL_LIST_PARAM, projectLoader.getLabelList());
             jsonObject.put(ParamConfig.UUID_LIST_PARAM, projectLoader.getSanityUUIDList());
 
@@ -339,6 +340,7 @@ public class ServerVerticle extends AbstractVerticle
         else if(loaderStatus == LoaderStatus.EMPTY)
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
+
             jsonObject.put(ParamConfig.LABEL_LIST_PARAM, ParamConfig.EMPTY_ARRAY);
             jsonObject.put(ParamConfig.UUID_LIST_PARAM, ParamConfig.EMPTY_ARRAY);
 
@@ -348,9 +350,15 @@ public class ServerVerticle extends AbstractVerticle
         else if(loaderStatus == LoaderStatus.DID_NOT_INITIATED)
         {
             JsonObject object = new JsonObject();
+
             object.put(ReplyHandler.getMessageKey(), LoaderStatus.DID_NOT_INITIATED.ordinal());
 
             HTTPResponseHandler.configureOK(context, object);
+
+        }
+        else if(loaderStatus == LoaderStatus.ERROR)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
         }
     }
 

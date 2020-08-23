@@ -36,7 +36,8 @@ public class PortfolioDbQuery
 
     public final static String GET_PROJECT_UUID_LIST = "select uuid_list from Portfolio where project_name = ?";
 
-    public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
+    //public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
+    public final static String LOAD_PROJECT_UUID_LIST = "load project uuid list";
 
     public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnail_max = ? where project_name = ?";
 

@@ -92,10 +92,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.REMOVE_OBSOLETE_UUID_LIST))
-        {
-            this.getValidUUIDList(message);
-        }
         else
         {
             log.error("Portfolio SQL query error: Action did not found follow up with function");
@@ -157,52 +153,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         else
         {
             message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
-        }
-    }
-
-    public void getValidUUIDList(Message<JsonObject> message)
-    {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
-
-        List<Integer> uuidListToRemove = ConversionHandler.jsonArray2IntegerList(uuidListArray);
-
-        if(SelectorHandler.isProjectNameRegistered(projectName))
-        {
-            JsonArray params = new JsonArray().add(projectName);
-
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
-
-                if(fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
-
-                    List<Integer> uuidList =  ConversionHandler.string2IntegerList(row.getString(0));
-
-                    for(Integer uuid : uuidListToRemove) uuidList.removeIf(index -> (index == uuid));
-
-                    JsonArray updateParam = new JsonArray().add(uuidList.toString()).add(projectName);
-
-                    portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, updateParam, result ->
-                    {
-                        if(result.succeeded())
-                        {
-                            message.reply(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-
-                        }
-                    });
-                } else {
-                    //query database failed
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-        } else {
-            message.reply(ReplyHandler.reportBadParamError(projectNameExistMessage));
         }
     }
 
@@ -316,6 +266,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
 
                     ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+
                     loader.setLabelList(labelList);
 
                     message.reply(ReplyHandler.getOkReply());
@@ -330,9 +281,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
     {
-        Integer annotationType = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE, new JsonArray().add(annotationType), fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE, new JsonArray().add(annotationTypeIndex), fetch -> {
             if (fetch.succeeded()) {
 
                 List<String> projectNameList = fetch.result()

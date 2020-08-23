@@ -43,8 +43,7 @@ public class SelectorHandler {
 
     private static AtomicInteger projectIDGenerator;
 
-    @Getter
-    private static String projectNameBuffer;
+    @Getter private static String projectNameBuffer;
 
     private static boolean isWindowOpen = false;
     @Getter private static boolean isLoaderProcessing = false;
@@ -72,6 +71,7 @@ public class SelectorHandler {
 
         if(projectLoaderDict.containsKey(projectName) == false)
         {
+            log.error("Project name is not in ProjectLoader. This should not happened");
             return null;
         }
 
@@ -105,6 +105,11 @@ public class SelectorHandler {
     public static boolean isProjectNameRegistered(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);
+    }
+
+    public static ProjectLoader getCurrentProjectLoader()
+    {
+        return getProjectLoader(getProjectNameBuffer());
     }
 
     public static Integer getProjectID(String projectName)
@@ -151,13 +156,6 @@ public class SelectorHandler {
         ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
 
         return projectLoader.getProgressUpdate();
-    }
-
-    public static void setProgressUpdate(@NonNull String projectName, List<Integer> progressUpdate)
-    {
-        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
-
-        projectLoader.setProgressUpdate(progressUpdate);
     }
 
     public static void startDatabaseUpdate(@NonNull String projectName) {
