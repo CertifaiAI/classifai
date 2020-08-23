@@ -17,10 +17,10 @@
 package ai.classifai.server;
 
 import ai.classifai.annotation.AnnotationType;
+import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.database.segdb.SegDbQuery;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
@@ -39,7 +39,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 

@@ -140,10 +140,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
-        if(labelList == null)
-        {
-            System.out.println("Something is wrong, null label list");
-        }
 
         if(SelectorHandler.isProjectNameRegistered(projectName))
         {

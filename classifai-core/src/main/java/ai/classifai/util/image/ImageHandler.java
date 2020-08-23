@@ -18,8 +18,8 @@ package ai.classifai.util.image;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;
