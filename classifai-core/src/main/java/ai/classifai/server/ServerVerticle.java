@@ -197,7 +197,6 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadBndBoxProject(RoutingContext context)
     {
-        System.out.println("Debugging loadBndBoxProject");
         loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.REMOVE_OBSOLETE_UUID_LIST);
     }
 

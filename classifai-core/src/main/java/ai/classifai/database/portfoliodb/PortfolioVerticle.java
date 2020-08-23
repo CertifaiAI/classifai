@@ -92,13 +92,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.UPDATE_PROJECT))
-        {
-            this.updateUUIDList(message);
-        }
         else if(action.equals(PortfolioDbQuery.REMOVE_OBSOLETE_UUID_LIST))
         {
-            this.removeObsoleteUUID(message);
+            this.getValidUUIDList(message);
         }
         else
         {
@@ -168,7 +164,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
     }
 
-    public void removeObsoleteUUID(Message<JsonObject> message)
+    public void getValidUUIDList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
@@ -359,32 +355,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
-    }
-
-    public static void updateUUIDList(Message<JsonObject> message)
-    {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        JsonArray uuidList = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
-
-        if(SelectorHandler.isProjectNameRegistered(projectName))
-        {
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, new JsonArray().add(uuidList.toString()).add(projectName), fetch ->{
-
-                if(fetch.succeeded())
-                {
-                    message.reply(ReplyHandler.getOkReply());
-                }
-                else
-                    {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
-        }
-
     }
 
     public static void updateUUIDList(String projectName, List<Integer> newUUIDList)
