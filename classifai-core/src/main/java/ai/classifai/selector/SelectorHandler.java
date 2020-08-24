@@ -17,6 +17,7 @@
 package ai.classifai.selector;
 
 import ai.classifai.data.DataType;
+import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,7 +47,7 @@ public class SelectorHandler {
     @Getter private static String projectNameBuffer;
 
     private static boolean isWindowOpen = false;
-    @Getter private static boolean isLoaderProcessing = false;
+    private static boolean isLoaderProcessing = false; // only one file/folder selector can open at one time. even for multiple projects.
     @Setter @Getter private static SelectorStatus selectorStatus;
 
     @Getter
@@ -102,6 +103,7 @@ public class SelectorHandler {
         }
         return true;
     }
+
     public static boolean isProjectNameRegistered(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);
@@ -109,7 +111,7 @@ public class SelectorHandler {
 
     public static ProjectLoader getCurrentProjectLoader()
     {
-        return getProjectLoader(getProjectNameBuffer());
+        return getProjectLoader(projectNameBuffer);
     }
 
     public static Integer getProjectID(String projectName)
@@ -127,10 +129,9 @@ public class SelectorHandler {
         projectNameBuffer = projectName;
     }
 
-    public static DataType getProjectDataType(String projectName)
+    public static boolean isLoaderProcessing()
     {
-        return ((ProjectLoader) projectLoaderDict.get(projectName)).getDataType();
-
+        return isLoaderProcessing;
     }
 
     public static void configureOpenWindow(String projectName, Integer uuidGenerator)
@@ -161,14 +162,25 @@ public class SelectorHandler {
     public static void startDatabaseUpdate(@NonNull String projectName) {
         projectNameBuffer = projectName;
         selectorStatus = SelectorStatus.WINDOW_CLOSE_LOADING_FILES;
+        getCurrentProjectLoader().setLoaderStatus(LoaderStatus.LOADING);
         isLoaderProcessing = true;
         isWindowOpen = false;
     }
 
     public static void stopDatabaseUpdate()
     {
-        projectNameBuffer = "";
+        ProjectLoader loader = getCurrentProjectLoader();
+        if(loader.getSanityUUIDList().isEmpty())
+        {
+            loader.setLoaderStatus(LoaderStatus.EMPTY);
+        }
+        else
+        {
+            loader.setLoaderStatus(LoaderStatus.LOADED);
+        }
+
         isLoaderProcessing = false;
+        projectNameBuffer = "";
     }
     /**
      * @param state true = open, false = close

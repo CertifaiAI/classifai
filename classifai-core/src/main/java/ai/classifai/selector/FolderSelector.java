@@ -78,9 +78,7 @@ public class FolderSelector{
                         {
                             SelectorHandler.startDatabaseUpdate(projectName);
 
-                            DataType dataType = SelectorHandler.getProjectDataType(projectName);
-
-                            if (dataType == DataType.IMAGE) ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
+                            ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
 
                             SelectorHandler.stopDatabaseUpdate();
                         }

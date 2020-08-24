@@ -288,6 +288,8 @@ public class ImageHandler {
 
         AtomicInteger progressCounter = new AtomicInteger(0);
 
+        ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
+
         for(File item : filesCollection)
         {
             Integer uuid = uuidGenerator.incrementAndGet();
@@ -302,9 +304,6 @@ public class ImageHandler {
             }
 
             //update progress bar and update projectloader
-
-            ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
-
             currentProjectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
 
             currentProjectLoader.getSanityUUIDList().addAll(uuidList);
