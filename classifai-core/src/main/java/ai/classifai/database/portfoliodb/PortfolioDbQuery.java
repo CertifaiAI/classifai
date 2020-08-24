@@ -26,9 +26,9 @@ public class PortfolioDbQuery
 
     public final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_name = ?";
 
-    public final static String UPDATE_LABEL = "update Portfolio set label_list = ? where project_name = ?";
+    public final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_name = ?";
 
-    public final static String GET_UUID_LABEL_LIST = "select label_list, uuid_list from Portfolio where project_name = ?";
+    public final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_name = ?";
 
     public final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
 
@@ -36,7 +36,8 @@ public class PortfolioDbQuery
 
     public final static String GET_PROJECT_UUID_LIST = "select uuid_list from Portfolio where project_name = ?";
 
-    public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
+    //public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
+    public final static String LOAD_PROJECT_UUID_LIST = "load project uuid list";
 
     public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnail_max = ? where project_name = ?";
 

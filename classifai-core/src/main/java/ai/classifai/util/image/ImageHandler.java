@@ -18,8 +18,9 @@ package ai.classifai.util.image;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;
@@ -287,6 +288,8 @@ public class ImageHandler {
 
         AtomicInteger progressCounter = new AtomicInteger(0);
 
+        ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
+
         for(File item : filesCollection)
         {
             Integer uuid = uuidGenerator.incrementAndGet();
@@ -300,8 +303,10 @@ public class ImageHandler {
                 SegVerticle.updateUUID(uuidList, item, uuid);
             }
 
-            //update progress
-            SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+            //update progress bar and update projectloader
+            currentProjectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+
+            currentProjectLoader.getSanityUUIDList().addAll(uuidList);
         }
 
         while(true)

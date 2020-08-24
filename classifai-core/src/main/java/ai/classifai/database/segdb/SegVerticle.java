@@ -19,7 +19,6 @@ package ai.classifai.database.segdb;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
@@ -39,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Segmentation Verticle
@@ -76,9 +74,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         {
             this.updateData(message);
         }
-        else if (action.equals(SegDbQuery.REMOVE_OBSOLETE_UUID_LIST))
+        else if (action.equals(SegDbQuery.LOAD_VALID_PROJECT_UUID))
         {
-            this.removeObsoleteUUID(message);
+            this.loadValidProjectUUID(message);
         }
         else
         {
@@ -211,7 +209,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     }
 
 
-    public void removeObsoleteUUID(Message<JsonObject> message)
+    public void loadValidProjectUUID(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         Integer projectID  = SelectorHandler.getProjectID(projectName);
@@ -221,72 +219,36 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        if(oriUUIDList.isEmpty())
+        message.reply(ReplyHandler.getOkReply());
+
+        loader.setLoaderStatus(LoaderStatus.LOADING);
+        loader.setTotalUUIDSize(oriUUIDList.size());
+
+        for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            loader.setLoaderStatus(LoaderStatus.EMPTY);
-            message.reply(ReplyHandler.getOkReply());
-            return;
-        }
-        else
-        {
-            message.reply(ReplyHandler.getOkReply());
+            final Integer currentLength = i;
+            final Integer UUID = oriUUIDList.get(i);
+            JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            loader.setLoaderStatus(LoaderStatus.LOADING);
-            loader.setTotalUUIDSize(oriUUIDList.size());
+            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
-            final Integer maxSize = oriUUIDList.size() - 1;
+                if (fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
 
-            for(int i = 0; i < oriUUIDList.size(); ++i)
-            {
-                final Integer currentLength = i;
-                final Integer UUID = oriUUIDList.get(i);
-                JsonArray params = new JsonArray().add(UUID).add(projectID);
-
-                projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
-
-                    if (fetch.succeeded())
+                    if (resultSet.getNumRows() != 0)
                     {
-                        ResultSet resultSet = fetch.result();
+                        JsonArray row = resultSet.getResults().get(0);
 
-                        if (resultSet.getNumRows() != 0)
-                        {
-                            JsonArray row = resultSet.getResults().get(0);
+                        String dataPath = row.getString(0);
 
-                            String dataPath = row.getString(0);
-
-                            if(ImageHandler.isImageReadable(dataPath) == false)
-                            {
-                                projectJDBCClient.queryWithParams(SegDbQuery.DELETE_DATA, params, reply -> {
-
-                                    if(reply.failed())
-                                    {
-                                        //remove on next round
-                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-
-                                        log.error("Failed to remove obsolete uuid from database");
-                                    }
-                                });
-                            }
-                            else {
-                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-                            }
-                        }
+                        if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
                     }
-
-                    SelectorHandler.updateProgress(projectName, currentLength);
-
-                    if(currentLength.equals(maxSize))
-                    {
-                        //request on portfolio database
-                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-                    }
-                });
-            }
+                    loader.updateProgress(currentLength);
+                }
+            });
         }
     }
-
 
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)

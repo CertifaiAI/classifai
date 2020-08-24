@@ -16,7 +16,6 @@
 
 package ai.classifai.database.segdb;
 
-import ai.classifai.database.portfoliodb.PortfolioDbQuery;
 
 public class SegDbQuery
 {
@@ -34,6 +33,5 @@ public class SegDbQuery
     public final static String UPDATE_DATA = "update Project set polygons = ?, img_x = ?, img_y = ?, img_w = ?, img_h = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
 
     public final static String DELETE_DATA = "delete from Project where uuid = ? and project_id = ?";
-
-    public final static String REMOVE_OBSOLETE_UUID_LIST = PortfolioDbQuery.REMOVE_OBSOLETE_UUID_LIST;
+    public final static String LOAD_VALID_PROJECT_UUID = "load valid project uuid";
 }

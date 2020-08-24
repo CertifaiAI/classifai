@@ -17,10 +17,10 @@
 package ai.classifai.server;
 
 import ai.classifai.annotation.AnnotationType;
+import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.database.segdb.SegDbQuery;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
@@ -196,7 +196,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadBndBoxProject(RoutingContext context)
     {
-        loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.REMOVE_OBSOLETE_UUID_LIST);
+        loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.LOAD_VALID_PROJECT_UUID);
     }
 
     /**
@@ -210,7 +210,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadSegProject(RoutingContext context)
     {
-        loadProject(context, SegDbQuery.QUEUE, SegDbQuery.REMOVE_OBSOLETE_UUID_LIST);
+        loadProject(context, SegDbQuery.QUEUE, SegDbQuery.LOAD_VALID_PROJECT_UUID);
     }
 
     private void loadProject(RoutingContext context, String queue, String query)
@@ -219,57 +219,80 @@ public class ServerVerticle extends AbstractVerticle
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        if (loader == null) {
+        if (loader == null)
+        {
             HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
             return;
         }
 
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
-        if (loaderStatus != LoaderStatus.LOADING) {
-
+        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
+        {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            //get uuid list for processing
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
-
-            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
+            //load label list
+            DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_LABEL_LIST);
+            vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, labelOptions, labelReply ->
             {
-                if (reply.succeeded()) {
-                    JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
+                if (labelReply.succeeded()) {
+                    JsonObject labelResponse = (JsonObject) labelReply.result().body();
 
-                    if (ReplyHandler.isReplyOk(oriUUIDResponse))
-                    {
-                        JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
-                        JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
+                    if (ReplyHandler.isReplyOk(labelResponse)) {
+                        //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
 
-                        DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
-
-                        //start checking uuid if it's path is still exist
-                        vertx.eventBus().request(queue, removalObject, removalOptions, fetch ->
+                        vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
                         {
-                            JsonObject removalResponse = (JsonObject) fetch.result().body();
+                            if (reply.succeeded()) {
+                                JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
 
-                            if (ReplyHandler.isReplyOk(removalResponse))
-                            {
-                                log.info("Loading project: " + projectName);
+                                if (ReplyHandler.isReplyOk(oriUUIDResponse)) {
+                                    JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
+                                    JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
+
+                                    DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
+
+                                    //start checking uuid if it's path is still exist
+                                    vertx.eventBus().request(queue, removalObject, removalOptions, fetch ->
+                                    {
+                                        JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                                        if (ReplyHandler.isReplyOk(removalResponse)) {
+                                            log.info("Loading project: " + projectName);
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
+                                        } else {
+                                            log.info("Failed to load project: " + projectName);
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project. Check validity of data points failed"));
+                                        }
+                                    });
+                                } else {
+                                    log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
+                                }
                             } else {
-                                log.info("Failed to load project: " + projectName);
+
+                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project. Get list of uuid data points failed"));
                             }
                         });
-                    }
-                    else
-                    {
-                        log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
+                    } else {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for label list when loading project. Loading project aborted"));
+
                     }
                 }
             });
         }
-
-        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()); //FIXME: This is terrible
+        else if(loaderStatus.equals(LoaderStatus.LOADED) || loaderStatus.equals(LoaderStatus.EMPTY) | loaderStatus.equals(LoaderStatus.LOADING))
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+        }
+        else if(loaderStatus.equals(LoaderStatus.ERROR))
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for uuid list when loading project. Loading project aborted"));
+        }
     }
 
 
@@ -296,52 +319,46 @@ public class ServerVerticle extends AbstractVerticle
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
-        if(loaderStatus == LoaderStatus.ERROR)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
-        }
-        else if(loaderStatus == LoaderStatus.LOADING)
+
+        if(loaderStatus == LoaderStatus.LOADING)
         {
             JsonObject jsonObject = ReplyHandler.getOkReply();
             jsonObject.put(ParamConfig.PROGRESS_METADATA, projectLoader.getProgress());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
         }
-        else if((loaderStatus == LoaderStatus.LOADED)  || (loaderStatus == LoaderStatus.EMPTY))
+        else if(loaderStatus == LoaderStatus.LOADED)
         {
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_UUID_LABEL_LIST);
+            JsonObject jsonObject = ReplyHandler.getOkReply();
 
-            vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
-            {
-                if (reply.succeeded()) {
+            jsonObject.put(ParamConfig.LABEL_LIST_PARAM, projectLoader.getLabelList());
+            jsonObject.put(ParamConfig.UUID_LIST_PARAM, projectLoader.getSanityUUIDList());
 
-                    JsonObject response = (JsonObject) reply.result().body();
+            HTTPResponseHandler.configureOK(context, jsonObject);
 
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        response.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+        }
+        else if(loaderStatus == LoaderStatus.EMPTY)
+        {
+            JsonObject jsonObject = ReplyHandler.getOkReply();
 
-                        //reset
-                        projectLoader.resetLoaderStatus();
+            jsonObject.put(ParamConfig.LABEL_LIST_PARAM, ParamConfig.EMPTY_ARRAY);
+            jsonObject.put(ParamConfig.UUID_LIST_PARAM, ParamConfig.EMPTY_ARRAY);
 
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
+            HTTPResponseHandler.configureOK(context, jsonObject);
 
-                } else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to get reply for uuid label list"));
-                }
-            });
         }
         else if(loaderStatus == LoaderStatus.DID_NOT_INITIATED)
         {
             JsonObject object = new JsonObject();
+
             object.put(ReplyHandler.getMessageKey(), LoaderStatus.DID_NOT_INITIATED.ordinal());
 
             HTTPResponseHandler.configureOK(context, object);
+
+        }
+        else if(loaderStatus == LoaderStatus.ERROR)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
         }
     }
 
@@ -430,7 +447,7 @@ public class ServerVerticle extends AbstractVerticle
                                 //this is to initiate the generator id to the end of existing list
                                 List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
 
-                                Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size() + 1;
+                                Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size();
 
                                 SelectorHandler.configureOpenWindow(projectName, seedNumber);
 
@@ -552,7 +569,7 @@ public class ServerVerticle extends AbstractVerticle
      * Example:
      * PUT http://localhost:{port}/bndbox/projects/helloworld/newlabels
      */
-    private void createNewLabel(RoutingContext context)
+    private void createNewLabels(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -562,7 +579,7 @@ public class ServerVerticle extends AbstractVerticle
 
             jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL_LIST);
 
             vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
             {
@@ -839,7 +856,7 @@ public class ServerVerticle extends AbstractVerticle
 
             jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL_LIST);
 
             vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
             {
@@ -884,7 +901,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewLabel);
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewLabels);
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxMetadata);
 
@@ -908,7 +925,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
 
-        router.put("/seg/projects/:project_name/newlabels").handler(this::createNewLabel);
+        router.put("/seg/projects/:project_name/newlabels").handler(this::createNewLabels);
 
         router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegMetadata);
 
