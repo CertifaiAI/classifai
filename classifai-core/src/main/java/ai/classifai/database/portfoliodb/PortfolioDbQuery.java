@@ -20,7 +20,7 @@ public class PortfolioDbQuery
 {
     public final static String QUEUE = "portfolio.queue";
 
-    public final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(1000), thumbnail_max integer, uuid_list clob)";
+    public final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), thumbnail_max integer, uuid_list clob)";
 
     public final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?)";
 

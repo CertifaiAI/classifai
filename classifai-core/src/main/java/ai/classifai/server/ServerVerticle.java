@@ -327,22 +327,14 @@ public class ServerVerticle extends AbstractVerticle
 
             HTTPResponseHandler.configureOK(context, jsonObject);
         }
-        else if(loaderStatus == LoaderStatus.LOADED)
+        else if((loaderStatus == LoaderStatus.LOADED) || (loaderStatus == LoaderStatus.EMPTY))
         {
-            JsonObject jsonObject = ReplyHandler.getOkReply();
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
 
             jsonObject.put(ParamConfig.LABEL_LIST_PARAM, projectLoader.getLabelList());
             jsonObject.put(ParamConfig.UUID_LIST_PARAM, projectLoader.getSanityUUIDList());
-
-            HTTPResponseHandler.configureOK(context, jsonObject);
-
-        }
-        else if(loaderStatus == LoaderStatus.EMPTY)
-        {
-            JsonObject jsonObject = ReplyHandler.getOkReply();
-
-            jsonObject.put(ParamConfig.LABEL_LIST_PARAM, ParamConfig.EMPTY_ARRAY);
-            jsonObject.put(ParamConfig.UUID_LIST_PARAM, ParamConfig.EMPTY_ARRAY);
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
@@ -361,8 +353,6 @@ public class ServerVerticle extends AbstractVerticle
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
         }
     }
-
-
 
     /**
      * Open file system (file/folder) for a specific bounding box project
@@ -637,7 +627,6 @@ public class ServerVerticle extends AbstractVerticle
 
     public void getMetadata(RoutingContext context, String queue, String query, JsonObject request)
     {
-
         DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
 
         vertx.eventBus().request(queue, request, thumbnailOptions, fetch -> {
