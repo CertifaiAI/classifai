@@ -45,4 +45,3 @@ public class PortfolioDbQuery
 
     public final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 }
-

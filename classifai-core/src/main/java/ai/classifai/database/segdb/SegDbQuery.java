@@ -21,7 +21,7 @@ public class SegDbQuery
 {
     public final static String QUEUE = "segmentation.queue";
 
-    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, project_id integer, img_path varchar(2000), polygons varchar(40000), img_depth integer, " +
+    public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, project_id integer, img_path varchar(2000), polygons clob, img_depth integer, " +
             "img_x integer, img_y integer, img_w double, img_h double, img_ori_w integer, img_ori_h integer, primary key(uuid, project_id))";
 
     public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
