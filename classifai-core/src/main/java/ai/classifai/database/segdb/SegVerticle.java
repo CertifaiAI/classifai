@@ -244,7 +244,11 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                         if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
                     }
-                    loader.updateProgress(currentLength);
+                    loader.updateProgress(currentLength + 1);
+                }
+                else
+                {
+                    loader.updateProgress(currentLength + 1);
                 }
             });
         }

@@ -84,10 +84,10 @@ public class ProjectLoader
 
     public void updateProgress(Integer index)
     {
-        currentProcessedLength = index + 1;
+        currentProcessedLength = index;
 
         //if done, offload set to list
-        if (currentProcessedLength == totalUUIDSize)
+        if (index == totalUUIDSize)
         {
             getUpdatedUUIDList();
             loaderStatus = LoaderStatus.LOADED;

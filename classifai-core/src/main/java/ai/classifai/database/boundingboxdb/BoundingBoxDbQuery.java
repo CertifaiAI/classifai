@@ -16,8 +16,6 @@
 
 package ai.classifai.database.boundingboxdb;
 
-import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-
 public class BoundingBoxDbQuery
 {
     public final static String QUEUE = "boundingbox.queue";

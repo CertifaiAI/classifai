@@ -17,7 +17,6 @@
 package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
-import ai.classifai.data.DataType;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;

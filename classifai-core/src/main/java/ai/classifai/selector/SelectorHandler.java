@@ -16,7 +16,6 @@
 
 package ai.classifai.selector;
 
-import ai.classifai.data.DataType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import lombok.Getter;

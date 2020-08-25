@@ -246,7 +246,11 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                         if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
                     }
-                    loader.updateProgress(currentLength);
+                    loader.updateProgress(currentLength + 1);
+                }
+                else
+                {
+                    loader.updateProgress(currentLength + 1);
                 }
             });
         }
