@@ -16,7 +16,7 @@
 
 package ai.classifai.selector;
 
-import ai.classifai.data.DataType;
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFileSelector(String projectName, AtomicInteger uuidGenerator) {
+    public void runFileSelector(AnnotationType annotationType, String projectName, AtomicInteger uuidGenerator) {
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -72,16 +71,15 @@ public class FileSelector{
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
-                    if (res == JFileChooser.APPROVE_OPTION) {
+                    if (res == JFileChooser.APPROVE_OPTION)
+                    {
                         java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(chooser.getSelectedFiles()));
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
                             SelectorHandler.startDatabaseUpdate(projectName);
 
-                            DataType dataType = SelectorHandler.getProjectDataType(projectName);
-
-                            if (dataType == DataType.IMAGE) ImageHandler.processFile(files, uuidGenerator);
+                            ImageHandler.processFile(annotationType, files, uuidGenerator);
 
                             SelectorHandler.stopDatabaseUpdate();
                         }

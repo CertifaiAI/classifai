@@ -14,12 +14,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.database.project;
+package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
@@ -39,15 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Project contains details of every data point
+ * Bounding Box Verticle
  *
  * @author Chiawei Lim
  */
 @Slf4j
-public class ProjectVerticle extends AbstractVerticle implements ProjectServiceable
+public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBoxDbServiceable
 {
     //connection to database
     private static JDBCClient projectJDBCClient;
@@ -64,21 +62,21 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
         }
         String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
-        if(action.equals(ProjectSQLQuery.RETRIEVE_DATA))
+        if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(ProjectSQLQuery.RETRIEVE_DATA_PATH))
+        else if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA_PATH))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(ProjectSQLQuery.UPDATE_DATA))
+        else if(action.equals(BoundingBoxDbQuery.UPDATE_DATA))
         {
             this.updateData(message);
         }
-        else if (action.equals(ProjectSQLQuery.REMOVE_OBSOLETE_UUID_LIST))
+        else if (action.equals(BoundingBoxDbQuery.LOAD_VALID_PROJECT_UUID))
         {
-            this.removeObsoleteUUID(message);
+            this.loadValidProjectUUID(message);
         }
         else
         {
@@ -94,12 +92,14 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
 
-                if (resultSet.getNumRows() == 0) {
+                if (resultSet.getNumRows() == 0)
+                {
                     message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
                 }
                 else
@@ -120,7 +120,6 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
-
     }
 
     public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
@@ -142,76 +141,19 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
-            projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
-                if(!fetch.succeeded())
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
+            {
+                if(fetch.succeeded())
                 {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                    uuidList.add(UUID);
                 }
                 else
                 {
-                    uuidList.add(UUID);
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
             });
         }
     }
-
-    /*
-    public static List<Integer> updateUUIDList(List<File> fileHolder, List<Integer> UUIDList)
-    {
-        if(fileHolder.size() != UUIDList.size())
-        {
-            log.error("Number of files is not aligned to number of uuid");
-            return null;
-        }
-
-        Integer currentProjectID = SelectorHandler.getProjectIDFromBuffer();
-
-        List<Integer> indexToRemove = new ArrayList<>();
-
-        for(int i = 0 ; i < fileHolder.size(); ++i)
-        {
-            SelectorHandler.setProgressUpdate(new ArrayList<>(Arrays.asList(i + 1, fileHolder.size())));
-
-            Pair imgMetadata = ImageHandler.getImageSize(fileHolder.get(i));
-
-            if(imgMetadata != null)
-            {
-                JsonArray params = new JsonArray()
-                        .add(UUIDList.get(i)) //uuid
-                        .add(currentProjectID) //projectid
-                        .add(fileHolder.get(i).getAbsolutePath()) //imgpath
-                        .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                        .add(0) //imgX
-                        .add(0) //imgY
-                        .add(0) //imgW
-                        .add(0) //imgH
-                        .add((Integer)imgMetadata.getLeft())
-                        .add((Integer)imgMetadata.getRight());
-
-                projectJDBCClient.queryWithParams(ProjectSQLQuery.CREATE_DATA, params, fetch -> {
-                    if(!fetch.succeeded())
-                    {
-                        log.error("Update metadata in database failed: " + fetch.cause().getMessage());
-                    }
-                });
-            }
-            else
-            {
-                indexToRemove.add(i);
-            }
-        }
-
-        Integer counter = 0; //counter to remove index remove
-
-        for(Integer item : indexToRemove)
-        {
-            UUIDList.remove(item - counter);
-            ++counter;
-        }
-
-        return UUIDList;
-    }
-    */
 
     /*
     GET http://localhost:{port}/retrievedata/:uuid
@@ -223,7 +165,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -234,7 +176,8 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                     log.debug("Should not get null");
                     message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
                 }
-                else {
+                else
+                {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
@@ -268,7 +211,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     }
 
 
-    public void removeObsoleteUUID(Message<JsonObject> message)
+    public void loadValidProjectUUID(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         Integer projectID  = SelectorHandler.getProjectID(projectName);
@@ -278,70 +221,38 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
 
-        if(oriUUIDList.isEmpty())
+        message.reply(ReplyHandler.getOkReply());
+
+        loader.setLoaderStatus(LoaderStatus.LOADING);
+        loader.setTotalUUIDSize(oriUUIDList.size());
+
+        for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            loader.setLoaderStatus(LoaderStatus.EMPTY);
-            message.reply(ReplyHandler.getOkReply());
-            return;
-        }
-        else
-        {
-            message.reply(ReplyHandler.getOkReply());
+            final Integer currentLength = i;
+            final Integer UUID = oriUUIDList.get(i);
+            JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            loader.setLoaderStatus(LoaderStatus.LOADING);
-            loader.setTotalUUIDSize(oriUUIDList.size());
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
-            final Integer maxSize = oriUUIDList.size() - 1;
+                if (fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
 
-            for(int i = 0; i < oriUUIDList.size(); ++i)
-            {
-                final Integer currentLength = i;
-                final Integer UUID = oriUUIDList.get(i);
-                JsonArray params = new JsonArray().add(UUID).add(projectID);
-
-                projectJDBCClient.queryWithParams(ProjectSQLQuery.RETRIEVE_DATA, params, fetch -> {
-
-                    if (fetch.succeeded())
+                    if (resultSet.getNumRows() != 0)
                     {
-                        ResultSet resultSet = fetch.result();
+                        JsonArray row = resultSet.getResults().get(0);
 
-                        if (resultSet.getNumRows() != 0)
-                        {
-                            JsonArray row = resultSet.getResults().get(0);
+                        String dataPath = row.getString(0);
 
-                            String dataPath = row.getString(0);
-
-                            if(ImageHandler.isImageReadable(dataPath) == false)
-                            {
-                                projectJDBCClient.queryWithParams(ProjectSQLQuery.DELETE_DATA, params, reply -> {
-
-                                    if(reply.failed())
-                                    {
-                                        //remove on next round
-                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-
-                                        log.error("Failed to remove obsolete uuid from database");
-                                    }
-                                });
-                            }
-                            else {
-                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-                            }
-
-                        }
+                        if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
                     }
-
-                    SelectorHandler.updateProgress(projectName, currentLength);
-
-                    if(currentLength.equals(maxSize))
-                    {
-                        //request on portfolio database
-                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-                    }
-                });
-            }
+                    loader.updateProgress(currentLength + 1);
+                }
+                else
+                {
+                    loader.updateProgress(currentLength + 1);
+                }
+            });
         }
     }
 
@@ -366,7 +277,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
                 .add(SelectorHandler.getProjectID(projectName));
 
 
-        projectJDBCClient.queryWithParams(ProjectSQLQuery.UPDATE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {
             if(fetch.succeeded())
             {
                 message.reply(ReplyHandler.getOkReply());
@@ -380,9 +291,9 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
-        log.info("Project Verticle stopping...");
+        log.info("Bounding Box Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.PROJECT_LCKFILE);
+        File lockFile = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -393,7 +304,7 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
     public void start(Promise<Void> promise) throws Exception
     {
         projectJDBCClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.PROJECT_DB)
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.BNDBOX_DB)
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 
@@ -406,16 +317,16 @@ public class ProjectVerticle extends AbstractVerticle implements ProjectServicea
 
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(ProjectSQLQuery.CREATE_PROJECT, create -> {
+                connection.execute(BoundingBoxDbQuery.CREATE_PROJECT, create -> {
                     connection.close();
                     if (create.failed()) {
-                        log.error("Project database preparation error", create.cause());
+                        log.error("BoundingBoxVerticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
                     } else
                     {
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(ProjectSQLQuery.QUEUE, this::onMessage);
+                        vertx.eventBus().consumer(BoundingBoxDbQuery.QUEUE, this::onMessage);
                         promise.complete();
                     }
                 });

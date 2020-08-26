@@ -16,9 +16,12 @@
 
 package ai.classifai.util.image;
 
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.database.project.ProjectVerticle;
+import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;
 import lombok.NonNull;
@@ -36,6 +39,11 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Image Handler
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ImageHandler {
 
@@ -83,8 +91,9 @@ public class ImageHandler {
 
         if(file.exists() == false) return false;
 
-        try {
-            BufferedImage img = ImageIO.read(file);
+        try
+        {
+            ImageIO.read(file);
         }
         catch(Exception e)
         {
@@ -271,7 +280,7 @@ public class ImageHandler {
     }
 
 
-    public static void saveToDatabase(@NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
+    public static void saveToDatabase(AnnotationType annotationType, @NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
     {
         SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_DATABASE_UPDATING);
 
@@ -279,14 +288,25 @@ public class ImageHandler {
 
         AtomicInteger progressCounter = new AtomicInteger(0);
 
+        ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
+
         for(File item : filesCollection)
         {
             Integer uuid = uuidGenerator.incrementAndGet();
 
-            ProjectVerticle.updateUUID(uuidList, item, uuid);
+            if(annotationType.equals(AnnotationType.BOUNDINGBOX))
+            {
+                BoundingBoxVerticle.updateUUID(uuidList, item, uuid);
+            }
+            else if (annotationType.equals(AnnotationType.SEGMENTATION))
+            {
+                SegVerticle.updateUUID(uuidList, item, uuid);
+            }
 
-            //update progress
-            SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+            //update progress bar and update projectloader
+            currentProjectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+
+            currentProjectLoader.getSanityUUIDList().addAll(uuidList);
         }
 
         while(true)
@@ -300,11 +320,9 @@ public class ImageHandler {
 
     }
 
-    public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)
+    public static void processFile(AnnotationType annotationType, @NonNull List<File> filesInput, AtomicInteger uuidGenerator)
     {
         List<File> validatedFilesList = new ArrayList<>();
-
-        //SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_LOADING_FILES);
 
         for(File file : filesInput)
         {
@@ -312,18 +330,16 @@ public class ImageHandler {
             validatedFilesList.addAll(files);
         }
 
-        saveToDatabase(validatedFilesList, uuidGenerator);
+        saveToDatabase(annotationType, validatedFilesList, uuidGenerator);
     }
 
-    public static void processFolder(@NonNull File rootPath, AtomicInteger uuidGenerator)
+    public static void processFolder(AnnotationType annotationType, @NonNull File rootPath, AtomicInteger uuidGenerator)
     {
         List<File> totalFilelist = new ArrayList<>();
 
         Stack<File> folderStack = new Stack<>();
 
         folderStack.push(rootPath);
-
-        //SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_LOADING_FILES);
 
         while(folderStack.isEmpty() != true)
         {
@@ -345,6 +361,6 @@ public class ImageHandler {
             }
         }
 
-        saveToDatabase(totalFilelist, uuidGenerator);
+        saveToDatabase(annotationType, totalFilelist, uuidGenerator);
     }
 }

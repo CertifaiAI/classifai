@@ -17,9 +17,15 @@
 
 package ai.classifai.annotation;
 
+/**
+ * Types of Annotation
+ *
+ * @author Chiawei Lim
+ */
 public enum AnnotationType
 {
     BOUNDINGBOX,
-    POLYGON
+    SEGMENTATION
     //TODO: Add on more techniques of annotation
 }
+
