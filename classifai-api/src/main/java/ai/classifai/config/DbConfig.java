@@ -32,8 +32,8 @@ public class DbConfig
     {
         if(unlockDatabase)
         {
-            File portfolioLockPath = new File(DatabaseConfig.PORTFOLIO_LCKFILE);
-            File projectLockPath = new File(DatabaseConfig.PROJECT_LCKFILE);
+            File portfolioLockPath = new File(DatabaseConfig.PORTFOLIO_DB_LCKFILE);
+            File projectLockPath = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
 
             if(portfolioLockPath.exists()) portfolioLockPath.delete();
 
@@ -41,7 +41,7 @@ public class DbConfig
         }
         else
         {
-            if((new File(DatabaseConfig.PORTFOLIO_LCKFILE).exists()) || new File(DatabaseConfig.PROJECT_DB).exists())
+            if((new File(DatabaseConfig.PORTFOLIO_DB_LCKFILE).exists()) || new File(DatabaseConfig.BNDBOX_DB_LCKFILE).exists())
             {
                 log.info("Database is locked. Try with --unlockdb=true. \n" +
                         "WARNING: This might impose be hazardaous to have multiple access to the database.");

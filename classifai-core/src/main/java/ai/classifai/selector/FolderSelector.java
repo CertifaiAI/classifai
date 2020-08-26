@@ -16,7 +16,7 @@
 
 package ai.classifai.selector;
 
-import ai.classifai.data.DataType;
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class FolderSelector{
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFolderSelector(String projectName, AtomicInteger uuidGenerator) {
+    public void runFolderSelector(AnnotationType annotationType, String projectName, AtomicInteger uuidGenerator) {
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -77,9 +77,7 @@ public class FolderSelector{
                         {
                             SelectorHandler.startDatabaseUpdate(projectName);
 
-                            DataType dataType = SelectorHandler.getProjectDataType(projectName);
-
-                            if (dataType == DataType.IMAGE) ImageHandler.processFolder(rootFolder, uuidGenerator);
+                            ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
 
                             SelectorHandler.stopDatabaseUpdate();
                         }

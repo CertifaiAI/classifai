@@ -34,6 +34,7 @@ public class HTTPResponseHandler
         context.response().end(jsonObject.encodePrettily());
     }
 
+    @Deprecated
     public static void configureBadRequest(@NonNull RoutingContext context, JsonObject jsonObject)
     {
         context.response().setStatusCode(HTTPResponseCode.badRequest());
@@ -41,11 +42,14 @@ public class HTTPResponseHandler
         context.response().end(jsonObject.encodePrettily());
     }
 
+    @Deprecated
     public static void configureInternalServerError(@NonNull RoutingContext context)
     {
         context.response().setStatusCode(HTTPResponseCode.internalServerError());
 
     }
+
+    @Deprecated
     public static void configureMethodsNotAllowed(@NonNull RoutingContext context, JsonObject jsonObject)
     {
         context.response().setStatusCode(HTTPResponseCode.methodsNotAllowed());

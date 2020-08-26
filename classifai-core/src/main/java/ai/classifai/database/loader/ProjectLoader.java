@@ -15,7 +15,7 @@
  */
 package ai.classifai.database.loader;
 
-import ai.classifai.data.DataType;
+import ai.classifai.annotation.AnnotationType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,33 +31,30 @@ import java.util.*;
 public class ProjectLoader
 {
     @Getter @Setter private LoaderStatus loaderStatus;
-    @Getter private Set<Integer> sanityUUIDList;
-    private Integer currentProcessedLength;
-    @Setter private Integer totalUUIDSize;
 
-    @Getter private DataType dataType = DataType.IMAGE;
+    private Set<Integer> sanityUUIDSet;
+
+    @Getter @Setter private List<Integer> sanityUUIDList;
+    @Getter @Setter private List<String> labelList;
+
+    private Integer currentProcessedLength;
+    private Integer totalUUIDSize; //only used when going through uuid for valid path
+
+    private AnnotationType annotationType; //TODO
 
     @Setter @Getter private List<Integer> progressUpdate;
 
     public ProjectLoader()
     {
-        setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
+        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
 
         progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
-    }
 
-    public void resetLoaderStatus()
-    {
-        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
         currentProcessedLength = 0;
-        sanityUUIDList.clear();
-    }
-
-    private void setProjectLoader(LoaderStatus status)
-    {
-        loaderStatus = status;
-        sanityUUIDList = new HashSet<>();
-        currentProcessedLength = 0;
+        totalUUIDSize = -1;
+        sanityUUIDSet = new HashSet<>();
+        sanityUUIDList = new ArrayList<>();
+        labelList = new ArrayList<>();
     }
 
     public List<Integer> getProgress()
@@ -70,14 +67,43 @@ public class ProjectLoader
         return progressBar;
     }
 
-    public void updateSanityUUIDItem(Integer uuid)
+    public void setTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
-        sanityUUIDList.add(uuid);
+        totalUUIDSize = totalUUIDSizeBuffer;
+
+        if(totalUUIDSize == 0)
+        {
+            loaderStatus = LoaderStatus.EMPTY;
+        }
+        else if(totalUUIDSize < 0)
+        {
+            loaderStatus = LoaderStatus.ERROR;
+        }
+
     }
 
-    public void updateProgress(Integer lengthNow)
+    public void updateProgress(Integer index)
     {
-        currentProcessedLength = lengthNow;
+        currentProcessedLength = index;
+
+        //if done, offload set to list
+        if (index.equals(totalUUIDSize))
+        {
+            getUpdatedUUIDList();
+            loaderStatus = LoaderStatus.LOADED;
+        }
     }
 
+    public void pushToUUIDSet(Integer uuid)
+    {
+        sanityUUIDSet.add(uuid);
+    }
+
+    public void getUpdatedUUIDList()
+    {
+        sanityUUIDList = new ArrayList<>(sanityUUIDSet);
+        sanityUUIDSet.clear();
+
+        totalUUIDSize = -1;
+    }
 }

@@ -14,12 +14,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.database.project;
+package ai.classifai.database.segdb;
 
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
-public interface ProjectServiceable
+////FIXME: Comment and interface
+public interface SegDbServiceable
 {
 
     /*

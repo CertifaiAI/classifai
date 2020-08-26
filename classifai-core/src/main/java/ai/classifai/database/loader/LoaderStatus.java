@@ -23,7 +23,7 @@ public enum LoaderStatus
 {
     ERROR,
     LOADING,
-    LOADED,
-    DID_NOT_INITIATED,
+    LOADED, //projectloader will have this status once create new project
+    DID_NOT_INITIATED, //default value when ProjectLoader created
     EMPTY
 }
