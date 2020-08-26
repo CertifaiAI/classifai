@@ -87,7 +87,7 @@ public class ProjectLoader
         currentProcessedLength = index;
 
         //if done, offload set to list
-        if (index == totalUUIDSize)
+        if (index.equals(totalUUIDSize))
         {
             getUpdatedUUIDList();
             loaderStatus = LoaderStatus.LOADED;
