@@ -34,8 +34,11 @@ public class NewWelcomeConsole
     final static int FRAME_WIDTH = 600;
     final static int FRAME_HEIGHT = 350;
 
-    final static int BTN_X_COORD = 330;
-    final static int BTN_Y_COORD = 350;
+    final static int BTN_X_COORD = 150;
+    final static int BTN_Y_COORD = 250;
+
+    final static int BTN_WIDTH = 100;
+    final static int BTN_HEIGHT = 40;
 
     static
     {
@@ -80,7 +83,7 @@ public class NewWelcomeConsole
         JFrame frame = new JFrame("Classifai");
 
         JButton openButton = new JButton(getOpenButton());
-        openButton.setBounds(100, 100,100, 40);//x axis, y axis, width, height
+        openButton.setBounds(BTN_X_COORD, BTN_Y_COORD,BTN_WIDTH, BTN_HEIGHT);//x axis, y axis, width, height
 
         frame.add(openButton);
 
@@ -117,7 +120,7 @@ public class NewWelcomeConsole
 
         Image openButtonIcon = new ImageIcon(openButtonImagePath).getImage();
 
-        Image scaledOpenButtonIcon = openButtonIcon.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+        Image scaledOpenButtonIcon = openButtonIcon.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
 
         return new ImageIcon(scaledOpenButtonIcon);
 
