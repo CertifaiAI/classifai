@@ -13,25 +13,26 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.ui;
 
 import ai.classifai.server.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
+
 
 @Slf4j
 public class WelcomeConsole
 {
     private static String browserURL;
     private static OSManager osManager;
+
+    final static String BUTTON_PATH;
 
     final static int FRAME_WIDTH = 600;
     final static int FRAME_HEIGHT = 350;
@@ -48,50 +49,42 @@ public class WelcomeConsole
     {
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
-    }
-
-    public static String getItemPath(String fileName)
-    {
-        InputStream imgPathStream = WelcomeConsole.class.getClassLoader().getResourceAsStream("console" + File.separator + fileName);
-        File imgFile = new File(System.getProperty("java.io.tmpdir") + File.separator +  fileName);
-
-        if(imgFile.exists() == false)
-        {
-            System.out.println("Welcome console file should not be empty. ");
-            log.error("Welcome console file should not be empty. ", fileName);
-            return null;
-        }
-
-        try
-        {
-            FileUtils.copyInputStreamToFile(imgPathStream, imgFile);
-            return imgFile.getAbsolutePath();
-
-        }
-        catch(Exception e)
-        {
-            log.error("Error when loading welcome console file", e);
-        }
-
-        return null;
+        BUTTON_PATH = File.separator + "console" + File.separator;
     }
 
     public static void start()
     {
-        setUpConsole();
-    }
-
-    public static void setUpConsole()
-    {
         JFrame frame = new JFrame("Classifai");
 
-        frame.add(getOpenButton());
+        JButton openButton = getButton("openButton.png", "Open");
+        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        frame.add(getCloseButton());
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ChromiumHandler.openOnBrowser(browserURL, osManager);
+            }
+        });
 
-        frame.add(getAcknowledgementButton());
+        JButton closeButton = getButton("openButton.png", "Close");
+        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        setBackground(frame); // NEED TO BE LAST
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        JButton acknowledgementButton = getButton("openButton.png", "License");
+        acknowledgementButton.setBounds(BTN_X_COORD + X_GAP * 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        frame.add(openButton);
+        frame.add(closeButton);
+        frame.add(acknowledgementButton);
+
+        JLabel backgroundLabel = getBackground("welcomeConsole.png");
+        if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
         frame.setSize(FRAME_WIDTH, FRAME_HEIGHT + 20);
         frame.setLocationRelativeTo(null);
@@ -102,80 +95,50 @@ public class WelcomeConsole
         frame.setResizable(false);
     }
 
-    private static void setBackground(JFrame frame)
+    private static JButton getButton(String fileName, String altText)
     {
-        String bgImagePath = getItemPath("welcomeConsole.png");
+        JButton button = new JButton();
 
-        ImageIcon bgOriIcon = new ImageIcon(bgImagePath);
+        try {
 
-        Image bgOriIconImage = bgOriIcon.getImage();
+            Image img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
 
-        Image scaledBgIconImage = bgOriIconImage.getScaledInstance(FRAME_WIDTH, FRAME_HEIGHT, Image.SCALE_SMOOTH);
+            Image scaledImg = img.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
 
-        JLabel bgLabel = new JLabel(new ImageIcon(scaledBgIconImage));
-        bgLabel.setLayout(null);
-        bgLabel.setBounds(0,0, FRAME_WIDTH, FRAME_HEIGHT);
-        frame.add(bgLabel);
+            button.setIcon(new ImageIcon(scaledImg));
+
+        }
+        catch (Exception e)
+        {
+            button = new JButton(altText);//altText will be used if icon not found
+            log.error("Error. Image for button failed to configured. ", e);
+        }
+
+        return button;
     }
 
-    private static JButton getButtonFromPath(String imageFileName)
+
+    private static JLabel getBackground(String fileName)
     {
-        String imagePath = getItemPath(imageFileName);
+        try
+        {
+            Image img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
 
-        Image buttonIcon = new ImageIcon(imagePath).getImage();
+            Image scaledImg = img.getScaledInstance(FRAME_WIDTH, FRAME_HEIGHT, Image.SCALE_SMOOTH);
 
-        Image scaledButtonIcon = buttonIcon.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
+            JLabel bgLabel = new JLabel(new ImageIcon(scaledImg));
+            bgLabel.setLayout(null);
+            bgLabel.setBounds(0,0, FRAME_WIDTH, FRAME_HEIGHT);
 
-        return new JButton(new ImageIcon(scaledButtonIcon));
+            return bgLabel;
+        }
+        catch(Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return null;
+
     }
-
-    private static JButton getOpenButton()
-    {
-        JButton openButton = getButtonFromPath("openButton.png");
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ChromiumHandler.openOnBrowser(browserURL, osManager);
-            }
-        });
-
-        openButton.setBounds(BTN_X_COORD, BTN_Y_COORD,BTN_WIDTH, BTN_HEIGHT);//x axis, y axis, width, height
-
-        return openButton;
-    }
-
-    private static JButton getCloseButton()
-    {
-        JButton closeButton = getButtonFromPath("openButton.png"); //FIXME
-
-        closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        closeButton.setBounds(BTN_X_COORD + X_GAP, BTN_Y_COORD,BTN_WIDTH, BTN_HEIGHT);//x axis, y axis, width, height
-
-        return closeButton;
-    }
-
-    private static JButton getAcknowledgementButton()
-    {
-        JButton closeButton = getButtonFromPath("openButton.png"); //FIXME
-
-        closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        closeButton.setBounds(BTN_X_COORD + X_GAP * 2, BTN_Y_COORD,BTN_WIDTH, BTN_HEIGHT);//x axis, y axis, width, height
-
-        return closeButton;
-    }
-
 
 }
