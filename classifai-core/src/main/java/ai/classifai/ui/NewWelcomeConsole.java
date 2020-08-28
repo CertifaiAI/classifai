@@ -45,13 +45,21 @@ public class NewWelcomeConsole
 
     public static String getItemPath(String fileName)
     {
-        InputStream bgImagePathStream = NewWelcomeConsole.class.getClassLoader().getResourceAsStream("console" + File.separator + fileName);
-        File bgImageFile= new File(System.getProperty("java.io.tmpdir") + File.separator +  fileName);
+        InputStream imgPathStream = NewWelcomeConsole.class.getClassLoader().getResourceAsStream("console" + File.separator + fileName);
+        File imgFile = new File(System.getProperty("java.io.tmpdir") + File.separator +  fileName);
+
+        if(imgFile.exists() == false)
+        {
+            System.out.println("Welcome console file should not be empty. ");
+            log.error("Welcome console file should not be empty. ", fileName);
+            return null;
+        }
+
 
         try
         {
-            FileUtils.copyInputStreamToFile(bgImagePathStream, bgImageFile);
-            return bgImageFile.getAbsolutePath();
+            FileUtils.copyInputStreamToFile(imgPathStream, imgFile);
+            return imgFile.getAbsolutePath();
 
         }
         catch(Exception e)
@@ -71,24 +79,13 @@ public class NewWelcomeConsole
     {
         JFrame frame = new JFrame("Classifai");
 
-
-        String openButtonImagePath = getItemPath("openButton.png");
-        Image openButtonIcon = new ImageIcon(openButtonImagePath).getImage();
-        Image scaledOpenButtonIcon = openButtonIcon.getScaledInstance(BTN_X_COORD, BTN_Y_COORD, Image.SCALE_SMOOTH);
-
-        JButton openButton = new JButton(new ImageIcon(scaledOpenButtonIcon));
-        openButton.setBounds(BTN_X_COORD, BTN_Y_COORD,400, 300);//x axis, y axis, width, height
+        JButton openButton = new JButton(getOpenButton());
+        openButton.setBounds(100, 100,100, 40);//x axis, y axis, width, height
 
         frame.add(openButton);
 
-        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT + 20);
-        frame.setLayout(null);
+        setBackground(frame); // NEED TO BE LAST
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-        frame.setResizable(false);
-
-        //setBackground(frame); // NEED TO BE LAST
     }
 
     public static void setBackground(JFrame frame)
@@ -114,15 +111,15 @@ public class NewWelcomeConsole
         frame.setResizable(false);
     }
 
-    public static JButton setOpenButton(JFrame frame)
+    public static ImageIcon getOpenButton()
     {
         String openButtonImagePath = getItemPath("openButton.png");
+
         Image openButtonIcon = new ImageIcon(openButtonImagePath).getImage();
-        Image scaledOpenButtonIcon = openButtonIcon.getScaledInstance(BTN_X_COORD, BTN_Y_COORD, Image.SCALE_SMOOTH);
 
-        JButton openButton = new JButton(new ImageIcon(scaledOpenButtonIcon));
-        openButton.setBounds(BTN_X_COORD, BTN_Y_COORD,400, 300);//x axis, y axis, width, height
+        Image scaledOpenButtonIcon = openButtonIcon.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 
-        return openButton;
+        return new ImageIcon(scaledOpenButtonIcon);
+
     }
 }
