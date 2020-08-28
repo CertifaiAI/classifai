@@ -21,7 +21,6 @@ import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.server.ServerVerticle;
-import ai.classifai.ui.NewWelcomeConsole;
 import ai.classifai.ui.WelcomeConsole;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -74,7 +73,7 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
-                NewWelcomeConsole.start();
+                WelcomeConsole.start();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
