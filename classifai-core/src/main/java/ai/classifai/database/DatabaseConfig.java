@@ -17,9 +17,6 @@
 package ai.classifai.database;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hsqldb.persist.HsqlProperties;
-
-import java.util.Properties;
 
 /**
  * Configurations for files and paths of database
