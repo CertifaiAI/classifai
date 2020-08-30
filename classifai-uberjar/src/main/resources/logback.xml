@@ -42,18 +42,17 @@
         </encoder>
     </appender>
 
+
     <logger name="com.mchange.v2" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
-    <logger name="ai.classifai.util.image" level="DEBUG" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
+    <logger name="i.n.r.d.DefaultDnsServerAddressStreamProvider" level="OFF"/>
 
     <!--
     Debug having the most authorative access
     ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
     <root level="INFO">
-        <appender-ref ref="FILE"/>
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 
 

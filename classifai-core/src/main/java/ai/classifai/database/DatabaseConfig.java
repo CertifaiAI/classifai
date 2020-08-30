@@ -17,6 +17,9 @@
 package ai.classifai.database;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hsqldb.persist.HsqlProperties;
+
+import java.util.Properties;
 
 /**
  * Configurations for files and paths of database
@@ -52,6 +55,8 @@ public class DatabaseConfig
         PORTFOLIO_DB_LCKFILE = PORTFOLIO_DB + LCK_FILE_EXTENSION;
         BNDBOX_DB_LCKFILE = BNDBOX_DB + LCK_FILE_EXTENSION;
         SEGMENTATION_DB_LCKFILE = SEGMENTATION_DB + LCK_FILE_EXTENSION;
+
+
 
     }
 }
