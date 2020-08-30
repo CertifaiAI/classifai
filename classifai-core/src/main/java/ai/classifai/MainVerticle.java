@@ -76,7 +76,6 @@ public class MainVerticle extends AbstractVerticle
 
                 WelcomeConsole.start();
 
-                log.debug("[Debug Mode] " + "Classifai started successfully");
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
