@@ -16,6 +16,7 @@
 <configuration>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
         <file>${user.home}/classifai.log</file>
         <append>true</append>
 
@@ -30,7 +31,7 @@
 
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>%d %-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+            <pattern>%date{"MMM dd, yyy hh:mm:ss a"} %-5level %logger{35} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -38,7 +39,7 @@
 
         <encoder>
            <charset>UTF-8</charset>
-            <pattern>%logger{35} - %msg%n</pattern>
+            <pattern>%date{"MMM dd, yyy hh:mm:ss a"} %-5level %logger{35} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -50,7 +51,7 @@
     <!--
     Debug having the most authorative access
     ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>
