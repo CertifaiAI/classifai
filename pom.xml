@@ -56,7 +56,7 @@
     </developers>
 
     <properties>
-        <vertx.version>3.9.2</vertx.version>
+        <vertx.version>3.9.0</vertx.version>
         <junit.version>4.13</junit.version>
         <lombok.version>1.18.12</lombok.version>
         <slf4j.version>1.7.30</slf4j.version>

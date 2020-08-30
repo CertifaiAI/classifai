@@ -61,6 +61,7 @@ public class MainVerticle extends AbstractVerticle
 
             Promise<String> segDeployment = Promise.promise();
             vertx.deployVerticle(new SegVerticle(), segDeployment);
+
             return segDeployment.future();
 
         }).compose(id_ -> {
