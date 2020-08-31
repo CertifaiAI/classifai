@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.server;
 
 import ai.classifai.annotation.AnnotationType;
@@ -934,7 +933,7 @@ public class ServerVerticle extends AbstractVerticle
                     }
                     else {
 
-                        log.debug("HTTPServer failed to start");
+                        log.debug("ServerVerticle failed to create Http Server");
                         promise.fail(r.cause());
                     }
                 });

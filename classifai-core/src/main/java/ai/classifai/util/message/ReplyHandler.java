@@ -13,12 +13,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.message;
 
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Default reply handler for response
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ReplyHandler {
 

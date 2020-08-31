@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.ui;
 
 import ai.classifai.server.ParamConfig;
@@ -24,6 +23,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * GUI for starting classifai
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class WelcomeConsole
 {

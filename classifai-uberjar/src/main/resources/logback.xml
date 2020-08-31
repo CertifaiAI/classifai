@@ -53,6 +53,7 @@
     <logger name="com.mchange.v2" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
     <logger name="i.n.r.d.DefaultDnsServerAddressStreamProvider" level="OFF"/>
+    <logger name="ch.qos.logback" level="OFF"/>
 
     <!--
     Debug having the most authorative access
