@@ -79,7 +79,7 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject()
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
-        getAllProjects(context, request);
+        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -92,10 +92,10 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject()
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
 
-        getAllProjects(context, request);
+        getAllProjects(context, request, AnnotationType.SEGMENTATION);
     }
 
-    private void getAllProjects(RoutingContext context, JsonObject request)
+    private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
     {
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE);
 
@@ -116,7 +116,7 @@ public class ServerVerticle extends AbstractVerticle
             }
             else
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed in getting all the projects"));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
             }
         });
     }
@@ -136,7 +136,7 @@ public class ServerVerticle extends AbstractVerticle
                 .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
-        createProject(context, request);
+        createProject(context, request, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -154,10 +154,10 @@ public class ServerVerticle extends AbstractVerticle
                 .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
 
-        createProject(context, request);
+        createProject(context, request, AnnotationType.SEGMENTATION);
     }
 
-    private void createProject(RoutingContext context, JsonObject request)
+    private void createProject(RoutingContext context, JsonObject request, AnnotationType annotationType)
     {
         context.request().bodyHandler(h -> {
 
@@ -175,14 +175,15 @@ public class ServerVerticle extends AbstractVerticle
                     }
                     else
                     {
+                        String projectName = request.getString(ParamConfig.PROJECT_NAME_PARAM);
+
+                        log.info("Failure in creating new " + annotationType.name() +  " project of name: " + projectName);
                         HTTPResponseHandler.configureOK(context, response);
                     }
                 }
-
             });
         });
     }
-
 
     /**
      * Load existing project from the bounding box database
@@ -195,7 +196,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadBndBoxProject(RoutingContext context)
     {
-        loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.LOAD_VALID_PROJECT_UUID);
+        loadProject(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.LOAD_VALID_PROJECT_UUID, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -209,10 +210,10 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void loadSegProject(RoutingContext context)
     {
-        loadProject(context, SegDbQuery.QUEUE, SegDbQuery.LOAD_VALID_PROJECT_UUID);
+        loadProject(context, SegDbQuery.QUEUE, SegDbQuery.LOAD_VALID_PROJECT_UUID, AnnotationType.SEGMENTATION);
     }
 
-    private void loadProject(RoutingContext context, String queue, String query)
+    private void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
@@ -220,7 +221,8 @@ public class ServerVerticle extends AbstractVerticle
 
         if (loader == null)
         {
-            HTTPResponseHandler.configureBadRequest(context, ReplyHandler.reportProjectNameError());
+            String messageInfo = annotationType.name() + " project of name " + projectName + " cannot be found for loading";
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             return;
         }
 
@@ -239,7 +241,8 @@ public class ServerVerticle extends AbstractVerticle
                 if (labelReply.succeeded()) {
                     JsonObject labelResponse = (JsonObject) labelReply.result().body();
 
-                    if (ReplyHandler.isReplyOk(labelResponse)) {
+                    if (ReplyHandler.isReplyOk(labelResponse))
+                    {
                         //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
                         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
 
@@ -248,7 +251,8 @@ public class ServerVerticle extends AbstractVerticle
                             if (reply.succeeded()) {
                                 JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
 
-                                if (ReplyHandler.isReplyOk(oriUUIDResponse)) {
+                                if (ReplyHandler.isReplyOk(oriUUIDResponse))
+                                {
                                     JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
                                     JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
@@ -260,26 +264,31 @@ public class ServerVerticle extends AbstractVerticle
                                     {
                                         JsonObject removalResponse = (JsonObject) fetch.result().body();
 
-                                        if (ReplyHandler.isReplyOk(removalResponse)) {
+                                        if (ReplyHandler.isReplyOk(removalResponse))
+                                        {
                                             log.info("Loading project: " + projectName);
                                             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
-                                        } else {
-                                            log.info("Failed to load project: " + projectName);
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project. Check validity of data points failed"));
+                                        } else
+                                        {
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
                                         }
                                     });
-                                } else {
-                                    log.error("Project " + projectName + ": Get project uuid list failed. In the process of removing obsolete uuid list. ");
                                 }
-                            } else {
-
-                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project. Get list of uuid data points failed"));
+                                else
+                                {
+                                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Get project uuid list failed."));
+                                }
+                            }
+                            else
+                            {
+                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Query database to get project uuid list failed."));
                             }
                         });
-                    } else {
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for label list when loading project. Loading project aborted"));
-
+                    }
+                    else
+                    {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving uuid list of project " + projectName + ". Loading project aborted."));
                     }
                 }
             });
@@ -290,10 +299,9 @@ public class ServerVerticle extends AbstractVerticle
         }
         else if(loaderStatus.equals(LoaderStatus.ERROR))
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to query server for uuid list when loading project. Loading project aborted"));
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
         }
     }
-
 
     /**
      * Get status of loading a project
@@ -312,7 +320,8 @@ public class ServerVerticle extends AbstractVerticle
 
         if(projectLoader == null)
         {
-            HTTPResponseHandler.configureBadRequest(context,  ReplyHandler.reportProjectNameError());
+            String messageInfo = "Project name " + projectName + " cannot be found for loading";
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             return;
         }
 
@@ -349,7 +358,7 @@ public class ServerVerticle extends AbstractVerticle
         }
         else if(loaderStatus == LoaderStatus.ERROR)
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loader status error. Something wrong."));
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading failed. LoaderStatus error for project " + projectName));
         }
     }
 
@@ -406,7 +415,8 @@ public class ServerVerticle extends AbstractVerticle
 
             if(SelectorHandler.isProjectNameRegistered(projectName) == false)
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError());
+                String messageInfo = "Project name " + projectName + " cannot be found for loading";
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             }
             else
             {
@@ -416,7 +426,7 @@ public class ServerVerticle extends AbstractVerticle
 
                 if(!isFileTypeSupported)
                 {
-                    JsonObject jsonObject = ReplyHandler.reportUserDefinedError("filetype with parameter " + fileType + " which is not recognizable");
+                    JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Filetype with parameter " + fileType + " is not recognizable");
                     jsonObject.put(ReplyHandler.getMessageKey(), ReplyHandler.getFailedSignal());
 
                     HTTPResponseHandler.configureOK(context, jsonObject);
@@ -453,8 +463,8 @@ public class ServerVerticle extends AbstractVerticle
                             }
                             else
                             {
-                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Initiate generator failed, not able to initate file/folder selector"));
-                                //HTTPResponseHandler.configureBadRequest(context, response);
+                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Initiation of uuid generator failed. Not able to initiate file/folder selector"));
+
                                 return;
                             }
                         }
@@ -646,7 +656,7 @@ public class ServerVerticle extends AbstractVerticle
             }
             else
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed in retrieving thumbnail"));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail. "));
             }
         });
     }
@@ -704,12 +714,11 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     //soft fail
                     HTTPResponseHandler.configureOK(context, result);
-                    //HTTPResponseHandler.configureBadRequest(context, result);
                 }
 
             }
             else {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Failed to get image source."));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting image source."));
             }
         });
     }
@@ -743,12 +752,11 @@ public class ServerVerticle extends AbstractVerticle
                     {
                         //soft fail
                         HTTPResponseHandler.configureOK(context, response);
-                        //HTTPResponseHandler.configureBadRequest(context, response);
                     }
 
                 }
                 else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Update database failed"));
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project."));
                 }
             });
         });
@@ -787,44 +795,12 @@ public class ServerVerticle extends AbstractVerticle
 
                 }
                 else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Update database failed"));
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project."));
                 }
             });
         });
     }
 
-    private void updateData(RoutingContext context, String queue, String query, JsonObject request)
-    {
-
-        context.request().bodyHandler(h ->
-        {
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
-
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-
-            vertx.eventBus().request(queue, jsonObject, updateOptions, fetch ->
-            {
-                if (fetch.succeeded()) {
-                    JsonObject response = (JsonObject) fetch.result().body();
-
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        //soft fail
-                        HTTPResponseHandler.configureOK(context, response);
-                        //HTTPResponseHandler.configureBadRequest(context, response);
-                    }
-
-                }
-                else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Warning: Update database failed"));
-                }
-            });
-        });
-    }
 
     /***
      *
@@ -927,13 +903,13 @@ public class ServerVerticle extends AbstractVerticle
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
                 .listen(ParamConfig.getHostingPort(), r -> {
+
                     if (r.succeeded())
                     {
                         promise.complete();
                     }
                     else {
-
-                        log.debug("ServerVerticle failed to create Http Server");
+                        log.debug("Failure in creating HTTPServer in ServerVerticle. ", r.cause().getMessage());
                         promise.fail(r.cause());
                     }
                 });
