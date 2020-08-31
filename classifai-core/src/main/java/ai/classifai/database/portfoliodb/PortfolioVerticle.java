@@ -94,7 +94,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
         else
         {
-            log.error("Portfolio SQL query error: Action did not found follow up with function");
+            log.error("Portfolio query error. Action did not have an assigned function for handling.");
         }
     }
 

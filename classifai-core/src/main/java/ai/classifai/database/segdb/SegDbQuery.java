@@ -13,10 +13,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.segdb;
 
-
+/***
+ * Segmentation database query
+ *
+ * @author Chiawei Lim
+ */
 public class SegDbQuery
 {
     public final static String QUEUE = "segmentation.queue";

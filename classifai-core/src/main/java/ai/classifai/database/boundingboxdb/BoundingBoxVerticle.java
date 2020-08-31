@@ -80,7 +80,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         }
         else
         {
-            log.error("Project query error: Action did not found follow up with function");
+            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
         }
     }
 
@@ -100,7 +100,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
+                    String definedMessage = "Image data path not found for project " + projectName + " with uuid " + uuid;
+                    log.info(definedMessage);
+                    message.reply(ReplyHandler.reportUserDefinedError(definedMessage));
                 }
                 else
                 {
@@ -173,8 +175,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    log.debug("Should not get null");
-                    message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
+                    String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
+                    log.info(userDefinedMessage);
+                    message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else
                 {
@@ -205,6 +208,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
             }
             else {
+                String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                log.info(userDefinedMessage);
                 message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
             }
         });
@@ -312,7 +317,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         projectJDBCClient.getConnection(ar -> {
             if (ar.failed()) {
 
-                log.error("Could not open a database connection", ar.cause());
+                log.error("Could not open a database connection for Bounding Box Verticle", ar.cause());
                 promise.fail(ar.cause());
 
             } else {

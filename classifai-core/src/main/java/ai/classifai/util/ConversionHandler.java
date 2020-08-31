@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util;
 
 import io.vertx.core.json.JsonArray;
@@ -29,6 +28,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Handler for conversion of different formats
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ConversionHandler
 {
@@ -58,16 +62,15 @@ public class ConversionHandler
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                log.debug("FileWriter IOException while saving org.json.simple.JSONObject to File: ", e);
             }
         }
         catch(Exception e)
         {
-            log.error("Open FileWriter to save JSONObject to file failed");
-            e.printStackTrace();
+            log.debug("FileWriter Exception while writing org.json.simple.JSONObject to File: ", e);
         }
 
-        log.info("JSONObject saved to " + outputFilePath.getAbsolutePath());
+        log.info("org.json.simple.JSONObject saved to " + outputFilePath.getAbsolutePath());
     }
 
 
@@ -93,8 +96,7 @@ public class ConversionHandler
 
         }
         catch (Exception e){
-            log.error("Error in parsing string to vertx.JsonObject");
-            e.printStackTrace();
+            log.error("Error in parsing Object to io.vertx.core.json.JsonObject", e);
         }
 
         return null;
@@ -225,12 +227,12 @@ public class ConversionHandler
             else
             {
                 jsonObject = null;
-                log.error("JSONObject not found");
+                log.debug("File loading from File to org.json.simple.JSONObject failed");
             }
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug("Exception when loading from File to org.json.simple.JSONObject", e);
         }
 
         return jsonObject;

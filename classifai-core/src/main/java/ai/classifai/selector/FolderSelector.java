@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
@@ -93,7 +92,7 @@ public class FolderSelector{
         catch (Exception e)
         {
             SelectorHandler.setWindowState(false);
-            log.debug("Select folder failed to open", e);
+            log.info("SelectorHandler for Folder type failed to open", e);
         }
 
     }

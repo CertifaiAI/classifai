@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.selector;
 
 import ai.classifai.database.loader.LoaderStatus;
@@ -27,6 +26,11 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Selector Handler for File & Folder Selector and Database Update
+ *
+ * @author ChiaWei
+ */
 @Slf4j
 public class SelectorHandler {
 
@@ -71,7 +75,7 @@ public class SelectorHandler {
 
         if(projectLoaderDict.containsKey(projectName) == false)
         {
-            log.error("Project name is not in ProjectLoader. This should not happened");
+            log.error("Project name of " + projectName + " cannot be found in ProjectLoader. Critical Error.");
             return null;
         }
 
@@ -97,7 +101,7 @@ public class SelectorHandler {
         }
         else
         {
-            log.error("Wrong file type for opening. Set param either as file or folder");
+            log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
             return false;
         }
         return true;
