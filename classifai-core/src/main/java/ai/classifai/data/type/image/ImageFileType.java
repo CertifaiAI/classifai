@@ -23,6 +23,8 @@ import java.util.Map;
 
 /**
  * Support images & documents
+ *
+ * @author Chiawei Lim
  */
 @NoArgsConstructor
 public class ImageFileType {

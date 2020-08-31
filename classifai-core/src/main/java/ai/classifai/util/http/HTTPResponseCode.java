@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.http;
 
 import java.util.HashMap;
@@ -34,10 +33,6 @@ public class HTTPResponseCode{
 
         STATUS_CODE.put("OK", 200);
         STATUS_CODE.put("OK_NO_CONTENT", 204);
-        STATUS_CODE.put("BAD_REQUEST", 400);
-
-        STATUS_CODE.put("METHODS_NOT_ALLOWED", 405);
-        STATUS_CODE.put("INTERNAL_SERVER_ERROR", 500);
     }
 
     public static Integer ok()
@@ -45,18 +40,4 @@ public class HTTPResponseCode{
         return STATUS_CODE.get("OK");
     }
 
-    public static Integer badRequest()
-    {
-        return STATUS_CODE.get("BAD_REQUEST");
-    }
-
-    public static Integer internalServerError()
-    {
-        return STATUS_CODE.get("INTERNAL_SERVER_ERROR");
-    }
-
-    public static Integer methodsNotAllowed()
-    {
-        return STATUS_CODE.get("METHODS_NOT_ALLOWED");
-    }
 }

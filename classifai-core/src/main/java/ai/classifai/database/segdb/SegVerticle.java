@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.segdb;
 
 import ai.classifai.database.DatabaseConfig;
@@ -80,7 +79,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         }
         else
         {
-            log.error("Project query error: Action did not found follow up with function");
+            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
         }
     }
 
@@ -99,7 +98,10 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
+                    String definedMessage = "Image data path not found for project " + projectName + " with uuid " + uuid;
+                    log.info(definedMessage);
+
+                    message.reply(ReplyHandler.reportUserDefinedError(definedMessage));
                 }
                 else
                 {
@@ -142,13 +144,13 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add((Integer)imgMetadata.get("height"));
 
             projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
-                if(!fetch.succeeded())
+                if(fetch.succeeded())
                 {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                    uuidList.add(UUID);
                 }
                 else
                 {
-                    uuidList.add(UUID);
+                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
             });
         }
@@ -172,8 +174,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    log.debug("Should not get null");
-                    message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
+                    String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
+                    log.info(userDefinedMessage);
+                    message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else {
                     JsonArray row = resultSet.getResults().get(0);
@@ -203,6 +206,8 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
             }
             else
             {
+                String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                log.info(userDefinedMessage);
                 message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
             }
         });
