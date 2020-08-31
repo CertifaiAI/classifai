@@ -44,7 +44,7 @@ public class DbConfig
             if((new File(DatabaseConfig.PORTFOLIO_DB_LCKFILE).exists()) || new File(DatabaseConfig.BNDBOX_DB_LCKFILE).exists())
             {
                 log.info("Database is locked. Try with --unlockdb=true. \n" +
-                        "WARNING: This might impose be hazardaous to have multiple access to the database.");
+                        "WARNING: This might be hazardous by allowing multiple access to the database.");
 
                 return false;
             }

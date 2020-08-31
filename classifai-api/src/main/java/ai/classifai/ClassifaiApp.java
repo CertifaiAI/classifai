@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai;
 
 import ai.classifai.config.DbConfig;
@@ -27,6 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * Main program to start Classifai
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ClassifaiApp
 {

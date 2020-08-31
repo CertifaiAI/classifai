@@ -13,17 +13,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.data;
 
 /**
- * Manage data types
+ * Data types management
  *
  * @author Chiawei Lim
  */
 public enum DataType
 {
-    IMAGE ,
+    IMAGE,
     VIDEO
 }
 
