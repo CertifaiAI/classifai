@@ -13,15 +13,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.ui;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,10 +36,11 @@ public class ChromiumHandler {
 
     private final static String PRIMARY_KEY = "chromium";
     private final static String SECONDARY_KEY = "chrome";
-    private final static String ICON_KEY = "icon";
 
     private static Map<String, String> macBrowserKey;
     private static Map<String, String> winBrowserKey;
+
+    private static ImageIcon browserNotFoundIcon;
 
     static
     {
@@ -57,20 +57,16 @@ public class ChromiumHandler {
         winBrowserKey.put(PRIMARY_KEY, "app\\chrome-win\\chrome.exe");
         winBrowserKey.put(SECONDARY_KEY, chromeNativePath);
 
-        InputStream iconStream = ChromiumHandler.class.getClassLoader().getResourceAsStream("icon/Classifai_Favicon_Dark_32px.png");
 
         try {
 
-            File iconPath = new File(System.getProperty("java.io.tmpdir") + File.separator +  "iconBuffer.png");
+            Image iconImage = ImageIO.read(ChromiumHandler.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
 
-            FileUtils.copyInputStreamToFile(iconStream, iconPath);
-
-            macBrowserKey.put(ICON_KEY, iconPath.getAbsolutePath());
-            winBrowserKey.put(ICON_KEY, iconPath.getAbsolutePath());
+            browserNotFoundIcon = new ImageIcon(iconImage);
         }
         catch (Exception e)
         {
-            log.info("Icon not found, ", e);
+            log.info("Classifai icon for Browser Not Found is missing", e);
         }
     }
 
@@ -99,8 +95,7 @@ public class ChromiumHandler {
             }
             else
             {
-
-                failToOpenBrowserMessage(url, macBrowserKey.get(ICON_KEY), browserNotFoundMessage);
+                failToOpenBrowserMessage(browserNotFoundMessage);
             }
         }
         else if(currentOS.equals(OS.WINDOWS))
@@ -118,13 +113,13 @@ public class ChromiumHandler {
             }
             else
             {
-                failToOpenBrowserMessage(url, winBrowserKey.get(ICON_KEY), browserNotFoundMessage);
+                failToOpenBrowserMessage(browserNotFoundMessage);
             }
         }
         else
         {
             log.debug("Browser in " + currentOS.toString() + " not supported yet");
-            failToOpenBrowserMessage(url, winBrowserKey.get(ICON_KEY), osNotSupportedMessage);
+            failToOpenBrowserMessage(osNotSupportedMessage);
             return;
         }
 
@@ -136,7 +131,7 @@ public class ChromiumHandler {
             }
             catch(Exception e)
             {
-                log.debug(currentOS.toString() + " - Failed to open classifai. ", e);
+                log.debug("Failed to open classifai in " + currentOS.toString(), e);
             }
         }
 
@@ -146,7 +141,7 @@ public class ChromiumHandler {
     {
         if(new File(appPath).exists() == false)
         {
-            log.debug("Chromium browser not found.");
+            log.debug("Chromium browser not found - " + appPath);
 
             return false;
         }
@@ -154,16 +149,10 @@ public class ChromiumHandler {
         return true;
     }
 
-    public static void failToOpenBrowserMessage(String url, String iconPath, String message)
+    public static void failToOpenBrowserMessage(String message)
     {
-        ImageIcon messageIcon = null;
-
-        if(iconPath != null)
-        {
-            messageIcon = new ImageIcon(iconPath);
-        }
 
         showMessageDialog(null, message,
-                "Oops!", JOptionPane.INFORMATION_MESSAGE, messageIcon);
+                "Oops!", JOptionPane.INFORMATION_MESSAGE, browserNotFoundIcon);
     }
 }

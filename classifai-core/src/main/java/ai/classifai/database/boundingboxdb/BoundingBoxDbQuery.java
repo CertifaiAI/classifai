@@ -16,6 +16,11 @@
 
 package ai.classifai.database.boundingboxdb;
 
+/***
+ * Bounding box database query
+ *
+ * @author Chiawei Lim
+ */
 public class BoundingBoxDbQuery
 {
     public final static String QUEUE = "boundingbox.queue";

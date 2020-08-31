@@ -59,9 +59,9 @@ public class PortSelector {
         try {
             return new ServerSocket(port);
         }
-        catch (IOException ex) {
+        catch (IOException e) {
             // if the program gets here, no port in the range was found
-            log.error("IOException error during configure port " + port, ex);
+            log.info("IOException error during configure port " + port, e);
             return null;
         }
     }
@@ -81,7 +81,7 @@ public class PortSelector {
                 }
             }
 
-            log.error("Error: Port could not be correctly configured. Program expected to not work fine.");
+            log.info("Error: Port could not be correctly configured. Program expected to not work fine.");
         }
     }
 
@@ -93,7 +93,7 @@ public class PortSelector {
     private static Integer getRandomNumberInRange(Integer min, Integer max) {
 
         if (min >= max) {
-            throw new IllegalArgumentException("max must be greater than min");
+            throw new IllegalArgumentException("Max must be greater than min");
         }
 
         Random r = new Random();

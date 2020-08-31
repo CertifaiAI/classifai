@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.image;
 
 import ai.classifai.data.type.image.ImageFileType;
@@ -28,6 +27,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * PDF Handler
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class PdfHandler
 {
@@ -97,7 +101,7 @@ public class PdfHandler
                     if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {
                         document.close();
-                        throw new Exception("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
+                        log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
                     }
 
                     pdf2Images.add(fImageSavedFullPath);
@@ -113,8 +117,7 @@ public class PdfHandler
         }
         catch(Exception e)
         {
-            log.info("PDF Skipped. Failed to read in pdf: " + pdfFileName);
-            log.debug("Error: ", e);
+            log.info("PDF Skipped. Failed in reading pdf of file: " + pdfFileName, e);
         }
 
         return null;

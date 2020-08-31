@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.http;
 
 import io.vertx.core.json.JsonObject;
@@ -30,29 +29,6 @@ public class HTTPResponseHandler
     public static void configureOK(@NonNull RoutingContext context, JsonObject jsonObject)
     {
         context.response().setStatusCode(HTTPResponseCode.ok());
-        context.response().putHeader("Content-Type", "application/json");
-        context.response().end(jsonObject.encodePrettily());
-    }
-
-    @Deprecated
-    public static void configureBadRequest(@NonNull RoutingContext context, JsonObject jsonObject)
-    {
-        context.response().setStatusCode(HTTPResponseCode.badRequest());
-        context.response().putHeader("Content-Type", "application/json");
-        context.response().end(jsonObject.encodePrettily());
-    }
-
-    @Deprecated
-    public static void configureInternalServerError(@NonNull RoutingContext context)
-    {
-        context.response().setStatusCode(HTTPResponseCode.internalServerError());
-
-    }
-
-    @Deprecated
-    public static void configureMethodsNotAllowed(@NonNull RoutingContext context, JsonObject jsonObject)
-    {
-        context.response().setStatusCode(HTTPResponseCode.methodsNotAllowed());
         context.response().putHeader("Content-Type", "application/json");
         context.response().end(jsonObject.encodePrettily());
     }

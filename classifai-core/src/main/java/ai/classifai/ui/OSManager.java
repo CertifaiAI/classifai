@@ -27,6 +27,11 @@ enum OS
     NULL
 }
 
+/**
+ * Handler to manage different os
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class OSManager
 {

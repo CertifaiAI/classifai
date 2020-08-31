@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.data;
 
 import ai.classifai.annotation.AnnotationType;
@@ -24,6 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 
+/***
+ * Data collection
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public abstract class DataCollection<T>
 {

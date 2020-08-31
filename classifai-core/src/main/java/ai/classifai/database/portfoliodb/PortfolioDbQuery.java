@@ -13,9 +13,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.portfoliodb;
 
+/***
+ * Portfolio database query
+ *
+ * @author Chiawei Lim
+ */
 public class PortfolioDbQuery
 {
     public final static String QUEUE = "portfolio.queue";

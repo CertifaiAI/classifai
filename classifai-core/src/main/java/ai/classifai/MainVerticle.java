@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
@@ -28,6 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 
+/**
+ * Main verticle to create multiple verticles
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
@@ -39,7 +43,10 @@ public class MainVerticle extends AbstractVerticle
         {
             boolean databaseIsBuild = dataRootPath.mkdir();
 
-            if(!databaseIsBuild) log.error("Database could not created");
+            if(!databaseIsBuild)
+            {
+                log.debug("Root database could not created: ", DatabaseConfig.DB_ROOT_PATH);
+            }
         }
     }
 
@@ -61,6 +68,7 @@ public class MainVerticle extends AbstractVerticle
 
             Promise<String> segDeployment = Promise.promise();
             vertx.deployVerticle(new SegVerticle(), segDeployment);
+
             return segDeployment.future();
 
         }).compose(id_ -> {
