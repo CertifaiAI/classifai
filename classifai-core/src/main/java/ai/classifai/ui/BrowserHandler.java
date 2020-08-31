@@ -16,7 +16,6 @@
 package ai.classifai.ui;
 
 import lombok.extern.slf4j.Slf4j;
-import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
