@@ -40,6 +40,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class ImageHandler {
 
+    private static File tifImageBuffer;
+
+    static
+    {
+        tifImageBuffer = new File(System.getProperty("java.io.tmpdir") + "/temp.png");
+    }
     private static String getImageHeader(String input)
     {
         Integer lastIndex = input.length();
@@ -65,6 +71,22 @@ public class ImageHandler {
         return Optional.ofNullable(filename)
                 .filter(f -> f.contains("."))
                 .map(f -> f.substring(filename.lastIndexOf(".") + 1)).orElse("");
+    }
+
+    private static String tif4Display(File file)
+    {
+        try
+        {
+            BufferedImage image = ImageIO.read(file);
+            ImageIO.write(image, "png", tifImageBuffer);
+
+            return base64FromBufferedImage(ImageIO.read(tifImageBuffer));
+        }
+        catch(Exception e)
+        {
+            log.info("Failed in preparing tif image for display", e);
+        }
+        return null;
     }
 
     private static String base64FromBufferedImage(BufferedImage img) {
@@ -145,10 +167,9 @@ public class ImageHandler {
         {
             String extension = getExtensionByStringHandling(file.getAbsolutePath());
 
-            if(extension.equals(".tif"))
+            if(extension.equals("tif") || (extension.equals("tiff")))
             {
-                BufferedImage image = ImageIO.read(file);
-                return base64FromBufferedImage(image);
+                return tif4Display(file);
             }
             else
             {
