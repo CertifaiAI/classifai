@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,6 +59,12 @@ public class ImageHandler {
 
         log.error("File format not supported");
         return null;
+    }
+
+    public static String getExtensionByStringHandling(String filename) {
+        return Optional.ofNullable(filename)
+                .filter(f -> f.contains("."))
+                .map(f -> f.substring(filename.lastIndexOf(".") + 1)).orElse("");
     }
 
     private static String base64FromBufferedImage(BufferedImage img) {
@@ -136,17 +143,28 @@ public class ImageHandler {
     {
         try
         {
-            String encodedfile = null;
+            String extension = getExtensionByStringHandling(file.getAbsolutePath());
 
-            FileInputStream fileInputStreamReader = new FileInputStream(file);
+            if(extension.equals(".tif"))
+            {
+                BufferedImage image = ImageIO.read(file);
+                return base64FromBufferedImage(image);
+            }
+            else
+            {
+                String encodedfile = null;
 
-            byte[] bytes = new byte[(int)file.length()];
+                FileInputStream fileInputStreamReader = new FileInputStream(file);
 
-            fileInputStreamReader.read(bytes);
+                byte[] bytes = new byte[(int)file.length()];
 
-            encodedfile = new String(Base64.getEncoder().encode(bytes));
+                fileInputStreamReader.read(bytes);
 
-            return getImageHeader(file.getAbsolutePath()) + encodedfile;
+                encodedfile = new String(Base64.getEncoder().encode(bytes));
+
+                return getImageHeader(file.getAbsolutePath()) + encodedfile;
+            }
+
         }
         catch(Exception e)
         {
