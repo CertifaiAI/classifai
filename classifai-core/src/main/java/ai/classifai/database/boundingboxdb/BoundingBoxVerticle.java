@@ -227,36 +227,43 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         message.reply(ReplyHandler.getOkReply());
 
-        loader.setLoaderStatus(LoaderStatus.LOADING);
-        loader.setTotalUUIDSize(oriUUIDList.size());
-
-        for(int i = 0; i < oriUUIDList.size(); ++i)
+        if(oriUUIDList.isEmpty())
         {
-            final Integer currentLength = i;
-            final Integer UUID = oriUUIDList.get(i);
-            JsonArray params = new JsonArray().add(UUID).add(projectID);
+            loader.setLoaderStatus(LoaderStatus.LOADED);
+        }
+        else
+        {
+            loader.setTotalUUIDSize(oriUUIDList.size());
+            loader.setLoaderStatus(LoaderStatus.LOADING);
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+            for(int i = 0; i < oriUUIDList.size(); ++i)
+            {
+                final Integer currentLength = i;
+                final Integer UUID = oriUUIDList.get(i);
+                JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-                if (fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
+                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
-                    if (resultSet.getNumRows() != 0)
+                    if (fetch.succeeded())
                     {
-                        JsonArray row = resultSet.getResults().get(0);
+                        ResultSet resultSet = fetch.result();
 
-                        String dataPath = row.getString(0);
+                        if (resultSet.getNumRows() != 0)
+                        {
+                            JsonArray row = resultSet.getResults().get(0);
 
-                        if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
+                            String dataPath = row.getString(0);
+
+                            if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
+                        }
+                        loader.updateProgress(currentLength + 1);
                     }
-                    loader.updateProgress(currentLength + 1);
-                }
-                else
-                {
-                    loader.updateProgress(currentLength + 1);
-                }
-            });
+                    else
+                    {
+                        loader.updateProgress(currentLength + 1);
+                    }
+                });
+            }
         }
     }
 
