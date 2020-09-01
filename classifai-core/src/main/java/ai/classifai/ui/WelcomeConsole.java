@@ -81,7 +81,7 @@ public class WelcomeConsole
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ChromiumHandler.openOnBrowser(browserURL, osManager);
+                BrowserHandler.openOnBrowser(browserURL, osManager);
             }
         });
 

@@ -136,7 +136,7 @@ public class ImageHandler {
 
         }
         catch (IOException e) {
-            log.debug("Failed in getting thumbnail: ", e);
+            log.debug("Failed in getting thumbnail for path " + imageAbsPath, e);
             return null;
         }
     }

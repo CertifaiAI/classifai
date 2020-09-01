@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
@@ -80,7 +79,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         }
         else
         {
-            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
+            log.error("Bounding Box Verticle query error. Action did not have an assigned function for handling.");
         }
     }
 
@@ -316,7 +315,6 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         projectJDBCClient.getConnection(ar -> {
             if (ar.failed()) {
-
                 log.error("Could not open a database connection for Bounding Box Verticle", ar.cause());
                 promise.fail(ar.cause());
 
