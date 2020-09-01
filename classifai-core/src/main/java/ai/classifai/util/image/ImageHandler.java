@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.image;
 
 import ai.classifai.annotation.AnnotationType;
@@ -64,7 +63,8 @@ public class ImageHandler {
             }
         }
 
-        log.error("File format not supported");
+        log.debug("File format not supported");
+
         return null;
     }
 
@@ -78,8 +78,7 @@ public class ImageHandler {
 
             return src;
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("error in base64FromBufferedImage");
+            log.debug("Error in converting BufferedImage into base64: ", e);
             return "";
         }
 
@@ -97,6 +96,7 @@ public class ImageHandler {
         }
         catch(Exception e)
         {
+            log.debug("Image is not readable: ", e);
             return false;
         }
 
@@ -136,7 +136,7 @@ public class ImageHandler {
 
         }
         catch (IOException e) {
-            log.error("Failed in getting thumbnail: ", e);
+            log.debug("Failed in getting thumbnail for path " + imageAbsPath, e);
             return null;
         }
     }
@@ -159,8 +159,7 @@ public class ImageHandler {
         }
         catch(Exception e)
         {
-            log.error("Failed while converting File to base64");
-            e.printStackTrace();
+            log.error("Failed while converting File to base64", e);
         }
 
         return null;
@@ -246,7 +245,7 @@ public class ImageHandler {
         }
         catch(Exception e)
         {
-            log.debug("Error: ", e);
+            log.debug("Error in checking if image file valid - " + file, e);
             return false;
         }
 

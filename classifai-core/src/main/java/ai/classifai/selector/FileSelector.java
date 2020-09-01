@@ -95,7 +95,7 @@ public class FileSelector{
         catch (Exception e){
             SelectorHandler.setWindowState(false);
 
-            log.debug("Select files failed to open", e);
+            log.info("SelectorHandler for File type failed to open", e);
         }
 
     }

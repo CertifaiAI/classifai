@@ -13,11 +13,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.loader;
 
 import lombok.extern.slf4j.Slf4j;
 
+/***
+ * Loader status for project loading
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public enum LoaderStatus
 {

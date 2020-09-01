@@ -26,6 +26,11 @@ import java.awt.event.ActionListener;
 import java.io.*;
 
 
+/**
+ * GUI for starting classifai
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class WelcomeConsole
 {
@@ -62,7 +67,7 @@ public class WelcomeConsole
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ChromiumHandler.openOnBrowser(browserURL, osManager);
+                BrowserHandler.openOnBrowser(browserURL, osManager);
             }
         });
 

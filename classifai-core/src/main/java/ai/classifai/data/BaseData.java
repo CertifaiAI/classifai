@@ -13,12 +13,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Base data properties
+ *
+ * @author Chiawei Lim
+ */
 @AllArgsConstructor
 public abstract class BaseData
 {
