@@ -17,6 +17,8 @@ package ai.classifai.database;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+
 /**
  * Configurations for files and paths of database
  *
@@ -42,11 +44,11 @@ public class DatabaseConfig
     {
         LCK_FILE_EXTENSION = ".lck";
 
-        DB_ROOT_PATH = System.getProperty("user.home") + "/.classifai";
+        DB_ROOT_PATH = System.getProperty("user.home") + File.separator + ".classifai";
 
-        PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
-        BNDBOX_DB = DB_ROOT_PATH + "/" + "bbproject/bbprojectdb";
-        SEGMENTATION_DB = DB_ROOT_PATH + "/" + "segproject/segprojectdb";
+        PORTFOLIO_DB = DB_ROOT_PATH + File.separator +  "portfolio/portfoliodb";
+        BNDBOX_DB = DB_ROOT_PATH + File.separator + "bbproject/bbprojectdb";
+        SEGMENTATION_DB = DB_ROOT_PATH + File.separator + "segproject/segprojectdb";
 
         PORTFOLIO_DB_LCKFILE = PORTFOLIO_DB + LCK_FILE_EXTENSION;
         BNDBOX_DB_LCKFILE = BNDBOX_DB + LCK_FILE_EXTENSION;
