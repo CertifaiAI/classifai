@@ -26,7 +26,7 @@
     "sideNav": {
       "imgList": "Image List",
       "labelList": "Label List",
-      "boundBox": "Bounding Box"
+      "polygon": "Polygon"
     }
   }
   
