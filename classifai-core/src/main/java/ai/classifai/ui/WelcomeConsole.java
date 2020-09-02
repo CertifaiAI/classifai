@@ -41,16 +41,16 @@ public class WelcomeConsole
 
     final static String BUTTON_PATH;
 
-    final static int FRAME_WIDTH = 600;
-    final static int FRAME_HEIGHT = 350;
+    final static int FRAME_WIDTH = 1024;
+    final static int FRAME_HEIGHT = 768;
 
-    final static int BTN_X_COORD = 80;
-    final static int BTN_Y_COORD = 220;
+    final static int BTN_X_COORD = 180;
+    final static int BTN_Y_COORD = 550;
 
     final static int BTN_WIDTH = 100;
-    final static int BTN_HEIGHT = 50;
+    final static int BTN_HEIGHT = 100;
 
-    final static int X_GAP = 180;
+    final static int X_GAP = 260;
 
     static
     {
@@ -73,7 +73,7 @@ public class WelcomeConsole
             }
         });
 
-        JButton closeButton = getButton("openButton.png", "Close");
+        JButton closeButton = getButton("closeButton.png", "Close");
         closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         closeButton.addActionListener(new ActionListener() {
@@ -83,7 +83,7 @@ public class WelcomeConsole
             }
         });
 
-        JButton acknowledgementButton = getButton("openButton.png", "License");
+        JButton acknowledgementButton = getButton("licenseButton.png", "License");
         acknowledgementButton.setBounds(BTN_X_COORD + X_GAP * 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         frame.add(openButton);
