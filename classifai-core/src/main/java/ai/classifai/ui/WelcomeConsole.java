@@ -24,6 +24,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 
@@ -41,8 +42,8 @@ public class WelcomeConsole
 
     final static String BUTTON_PATH;
 
-    final static int FRAME_WIDTH = 1024;
-    final static int FRAME_HEIGHT = 768;
+    private static int frameWidth;
+    private static int frameHeight;
 
     final static int BTN_X_COORD = 180;
     final static int BTN_Y_COORD = 550;
@@ -93,7 +94,7 @@ public class WelcomeConsole
         JLabel backgroundLabel = getBackground("welcomeConsole.png");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT + 20);
+        frame.setSize(frameWidth + 18, frameHeight + 38);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
 
@@ -129,13 +130,14 @@ public class WelcomeConsole
     {
         try
         {
-            Image img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+            BufferedImage img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
 
-            Image scaledImg = img.getScaledInstance(FRAME_WIDTH, FRAME_HEIGHT, Image.SCALE_SMOOTH);
+            frameWidth = img.getWidth();
+            frameHeight = img.getHeight();
 
-            JLabel bgLabel = new JLabel(new ImageIcon(scaledImg));
+            JLabel bgLabel = new JLabel(new ImageIcon(img));
             bgLabel.setLayout(null);
-            bgLabel.setBounds(0,0, FRAME_WIDTH, FRAME_HEIGHT);
+            bgLabel.setBounds(0,0, frameWidth, frameHeight);
 
             return bgLabel;
         }
