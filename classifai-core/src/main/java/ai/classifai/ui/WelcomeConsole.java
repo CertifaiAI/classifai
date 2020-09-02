@@ -17,6 +17,7 @@ package ai.classifai.ui;
 
 import ai.classifai.server.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -24,6 +25,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.URL;
 
 
 /**
@@ -54,7 +56,7 @@ public class WelcomeConsole
     {
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
-        BUTTON_PATH = File.separator + "console" + File.separator;
+        BUTTON_PATH = "/console/";
     }
 
     public static void start()
@@ -116,7 +118,7 @@ public class WelcomeConsole
         catch (Exception e)
         {
             button = new JButton(altText);//altText will be used if icon not found
-            log.error("Error. Image for button failed to configured. ", e);
+            log.error("Image for button failed to configured. ", e);
         }
 
         return button;
