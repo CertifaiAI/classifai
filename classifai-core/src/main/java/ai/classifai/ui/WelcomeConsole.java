@@ -17,7 +17,6 @@ package ai.classifai.ui;
 
 import ai.classifai.server.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -25,8 +24,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.URL;
 
 
 /**
@@ -45,13 +42,13 @@ public class WelcomeConsole
     private static int frameWidth;
     private static int frameHeight;
 
-    final static int BTN_X_COORD = 220;
-    final static int BTN_Y_COORD = 365;
+    final static int BTN_X_COORD = 217;
+    final static int BTN_Y_COORD = 347;
 
     final static int BTN_WIDTH = 50;
     final static int BTN_HEIGHT = 50;
 
-    final static int X_GAP = 85;
+    final static int X_GAP = 88;
 
     static
     {
@@ -64,7 +61,7 @@ public class WelcomeConsole
     {
         JFrame frame = new JFrame("Classifai");
 
-        JButton openButton = getButton("Classifai_WelcomeHandler_A_Open.png", "Open");
+        JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         openButton.addActionListener(new ActionListener() {
@@ -74,7 +71,7 @@ public class WelcomeConsole
             }
         });
 
-        JButton closeButton = getButton("Classifai_WelcomeHandler_A_Close.png", "Close");
+        JButton closeButton = getButton("Close_Button.png", "Close");
         closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         closeButton.addActionListener(new ActionListener() {
@@ -84,8 +81,8 @@ public class WelcomeConsole
             }
         });
 
-        JButton acknowledgementButton = getButton("Classifai_WelcomeHandler_A_Acknowledgements.png", "License");
-        acknowledgementButton.setBounds(BTN_X_COORD + X_GAP * 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+        JButton acknowledgementButton = getButton("Acknowledge_Button.png", "License");
+        acknowledgementButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         frame.add(openButton);
         frame.add(closeButton);
