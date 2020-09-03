@@ -45,13 +45,13 @@ public class WelcomeConsole
     private static int frameWidth;
     private static int frameHeight;
 
-    final static int BTN_X_COORD = 180;
-    final static int BTN_Y_COORD = 550;
+    final static int BTN_X_COORD = 220;
+    final static int BTN_Y_COORD = 365;
 
-    final static int BTN_WIDTH = 100;
-    final static int BTN_HEIGHT = 100;
+    final static int BTN_WIDTH = 50;
+    final static int BTN_HEIGHT = 50;
 
-    final static int X_GAP = 260;
+    final static int X_GAP = 85;
 
     static
     {
@@ -64,7 +64,7 @@ public class WelcomeConsole
     {
         JFrame frame = new JFrame("Classifai");
 
-        JButton openButton = getButton("openButton.png", "Open");
+        JButton openButton = getButton("Classifai_WelcomeHandler_A_Open.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         openButton.addActionListener(new ActionListener() {
@@ -74,7 +74,7 @@ public class WelcomeConsole
             }
         });
 
-        JButton closeButton = getButton("closeButton.png", "Close");
+        JButton closeButton = getButton("Classifai_WelcomeHandler_A_Close.png", "Close");
         closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         closeButton.addActionListener(new ActionListener() {
@@ -84,17 +84,17 @@ public class WelcomeConsole
             }
         });
 
-        JButton acknowledgementButton = getButton("licenseButton.png", "License");
+        JButton acknowledgementButton = getButton("Classifai_WelcomeHandler_A_Acknowledgements.png", "License");
         acknowledgementButton.setBounds(BTN_X_COORD + X_GAP * 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         frame.add(openButton);
         frame.add(closeButton);
         frame.add(acknowledgementButton);
 
-        JLabel backgroundLabel = getBackground("welcomeConsole.png");
+        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_V2.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(frameWidth + 18, frameHeight + 38);
+        frame.setSize(frameWidth, frameHeight + 10);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
 
