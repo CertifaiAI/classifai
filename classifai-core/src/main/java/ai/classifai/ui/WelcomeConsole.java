@@ -43,10 +43,10 @@ public class WelcomeConsole
     private static int frameHeight = 480;
 
     final static int BTN_X_COORD = 217;
-    final static int BTN_Y_COORD = 347;
+    final static int BTN_Y_COORD = 342;
 
-    final static int BTN_WIDTH = 50;
-    final static int BTN_HEIGHT = 50;
+    final static int BTN_WIDTH = 55;
+    final static int BTN_HEIGHT = 55;
 
     final static int X_GAP = 88;
 
