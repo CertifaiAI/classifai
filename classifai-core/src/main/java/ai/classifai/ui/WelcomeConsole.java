@@ -39,8 +39,8 @@ public class WelcomeConsole
 
     final static String BUTTON_PATH;
 
-    private static int frameWidth;
-    private static int frameHeight;
+    private static int frameWidth = 640;
+    private static int frameHeight = 480;
 
     final static int BTN_X_COORD = 217;
     final static int BTN_Y_COORD = 347;
@@ -59,7 +59,7 @@ public class WelcomeConsole
 
     public static void start()
     {
-        JFrame frame = new JFrame("Classifai");
+        JFrame frame = new JFrame("Welcome to Classifai");
 
         JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
@@ -88,7 +88,7 @@ public class WelcomeConsole
         frame.add(closeButton);
         frame.add(acknowledgementButton);
 
-        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_V2.jpg");
+        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
         frame.setSize(frameWidth, frameHeight + 10);
@@ -127,8 +127,9 @@ public class WelcomeConsole
     {
         try
         {
-            BufferedImage img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+            BufferedImage oriImg = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
 
+            BufferedImage img = resize(oriImg, frameWidth, frameHeight);
             frameWidth = img.getWidth();
             frameHeight = img.getHeight();
 
@@ -147,4 +148,14 @@ public class WelcomeConsole
 
     }
 
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
+    }
 }
