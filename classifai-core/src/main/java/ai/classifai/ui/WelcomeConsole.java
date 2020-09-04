@@ -39,8 +39,8 @@ public class WelcomeConsole
 
     final static String BUTTON_PATH;
 
-    private static int frameWidth = 640;
-    private static int frameHeight = 480;
+    private static int FRAME_WIDTH = 640;
+    private static int FRAME_HEIGHT = 480;
 
     final static int BTN_X_COORD = 217;
     final static int BTN_Y_COORD = 342;
@@ -91,7 +91,7 @@ public class WelcomeConsole
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(frameWidth, frameHeight + 10);
+        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT + 10);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
 
@@ -129,13 +129,11 @@ public class WelcomeConsole
         {
             BufferedImage oriImg = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
 
-            BufferedImage img = resize(oriImg, frameWidth, frameHeight);
-            frameWidth = img.getWidth();
-            frameHeight = img.getHeight();
+            BufferedImage img = resize(oriImg, FRAME_WIDTH, FRAME_HEIGHT);
 
             JLabel bgLabel = new JLabel(new ImageIcon(img));
             bgLabel.setLayout(null);
-            bgLabel.setBounds(0,0, frameWidth, frameHeight);
+            bgLabel.setBounds(0,0, FRAME_WIDTH, FRAME_HEIGHT);
 
             return bgLabel;
         }
