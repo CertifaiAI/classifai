@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
-
 /**
  * GUI for starting classifai
  *
@@ -50,11 +49,25 @@ public class WelcomeConsole
 
     final static int X_GAP = 88;
 
+    static int baseCushionX = 0;
+    static int baseCushionY = 0;
+
     static
     {
+        BUTTON_PATH = "/console/";
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
-        BUTTON_PATH = "/console/";
+
+        if(osManager.getCurrentOS().equals(OS.MAC))
+        {
+            baseCushionX = 0;
+            baseCushionY = 10;
+        }
+        else if(osManager.getCurrentOS().equals(OS.WINDOWS))
+        {
+            baseCushionX = 18;
+            baseCushionY = 47;
+        }
     }
 
     public static void start()
@@ -91,7 +104,7 @@ public class WelcomeConsole
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT + 10);
+        frame.setSize(FRAME_WIDTH + baseCushionX, FRAME_HEIGHT + baseCushionY);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
 
