@@ -18,6 +18,7 @@ package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.ui.WelcomeConsole;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,11 +84,14 @@ public class FileSelector{
 
                             SelectorHandler.stopDatabaseUpdate();
                         }
-                    }else
+                    }
+                    else
                     {
                         SelectorHandler.setWindowState(false);
                     }
 
+                    //prevent Welcome Console from popping out
+                    WelcomeConsole.setWelcomeConsole2Bg();
 
                 }
             });

@@ -33,6 +33,7 @@ import java.awt.image.BufferedImage;
 @Slf4j
 public class WelcomeConsole
 {
+    private static JFrame frame;
     private static String browserURL;
     private static OSManager osManager;
 
@@ -66,13 +67,13 @@ public class WelcomeConsole
         else if(osManager.getCurrentOS().equals(OS.WINDOWS))
         {
             baseCushionX = 18;
-            baseCushionY = 47;
+            baseCushionY = 47 ;
         }
     }
 
     public static void start()
     {
-        JFrame frame = new JFrame("Welcome to Classifai");
+        frame = new JFrame("Welcome to Classifai");
 
         JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
@@ -111,6 +112,11 @@ public class WelcomeConsole
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
         frame.setResizable(false);
+    }
+
+    public static void setWelcomeConsole2Bg()
+    {
+        frame.setState(Frame.ICONIFIED);
     }
 
     private static JButton getButton(String fileName, String altText)
