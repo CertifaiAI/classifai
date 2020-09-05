@@ -88,7 +88,7 @@ public class FolderSelector{
                     }
 
                     //prevent Welcome Console from popping out
-                    WelcomeConsole.setWelcomeConsole2Bg();
+                    WelcomeConsole.setToBackground();
 
                 }
             });

@@ -114,7 +114,7 @@ public class WelcomeConsole
         frame.setResizable(false);
     }
 
-    public static void setWelcomeConsole2Bg()
+    public static void setToBackground()
     {
         frame.setState(Frame.ICONIFIED);
     }
