@@ -15,6 +15,7 @@
  */
 package ai.classifai.selector;
 
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import lombok.Getter;
@@ -86,11 +87,11 @@ public class SelectorHandler {
         return isWindowOpen;
     }
 
-    public static void setProjectNameNID(@NonNull String projectName, @NonNull Integer projectID) {
+    public static void setProjectNameNID(@NonNull String projectName, @NonNull Integer projectID, Integer annotationType) {
         projectNameIDDict.put(projectName, projectID);
         projectIDNameDict.put(projectID, projectName);
 
-        projectLoaderDict.put(projectName, new ProjectLoader());
+        projectLoaderDict.put(projectName, new ProjectLoader(annotationType));
     }
 
     public static boolean initSelector(String selection)
@@ -107,9 +108,27 @@ public class SelectorHandler {
         return true;
     }
 
-    public static boolean isProjectNameRegistered(String projectName)
+    public static boolean isProjectNameInMemory(String projectName)
     {
         return projectNameIDDict.containsKey(projectName);
+    }
+
+    public static boolean isProjectNameUnique(String projectName, Integer annotationType)
+    {
+        if(projectNameIDDict.containsKey(projectName) == false)
+        {
+            return true;
+        }
+        else
+        {
+            ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
+            if(loader.getAnnotationType().equals(annotationType) == false)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static ProjectLoader getCurrentProjectLoader()

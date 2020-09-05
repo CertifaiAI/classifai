@@ -16,6 +16,7 @@
 
 package ai.classifai.database.portfoliodb;
 
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.SelectorHandler;
@@ -105,9 +106,20 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         String projectName = request.getString(ParamConfig.PROJECT_NAME_PARAM);
         Integer annotationType = request.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-        if(!SelectorHandler.isProjectNameRegistered(projectName)) {
+        if(SelectorHandler.isProjectNameUnique(projectName, annotationType)) {
 
-            log.info("Create project with name: " + projectName + " in portfolio table");
+            String annotationName = "";
+
+            if(annotationType.equals(AnnotationType.BOUNDINGBOX.ordinal()))
+            {
+                annotationName = AnnotationType.BOUNDINGBOX.name();
+            }
+            else if(annotationType.equals(AnnotationType.SEGMENTATION.ordinal()))
+            {
+                annotationName = AnnotationType.BOUNDINGBOX.name();
+            }
+
+            log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
 
             Integer projectID = SelectorHandler.generateProjectID();
 
@@ -116,7 +128,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             portfolioDbClient.queryWithParams(PortfolioDbQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
                 if (fetch.succeeded()) {
-                    SelectorHandler.setProjectNameNID(projectName, projectID);
+                    SelectorHandler.setProjectNameNID(projectName, projectID, annotationType);
                     message.reply(ReplyHandler.getOkReply());
                 } else {
                     //query database failed
@@ -137,7 +149,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
 
-        if(SelectorHandler.isProjectNameRegistered(projectName))
+        if(SelectorHandler.isProjectNameInMemory(projectName))
         {
             portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
 
@@ -160,7 +172,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName))
+        if(SelectorHandler.isProjectNameInMemory(projectName))
         {
             JsonArray params = new JsonArray().add(projectName);
 
@@ -191,7 +203,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameRegistered(projectName))
+        if(SelectorHandler.isProjectNameInMemory(projectName))
         {
             JsonArray params = new JsonArray().add(projectName);
 
@@ -253,7 +265,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        if (SelectorHandler.isProjectNameRegistered(projectName))
+        if (SelectorHandler.isProjectNameInMemory(projectName))
         {
             JsonArray params = new JsonArray().add(projectName);
 
@@ -382,7 +394,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                                     String projectName = row.getString(0);
 
-                                    SelectorHandler.setProjectNameNID(projectName, projectID);
+                                    Integer annotationType = row.getInteger(1);
+
+                                    SelectorHandler.setProjectNameNID(projectName, projectID, annotationType);
 
                                     JsonArray thumbnailIDJson = new JsonArray().add(0).add(projectName);
 

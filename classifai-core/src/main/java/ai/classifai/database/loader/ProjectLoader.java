@@ -40,11 +40,11 @@ public class ProjectLoader
     private Integer currentProcessedLength;
     private Integer totalUUIDSize; //only used when going through uuid for valid path
 
-    private AnnotationType annotationType; //TODO
+    @Getter private Integer annotationType;
 
     @Setter @Getter private List<Integer> progressUpdate;
 
-    public ProjectLoader()
+    public ProjectLoader(Integer annotation)
     {
         loaderStatus = LoaderStatus.DID_NOT_INITIATED;
 
@@ -55,6 +55,7 @@ public class ProjectLoader
         sanityUUIDSet = new HashSet<>();
         sanityUUIDList = new ArrayList<>();
         labelList = new ArrayList<>();
+        annotationType = annotation;
     }
 
     public List<Integer> getProgress()

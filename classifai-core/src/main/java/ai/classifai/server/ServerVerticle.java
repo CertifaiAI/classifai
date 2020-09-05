@@ -413,7 +413,7 @@ public class ServerVerticle extends AbstractVerticle
             String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
             String fileType = context.request().getParam(ParamConfig.FILE_SYS_PARAM);
 
-            if(SelectorHandler.isProjectNameRegistered(projectName) == false)
+            if(SelectorHandler.isProjectNameInMemory(projectName) == false)
             {
                 String messageInfo = "Project name " + projectName + " cannot be found for loading";
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
@@ -488,7 +488,7 @@ public class ServerVerticle extends AbstractVerticle
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         //check project name if exist
-        if(SelectorHandler.isProjectNameRegistered(projectName) == false)
+        if(SelectorHandler.isProjectNameInMemory(projectName) == false)
         {
             JsonObject object = new JsonObject();
             object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());

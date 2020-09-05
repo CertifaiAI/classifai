@@ -36,7 +36,7 @@ public class PortfolioDbQuery
 
     public final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
 
-    public final static String GET_PROJECT_NAME = "select project_name from Portfolio where project_id = ?";
+    public final static String GET_PROJECT_NAME = "select project_name, annotation_type from Portfolio where project_id = ?";
 
     public final static String GET_PROJECT_UUID_LIST = "select uuid_list from Portfolio where project_name = ?";
 

@@ -69,6 +69,9 @@ public class FolderSelector{
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
+                    //prevent Welcome Console from popping out
+                    WelcomeConsole.setToBackground();
+
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
@@ -86,9 +89,6 @@ public class FolderSelector{
                     {
                         SelectorHandler.setWindowState(false);
                     }
-
-                    //prevent Welcome Console from popping out
-                    WelcomeConsole.setToBackground();
 
                 }
             });

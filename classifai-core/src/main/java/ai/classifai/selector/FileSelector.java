@@ -72,6 +72,9 @@ public class FileSelector{
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
+                    //prevent Welcome Console from popping out
+                    WelcomeConsole.setToBackground();
+
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(chooser.getSelectedFiles()));
@@ -87,11 +90,9 @@ public class FileSelector{
                     }
                     else
                     {
+
                         SelectorHandler.setWindowState(false);
                     }
-
-                    //prevent Welcome Console from popping out
-                    WelcomeConsole.setToBackground();
 
                 }
             });
