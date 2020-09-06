@@ -118,7 +118,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             }
             else if(annotationType.equals(AnnotationType.SEGMENTATION.ordinal()))
             {
-                annotationName = AnnotationType.BOUNDINGBOX.name();
+                annotationName = AnnotationType.SEGMENTATION.name();
             }
 
             log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
