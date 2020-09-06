@@ -23,7 +23,6 @@ import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;
-import ai.classifai.util.message.ReplyHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
