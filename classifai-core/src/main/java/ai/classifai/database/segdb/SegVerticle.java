@@ -87,9 +87,10 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     public void retrieveDataPath(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
 
         projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
@@ -162,9 +163,10 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     public void retrieveData(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
 
         projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
@@ -217,12 +219,19 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID  = SelectorHandler.getProjectID(projectName);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+        Integer projectID  = SelectorHandler.getProjectID(projectName, annotationTypeInt);
 
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+        if(loader == null)
+        {
+            log.info("ProjectLoader is null for project name: " + projectName);
+            message.reply(ReplyHandler.getFailedReply());
+        }
 
         message.reply(ReplyHandler.getOkReply());
 
@@ -266,6 +275,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
         String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
+        Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
         JsonArray params = new JsonArray()
                 .add(segContent)
@@ -276,7 +286,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                 .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
                 .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectID(projectName));
+                .add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
 
 
         projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {

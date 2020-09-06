@@ -30,6 +30,9 @@ import java.util.*;
 @Slf4j
 public class ProjectLoader
 {
+    @Getter private Integer projectID;
+    private String projectName;
+
     @Getter @Setter private LoaderStatus loaderStatus;
 
     private Set<Integer> sanityUUIDSet;
@@ -44,18 +47,20 @@ public class ProjectLoader
 
     @Setter @Getter private List<Integer> progressUpdate;
 
-    public ProjectLoader(Integer annotation)
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationInt)
     {
         loaderStatus = LoaderStatus.DID_NOT_INITIATED;
 
         progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
 
+        projectID = currentProjectID;
+        projectName = currentProjectName;
         currentProcessedLength = 0;
         totalUUIDSize = -1;
         sanityUUIDSet = new HashSet<>();
         sanityUUIDList = new ArrayList<>();
         labelList = new ArrayList<>();
-        annotationType = annotation;
+        annotationType = annotationInt;
     }
 
     public List<Integer> getProgress()

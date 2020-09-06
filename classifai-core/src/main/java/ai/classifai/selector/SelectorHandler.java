@@ -18,10 +18,19 @@ package ai.classifai.selector;
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.portfoliodb.PortfolioDbQuery;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.server.ParamConfig;
+import ai.classifai.util.message.ReplyHandler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.sql.ResultSet;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.util.*;
@@ -35,68 +44,119 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class SelectorHandler {
 
-    //key: (Integer) Project ID
-    //value: (String) Project Name
-    private static Map projectIDNameDict;
+    //key: projectID
+    //value: ProjectLoader
+    private static Map projectIDLoaderDict;
 
-    //projectUUIDNameDict opposite
-    //key: (String) Project Name
-    //value: (Integer) Project ID
-    private static Map projectNameIDDict;
-
-    private static Map projectLoaderDict;
+    //key: Pair<String projectName, Integer annotationType>
+    //value: projectID
+    private static Map projectIDSearch;
 
     private static AtomicInteger projectIDGenerator;
 
-    @Getter private static String projectNameBuffer;
+    //Variable contains String projectName and Integer annotationType for current file/folder selector
+    @Getter private static Pair selectorProjectBuffer;
 
     private static boolean isWindowOpen = false;
-    private static boolean isLoaderProcessing = false; // only one file/folder selector can open at one time. even for multiple projects.
+
+    // only one file/folder selector can open at one time. even for multiple projects.
+    private static boolean isLoaderProcessing = false;
+
     @Setter @Getter private static SelectorStatus selectorStatus;
 
-    @Getter
-    private static String currentWindowSelection;//FILE FOLDER
+    @Getter private static String currentWindowSelection;//FILE FOLDER
 
-    @Getter
-    private static final File rootSearchPath = new File(System.getProperty("user.home"));
-
-    public static final String FILE = "file";
-    public static final String FOLDER = "folder";
+    @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
 
 
     static {
-        projectIDNameDict = new HashMap<Integer, String>();
-        projectNameIDDict = new HashMap<String, String>();
-        projectLoaderDict = new HashMap<String, ProjectLoader>();
-
+        projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
+        projectIDSearch = new HashMap<Pair<String, Integer>, String>();
         projectIDGenerator = new AtomicInteger(0);
+        selectorProjectBuffer = null;
     }
 
-    public static ProjectLoader getProjectLoader(String projectName) {
+    public static ProjectLoader getProjectLoader(Pair project)
+    {
+        Integer projectIDKey = getProjectID(project);
 
-        if(projectLoaderDict.containsKey(projectName) == false)
+        return getProjectLoader(projectIDKey);
+    }
+
+    public static ProjectLoader getProjectLoader(Integer projectID)
+    {
+        try
         {
-            log.error("Project name of " + projectName + " cannot be found in ProjectLoader. Critical Error.");
+            return (ProjectLoader) projectIDLoaderDict.get(projectID);
+        }
+        catch (Exception e)
+        {
+            log.info("Error when retriveing ProjectLoader in SelectorHandler, ", e);
+        }
+        return null;
+    }
+
+
+    public static Integer getProjectID(String projectName, Integer annotationType)
+    {
+        Pair key = new ImmutablePair(projectName, annotationType);
+
+        return getProjectID(key);
+    }
+
+    private static Integer getProjectID(Pair projectNameTypeKey)
+    {
+        if(projectIDSearch.containsKey(projectNameTypeKey))
+        {
+            return (Integer) projectIDSearch.get(projectNameTypeKey);
+        }
+        else
+        {
+            log.info("Project ID not found for project: " + projectNameTypeKey.getLeft() + " with annotation type: " + projectNameTypeKey.getRight());
             return null;
         }
-
-        return (ProjectLoader) projectLoaderDict.get(projectName);
     }
+
 
     public static boolean isWindowOpen() {
         return isWindowOpen;
     }
 
-    public static void setProjectNameNID(@NonNull String projectName, @NonNull Integer projectID, Integer annotationType) {
-        projectNameIDDict.put(projectName, projectID);
-        projectIDNameDict.put(projectID, projectName);
+    public static void configureNewProject(@NonNull String projectName, @NonNull Integer projectID, Integer annotationType)
+    {
+        if(!checkAnnotationSanity(annotationType))
+        {
+            log.info("Saving new project of name: " + projectName + " failed.");
+            return;
+        }
 
-        projectLoaderDict.put(projectName, new ProjectLoader(annotationType));
+        Pair projectNameWithType = new ImmutablePair(projectName, annotationType);
+
+        projectIDSearch.put(projectNameWithType, projectID);
+
+        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType));
+    }
+
+    private static boolean checkAnnotationSanity(Integer annotationTypeInt)
+    {
+        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
+        {
+            return true;
+        }
+        else if(annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
+        {
+            return true;
+        }
+        else
+        {
+            log.debug("Annotation integer unmatched in AnnotationType: " + annotationTypeInt);
+            return false;
+        }
     }
 
     public static boolean initSelector(String selection)
     {
-        if((selection.equals(FILE)) || selection.equals(FOLDER))
+        if((selection.equals(ParamConfig.FILE)) || selection.equals(ParamConfig.FOLDER))
         {
             currentWindowSelection = selection;
         }
@@ -108,47 +168,82 @@ public class SelectorHandler {
         return true;
     }
 
-    public static boolean isProjectNameInMemory(String projectName)
+    public static boolean isProjectNameInMemory(String projectName, Integer annotationType)
     {
-        return projectNameIDDict.containsKey(projectName);
-    }
-
-    public static boolean isProjectNameUnique(String projectName, Integer annotationType)
-    {
-        if(projectNameIDDict.containsKey(projectName) == false)
+        if(!checkAnnotationSanity(annotationType))
         {
-            return true;
+            log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
+            return false;
         }
-        else
+
+        Set projectIDDictKeys = projectIDSearch.keySet();
+
+        Boolean isProjectNameExist = false;
+
+        for(Object key : projectIDDictKeys)
         {
-            ProjectLoader loader = (ProjectLoader) projectLoaderDict.get(projectName);
-            if(loader.getAnnotationType().equals(annotationType) == false)
+            Pair projectNameType = (Pair) key;
+
+            if(projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType))
             {
-                return true;
+                isProjectNameExist = true;
+                break;
             }
         }
 
-        return false;
+        return isProjectNameExist;
+    }
+
+    public static Boolean isProjectNameUnique(String projectName, Integer annotationType)
+    {
+        if(!checkAnnotationSanity(annotationType))
+        {
+            log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
+            return false;
+        }
+
+        Set projectIDDictKeys = projectIDSearch.keySet();
+
+        Boolean isProjectNameUnique = true;
+
+        for(Object key : projectIDDictKeys)
+        {
+            Pair projectNameType = (Pair) key;
+
+            if(projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType))
+            {
+                log.info("Project name: " + projectName + " exist. Proceed with choosing another project name");
+                isProjectNameUnique = false;
+                break;
+            }
+        }
+
+        return isProjectNameUnique;
     }
 
     public static ProjectLoader getCurrentProjectLoader()
     {
-        return getProjectLoader(projectNameBuffer);
+        try
+        {
+            Integer projectID = getProjectID(selectorProjectBuffer);
+            return getProjectLoader(projectID);
+        }
+        catch(Exception e)
+        {
+            log.info("Error in retrieving project loader from SelectorHandler");
+        }
+        return null;
     }
 
-    public static Integer getProjectID(String projectName)
-    {
-        return (Integer) projectNameIDDict.get(projectName);
-    }
 
     public static Integer getProjectIDFromBuffer()
     {
-        return getProjectID(projectNameBuffer);
+        return getProjectID(selectorProjectBuffer);
     }
 
-    public static void setProjectNameBuffer(String projectName)
+    public static void setProjectNameBuffer(String projectName, AnnotationType annotationType)
     {
-        projectNameBuffer = projectName;
+        selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
     }
 
     public static boolean isLoaderProcessing()
@@ -156,9 +251,9 @@ public class SelectorHandler {
         return isLoaderProcessing;
     }
 
-    public static void configureOpenWindow(String projectName, Integer uuidGenerator)
+    public static void configureOpenWindow(String projectName, AnnotationType annotationType, Integer uuidGenerator)
     {
-        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+        ProjectLoader projectLoader = getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
 
         if(uuidGenerator == 0)
         {
@@ -174,15 +269,25 @@ public class SelectorHandler {
         isWindowOpen = true;
     }
 
-    public static List<Integer> getProgressUpdate(String projectName)
+    public static List<Integer> getProgressUpdate(String projectName, AnnotationType annotationType)
     {
-        ProjectLoader projectLoader = (ProjectLoader) projectLoaderDict.get(projectName);
+        try
+        {
+            Integer projectID = getProjectID(projectName, annotationType.ordinal());
 
-        return projectLoader.getProgressUpdate();
+            ProjectLoader projectLoader = (ProjectLoader) projectIDLoaderDict.get(projectID);
+
+            return projectLoader.getProgressUpdate();
+        }
+        catch(Exception e)
+        {
+            log.info("Error occurs when getting progress update", e);
+            return null;
+        }
     }
 
-    public static void startDatabaseUpdate(@NonNull String projectName) {
-        projectNameBuffer = projectName;
+    public static void startDatabaseUpdate(@NonNull String projectName, AnnotationType annotationType) {
+        selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
         selectorStatus = SelectorStatus.WINDOW_CLOSE_LOADING_FILES;
         getCurrentProjectLoader().setLoaderStatus(LoaderStatus.LOADING);
         isLoaderProcessing = true;
@@ -192,6 +297,12 @@ public class SelectorHandler {
     public static void stopDatabaseUpdate()
     {
         ProjectLoader loader = getCurrentProjectLoader();
+
+        if(loader == null)
+        {
+            log.info("ProjectLoader is null for project name: " + selectorProjectBuffer.getLeft());
+        }
+
         if(loader.getSanityUUIDList().isEmpty())
         {
             loader.setLoaderStatus(LoaderStatus.EMPTY);
@@ -202,7 +313,7 @@ public class SelectorHandler {
         }
 
         isLoaderProcessing = false;
-        projectNameBuffer = "";
+        selectorProjectBuffer = null;
     }
     /**
      * @param state true = open, false = close

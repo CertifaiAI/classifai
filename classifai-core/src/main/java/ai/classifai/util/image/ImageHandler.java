@@ -23,6 +23,7 @@ import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.SelectorStatus;
+import ai.classifai.util.message.ReplyHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -288,6 +289,11 @@ public class ImageHandler {
         AtomicInteger progressCounter = new AtomicInteger(0);
 
         ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
+        if(currentProjectLoader == null)
+        {
+            log.info("ProjectLoader is null for project name: " + SelectorHandler.getSelectorProjectBuffer().getLeft() + ". Save To Database abort.");
+            return;
+        }
 
         for(File item : filesCollection)
         {
@@ -312,7 +318,7 @@ public class ImageHandler {
         {
             if((uuidList.size() == filesCollection.size()) || (!SelectorHandler.isLoaderProcessing()))
             {
-                PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
+                PortfolioVerticle.updateUUIDList(SelectorHandler.getSelectorProjectBuffer(), uuidList);
                 break;
             }
         }

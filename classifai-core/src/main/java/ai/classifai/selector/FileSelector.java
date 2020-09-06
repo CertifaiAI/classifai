@@ -81,7 +81,7 @@ public class FileSelector{
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName);
+                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
 
                             ImageHandler.processFile(annotationType, files, uuidGenerator);
 

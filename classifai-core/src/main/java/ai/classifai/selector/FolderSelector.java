@@ -78,7 +78,7 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName);
+                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
 
                             ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
 

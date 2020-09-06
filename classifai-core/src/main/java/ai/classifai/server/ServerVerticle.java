@@ -37,6 +37,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -217,7 +219,7 @@ public class ServerVerticle extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+        ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType));
 
         if (loader == null)
         {
@@ -232,7 +234,7 @@ public class ServerVerticle extends AbstractVerticle
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
-            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName).put(ParamConfig.ANNOTATE_TYPE_PARAM, annotationType.ordinal());
 
             //load label list
             DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_LABEL_LIST);
@@ -307,16 +309,42 @@ public class ServerVerticle extends AbstractVerticle
      * Get status of loading a project
      *
      * GET http://localhost:{port}/bndbox/projects/:project_name/loadingstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld/loadingstatus
+     */
+    private void loadBndBoxProjectStatus(RoutingContext context)
+    {
+        loadProjectStatus(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Get status of loading a project
+     *
      * GET http://localhost:{port}/seg/projects/:project_name/loadingstatus
      *
      * Example:
      * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
      */
-    private void loadProjectStatus(RoutingContext context)
+    private void loadSegProjectStatus(RoutingContext context)
+    {
+        loadProjectStatus(context, AnnotationType.SEGMENTATION);
+    }
+
+    /**
+     * Get status of loading a project
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/loadingstatus
+     * GET http://localhost:{port}/seg/projects/:project_name/loadingstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
+     */
+    private void loadProjectStatus(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        ProjectLoader projectLoader = SelectorHandler.getProjectLoader(projectName);
+        ProjectLoader projectLoader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType));
 
         if(projectLoader == null)
         {
@@ -413,14 +441,14 @@ public class ServerVerticle extends AbstractVerticle
             String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
             String fileType = context.request().getParam(ParamConfig.FILE_SYS_PARAM);
 
-            if(SelectorHandler.isProjectNameInMemory(projectName) == false)
+            if(SelectorHandler.isProjectNameInMemory(projectName, annotationType.ordinal()) == false)
             {
                 String messageInfo = "Project name " + projectName + " cannot be found for loading";
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             }
             else
             {
-                SelectorHandler.setProjectNameBuffer(projectName);
+                SelectorHandler.setProjectNameBuffer(projectName, annotationType);
 
                 boolean isFileTypeSupported = SelectorHandler.initSelector(fileType);
 
@@ -448,13 +476,13 @@ public class ServerVerticle extends AbstractVerticle
 
                                 Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size();
 
-                                SelectorHandler.configureOpenWindow(projectName, seedNumber);
+                                SelectorHandler.configureOpenWindow(projectName, annotationType, seedNumber);
 
-                                if (fileType.equals(SelectorHandler.FILE))
+                                if (fileType.equals(ParamConfig.FILE))
                                 {
                                     fileSelector.runFileSelector(annotationType, projectName, new AtomicInteger(seedNumber));
                                 }
-                                else if (fileType.equals(SelectorHandler.FOLDER))
+                                else if (fileType.equals(ParamConfig.FOLDER))
                                 {
                                     folderSelector.runFolderSelector(annotationType, projectName, new AtomicInteger(seedNumber));
                                 }
@@ -475,6 +503,34 @@ public class ServerVerticle extends AbstractVerticle
     }
 
     /**
+     * Get file system (file/folder) status for a specific boundingbox project
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/filesysstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
+     *
+     */
+    public void getBndBoxFileSystemStatus(RoutingContext context)
+    {
+        getFileSystemStatus(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Get file system (file/folder) status for a specific segmentation project
+     *
+     * GET http://localhost:{port}/seg/projects/:project_name/filesysstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/filesysstatus
+     *
+     */
+    public void getSegFileSystemStatus(RoutingContext context)
+    {
+        getFileSystemStatus(context, AnnotationType.SEGMENTATION);
+    }
+
+    /**
      * Get file system (file/folder) status for a specific project
      * GET http://localhost:{port}/bndbox/projects/:project_name/filesysstatus
      * GET http://localhost:{port}/seg/projects/:project_name/filesysstatus
@@ -483,12 +539,12 @@ public class ServerVerticle extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
      *
      */
-    public void getFileSystemStatus(RoutingContext context) {
+    public void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
 
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         //check project name if exist
-        if(SelectorHandler.isProjectNameInMemory(projectName) == false)
+        if(SelectorHandler.isProjectNameInMemory(projectName, annotationType.ordinal()) == false)
         {
             JsonObject object = new JsonObject();
             object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
@@ -507,7 +563,7 @@ public class ServerVerticle extends AbstractVerticle
 
                 SelectorStatus selectorStatus = SelectorHandler.getSelectorStatus();
 
-                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate(projectName));
+                res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate(projectName, annotationType));
                 res.put(ReplyHandler.getMessageKey(), selectorStatus.ordinal());
 
                 HTTPResponseHandler.configureOK(context, res);
@@ -612,7 +668,8 @@ public class ServerVerticle extends AbstractVerticle
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
+                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
         getMetadata(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.RETRIEVE_DATA, request);
     }
@@ -629,7 +686,8 @@ public class ServerVerticle extends AbstractVerticle
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
+                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
 
         getMetadata(context, SegDbQuery.QUEUE, SegDbQuery.RETRIEVE_DATA, request);
     }
@@ -674,7 +732,8 @@ public class ServerVerticle extends AbstractVerticle
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
+                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
         getImageSource(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.RETRIEVE_DATA_PATH, request);
     }
@@ -691,7 +750,8 @@ public class ServerVerticle extends AbstractVerticle
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
+                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
 
         getImageSource(context, SegDbQuery.QUEUE, SegDbQuery.RETRIEVE_DATA_PATH, request);
     }
@@ -738,6 +798,7 @@ public class ServerVerticle extends AbstractVerticle
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+            jsonObject.put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
             vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
@@ -776,6 +837,7 @@ public class ServerVerticle extends AbstractVerticle
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, SegDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+            jsonObject.put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
 
             vertx.eventBus().request(SegDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
@@ -859,11 +921,11 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
 
-        router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadProjectStatus);
+        router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
         router.get("/bndbox/projects/:project_name/filesys/:file_sys").handler(this::selectBndBoxFileSystemType);
 
-        router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
+        router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getBndBoxFileSystemStatus);
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewLabels);
 
@@ -883,11 +945,11 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
-        router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadProjectStatus);
+        router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
 
         router.get("/seg/projects/:project_name/filesys/:file_sys").handler(this::selectSegFileSystemType);
 
-        router.get("/seg/projects/:project_name/filesysstatus").handler(this::getFileSystemStatus);
+        router.get("/seg/projects/:project_name/filesysstatus").handler(this::getSegFileSystemStatus);
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::createNewLabels);
 

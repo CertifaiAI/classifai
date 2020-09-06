@@ -58,6 +58,9 @@ public class ParamConfig
 
     public final static String IMAGE_DEPTH = "img_depth";
 
+    public static final String FILE = "file";
+    public static final String FOLDER = "folder";
+
     @Getter @Setter private static Integer hostingPort;
 
 }

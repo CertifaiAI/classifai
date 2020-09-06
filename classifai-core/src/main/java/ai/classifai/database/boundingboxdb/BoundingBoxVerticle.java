@@ -33,6 +33,7 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.File;
 import java.util.List;
@@ -87,9 +88,10 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void retrieveDataPath(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
 
         projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
 
@@ -162,9 +164,10 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void retrieveData(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
 
         projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
@@ -218,12 +221,20 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID  = SelectorHandler.getProjectID(projectName);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+        Integer projectID  = SelectorHandler.getProjectID(projectName, annotationTypeInt);
 
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+
+        if(loader == null)
+        {
+            log.info("ProjectLoader is null for project name: " + projectName);
+            message.reply(ReplyHandler.getFailedReply());
+        }
 
         message.reply(ReplyHandler.getOkReply());
 
@@ -268,6 +279,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         
         String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
         String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
+        Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
         JsonArray params = new JsonArray()
                 .add(boundingBox)
@@ -278,7 +290,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
                 .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
                 .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectID(projectName));
+                .add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
 
 
         projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {

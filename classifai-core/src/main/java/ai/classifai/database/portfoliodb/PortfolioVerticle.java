@@ -33,7 +33,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -128,7 +131,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             portfolioDbClient.queryWithParams(PortfolioDbQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
                 if (fetch.succeeded()) {
-                    SelectorHandler.setProjectNameNID(projectName, projectID, annotationType);
+                    SelectorHandler.configureNewProject(projectName, projectID, annotationType);
                     message.reply(ReplyHandler.getOkReply());
                 } else {
                     //query database failed
@@ -148,147 +151,123 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
         JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
 
-        if(SelectorHandler.isProjectNameInMemory(projectName))
-        {
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
-
-                if(fetch.succeeded())
-                {
-                    message.reply(ReplyHandler.getOkReply());
-                }
-                else {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
-        }
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
     }
 
     public void getProjectUUIDList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameInMemory(projectName))
-        {
-            JsonArray params = new JsonArray().add(projectName);
+        JsonArray params = new JsonArray().add(projectName);
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
 
-                if(fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
-                    JsonObject response = ReplyHandler.getOkReply();
+            if(fetch.succeeded())
+            {
+                ResultSet resultSet = fetch.result();
+                JsonArray row = resultSet.getResults().get(0);
+                JsonObject response = ReplyHandler.getOkReply();
 
-                    response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
-                    message.reply(response);
-                }
-                else {
-                    //query database failed
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportBadParamError(projectNameExistMessage));
-        }
+                response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
+                message.reply(response);
+            }
+            else {
+                //query database failed
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
     }
 
     public void getThumbNailList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        if(SelectorHandler.isProjectNameInMemory(projectName))
-        {
-            JsonArray params = new JsonArray().add(projectName);
+        JsonArray params = new JsonArray().add(projectName);
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_THUMBNAIL_LIST, params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_THUMBNAIL_LIST, params, fetch -> {
 
-                if(fetch.succeeded())
+            if(fetch.succeeded())
+            {
+                ResultSet resultSet = fetch.result();
+                JsonArray row = resultSet.getResults().get(0);
+
+                List<Integer> wholeUUIDList = ConversionHandler.string2IntegerList(row.getString(0));
+
+                List<Integer> subList = new ArrayList<>();
+
+                if(wholeUUIDList.isEmpty() == false)
                 {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
+                    Integer previousUUIDPointer = row.getInteger(1);
 
-                    List<Integer> wholeUUIDList = ConversionHandler.string2IntegerList(row.getString(0));
-
-                    List<Integer> subList = new ArrayList<>();
-
-                    if(wholeUUIDList.isEmpty() == false)
+                    for(Integer item : wholeUUIDList)
                     {
-                        Integer previousUUIDPointer = row.getInteger(1);
-
-                        for(Integer item : wholeUUIDList)
+                        if(item > previousUUIDPointer)
                         {
-                            if(item > previousUUIDPointer)
-                            {
-                                subList.add(item);
-                            }
+                            subList.add(item);
                         }
-
-                        Integer currentUUIDMarker = Collections.max(wholeUUIDList);
-
-                        JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectName);
-
-                        //this is for update of thumbnail list to not include the existing send one to front end
-                        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_THUMBNAIL_MAX_INDEX, markerUpdateParams, markerFetch -> {
-
-                            if (!markerFetch.succeeded()) {
-                                log.error("Update thumbnail marker failed");
-                            }
-                        });
-
                     }
-                    JsonObject response = ReplyHandler.getOkReply();
-                    response.put(ParamConfig.UUID_LIST_PARAM, subList);
-                    message.reply(response);
+
+                    Integer currentUUIDMarker = Collections.max(wholeUUIDList);
+
+                    JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectName);
+
+                    //this is for update of thumbnail list to not include the existing send one to front end
+                    portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_THUMBNAIL_MAX_INDEX, markerUpdateParams, markerFetch -> {
+
+                        if (!markerFetch.succeeded()) {
+                            log.error("Update thumbnail marker failed");
+                        }
+                    });
 
                 }
-                else {
-                    //query database failed
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
+                JsonObject response = ReplyHandler.getOkReply();
+                response.put(ParamConfig.UUID_LIST_PARAM, subList);
+                message.reply(response);
 
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportUserDefinedError(projectNameExistMessage));
-        }
+            }
+            else {
+                //query database failed
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+
     }
 
     public void getLabelList(Message<JsonObject> message)
     {
         String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-        if (SelectorHandler.isProjectNameInMemory(projectName))
-        {
-            JsonArray params = new JsonArray().add(projectName);
+        JsonArray params = new JsonArray().add(projectName);
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_LABEL_LIST, params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_LABEL_LIST, params, fetch -> {
 
-                if (fetch.succeeded()) {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
+            if (fetch.succeeded()) {
+                ResultSet resultSet = fetch.result();
+                JsonArray row = resultSet.getResults().get(0);
 
-                    List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
+                List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
 
-                    ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+                ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationTypeInt));
 
-                    loader.setLabelList(labelList);
+                loader.setLabelList(labelList);
 
-                    message.reply(ReplyHandler.getOkReply());
+                message.reply(ReplyHandler.getOkReply());
 
-                } else
-                {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
-        }
+            } else
+            {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
     }
 
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
@@ -316,8 +295,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public static void updateUUIDList(String projectName, List<Integer> newUUIDList)
+    public static void updateUUIDList(Pair projectInfo, List<Integer> newUUIDList)
     {
+        String projectName = (String) projectInfo.getLeft();
         portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectName), fetch ->{
 
             if(fetch.succeeded())
@@ -336,7 +316,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     if(reply.succeeded())
                     {
-                        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+                        ProjectLoader loader = SelectorHandler.getProjectLoader(projectInfo);
 
                         loader.setSanityUUIDList(verifiedUUIDListString);
 
@@ -396,7 +376,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                                     Integer annotationType = row.getInteger(1);
 
-                                    SelectorHandler.setProjectNameNID(projectName, projectID, annotationType);
+                                    SelectorHandler.configureNewProject(projectName, projectID, annotationType);
 
                                     JsonArray thumbnailIDJson = new JsonArray().add(0).add(projectName);
 
