@@ -106,14 +106,7 @@ public class ServerVerticle extends AbstractVerticle
             {
                 JsonObject response = (JsonObject) reply.result().body();
 
-                if(ReplyHandler.isReplyOk(response))
-                {
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-                else {
-                    //soft fail
-                    HTTPResponseHandler.configureOK(context, response);
-                }
+                HTTPResponseHandler.configureOK(context, response);
             }
             else
             {
@@ -218,11 +211,12 @@ public class ServerVerticle extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType));
+        ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
 
         if (loader == null)
         {
-            String messageInfo = annotationType.name() + " project of name " + projectName + " cannot be found for loading";
+            String messageInfo = "Project Loader null. " + annotationType.name() + " project of name " + projectName + " cannot be found for loading";
+            log.info(messageInfo);
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             return;
         }
@@ -343,11 +337,12 @@ public class ServerVerticle extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        ProjectLoader projectLoader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType));
+        ProjectLoader projectLoader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
 
         if(projectLoader == null)
         {
             String messageInfo = "Project name " + projectName + " cannot be found for loading";
+            log.info("Project Loader null. " + messageInfo);
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             return;
         }
@@ -443,6 +438,7 @@ public class ServerVerticle extends AbstractVerticle
             if(SelectorHandler.isProjectNameInMemory(projectName, annotationType.ordinal()) == false)
             {
                 String messageInfo = "Project name " + projectName + " cannot be found for loading";
+                log.info("Project Loader not found. Project name: " + projectName);
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             }
             else
@@ -548,6 +544,7 @@ public class ServerVerticle extends AbstractVerticle
             JsonObject object = new JsonObject();
             object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
             object.put(ReplyHandler.getErrorMesageKey(), "Project name did not exist");
+            log.info("Project Loader not found. Project name: " + projectName);
             HTTPResponseHandler.configureOK(context, object);
         }
         else
@@ -641,15 +638,7 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     JsonObject response = (JsonObject) reply.result().body();
 
-                    if (ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        //soft fail
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
+                    HTTPResponseHandler.configureOK(context, response);
                 }
             });
         });
@@ -701,14 +690,7 @@ public class ServerVerticle extends AbstractVerticle
             {
                 JsonObject result = (JsonObject) fetch.result().body();
 
-                if(ReplyHandler.isReplyOk(result))
-                {
-                    HTTPResponseHandler.configureOK(context, result);
-
-                }
-                else {
-                    HTTPResponseHandler.configureOK(context, result);
-                }
+                HTTPResponseHandler.configureOK(context, result);
 
             }
             else
@@ -765,15 +747,7 @@ public class ServerVerticle extends AbstractVerticle
 
                 JsonObject result = (JsonObject) fetch.result().body();
 
-                if(ReplyHandler.isReplyOk(result))
-                {
-                    HTTPResponseHandler.configureOK(context, result);
-                }
-                else
-                {
-                    //soft fail
-                    HTTPResponseHandler.configureOK(context, result);
-                }
+                HTTPResponseHandler.configureOK(context, result);
 
             }
             else {
@@ -804,15 +778,7 @@ public class ServerVerticle extends AbstractVerticle
                 if (fetch.succeeded()) {
                     JsonObject response = (JsonObject) fetch.result().body();
 
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        //soft fail
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
+                    HTTPResponseHandler.configureOK(context, response);
 
                 }
                 else {
@@ -843,16 +809,7 @@ public class ServerVerticle extends AbstractVerticle
                 if (fetch.succeeded()) {
                     JsonObject response = (JsonObject) fetch.result().body();
 
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        //soft fail
-                        HTTPResponseHandler.configureOK(context, response);
-                        //HTTPResponseHandler.configureBadRequest(context, response);
-                    }
+                    HTTPResponseHandler.configureOK(context, response);
 
                 }
                 else {
@@ -889,15 +846,7 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     JsonObject response = (JsonObject) reply.result().body();
 
-                    if (ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
-                    {
-                        //soft fail
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
+                    HTTPResponseHandler.configureOK(context, response);
                 }
             });
         });

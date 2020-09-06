@@ -90,7 +90,15 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
+
+        if(projectID == null)
+        {
+            log.info("ProjectID null. Retrieve data path failed for project: " + projectName);
+        }
+
+
+        JsonArray params = new JsonArray().add(uuid).add(projectID);
 
         projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
@@ -131,9 +139,16 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         if(imgMetadata != null)
         {
+            Integer projectID = SelectorHandler.getProjectIDFromBuffer();
+
+            if(projectID == null)
+            {
+                log.info("ProjectID null. Update UUID expected to failed");
+            }
+
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
-                    .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
+                    .add(projectID) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
                     .add((Integer)imgMetadata.get("depth")) //img_depth
@@ -166,7 +181,15 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
+
+        if(projectID == null)
+        {
+            log.info("ProjectID null. Retrieve data failed for project: " + projectName);
+        }
+
+
+        JsonArray params = new JsonArray().add(uuid).add(projectID);
 
         projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
@@ -223,6 +246,11 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         Integer projectID  = SelectorHandler.getProjectID(projectName, annotationTypeInt);
 
+        if(projectID == null)
+        {
+            log.info("Project id null when loading project: " + projectName);
+        }
+
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
@@ -271,33 +299,60 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
     {
-        JsonObject requestBody = message.body();
+        try
+        {
+            JsonObject requestBody = message.body();
 
-        String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
-        String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
-        Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+            String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
 
-        JsonArray params = new JsonArray()
-                .add(segContent)
-                .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
-                .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
-                .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
-                .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
+            System.out.println(requestBody);
 
-
-        projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {
-            if(fetch.succeeded())
+            if(requestBody.containsKey(ParamConfig.SEGMENTATION_PARAM) == false)
             {
-                message.reply(ReplyHandler.getOkReply());
+                log.info("Debugging " + ParamConfig.SEGMENTATION_PARAM + " not found");
             }
-            else {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+
+
+
+            String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
+            Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+            Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
+
+            if(projectID == null)
+            {
+                log.info("Project ID null when update data for project: " + projectName);
             }
-        });
+
+
+            JsonArray params = new JsonArray()
+                    .add(segContent)
+                    .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
+                    .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
+                    .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
+                    .add(projectID);
+
+
+            projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {
+                if(fetch.succeeded())
+                {
+                    message.reply(ReplyHandler.getOkReply());
+                }
+                else {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            log.info("Error occur when updating data, " + e);
+            message.reply(ReplyHandler.reportBadParamError("Parameter error when updating data"));
+        }
+
     }
 
     @Override

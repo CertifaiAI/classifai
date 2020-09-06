@@ -258,7 +258,14 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationTypeInt));
 
-                loader.setLabelList(labelList);
+                if(loader != null)
+                {
+                    loader.setLabelList(labelList);
+                }
+                else if(loader == null)
+                {
+                    log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
+                }
 
                 message.reply(ReplyHandler.getOkReply());
 
@@ -317,7 +324,14 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     {
                         ProjectLoader loader = SelectorHandler.getProjectLoader(projectInfo);
 
-                        loader.setSanityUUIDList(verifiedUUIDListString);
+                        if(loader != null)
+                        {
+                            loader.setSanityUUIDList(verifiedUUIDListString);
+                        }
+                        else if(loader == null)
+                        {
+                            log.info("Project Loader null. New uuid list failed to add into Project Loader. Program expected to failed");
+                        }
 
                     }
                     else

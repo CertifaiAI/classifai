@@ -38,6 +38,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class SelectorHandler {
 
+    //unique project id generator for each project
+    private static AtomicInteger projectIDGenerator;
+
     //key: projectID
     //value: ProjectLoader
     private static Map projectIDLoaderDict;
@@ -46,9 +49,8 @@ public class SelectorHandler {
     //value: projectID
     private static Map projectIDSearch;
 
-    private static AtomicInteger projectIDGenerator;
-
-    //Variable contains String projectName and Integer annotationType for current file/folder selector
+    //Left: String projectName
+    //Right: Integer annotationType for current file/folder selector
     @Getter private static Pair selectorProjectBuffer;
 
     private static boolean isWindowOpen = false;
@@ -60,19 +62,44 @@ public class SelectorHandler {
 
     @Getter private static String currentWindowSelection;//FILE FOLDER
 
-    @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
-
 
     static {
+
+        projectIDGenerator = new AtomicInteger(0);
+
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
         projectIDSearch = new HashMap<Pair<String, Integer>, String>();
-        projectIDGenerator = new AtomicInteger(0);
+
         selectorProjectBuffer = null;
+    }
+
+    /**
+     * @param state true = open, false = close
+     */
+    public static void setWindowState(boolean state)
+    {
+        isWindowOpen = state;
+    }
+
+    public static Integer generateProjectID()
+    {
+        return projectIDGenerator.incrementAndGet();
+    }
+
+    public static void setProjectIDGenerator(Integer seedNumber)
+    {
+        projectIDGenerator = new AtomicInteger(seedNumber);
     }
 
     public static ProjectLoader getProjectLoader(Pair project)
     {
         Integer projectIDKey = getProjectID(project);
+
+        if(projectIDKey == null)
+        {
+            log.info("Null projectLoader due to projectID cannot be identified for the project: " + project.getLeft());
+            return null;
+        }
 
         return getProjectLoader(projectIDKey);
     }
@@ -91,11 +118,22 @@ public class SelectorHandler {
     }
 
 
-    public static Integer getProjectID(String projectName, Integer annotationType)
+    public static ProjectLoader getCurrentProjectLoader()
     {
-        Pair key = new ImmutablePair(projectName, annotationType);
+        Integer projectID = getProjectID(selectorProjectBuffer);
 
-        return getProjectID(key);
+        if(projectID == null)
+        {
+            log.info("Error in retrieving project loader from SelectorHandler");
+            return null;
+        }
+
+        return getProjectLoader(projectID);
+    }
+
+    public static Integer getProjectIDFromBuffer()
+    {
+        return getProjectID(selectorProjectBuffer);
     }
 
     private static Integer getProjectID(Pair projectNameTypeKey)
@@ -111,6 +149,29 @@ public class SelectorHandler {
         }
     }
 
+    public static List<Integer> getProgressUpdate(String projectName, AnnotationType annotationType)
+    {
+        try
+        {
+            Integer projectID = getProjectID(projectName, annotationType.ordinal());
+
+            ProjectLoader projectLoader = (ProjectLoader) projectIDLoaderDict.get(projectID);
+
+            return projectLoader.getProgressUpdate();
+        }
+        catch(Exception e)
+        {
+            log.info("Error occurs when getting progress update", e);
+            return null;
+        }
+    }
+
+    public static Integer getProjectID(String projectName, Integer annotationType)
+    {
+        Pair key = new ImmutablePair(projectName, annotationType);
+
+        return getProjectID(key);
+    }
 
     public static boolean isWindowOpen() {
         return isWindowOpen;
@@ -153,13 +214,13 @@ public class SelectorHandler {
         if((selection.equals(ParamConfig.FILE)) || selection.equals(ParamConfig.FOLDER))
         {
             currentWindowSelection = selection;
+            return true;
         }
         else
         {
             log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
             return false;
         }
-        return true;
     }
 
     public static boolean isProjectNameInMemory(String projectName, Integer annotationType)
@@ -215,25 +276,6 @@ public class SelectorHandler {
         return isProjectNameUnique;
     }
 
-    public static ProjectLoader getCurrentProjectLoader()
-    {
-        try
-        {
-            Integer projectID = getProjectID(selectorProjectBuffer);
-            return getProjectLoader(projectID);
-        }
-        catch(Exception e)
-        {
-            log.info("Error in retrieving project loader from SelectorHandler");
-        }
-        return null;
-    }
-
-
-    public static Integer getProjectIDFromBuffer()
-    {
-        return getProjectID(selectorProjectBuffer);
-    }
 
     public static void setProjectNameBuffer(String projectName, AnnotationType annotationType)
     {
@@ -249,36 +291,29 @@ public class SelectorHandler {
     {
         ProjectLoader projectLoader = getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
 
-        if(uuidGenerator == 0)
+        if(projectLoader != null)
         {
-            //prevent nan
-            projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, 1)));
-        }
-        else
-        {
-            projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, uuidGenerator)));
+            if(uuidGenerator == 0)
+            {
+                //prevent nan
+                projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, 1)));
+            }
+            else
+            {
+                projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, uuidGenerator)));
+
+            }
 
         }
+        else if(projectLoader == null)
+        {
+            log.info("Project Loader null. Configure Open Window failed.");
+        }
+
 
         isWindowOpen = true;
     }
 
-    public static List<Integer> getProgressUpdate(String projectName, AnnotationType annotationType)
-    {
-        try
-        {
-            Integer projectID = getProjectID(projectName, annotationType.ordinal());
-
-            ProjectLoader projectLoader = (ProjectLoader) projectIDLoaderDict.get(projectID);
-
-            return projectLoader.getProgressUpdate();
-        }
-        catch(Exception e)
-        {
-            log.info("Error occurs when getting progress update", e);
-            return null;
-        }
-    }
 
     public static void startDatabaseUpdate(@NonNull String projectName, AnnotationType annotationType) {
         selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
@@ -309,22 +344,7 @@ public class SelectorHandler {
         isLoaderProcessing = false;
         selectorProjectBuffer = null;
     }
-    /**
-     * @param state true = open, false = close
-     */
-    public static void setWindowState(boolean state)
-    {
-        isWindowOpen = state;
-    }
 
-    public static Integer generateProjectID()
-    {
-        return projectIDGenerator.incrementAndGet();
-    }
 
-    public static void setProjectIDGenerator(Integer seedNumber)
-    {
-        projectIDGenerator = new AtomicInteger(seedNumber);
-    }
 
 }

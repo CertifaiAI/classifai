@@ -18,6 +18,8 @@ package ai.classifai.server;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.File;
+
 /**
  * Parameter for server in general
  *
@@ -61,6 +63,7 @@ public class ParamConfig
     public static final String FILE = "file";
     public static final String FOLDER = "folder";
 
-    @Getter @Setter private static Integer hostingPort;
+    public static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
 
+    @Getter @Setter private static Integer hostingPort;
 }

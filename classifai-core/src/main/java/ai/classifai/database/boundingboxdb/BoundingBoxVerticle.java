@@ -34,6 +34,7 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.plaf.TreeUI;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,14 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
+
+        if(projectID == null)
+        {
+            log.info("ProjectID null. Retrieve data path failed for project: " + projectName);
+        }
+
+        JsonArray params = new JsonArray().add(uuid).add(projectID);
 
         projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
 
@@ -130,9 +138,16 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         if(imgMetadata != null)
         {
+            Integer projectID = SelectorHandler.getProjectIDFromBuffer();
+
+            if(projectID == null)
+            {
+                log.info("ProjectID null. Update UUID expected to failed");
+            }
+
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
-                    .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
+                    .add(projectID) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
                     .add((Integer)imgMetadata.get("depth")) //imgDepth
@@ -166,7 +181,14 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
+
+        if(projectID == null)
+        {
+            log.info("ProjectID null. Retrieve data failed for project: " + projectName);
+        }
+
+        JsonArray params = new JsonArray().add(uuid).add(projectID);
 
         projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
@@ -224,6 +246,11 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         Integer projectID  = SelectorHandler.getProjectID(projectName, annotationTypeInt);
 
+        if(projectID == null)
+        {
+            log.info("Project id null when loading project: " + projectName);
+        }
+
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
@@ -275,32 +302,57 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void updateData(Message<JsonObject> message)
     {
         JsonObject requestBody = message.body();
-        
-        String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
-        String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
-        Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-        JsonArray params = new JsonArray()
-                .add(boundingBox)
-                .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
-                .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
-                .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
-                .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectID(projectName, annotationTypeInt));
+        try
+        {
+            String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
 
+            System.out.println(requestBody);
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {
-            if(fetch.succeeded())
+            if(requestBody.containsKey(ParamConfig.BOUNDING_BOX_PARAM) == false)
             {
-                message.reply(ReplyHandler.getOkReply());
+                log.info("Debugging " + ParamConfig.BOUNDING_BOX_PARAM + " not found");
             }
-            else {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+
+
+            String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
+
+            Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+            Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
+
+            if(projectID == null)
+            {
+                log.info("Project ID null when update data for project: " + projectName);
             }
-        });
+
+            JsonArray params = new JsonArray()
+                    .add(boundingBox)
+                    .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
+                    .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
+                    .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
+                    .add(projectID);
+
+
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {
+                if(fetch.succeeded())
+                {
+                    message.reply(ReplyHandler.getOkReply());
+                }
+                else {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            log.info("Error occur when updating data, " + e);
+            message.reply(ReplyHandler.reportBadParamError("Parameter error when updating data"));
+        }
     }
 
     @Override

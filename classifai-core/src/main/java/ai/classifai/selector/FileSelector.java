@@ -18,6 +18,7 @@ package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeConsole;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,7 @@ public class FileSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.ROOT_SEARCH_PATH);
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);

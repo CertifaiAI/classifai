@@ -294,15 +294,17 @@ public class ImageHandler {
             return;
         }
 
+        Integer annotationTypeInt = annotationType.ordinal();
+
         for(File item : filesCollection)
         {
             Integer uuid = uuidGenerator.incrementAndGet();
 
-            if(annotationType.equals(AnnotationType.BOUNDINGBOX))
+            if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
                 BoundingBoxVerticle.updateUUID(uuidList, item, uuid);
             }
-            else if (annotationType.equals(AnnotationType.SEGMENTATION))
+            else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
             {
                 SegVerticle.updateUUID(uuidList, item, uuid);
             }
