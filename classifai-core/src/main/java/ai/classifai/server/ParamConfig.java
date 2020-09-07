@@ -28,6 +28,7 @@ import java.io.File;
 public class ParamConfig
 {
     public final static String PROJECT_NAME_PARAM = "project_name";
+    public final static String PROJECT_ID_PARAM = "project_id";
     public final static String FILE_SYS_PARAM = "file_sys";
 
     public final static String ANNOTATE_TYPE_PARAM = "annotation_type";

@@ -86,17 +86,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
     public void retrieveDataPath(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
-
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-        if(projectID == null)
-        {
-            log.info("ProjectID null. Retrieve data path failed for project: " + projectName);
-        }
-
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -107,10 +99,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    String definedMessage = "Image data path not found for project " + projectName + " with uuid " + uuid;
-                    log.info(definedMessage);
-
-                    message.reply(ReplyHandler.reportUserDefinedError(definedMessage));
+                    message.reply(ReplyHandler.reportUserDefinedError("Image data path not found"));
                 }
                 else
                 {
@@ -177,17 +166,10 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     */
     public void retrieveData(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+
+        String projectName =  message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID =  message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
-
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-        if(projectID == null)
-        {
-            log.info("ProjectID null. Retrieve data failed for project: " + projectName);
-        }
-
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -199,8 +181,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                 if (resultSet.getNumRows() == 0)
                 {
+                    log.info("SegVerticle: Project id: " + params.getInteger(1));
+
                     String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
-                    log.info(userDefinedMessage);
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else {
@@ -232,8 +215,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
             else
             {
                 String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
-                log.info(userDefinedMessage);
-                message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
+                message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
             }
         });
     }
@@ -241,15 +223,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
-
-        Integer projectID  = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-        if(projectID == null)
-        {
-            log.info("Project id null when loading project: " + projectName);
-        }
+        Integer projectID  = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
 
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
@@ -257,8 +231,8 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
         if(loader == null)
         {
-            log.info("ProjectLoader is null for project name: " + projectName);
             message.reply(ReplyHandler.getFailedReply());
+            return;
         }
 
         message.reply(ReplyHandler.getOkReply());
@@ -303,27 +277,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         {
             JsonObject requestBody = message.body();
 
-            String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
-
-            System.out.println(requestBody);
-
-            if(requestBody.containsKey(ParamConfig.SEGMENTATION_PARAM) == false)
-            {
-                log.info("Debugging " + ParamConfig.SEGMENTATION_PARAM + " not found");
-            }
-
-
-
             String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
-            Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-            Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-            if(projectID == null)
-            {
-                log.info("Project ID null when update data for project: " + projectName);
-            }
-
+            Integer projectID = requestBody.getInteger(ParamConfig.PROJECT_ID_PARAM);
 
             JsonArray params = new JsonArray()
                     .add(segContent)
@@ -349,8 +305,9 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         }
         catch(Exception e)
         {
-            log.info("Error occur when updating data, " + e);
-            message.reply(ReplyHandler.reportBadParamError("Parameter error when updating data"));
+            log.info("SegVerticle: " + message.body().toString());
+            String messageInfo = "Error occur when updating data, " + e;
+            message.reply(ReplyHandler.reportBadParamError(messageInfo));
         }
 
     }

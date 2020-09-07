@@ -210,13 +210,15 @@ public class ServerVerticle extends AbstractVerticle
     private void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
+        log.info("Load project: " + projectName + " of annotation type: " + annotationType.name());
+
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
 
         if (loader == null)
         {
             String messageInfo = "Project Loader null. " + annotationType.name() + " project of name " + projectName + " cannot be found for loading";
-            log.info(messageInfo);
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
             return;
         }
@@ -227,7 +229,7 @@ public class ServerVerticle extends AbstractVerticle
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
-            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName).put(ParamConfig.ANNOTATE_TYPE_PARAM, annotationType.ordinal());
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, projectID);//.put(ParamConfig.ANNOTATE_TYPE_PARAM, annotationType.ordinal());
 
             //load label list
             DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_LABEL_LIST);
@@ -250,7 +252,7 @@ public class ServerVerticle extends AbstractVerticle
                                 {
                                     JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
-                                    JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray);
+                                    JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray).put(ParamConfig.PROJECT_ID_PARAM, projectID);
 
                                     DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
 
@@ -261,7 +263,6 @@ public class ServerVerticle extends AbstractVerticle
 
                                         if (ReplyHandler.isReplyOk(removalResponse))
                                         {
-                                            log.info("Loading project: " + projectName);
                                             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
                                         } else
@@ -456,9 +457,10 @@ public class ServerVerticle extends AbstractVerticle
                 }
                 else
                 {
+                    Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
                     //set uuid generator
                     DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
-                    vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName), options, reply ->
+                    vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, projectID), options, reply ->
                     {
                         if(reply.succeeded())
                         {
@@ -565,7 +567,9 @@ public class ServerVerticle extends AbstractVerticle
                 HTTPResponseHandler.configureOK(context, res);
             }
             else {
-                JsonObject request = new JsonObject().put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+                Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
+
+                JsonObject request = new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, projectID);
 
                 DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_THUMBNAIL_LIST);
 
@@ -614,21 +618,43 @@ public class ServerVerticle extends AbstractVerticle
     /**
      * Create new label for bounding box annotation project
      *
+     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
+     */
+    private void createNewBndBoxLabels(RoutingContext context)
+    {
+        createNewLabels(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Create new label for segmentation annotation project
+     *
+     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
+     */
+    private void createNewSegLabels(RoutingContext context)
+    {
+        createNewLabels(context, AnnotationType.SEGMENTATION);
+    }
+
+    /**
+     * Create new label for projects
+     *
      * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
      * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
      *
      * Example:
      * PUT http://localhost:{port}/bndbox/projects/helloworld/newlabels
      */
-    private void createNewLabels(RoutingContext context)
+    private void createNewLabels(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
 
         context.request().bodyHandler(h ->
         {
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-            jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, projectID);
 
             DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL_LIST);
 
@@ -653,11 +679,12 @@ public class ServerVerticle extends AbstractVerticle
     public void getBndBoxMetadata(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
-                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.PROJECT_ID_PARAM, projectID)
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
         getMetadata(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.RETRIEVE_DATA, request);
     }
@@ -671,11 +698,12 @@ public class ServerVerticle extends AbstractVerticle
     public void getSegMetadata(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
-                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
+                .put(ParamConfig.PROJECT_ID_PARAM, projectID)
+                .put(ParamConfig.PROJECT_NAME_PARAM, projectName);
 
         getMetadata(context, SegDbQuery.QUEUE, SegDbQuery.RETRIEVE_DATA, request);
     }
@@ -710,11 +738,11 @@ public class ServerVerticle extends AbstractVerticle
      */
     public void getBndBoxImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
-                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.PROJECT_ID_PARAM, projectID);
 
         getImageSource(context, BoundingBoxDbQuery.QUEUE, BoundingBoxDbQuery.RETRIEVE_DATA_PATH, request);
     }
@@ -728,11 +756,11 @@ public class ServerVerticle extends AbstractVerticle
      */
     public void getSegImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
-                .put(ParamConfig.PROJECT_NAME_PARAM, projectName)
-                .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
+                .put(ParamConfig.PROJECT_ID_PARAM, projectID);
 
         getImageSource(context, SegDbQuery.QUEUE, SegDbQuery.RETRIEVE_DATA_PATH, request);
     }
@@ -766,12 +794,14 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void updateBndBoxData(RoutingContext context)
     {
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+
         context.request().bodyHandler(h ->
         {
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-            jsonObject.put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
+            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, SelectorHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal()));
 
             vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
@@ -797,12 +827,14 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void updateSegData(RoutingContext context)
     {
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+
         context.request().bodyHandler(h ->
         {
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, SegDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-            jsonObject.put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
+            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, SelectorHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
 
             vertx.eventBus().request(SegDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
@@ -819,6 +851,31 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
+    /***
+     *
+     * Update labels
+     *
+     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
+     *
+     */
+    private void updateBndBoxLabels(RoutingContext context)
+    {
+        updateLabels(context, AnnotationType.BOUNDINGBOX);
+    }
+
+
+    /***
+     *
+     * Update labels
+     *
+     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
+     *
+     */
+    private void updateSegLabels(RoutingContext context)
+    {
+        updateLabels(context, AnnotationType.SEGMENTATION);
+    }
+
 
     /***
      *
@@ -828,15 +885,16 @@ public class ServerVerticle extends AbstractVerticle
      * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
      *
      */
-    private void updateLabels(RoutingContext context)
+    private void updateLabels(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
 
         context.request().bodyHandler(h ->
         {
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-            jsonObject.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, projectID);
 
             DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.UPDATE_LABEL_LIST);
 
@@ -875,7 +933,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getBndBoxFileSystemStatus);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewLabels);
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewBndBoxLabels);
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxMetadata);
 
@@ -883,7 +941,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateBndBoxData);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateLabels);
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
         //*******************************Segmentation*******************************
 
@@ -899,7 +957,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/filesysstatus").handler(this::getSegFileSystemStatus);
 
-        router.put("/seg/projects/:project_name/newlabels").handler(this::createNewLabels);
+        router.put("/seg/projects/:project_name/newlabels").handler(this::createNewSegLabels);
 
         router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegMetadata);
 
@@ -907,7 +965,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
-        router.put("/seg/projects/:project_name/newlabels").handler(this::updateLabels);
+        router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
 
         vertx.createHttpServer()
                 .requestHandler(router)

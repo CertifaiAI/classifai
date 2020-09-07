@@ -55,8 +55,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     //connection to database
     private static JDBCClient portfolioDbClient;
 
-    private static String projectNameExistMessage = "Project name did not exist. Retrieve uuid list from existing project name failed";
-
     public void onMessage(Message<JsonObject> message)
     {
         if (!message.headers().contains(ParamConfig.ACTION_KEYWORD))
@@ -147,10 +145,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void updateLabelList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectName), fetch ->{
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
 
             if(fetch.succeeded())
             {
@@ -164,20 +162,26 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getProjectUUIDList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
 
-        JsonArray params = new JsonArray().add(projectName);
+        JsonArray params = new JsonArray().add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
 
-            if(fetch.succeeded())
-            {
-                ResultSet resultSet = fetch.result();
-                JsonArray row = resultSet.getResults().get(0);
-                JsonObject response = ReplyHandler.getOkReply();
+            if(fetch.succeeded()) {
+                try {
+                    ResultSet resultSet = fetch.result();
 
-                response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(row.getString(0)));
-                message.reply(response);
+                    JsonArray row = resultSet.getResults().get(0);
+                    JsonObject response = ReplyHandler.getOkReply();
+
+                    String strList = row.getString(0);
+                    response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(strList));//row.getString(0)));
+                    message.reply(response);
+                }
+                catch (Exception e) {
+                    log.info("Failed in getting uuid list, ", e);
+                };
             }
             else {
                 //query database failed
@@ -188,9 +192,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getThumbNailList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
 
-        JsonArray params = new JsonArray().add(projectName);
+        JsonArray params = new JsonArray().add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_THUMBNAIL_LIST, params, fetch -> {
 
@@ -217,7 +221,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     Integer currentUUIDMarker = Collections.max(wholeUUIDList);
 
-                    JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectName);
+                    JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectID);
 
                     //this is for update of thumbnail list to not include the existing send one to front end
                     portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_THUMBNAIL_MAX_INDEX, markerUpdateParams, markerFetch -> {
@@ -243,10 +247,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getLabelList(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
 
-        JsonArray params = new JsonArray().add(projectName);
+        JsonArray params = new JsonArray().add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_LABEL_LIST, params, fetch -> {
 
@@ -256,7 +259,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
 
-                ProjectLoader loader = SelectorHandler.getProjectLoader(new ImmutablePair(projectName, annotationTypeInt));
+                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
 
                 if(loader != null)
                 {
@@ -303,8 +306,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public static void updateUUIDList(Pair projectInfo, List<Integer> newUUIDList)
     {
-        String projectName = (String) projectInfo.getLeft();
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectName), fetch ->{
+        Integer projectID = SelectorHandler.getProjectID(projectInfo);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectID), fetch ->{
 
             if(fetch.succeeded())
             {
@@ -316,12 +320,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 List<Integer> verifiedUUIDListString = ListHandler.convertListToUniqueList(UUIDListString);
 
-                JsonArray jsonUpdateBody = new JsonArray().add(verifiedUUIDListString.toString()).add(projectName);
+                JsonArray jsonUpdateBody = new JsonArray().add(verifiedUUIDListString.toString()).add(projectID);
 
                 portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
 
                     if(reply.succeeded())
                     {
+
                         ProjectLoader loader = SelectorHandler.getProjectLoader(projectInfo);
 
                         if(loader != null)
@@ -389,9 +394,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                                     Integer annotationType = row.getInteger(1);
 
-                                    SelectorHandler.configureNewProject(projectName, projectID, annotationType);
+                                    Integer thisProjectID = projectIDJson.getInteger(0);
 
-                                    JsonArray thumbnailIDJson = new JsonArray().add(0).add(projectName);
+                                    SelectorHandler.configureNewProject(projectName, thisProjectID, annotationType);
+
+                                    JsonArray thumbnailIDJson = new JsonArray().add(0).add(thisProjectID);
 
                                     portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_THUMBNAIL_MAX_INDEX, thumbnailIDJson, thumbnailFetch -> {
 

@@ -87,16 +87,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
     public void retrieveDataPath(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
-
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-        if(projectID == null)
-        {
-            log.info("ProjectID null. Retrieve data path failed for project: " + projectName);
-        }
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -108,9 +100,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    String definedMessage = "Image data path not found for project " + projectName + " with uuid " + uuid;
-                    log.info(definedMessage);
-                    message.reply(ReplyHandler.reportUserDefinedError(definedMessage));
+                    message.reply(ReplyHandler.reportUserDefinedError("Image data path not found"));
                 }
                 else
                 {
@@ -177,16 +167,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     */
     public void retrieveData(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+        String projectName =  message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID =  message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
-
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-        if(projectID == null)
-        {
-            log.info("ProjectID null. Retrieve data failed for project: " + projectName);
-        }
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -199,7 +182,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 if (resultSet.getNumRows() == 0)
                 {
                     String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
-                    log.info(userDefinedMessage);
+
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else
@@ -232,8 +215,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
             }
             else {
                 String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
-                log.info(userDefinedMessage);
-                message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
+                message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
             }
         });
     }
@@ -241,25 +223,16 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationTypeInt = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
-
-        Integer projectID  = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-        if(projectID == null)
-        {
-            log.info("Project id null when loading project: " + projectName);
-        }
-
+        Integer projectID  = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
+
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
-
         if(loader == null)
         {
-            log.info("ProjectLoader is null for project name: " + projectName);
             message.reply(ReplyHandler.getFailedReply());
+            return;
         }
 
         message.reply(ReplyHandler.getOkReply());
@@ -305,26 +278,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         try
         {
-            String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
-
-            System.out.println(requestBody);
-
-            if(requestBody.containsKey(ParamConfig.BOUNDING_BOX_PARAM) == false)
-            {
-                log.info("Debugging " + ParamConfig.BOUNDING_BOX_PARAM + " not found");
-            }
-
+            Integer projectID = requestBody.getInteger(ParamConfig.PROJECT_ID_PARAM);
 
             String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
-
-            Integer annotationTypeInt = requestBody.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
-
-            Integer projectID = SelectorHandler.getProjectID(projectName, annotationTypeInt);
-
-            if(projectID == null)
-            {
-                log.info("Project ID null when update data for project: " + projectName);
-            }
 
             JsonArray params = new JsonArray()
                     .add(boundingBox)
@@ -350,8 +306,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         }
         catch(Exception e)
         {
-            log.info("Error occur when updating data, " + e);
-            message.reply(ReplyHandler.reportBadParamError("Parameter error when updating data"));
+            log.info("BoundingBoxVerticle: " + message.body().toString());
+            String messageInfo = "Error occur when updating data, " + e;
+            message.reply(ReplyHandler.reportBadParamError(messageInfo));
         }
     }
 

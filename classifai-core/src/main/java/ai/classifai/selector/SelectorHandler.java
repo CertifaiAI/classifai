@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,7 +67,7 @@ public class SelectorHandler {
         projectIDGenerator = new AtomicInteger(0);
 
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
-        projectIDSearch = new HashMap<Pair<String, Integer>, String>();
+        projectIDSearch = new HashMap<Pair<String, Integer>, Integer>();
 
         selectorProjectBuffer = null;
     }
@@ -136,7 +135,7 @@ public class SelectorHandler {
         return getProjectID(selectorProjectBuffer);
     }
 
-    private static Integer getProjectID(Pair projectNameTypeKey)
+    public static Integer getProjectID(Pair projectNameTypeKey)
     {
         if(projectIDSearch.containsKey(projectNameTypeKey))
         {
