@@ -43,15 +43,12 @@ public class WelcomeConsole
     private static int FRAME_HEIGHT = 480;
 
     final static int BTN_X_COORD = 217;
-    final static int BTN_Y_COORD = 342;
+    final static int BTN_Y_COORD = 342
 
     final static int BTN_WIDTH = 55;
     final static int BTN_HEIGHT = 55;
 
     final static int X_GAP = 88;
-
-    static int baseCushionX = 0;
-    static int baseCushionY = 0;
 
     static
     {
@@ -59,16 +56,6 @@ public class WelcomeConsole
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
 
-        if(osManager.getCurrentOS().equals(OS.MAC))
-        {
-            baseCushionX = 0;
-            baseCushionY = 10;
-        }
-        else if(osManager.getCurrentOS().equals(OS.WINDOWS))
-        {
-            baseCushionX = 18;
-            baseCushionY = 47 ;
-        }
     }
 
     public static void start()
@@ -105,9 +92,8 @@ public class WelcomeConsole
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(FRAME_WIDTH + baseCushionX, FRAME_HEIGHT + baseCushionY);
+        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         frame.setLocationRelativeTo(null);
-        frame.setLayout(null);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
