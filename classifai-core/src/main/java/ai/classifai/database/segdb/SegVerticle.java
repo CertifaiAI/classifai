@@ -145,6 +145,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add(0) //imgY
                     .add(0) //imgW
                     .add(0) //imgH
+                    .add(0) //file_size
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
@@ -206,6 +207,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
+                    response.put(ParamConfig.FILE_SIZE_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
@@ -287,6 +289,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
                     .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
                     .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.FILE_SIZE_PARAM))
                     .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
                     .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
                     .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
