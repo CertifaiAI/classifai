@@ -62,6 +62,7 @@ public class WelcomeConsole
     {
         frame = new JFrame("Welcome to Classifai");
 
+
         JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
@@ -92,7 +93,11 @@ public class WelcomeConsole
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        Dimension dimension = new Dimension(FRAME_WIDTH, FRAME_HEIGHT);
+        frame.setPreferredSize(dimension);
+        frame.setMinimumSize(dimension);
+        frame.setMaximumSize(dimension);
+
         frame.setLocationRelativeTo(null);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
