@@ -82,6 +82,7 @@ public class ProjectLoader
         }
         else if(totalUUIDSize < 0)
         {
+            log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
         }
 

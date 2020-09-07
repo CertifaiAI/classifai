@@ -120,6 +120,8 @@ public class ConversionHandler
             return "";
         }
 
+        input = input.replace("\"","");
+
         String content = "";
 
         if(input.substring(0, 1).equals("["))
@@ -177,6 +179,21 @@ public class ConversionHandler
 
         return array;
     }
+
+    public static List<String> jsonArray2StringList(JsonArray json)
+    {
+        if((json == null) || (json.size() == 0)) return new ArrayList<>();
+
+        List<String> array = new ArrayList<>();
+
+        for(int i = 0 ; i < json.size(); ++i)
+        {
+            array.add(json.getString(i));
+        }
+
+        return array;
+    }
+
 
     public static JsonArray integerList2JsonArray(List<Integer> list)
     {

@@ -239,38 +239,48 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         message.reply(ReplyHandler.getOkReply());
 
-        loader.setLoaderStatus(LoaderStatus.LOADING);
-        loader.setTotalUUIDSize(oriUUIDList.size());
-
-        for(int i = 0; i < oriUUIDList.size(); ++i)
+        if(oriUUIDList.isEmpty())
         {
-            final Integer currentLength = i;
-            final Integer UUID = oriUUIDList.get(i);
-            JsonArray params = new JsonArray().add(UUID).add(projectID);
-
-            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
-
-                if (fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
-
-                    if (resultSet.getNumRows() != 0)
-                    {
-                        JsonArray row = resultSet.getResults().get(0);
-
-                        String dataPath = row.getString(0);
-
-                        if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
-                    }
-                    loader.updateProgress(currentLength + 1);
-                }
-                else
-                {
-                    loader.updateProgress(currentLength + 1);
-                }
-            });
+            loader.setLoaderStatus(LoaderStatus.LOADED);
         }
+        else
+        {
+            loader.setTotalUUIDSize(oriUUIDList.size());
+            loader.setLoaderStatus(LoaderStatus.LOADING);
+
+            for(int i = 0; i < oriUUIDList.size(); ++i)
+            {
+                final Integer currentLength = i;
+                final Integer UUID = oriUUIDList.get(i);
+                JsonArray params = new JsonArray().add(UUID).add(projectID);
+
+                projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
+
+                    if (fetch.succeeded())
+                    {
+                        ResultSet resultSet = fetch.result();
+
+                        if (resultSet.getNumRows() != 0)
+                        {
+                            JsonArray row = resultSet.getResults().get(0);
+
+                            String dataPath = row.getString(0);
+
+                            if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
+                        }
+                        loader.updateProgress(currentLength + 1);
+                    }
+                    else
+                    {
+                        loader.updateProgress(currentLength + 1);
+                    }
+                });
+            }
+        }
+
     }
+
+
 
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
