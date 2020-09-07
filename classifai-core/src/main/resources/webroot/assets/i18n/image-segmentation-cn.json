@@ -26,7 +26,7 @@
     "sideNav": {
       "imgList": "图片清单",
       "labelList": "标签清单",
-      "boundBox": "边界框"
+      "polygon": "多边形"
     }
   }
   
