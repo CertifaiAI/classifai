@@ -34,7 +34,6 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.plaf.TreeUI;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
