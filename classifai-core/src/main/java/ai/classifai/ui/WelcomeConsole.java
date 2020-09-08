@@ -69,6 +69,10 @@ public class WelcomeConsole
             baseCushionX = 18;
             baseCushionY = 47;
         }
+        else
+        {
+            log.info("Welcome Console not set properly for current OS: " + osManager.getCurrentOS().name() + ". Expected the alignment to be off. ");
+        }
 
     }
 
