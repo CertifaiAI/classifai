@@ -50,39 +50,16 @@ public class WelcomeConsole
 
     final static int X_GAP = 88;
 
-    static int baseCushionX = 0;
-    static int baseCushionY = 0;
-
     static
     {
         BUTTON_PATH = "/console/";
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
-
-
-        if(osManager.getCurrentOS().equals(OS.MAC))
-        {
-            baseCushionX = 0;
-            baseCushionY = 10;
-        }
-        else if(osManager.getCurrentOS().equals(OS.WINDOWS))
-        {
-            baseCushionX = 18;
-            baseCushionY = 47;
-        }
-        else
-        {
-            log.info("Welcome Console not set properly for current OS: " + osManager.getCurrentOS().name() + ". Expected the alignment to be off. ");
-        }
-
-
     }
 
     public static void start()
     {
         frame = new JFrame("Welcome to Classifai");
-
-        frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -120,13 +97,13 @@ public class WelcomeConsole
         frame.add(panel);
 
         frame.getContentPane().setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+
         frame.pack();
+        frame.setLocationRelativeTo(null);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setVisible(true);
-
-        //frame.setResizable(false);
     }
 
     public static void setToBackground()
