@@ -83,6 +83,8 @@ public class WelcomeConsole
     {
         frame = new JFrame("Welcome to Classifai");
 
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
         JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
@@ -107,25 +109,27 @@ public class WelcomeConsole
         JButton acknowledgementButton = getButton("Acknowledge_Button.png", "License");
         acknowledgementButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        frame.add(openButton);
-        frame.add(closeButton);
-        frame.add(acknowledgementButton);
+        panel.add(openButton);
+        panel.add(closeButton);
+        panel.add(acknowledgementButton);
 
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
-        if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
+        if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
+
+        frame.add(panel);
+
+        System.out.println(panel.getWidth());
+        System.out.println(panel.getHeight());
+
+        frame.setBounds(0, 0, panel.getWidth(), panel.getHeight());
 
         frame.setLocationRelativeTo(null);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-        frame.pack();
 
-        Dimension dimension = new Dimension(FRAME_WIDTH + baseCushionX, FRAME_HEIGHT + baseCushionY);
-        frame.setPreferredSize(dimension);
-        frame.setMinimumSize(dimension);
-        frame.setSize(dimension);
-        frame.setBounds(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
-        frame.setResizable(false);
+        frame.setVisible(true);
+
+        //frame.setResizable(false);
     }
 
     public static void setToBackground()
