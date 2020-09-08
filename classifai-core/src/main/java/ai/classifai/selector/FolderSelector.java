@@ -17,6 +17,8 @@ package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.server.ParamConfig;
+import ai.classifai.ui.WelcomeConsole;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,12 +63,15 @@ public class FolderSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.ROOT_SEARCH_PATH);
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
+
+                    //prevent Welcome Console from popping out
+                    WelcomeConsole.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -74,7 +79,7 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName);
+                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
 
                             ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
 

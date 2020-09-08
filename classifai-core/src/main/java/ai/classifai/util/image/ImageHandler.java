@@ -288,16 +288,23 @@ public class ImageHandler {
         AtomicInteger progressCounter = new AtomicInteger(0);
 
         ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
+        if(currentProjectLoader == null)
+        {
+            log.info("ProjectLoader is null for project name: " + SelectorHandler.getSelectorProjectBuffer().getLeft() + ". Save To Database abort.");
+            return;
+        }
+
+        Integer annotationTypeInt = annotationType.ordinal();
 
         for(File item : filesCollection)
         {
             Integer uuid = uuidGenerator.incrementAndGet();
 
-            if(annotationType.equals(AnnotationType.BOUNDINGBOX))
+            if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
                 BoundingBoxVerticle.updateUUID(uuidList, item, uuid);
             }
-            else if (annotationType.equals(AnnotationType.SEGMENTATION))
+            else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
             {
                 SegVerticle.updateUUID(uuidList, item, uuid);
             }
@@ -312,7 +319,7 @@ public class ImageHandler {
         {
             if((uuidList.size() == filesCollection.size()) || (!SelectorHandler.isLoaderProcessing()))
             {
-                PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
+                PortfolioVerticle.updateUUIDList(SelectorHandler.getSelectorProjectBuffer(), uuidList);
                 break;
             }
         }

@@ -15,7 +15,6 @@
  */
 package ai.classifai.database.loader;
 
-import ai.classifai.annotation.AnnotationType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +29,9 @@ import java.util.*;
 @Slf4j
 public class ProjectLoader
 {
+    @Getter private Integer projectID;
+    private String projectName;
+
     @Getter @Setter private LoaderStatus loaderStatus;
 
     private Set<Integer> sanityUUIDSet;
@@ -40,21 +42,24 @@ public class ProjectLoader
     private Integer currentProcessedLength;
     private Integer totalUUIDSize; //only used when going through uuid for valid path
 
-    private AnnotationType annotationType; //TODO
+    @Getter private Integer annotationType;
 
     @Setter @Getter private List<Integer> progressUpdate;
 
-    public ProjectLoader()
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationInt)
     {
         loaderStatus = LoaderStatus.DID_NOT_INITIATED;
 
         progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
 
+        projectID = currentProjectID;
+        projectName = currentProjectName;
         currentProcessedLength = 0;
         totalUUIDSize = -1;
         sanityUUIDSet = new HashSet<>();
         sanityUUIDList = new ArrayList<>();
         labelList = new ArrayList<>();
+        annotationType = annotationInt;
     }
 
     public List<Integer> getProgress()
