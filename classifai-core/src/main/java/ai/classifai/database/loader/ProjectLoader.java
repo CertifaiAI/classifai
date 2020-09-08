@@ -85,7 +85,6 @@ public class ProjectLoader
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
         }
-
     }
 
     public void updateProgress(Integer index)
