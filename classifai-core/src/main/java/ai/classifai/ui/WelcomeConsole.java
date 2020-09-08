@@ -96,7 +96,7 @@ public class WelcomeConsole
 
         frame.add(panel);
 
-        frame.getContentPane().setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+        //frame.getContentPane().setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
 
         frame.pack();
         frame.setLocationRelativeTo(null);
