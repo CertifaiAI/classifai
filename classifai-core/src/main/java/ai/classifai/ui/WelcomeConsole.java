@@ -18,10 +18,12 @@ package ai.classifai.ui;
 import ai.classifai.server.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 
 /**
  * GUI for starting classifai
@@ -31,53 +33,53 @@ import java.awt.event.ActionListener;
 @Slf4j
 public class WelcomeConsole
 {
+    private static JFrame frame;
     private static String browserURL;
     private static OSManager osManager;
 
-    final static boolean shouldFill = true;
-    final static boolean RIGHT_TO_LEFT = false;
+    final static String BUTTON_PATH;
 
-    final static int FRAME_WIDTH = 500;
-    final static int FRAME_HEIGHT = 300;
+    private static int FRAME_WIDTH = 640;
+    private static int FRAME_HEIGHT = 480;
 
-    final static int PADDING_HEIGHT = 40;
+    final static int BTN_X_COORD = 217;
+    final static int BTN_Y_COORD = 342;
 
-    public static void configure()
+    final static int BTN_WIDTH = 55;
+    final static int BTN_HEIGHT = 55;
+
+    final static int X_GAP = 88;
+
+    static int baseCushionX = 0;
+    static int baseCushionY = 0;
+
+    static
     {
+        BUTTON_PATH = "/console/";
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
+
+        if(osManager.getCurrentOS().equals(OS.MAC))
+        {
+            baseCushionX = 0;
+            baseCushionY = 10;
+        }
+        else if(osManager.getCurrentOS().equals(OS.WINDOWS))
+        {
+            baseCushionX = 18;
+            baseCushionY = 47;
+        }
+
     }
 
     public static void start()
     {
-        configure();
+        frame = new JFrame("Welcome to Classifai");
 
-        JFrame frame = new JFrame("Classifai");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
-        addComponentsToPane(frame.getContentPane());
+        JButton openButton = getButton("Open_Button.png", "Open");
+        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
-
-    public static void addComponentsToPane(Container pane)
-    {
-        if (RIGHT_TO_LEFT) {
-            pane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-        }
-
-        pane.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-
-        if (shouldFill) {
-            //natural height, maximum width
-            c.fill = GridBagConstraints.HORIZONTAL;
-        }
-
-        JButton openButton = new JButton("Open In Browser");
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -85,14 +87,8 @@ public class WelcomeConsole
             }
         });
 
-        c.weightx = 0.5;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.ipady = PADDING_HEIGHT;
-        c.gridx = 0;
-        c.gridy = 0;
-        pane.add(openButton, c);
-
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = getButton("Close_Button.png", "Close");
+        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         closeButton.addActionListener(new ActionListener() {
             @Override
@@ -101,12 +97,88 @@ public class WelcomeConsole
             }
         });
 
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.ipady = PADDING_HEIGHT;      //make this component tall
-        c.weightx = 0.5;
-        c.gridx = 1;
-        c.gridy = 0;
-        pane.add(closeButton, c);
+        JButton acknowledgementButton = getButton("Acknowledge_Button.png", "License");
+        acknowledgementButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
+        frame.add(openButton);
+        frame.add(closeButton);
+        frame.add(acknowledgementButton);
+
+        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
+        if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
+
+
+        Dimension dimension = new Dimension(FRAME_WIDTH + baseCushionX, FRAME_HEIGHT + baseCushionY);
+        frame.setPreferredSize(dimension);
+        frame.setMinimumSize(dimension);
+        frame.setSize(dimension);
+
+        frame.setLocationRelativeTo(null);
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        frame.setResizable(false);
+    }
+
+    public static void setToBackground()
+    {
+        frame.setState(Frame.ICONIFIED);
+    }
+
+    private static JButton getButton(String fileName, String altText)
+    {
+        JButton button = new JButton();
+
+        try {
+
+            Image img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+
+            Image scaledImg = img.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
+
+            button.setIcon(new ImageIcon(scaledImg));
+
+        }
+        catch (Exception e)
+        {
+            button = new JButton(altText);//altText will be used if icon not found
+            log.error("Image for button failed to configured. ", e);
+        }
+
+        return button;
+    }
+
+
+    private static JLabel getBackground(String fileName)
+    {
+        try
+        {
+            BufferedImage oriImg = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+
+            BufferedImage img = resize(oriImg, FRAME_WIDTH, FRAME_HEIGHT);
+
+            JLabel bgLabel = new JLabel(new ImageIcon(img));
+            bgLabel.setLayout(null);
+            bgLabel.setBounds(0,0, FRAME_WIDTH, FRAME_HEIGHT);
+
+            return bgLabel;
+        }
+        catch(Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
     }
 }

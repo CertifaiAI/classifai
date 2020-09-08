@@ -28,24 +28,24 @@ public class PortfolioDbQuery
 
     public final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?)";
 
-    public final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_name = ?";
+    public final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_id = ?";
 
-    public final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_name = ?";
+    public final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_id = ?";
 
-    public final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_name = ?";
+    public final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_id = ?";
 
     public final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
 
-    public final static String GET_PROJECT_NAME = "select project_name from Portfolio where project_id = ?";
+    public final static String GET_PROJECT_NAME = "select project_name, annotation_type from Portfolio where project_id = ?";
 
-    public final static String GET_PROJECT_UUID_LIST = "select uuid_list from Portfolio where project_name = ?";
+    public final static String GET_PROJECT_UUID_LIST = "select uuid_list from Portfolio where project_id = ?";
 
     //public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
     public final static String LOAD_PROJECT_UUID_LIST = "load project uuid list";
 
-    public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnail_max = ? where project_name = ?";
+    public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnail_max = ? where project_id = ?";
 
-    public final static String GET_THUMBNAIL_LIST = "select uuid_list, thumbnail_max from Portfolio where project_name = ?";
+    public final static String GET_THUMBNAIL_LIST = "select uuid_list, thumbnail_max from Portfolio where project_id = ?";
 
     public final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 }

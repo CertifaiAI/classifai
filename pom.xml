@@ -79,6 +79,8 @@
         <classifai.release.name>dev</classifai.release.name>
     </properties>
 
+
+
     <dependencyManagement>
         <dependencies>
             <dependency>
