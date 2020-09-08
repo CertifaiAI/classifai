@@ -61,7 +61,6 @@ public class WelcomeConsole
 
 
         if(osManager.getCurrentOS().equals(OS.MAC))
-
         {
             baseCushionX = 0;
             baseCushionY = 10;
@@ -82,6 +81,8 @@ public class WelcomeConsole
     public static void start()
     {
         frame = new JFrame("Welcome to Classifai");
+
+        frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -118,12 +119,8 @@ public class WelcomeConsole
 
         frame.add(panel);
 
-        System.out.println(panel.getWidth());
-        System.out.println(panel.getHeight());
-
-        frame.setBounds(0, 0, panel.getWidth() + baseCushionX, panel.getHeight() + baseCushionY);
-
-        frame.setLocationRelativeTo(null);
+        frame.getContentPane().setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+        frame.pack();
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
