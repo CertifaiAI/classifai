@@ -133,7 +133,7 @@ public class BrowserHandler {
         }
         else if(os.equals(OS.WINDOWS))
         {
-            commandPath = new String[]{"cmd", "/c", "start " + browserPath + " " + url};
+            commandPath = new String[]{"cmd", "/c", "start \"" + browserPath + "\" " + url};
         }
 
         try

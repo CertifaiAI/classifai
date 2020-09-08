@@ -25,15 +25,15 @@ public class SegDbQuery
     public final static String QUEUE = "segmentation.queue";
 
     public final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, project_id integer, img_path varchar(2000), polygons clob, img_depth integer, " +
-            "img_x integer, img_y integer, img_w double, img_h double, img_ori_w integer, img_ori_h integer, primary key(uuid, project_id))";
+            "img_x integer, img_y integer, img_w double, img_h double, file_size integer, img_ori_w integer, img_ori_h integer, primary key(uuid, project_id))";
 
-    public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    public final static String RETRIEVE_DATA = "select img_path, polygons, img_depth, img_x, img_y, img_w, img_h, img_ori_w, img_ori_h from Project where uuid = ? and project_id = ?";
+    public final static String RETRIEVE_DATA = "select img_path, polygons, img_depth, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project where uuid = ? and project_id = ?";
 
     public final static String RETRIEVE_DATA_PATH  = "select img_path from Project where uuid = ? and project_id = ?";
 
-    public final static String UPDATE_DATA = "update Project set polygons = ?, img_x = ?, img_y = ?, img_w = ?, img_h = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
+    public final static String UPDATE_DATA = "update Project set polygons = ?, img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
 
     public final static String DELETE_DATA = "delete from Project where uuid = ? and project_id = ?";
 

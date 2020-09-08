@@ -151,6 +151,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             if(fetch.succeeded())
             {
+                //update Project loader too
+                List<String> labelListArray = ConversionHandler.jsonArray2StringList(labelList);
+
+                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+
+                loader.setLabelList(labelListArray);
+
                 message.reply(ReplyHandler.getOkReply());
             }
             else {
