@@ -193,8 +193,7 @@ public class ConversionHandler
 
         return array;
     }
-
-
+  
     public static JsonArray integerList2JsonArray(List<Integer> list)
     {
         JsonArray jsonArray = new JsonArray();

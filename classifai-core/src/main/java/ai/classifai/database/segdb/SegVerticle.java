@@ -282,6 +282,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
 
 
+
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
     {
