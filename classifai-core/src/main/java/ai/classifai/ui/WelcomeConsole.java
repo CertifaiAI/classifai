@@ -59,7 +59,7 @@ public class WelcomeConsole
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
 
-        /*
+
         if(osManager.getCurrentOS().equals(OS.MAC))
 
         {
@@ -75,7 +75,7 @@ public class WelcomeConsole
         {
             log.info("Welcome Console not set properly for current OS: " + osManager.getCurrentOS().name() + ". Expected the alignment to be off. ");
         }
-        */
+
 
     }
 
@@ -121,7 +121,7 @@ public class WelcomeConsole
         System.out.println(panel.getWidth());
         System.out.println(panel.getHeight());
 
-        frame.setBounds(0, 0, panel.getWidth(), panel.getHeight());
+        frame.setBounds(0, 0, panel.getWidth() + baseCushionX, panel.getHeight() + baseCushionY);
 
         frame.setLocationRelativeTo(null);
 
