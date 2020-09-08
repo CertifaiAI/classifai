@@ -33,6 +33,7 @@ import java.awt.image.BufferedImage;
 @Slf4j
 public class WelcomeConsole
 {
+    private static JFrame frame;
     private static String browserURL;
     private static OSManager osManager;
 
@@ -49,30 +50,19 @@ public class WelcomeConsole
 
     final static int X_GAP = 88;
 
-    static int baseCushionX = 0;
-    static int baseCushionY = 0;
-
     static
     {
         BUTTON_PATH = "/console/";
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
-
-        if(osManager.getCurrentOS().equals(OS.MAC))
-        {
-            baseCushionX = 0;
-            baseCushionY = 10;
-        }
-        else if(osManager.getCurrentOS().equals(OS.WINDOWS))
-        {
-            baseCushionX = 18;
-            baseCushionY = 47;
-        }
     }
 
     public static void start()
     {
-        JFrame frame = new JFrame("Welcome to Classifai");
+        frame = new JFrame("Welcome to Classifai");
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
         JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
@@ -97,20 +87,28 @@ public class WelcomeConsole
         JButton acknowledgementButton = getButton("Acknowledge_Button.png", "License");
         acknowledgementButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        frame.add(openButton);
-        frame.add(closeButton);
-        frame.add(acknowledgementButton);
+        panel.add(openButton);
+        panel.add(closeButton);
+        panel.add(acknowledgementButton);
 
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
-        if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
+        if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
 
-        frame.setSize(FRAME_WIDTH + baseCushionX, FRAME_HEIGHT + baseCushionY);
+        frame.add(panel);
+
+        //frame.getContentPane().setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+
+        frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.setLayout(null);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         frame.setVisible(true);
-        frame.setResizable(false);
+    }
+
+    public static void setToBackground()
+    {
+        frame.setState(Frame.ICONIFIED);
     }
 
     private static JButton getButton(String fileName, String altText)

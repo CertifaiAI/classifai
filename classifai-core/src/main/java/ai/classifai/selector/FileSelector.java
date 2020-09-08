@@ -18,6 +18,8 @@ package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.server.ParamConfig;
+import ai.classifai.ui.WelcomeConsole;
 import ai.classifai.util.image.ImageHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +65,7 @@ public class FileSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.ROOT_SEARCH_PATH);
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);
@@ -71,23 +73,27 @@ public class FileSelector{
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
+                    //prevent Welcome Console from popping out
+                    WelcomeConsole.setToBackground();
+
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(chooser.getSelectedFiles()));
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName);
+                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
 
                             ImageHandler.processFile(annotationType, files, uuidGenerator);
 
                             SelectorHandler.stopDatabaseUpdate();
                         }
-                    }else
+                    }
+                    else
                     {
+
                         SelectorHandler.setWindowState(false);
                     }
-
 
                 }
             });
