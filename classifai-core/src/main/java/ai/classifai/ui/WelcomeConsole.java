@@ -94,9 +94,11 @@ public class WelcomeConsole
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
         Dimension dimension = new Dimension(FRAME_WIDTH, FRAME_HEIGHT);
+
         frame.setPreferredSize(dimension);
         frame.setMinimumSize(dimension);
-        frame.setMaximumSize(dimension);
+
+        frame.setBounds(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
         frame.setLocationRelativeTo(null);
 
