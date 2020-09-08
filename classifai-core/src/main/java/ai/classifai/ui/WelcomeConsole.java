@@ -50,11 +50,25 @@ public class WelcomeConsole
 
     final static int X_GAP = 88;
 
+    static int baseCushionX = 0;
+    static int baseCushionY = 0;
+
     static
     {
         BUTTON_PATH = "/console/";
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
+
+        if(osManager.getCurrentOS().equals(OS.MAC))
+        {
+            baseCushionX = 0;
+            baseCushionY = 10;
+        }
+        else if(osManager.getCurrentOS().equals(OS.WINDOWS))
+        {
+            baseCushionX = 18;
+            baseCushionY = 47;
+        }
 
     }
 
@@ -93,12 +107,11 @@ public class WelcomeConsole
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) frame.add(backgroundLabel); // NEED TO BE LAST
 
-        Dimension dimension = new Dimension(FRAME_WIDTH, FRAME_HEIGHT);
 
+        Dimension dimension = new Dimension(FRAME_WIDTH + baseCushionX, FRAME_HEIGHT + baseCushionY);
         frame.setPreferredSize(dimension);
         frame.setMinimumSize(dimension);
-
-        frame.setBounds(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+        frame.setSize(dimension);
 
         frame.setLocationRelativeTo(null);
 
