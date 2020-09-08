@@ -103,6 +103,8 @@ public class WelcomeConsole
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        frame.setResizable(false);
+
         frame.setVisible(true);
     }
 
