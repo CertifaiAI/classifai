@@ -310,9 +310,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public static void updateUUIDList(Pair projectInfo, List<Integer> newUUIDList)
+    public static void updateFileSystemUUIDList(List<Integer> newUUIDList)
     {
-        Integer projectID = SelectorHandler.getProjectID(projectInfo);
+        Integer projectID = SelectorHandler.getCurrentFileSystemProjectID();
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectID), fetch ->{
 
@@ -332,8 +332,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     if(reply.succeeded())
                     {
-
-                        ProjectLoader loader = SelectorHandler.getProjectLoader(projectInfo);
+                        ProjectLoader loader = SelectorHandler.getCurrentFileSystemProjectLoader();
 
                         if(loader != null)
                         {

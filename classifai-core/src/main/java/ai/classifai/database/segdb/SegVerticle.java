@@ -122,22 +122,15 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
     }
 
-    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
+    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID, int currentIndex, int maxIndex)
     {
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
         {
-            Integer projectID = SelectorHandler.getProjectIDFromBuffer();
-
-            if(projectID == null)
-            {
-                log.info("ProjectID null. Update UUID expected to failed");
-            }
-
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
-                    .add(projectID) //projectid
+                    .add(SelectorHandler.getCurrentFileSystemProjectID()) //projectid) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
                     .add((Integer)imgMetadata.get("depth")) //img_depth
@@ -158,7 +151,14 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                 {
                     log.error("Update metadata in database failed: " + fetch.cause().getMessage());
                 }
+
+                if(currentIndex >= maxIndex)
+                {
+                    SelectorHandler.setIsCurrentFileSystemDBUpdated(true);
+                }
             });
+
+
         }
     }
 

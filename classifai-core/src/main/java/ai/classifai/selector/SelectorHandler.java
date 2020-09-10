@@ -48,9 +48,8 @@ public class SelectorHandler {
     //value: projectID
     private static Map projectIDSearch;
 
-    //Left: String projectName
-    //Right: Integer annotationType for current file/folder selector
-    @Getter private static Pair selectorProjectBuffer;
+    //project ID for current file system (when opening file / folder)
+    @Getter private static Integer currentFileSystemProjectID;
 
     private static boolean isWindowOpen = false;
 
@@ -61,6 +60,8 @@ public class SelectorHandler {
 
     @Getter private static String currentWindowSelection;//FILE FOLDER
 
+    private static boolean isCurrentFileSystemDBUpdated;
+
 
     static {
 
@@ -69,7 +70,7 @@ public class SelectorHandler {
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
         projectIDSearch = new HashMap<Pair<String, Integer>, Integer>();
 
-        selectorProjectBuffer = null;
+        currentFileSystemProjectID = null;
     }
 
     /**
@@ -90,18 +91,6 @@ public class SelectorHandler {
         projectIDGenerator = new AtomicInteger(seedNumber);
     }
 
-    public static ProjectLoader getProjectLoader(Pair project)
-    {
-        Integer projectIDKey = getProjectID(project);
-
-        if(projectIDKey == null)
-        {
-            log.info("Null projectLoader due to projectID cannot be identified for the project: " + project.getLeft());
-            return null;
-        }
-
-        return getProjectLoader(projectIDKey);
-    }
 
     public static ProjectLoader getProjectLoader(Integer projectID)
     {
@@ -116,23 +105,9 @@ public class SelectorHandler {
         return null;
     }
 
-
-    public static ProjectLoader getCurrentProjectLoader()
+    public static ProjectLoader getCurrentFileSystemProjectLoader()
     {
-        Integer projectID = getProjectID(selectorProjectBuffer);
-
-        if(projectID == null)
-        {
-            log.info("Error in retrieving project loader from SelectorHandler");
-            return null;
-        }
-
-        return getProjectLoader(projectID);
-    }
-
-    public static Integer getProjectIDFromBuffer()
-    {
-        return getProjectID(selectorProjectBuffer);
+        return getProjectLoader(currentFileSystemProjectID);
     }
 
     public static Integer getProjectID(Pair projectNameTypeKey)
@@ -276,9 +251,18 @@ public class SelectorHandler {
     }
 
 
-    public static void setProjectNameBuffer(String projectName, AnnotationType annotationType)
+    public static Integer setFileSystemProjectID(String projectName, AnnotationType annotationType)
     {
-        selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
+        Integer projectID = getProjectID(projectName, annotationType.ordinal());
+
+        if(projectIDLoaderDict.containsKey(projectID) == false)
+        {
+            log.info("Project loader not found for current project id");
+            return null;
+        }
+
+        currentFileSystemProjectID = projectID;
+        return currentFileSystemProjectID;
     }
 
     public static boolean isLoaderProcessing()
@@ -286,9 +270,9 @@ public class SelectorHandler {
         return isLoaderProcessing;
     }
 
-    public static void configureOpenWindow(String projectName, AnnotationType annotationType, Integer uuidGenerator)
+    public static void configureOpenWindow(Integer uuidGenerator)
     {
-        ProjectLoader projectLoader = getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
+        ProjectLoader projectLoader = getCurrentFileSystemProjectLoader();
 
         if(projectLoader != null)
         {
@@ -313,23 +297,30 @@ public class SelectorHandler {
         isWindowOpen = true;
     }
 
+    public static boolean isCurrentFileSystemDBUpdated()
+    {
+        return isCurrentFileSystemDBUpdated;
+    }
 
-    public static void startDatabaseUpdate(@NonNull String projectName, AnnotationType annotationType) {
-        selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
-        selectorStatus = SelectorStatus.WINDOW_CLOSE_LOADING_FILES;
-        getCurrentProjectLoader().setLoaderStatus(LoaderStatus.LOADING);
+    public static void setIsCurrentFileSystemDBUpdated(boolean state)
+    {
+        isCurrentFileSystemDBUpdated = state;
+    }
+
+    public static void startDatabaseUpdate()
+    {
+        isCurrentFileSystemDBUpdated = false;
         isLoaderProcessing = true;
         isWindowOpen = false;
+        selectorStatus = SelectorStatus.WINDOW_CLOSE_LOADING_FILES;
+        getCurrentFileSystemProjectLoader().setLoaderStatus(LoaderStatus.LOADING);
     }
 
     public static void stopDatabaseUpdate()
     {
-        ProjectLoader loader = getCurrentProjectLoader();
+        isLoaderProcessing = false;
 
-        if(loader == null)
-        {
-            log.info("ProjectLoader is null for project name: " + selectorProjectBuffer.getLeft());
-        }
+        ProjectLoader loader = getCurrentFileSystemProjectLoader();
 
         if(loader.getSanityUUIDList().isEmpty())
         {
@@ -339,9 +330,6 @@ public class SelectorHandler {
         {
             loader.setLoaderStatus(LoaderStatus.LOADED);
         }
-
-        isLoaderProcessing = false;
-        selectorProjectBuffer = null;
     }
 
 

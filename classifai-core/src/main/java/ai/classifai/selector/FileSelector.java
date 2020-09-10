@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFileSelector(AnnotationType annotationType, String projectName, AtomicInteger uuidGenerator) {
+    public void runFileSelector(AnnotationType annotationType, AtomicInteger uuidGenerator) {
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -82,11 +82,14 @@ public class FileSelector{
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
+                            if( (SelectorHandler.getCurrentFileSystemProjectLoader() == null) || (SelectorHandler.getCurrentFileSystemProjectID() == null))
+                            {
+                                log.info("File System project loader is null. Update database failed");
+                            }
+
+                            SelectorHandler.startDatabaseUpdate();
 
                             ImageHandler.processFile(annotationType, files, uuidGenerator);
-
-                            SelectorHandler.stopDatabaseUpdate();
                         }
                     }
                     else

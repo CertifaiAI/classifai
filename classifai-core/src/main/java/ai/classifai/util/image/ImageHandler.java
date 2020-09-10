@@ -285,46 +285,80 @@ public class ImageHandler {
 
         List<Integer> uuidList = new ArrayList<>();
 
-        AtomicInteger progressCounter = new AtomicInteger(0);
-
-        ProjectLoader currentProjectLoader = SelectorHandler.getCurrentProjectLoader();
-        if(currentProjectLoader == null)
-        {
-            log.info("ProjectLoader is null for project name: " + SelectorHandler.getSelectorProjectBuffer().getLeft() + ". Save To Database abort.");
-            return;
-        }
-
         Integer annotationTypeInt = annotationType.ordinal();
 
-        for(File item : filesCollection)
+        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
-            Integer uuid = uuidGenerator.incrementAndGet();
-
-            if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
-            {
-                BoundingBoxVerticle.updateUUID(uuidList, item, uuid);
-            }
-            else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
-            {
-                SegVerticle.updateUUID(uuidList, item, uuid);
-            }
-
-            //update progress bar and update projectloader
-            currentProjectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
-
-            currentProjectLoader.getSanityUUIDList().addAll(uuidList);
+            updateBoundingBoxUUID(uuidList, filesCollection, uuidGenerator);
         }
+        else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
+        {
+            updateSegmentationUUID(uuidList, filesCollection, uuidGenerator);
+        }
+
+        long start = System.currentTimeMillis();
 
         while(true)
         {
-            if((uuidList.size() == filesCollection.size()) || (!SelectorHandler.isLoaderProcessing()))
+            float seconds = (System.currentTimeMillis() - start ) / 1000F;
+
+            if((Float.compare(seconds, 180) > 0) || SelectorHandler.isCurrentFileSystemDBUpdated())
             {
-                PortfolioVerticle.updateUUIDList(SelectorHandler.getSelectorProjectBuffer(), uuidList);
+                SelectorHandler.getCurrentFileSystemProjectLoader().getSanityUUIDList().addAll(uuidList);
+
+                PortfolioVerticle.updateFileSystemUUIDList(uuidList);
+
+                SelectorHandler.stopDatabaseUpdate();
                 break;
             }
         }
 
     }
+
+    public static void updateBoundingBoxUUID(List<Integer> uuidList, @NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
+    {
+        ProjectLoader currentProjectLoader = SelectorHandler.getCurrentFileSystemProjectLoader();
+
+        AtomicInteger progressCounter = new AtomicInteger(0);
+
+        int maxIndex = filesCollection.size() - 1;
+        for(int i = 0; i < filesCollection.size(); ++i)
+        {
+            Integer uuid = uuidGenerator.incrementAndGet();
+
+            BoundingBoxVerticle.updateUUID(uuidList, filesCollection.get(i), uuid, i, maxIndex);
+
+            //update progress bar and update projectloader
+            currentProjectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+        }
+    }
+
+    public static void updateSegmentationUUID(List<Integer> uuidList, @NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
+    {
+        ProjectLoader currentProjectLoader = SelectorHandler.getCurrentFileSystemProjectLoader();
+
+        AtomicInteger progressCounter = new AtomicInteger(0);
+
+        int maxIndex = filesCollection.size() - 1;
+
+        for(int i = 0; i < filesCollection.size(); ++i)
+        {
+            Integer uuid = uuidGenerator.incrementAndGet();
+
+            SegVerticle.updateUUID(uuidList, filesCollection.get(i), uuid, i, maxIndex);
+
+            //update project loader for uuid
+
+
+            currentProjectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
+
+            if(i >= maxIndex)
+            {
+                SelectorHandler.setIsCurrentFileSystemDBUpdated(true);
+            }
+        }
+    }
+
 
     public static void processFile(AnnotationType annotationType, @NonNull List<File> filesInput, AtomicInteger uuidGenerator)
     {
@@ -336,7 +370,7 @@ public class ImageHandler {
             validatedFilesList.addAll(files);
         }
 
-        saveToDatabase(annotationType, validatedFilesList, uuidGenerator);
+        if(!validatedFilesList.isEmpty()) saveToDatabase(annotationType, validatedFilesList, uuidGenerator);
     }
 
     public static void processFolder(AnnotationType annotationType, @NonNull File rootPath, AtomicInteger uuidGenerator)
@@ -355,18 +389,21 @@ public class ImageHandler {
 
             for(File file : folderList)
             {
-                if (file.isDirectory())
+                if(file != null)
                 {
-                    folderStack.push(file);
-                }
-                else
-                {
-                    List<File> files = checkFile(file);
-                    totalFilelist.addAll(files);
+                    if (file.isDirectory())
+                    {
+                        folderStack.push(file);
+                    }
+                    else
+                    {
+                        List<File> files = checkFile(file);
+                        totalFilelist.addAll(files);
+                    }
                 }
             }
         }
 
-        saveToDatabase(annotationType, totalFilelist, uuidGenerator);
+        if(!totalFilelist.isEmpty()) saveToDatabase(annotationType, totalFilelist, uuidGenerator);
     }
 }

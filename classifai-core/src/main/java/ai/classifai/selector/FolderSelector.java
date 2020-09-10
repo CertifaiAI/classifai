@@ -38,7 +38,7 @@ public class FolderSelector{
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFolderSelector(AnnotationType annotationType, String projectName, AtomicInteger uuidGenerator) {
+    public void runFolderSelector(AnnotationType annotationType, AtomicInteger uuidGenerator) {
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -79,11 +79,9 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
+                            SelectorHandler.startDatabaseUpdate();
 
                             ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
-
-                            SelectorHandler.stopDatabaseUpdate();
                         }
                     }
                     else

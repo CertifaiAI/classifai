@@ -121,22 +121,15 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         });
     }
 
-    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
+    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID, int currentIndex, int maxIndex)
     {
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
         {
-            Integer projectID = SelectorHandler.getProjectIDFromBuffer();
-
-            if(projectID == null)
-            {
-                log.info("ProjectID null. Update UUID expected to failed");
-            }
-
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
-                    .add(projectID) //projectid
+                    .add(SelectorHandler.getCurrentFileSystemProjectID()) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
                     .add((Integer)imgMetadata.get("depth")) //imgDepth
@@ -157,6 +150,11 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 else
                 {
                     log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                }
+
+                if(currentIndex >= maxIndex)
+                {
+                    SelectorHandler.setIsCurrentFileSystemDBUpdated(true);
                 }
             });
         }
