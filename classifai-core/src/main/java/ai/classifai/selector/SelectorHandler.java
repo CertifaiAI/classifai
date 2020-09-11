@@ -18,10 +18,10 @@ package ai.classifai.selector;
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,19 +48,13 @@ public class SelectorHandler {
     //value: projectID
     private static Map projectIDSearch;
 
-    //Left: String projectName
-    //Right: Integer annotationType for current file/folder selector
-    @Getter private static Pair selectorProjectBuffer;
+    //key: projectID
+    //value: Pair<String projectName, Integer annotationType>
+    private static Map projectNameSearch;
 
-    private static boolean isWindowOpen = false;
-
-    // only one file/folder selector can open at one time. even for multiple projects.
-    private static boolean isLoaderProcessing = false;
-
-    @Setter @Getter private static SelectorStatus selectorStatus;
-
-    @Getter private static String currentWindowSelection;//FILE FOLDER
-
+    //boolean to check ifi writing to database
+    //if true, file/folder selector is diable to function to prevent writing concurrently to database
+    private static boolean isCurrentFileSystemDBUpdating;
 
     static {
 
@@ -68,17 +62,11 @@ public class SelectorHandler {
 
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
         projectIDSearch = new HashMap<Pair<String, Integer>, Integer>();
+        projectNameSearch = new HashMap<Integer, Pair<String, Integer>>();
 
-        selectorProjectBuffer = null;
+        isCurrentFileSystemDBUpdating = false;
     }
 
-    /**
-     * @param state true = open, false = close
-     */
-    public static void setWindowState(boolean state)
-    {
-        isWindowOpen = state;
-    }
 
     public static Integer generateProjectID()
     {
@@ -90,7 +78,12 @@ public class SelectorHandler {
         projectIDGenerator = new AtomicInteger(seedNumber);
     }
 
-    public static ProjectLoader getProjectLoader(Pair project)
+    public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
+    {
+        return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
+    }
+
+    private static ProjectLoader getProjectLoader(Pair project)
     {
         Integer projectIDKey = getProjectID(project);
 
@@ -114,25 +107,6 @@ public class SelectorHandler {
             log.info("Error when retriveing ProjectLoader in SelectorHandler, ", e);
         }
         return null;
-    }
-
-
-    public static ProjectLoader getCurrentProjectLoader()
-    {
-        Integer projectID = getProjectID(selectorProjectBuffer);
-
-        if(projectID == null)
-        {
-            log.info("Error in retrieving project loader from SelectorHandler");
-            return null;
-        }
-
-        return getProjectLoader(projectID);
-    }
-
-    public static Integer getProjectIDFromBuffer()
-    {
-        return getProjectID(selectorProjectBuffer);
     }
 
     public static Integer getProjectID(Pair projectNameTypeKey)
@@ -172,11 +146,8 @@ public class SelectorHandler {
         return getProjectID(key);
     }
 
-    public static boolean isWindowOpen() {
-        return isWindowOpen;
-    }
 
-    public static void configureNewProject(@NonNull String projectName, @NonNull Integer projectID, Integer annotationType)
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType)
     {
         if(!checkAnnotationSanity(annotationType))
         {
@@ -187,6 +158,7 @@ public class SelectorHandler {
         Pair projectNameWithType = new ImmutablePair(projectName, annotationType);
 
         projectIDSearch.put(projectNameWithType, projectID);
+        projectNameSearch.put(projectID, projectNameWithType);
 
         projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType));
     }
@@ -201,6 +173,7 @@ public class SelectorHandler {
         {
             return true;
         }
+        //TODO: ADD WHEN HAVE NEW ANNOTATION TYPE
         else
         {
             log.debug("Annotation integer unmatched in AnnotationType: " + annotationTypeInt);
@@ -212,7 +185,6 @@ public class SelectorHandler {
     {
         if((selection.equals(ParamConfig.FILE)) || selection.equals(ParamConfig.FOLDER))
         {
-            currentWindowSelection = selection;
             return true;
         }
         else
@@ -220,32 +192,6 @@ public class SelectorHandler {
             log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
             return false;
         }
-    }
-
-    public static boolean isProjectNameInMemory(String projectName, Integer annotationType)
-    {
-        if(!checkAnnotationSanity(annotationType))
-        {
-            log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
-            return false;
-        }
-
-        Set projectIDDictKeys = projectIDSearch.keySet();
-
-        Boolean isProjectNameExist = false;
-
-        for(Object key : projectIDDictKeys)
-        {
-            Pair projectNameType = (Pair) key;
-
-            if(projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType))
-            {
-                isProjectNameExist = true;
-                break;
-            }
-        }
-
-        return isProjectNameExist;
     }
 
     public static Boolean isProjectNameUnique(String projectName, Integer annotationType)
@@ -275,75 +221,14 @@ public class SelectorHandler {
         return isProjectNameUnique;
     }
 
-
-    public static void setProjectNameBuffer(String projectName, AnnotationType annotationType)
+    public static boolean isCurrentFileSystemDBUpdating()
     {
-        selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
+        return isCurrentFileSystemDBUpdating;
     }
 
-    public static boolean isLoaderProcessing()
+    public static void setIsCurrentFileSystemDBUpdating(boolean state)
     {
-        return isLoaderProcessing;
+        isCurrentFileSystemDBUpdating = state;
     }
-
-    public static void configureOpenWindow(String projectName, AnnotationType annotationType, Integer uuidGenerator)
-    {
-        ProjectLoader projectLoader = getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
-
-        if(projectLoader != null)
-        {
-            if(uuidGenerator == 0)
-            {
-                //prevent nan
-                projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, 1)));
-            }
-            else
-            {
-                projectLoader.setProgressUpdate(new ArrayList<>(Arrays.asList(0, uuidGenerator)));
-
-            }
-
-        }
-        else if(projectLoader == null)
-        {
-            log.info("Project Loader null. Configure Open Window failed.");
-        }
-
-
-        isWindowOpen = true;
-    }
-
-
-    public static void startDatabaseUpdate(@NonNull String projectName, AnnotationType annotationType) {
-        selectorProjectBuffer = new ImmutablePair(projectName, annotationType.ordinal());
-        selectorStatus = SelectorStatus.WINDOW_CLOSE_LOADING_FILES;
-        getCurrentProjectLoader().setLoaderStatus(LoaderStatus.LOADING);
-        isLoaderProcessing = true;
-        isWindowOpen = false;
-    }
-
-    public static void stopDatabaseUpdate()
-    {
-        ProjectLoader loader = getCurrentProjectLoader();
-
-        if(loader == null)
-        {
-            log.info("ProjectLoader is null for project name: " + selectorProjectBuffer.getLeft());
-        }
-
-        if(loader.getSanityUUIDList().isEmpty())
-        {
-            loader.setLoaderStatus(LoaderStatus.EMPTY);
-        }
-        else
-        {
-            loader.setLoaderStatus(LoaderStatus.LOADED);
-        }
-
-        isLoaderProcessing = false;
-        selectorProjectBuffer = null;
-    }
-
-
 
 }

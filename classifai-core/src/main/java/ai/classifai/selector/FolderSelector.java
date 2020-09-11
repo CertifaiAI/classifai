@@ -17,9 +17,11 @@ package ai.classifai.selector;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeConsole;
 import ai.classifai.util.image.ImageHandler;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -38,7 +40,9 @@ public class FolderSelector{
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFolderSelector(AnnotationType annotationType, String projectName, AtomicInteger uuidGenerator) {
+    public void runFolderSelector(@NonNull Integer projectID)
+    {
+        SelectorHandler.setIsCurrentFileSystemDBUpdating(true);
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -79,24 +83,14 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName, annotationType);
-
-                            ImageHandler.processFolder(annotationType, rootFolder, uuidGenerator);
-
-                            SelectorHandler.stopDatabaseUpdate();
+                            ImageHandler.processFolder(projectID, rootFolder);
                         }
                     }
-                    else
-                    {
-                        SelectorHandler.setWindowState(false);
-                    }
-
                 }
             });
         }
         catch (Exception e)
         {
-            SelectorHandler.setWindowState(false);
             log.info("SelectorHandler for Folder type failed to open", e);
         }
 

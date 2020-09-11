@@ -24,11 +24,13 @@ public class PortfolioDbQuery
 {
     public final static String QUEUE = "portfolio.queue";
 
-    public final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), thumbnail_max integer, uuid_list clob)";
+    public final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), uuid_generator_seed integer, uuid_list clob)";
 
     public final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?)";
 
     public final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_id = ?";
+
+    public final static String UPDATE_UUID_GENERATOR_SEED = "update Portfolio set uuid_generator_seed = ? where project_id = ?";
 
     public final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_id = ?";
 
@@ -38,14 +40,9 @@ public class PortfolioDbQuery
 
     public final static String GET_PROJECT_NAME = "select project_name, annotation_type from Portfolio where project_id = ?";
 
-    public final static String GET_PROJECT_UUID_LIST = "select uuid_list from Portfolio where project_id = ?";
+    public final static String GET_PROJECT_UUID_LIST = "select uuid_list, uuid_generator_seed from Portfolio where project_id = ?";
 
     //public final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
-    public final static String LOAD_PROJECT_UUID_LIST = "load project uuid list";
-
-    public final static String UPDATE_THUMBNAIL_MAX_INDEX = "update Portfolio set thumbnail_max = ? where project_id = ?";
-
-    public final static String GET_THUMBNAIL_LIST = "select uuid_list, thumbnail_max from Portfolio where project_id = ?";
 
     public final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 }

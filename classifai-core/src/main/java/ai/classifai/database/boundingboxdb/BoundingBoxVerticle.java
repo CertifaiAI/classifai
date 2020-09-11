@@ -18,6 +18,7 @@ package ai.classifai.database.boundingboxdb;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.segdb.SegDbQuery;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
@@ -121,25 +122,18 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         });
     }
 
-    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
+    public static void updateUUID(Integer projectID, File file, Integer UUID, Integer currentProcessedLength)
     {
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
         if(imgMetadata != null)
         {
-            Integer projectID = SelectorHandler.getProjectIDFromBuffer();
-
-            if(projectID == null)
-            {
-                log.info("ProjectID null. Update UUID expected to failed");
-            }
-
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
                     .add(projectID) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                    .add((Integer)imgMetadata.get("depth")) //imgDepth
+                    .add((Integer)imgMetadata.get("depth")) //img_depth
                     .add(0) //imgX
                     .add(0) //imgY
                     .add(0) //imgW
@@ -148,19 +142,17 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
-            {
+            projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
                 if(fetch.succeeded())
                 {
-                    uuidList.add(UUID);
+                    log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                 }
-                else
-                {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
-                }
+
+                SelectorHandler.getProjectLoader(projectID).updateFileSysLoadingProgress(currentProcessedLength);
             });
         }
     }
+
 
     /*
     GET http://localhost:{port}/retrievedata/:uuid
@@ -230,51 +222,32 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
-        if(loader == null)
-        {
-            message.reply(ReplyHandler.getFailedReply());
-            return;
-        }
 
         message.reply(ReplyHandler.getOkReply());
 
-        if(oriUUIDList.isEmpty())
+        loader.setDbOriUUIDSize(oriUUIDList.size());
+
+        for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            loader.setLoaderStatus(LoaderStatus.LOADED);
-        }
-        else
-        {
-            loader.setTotalUUIDSize(oriUUIDList.size());
-            loader.setLoaderStatus(LoaderStatus.LOADING);
+            final Integer currentLength = i;
+            final Integer UUID = oriUUIDList.get(i);
+            JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            for(int i = 0; i < oriUUIDList.size(); ++i)
-            {
-                final Integer currentLength = i;
-                final Integer UUID = oriUUIDList.get(i);
-                JsonArray params = new JsonArray().add(UUID).add(projectID);
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
 
-                projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+                if (fetch.succeeded()) {
+                    ResultSet resultSet = fetch.result();
 
-                    if (fetch.succeeded())
-                    {
-                        ResultSet resultSet = fetch.result();
+                    if (resultSet.getNumRows() != 0) {
+                        JsonArray row = resultSet.getResults().get(0);
 
-                        if (resultSet.getNumRows() != 0)
-                        {
-                            JsonArray row = resultSet.getResults().get(0);
+                        String dataPath = row.getString(0);
 
-                            String dataPath = row.getString(0);
-
-                            if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
-                        }
-                        loader.updateProgress(currentLength + 1);
+                        if (ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
                     }
-                    else
-                    {
-                        loader.updateProgress(currentLength + 1);
-                    }
-                });
-            }
+                }
+                loader.updateDBLoadingProgress(currentLength + 1);
+            });
         }
 
     }

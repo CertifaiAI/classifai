@@ -22,7 +22,6 @@ import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
-import ai.classifai.util.ListHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -33,11 +32,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,10 +82,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getProjectUUIDList(message);
         }
-        else if(action.equals(PortfolioDbQuery.GET_THUMBNAIL_LIST))
-        {
-            this.getThumbNailList(message);
-        }
         else if(action.equals(PortfolioDbQuery.GET_PROJECT_LABEL_LIST))
         {
             this.getLabelList(message);
@@ -126,10 +120,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.CREATE_NEW_PROJECT, params, fetch -> {
 
-                if (fetch.succeeded()) {
-                    SelectorHandler.configureNewProject(projectName, projectID, annotationType);
+                if (fetch.succeeded())
+                {
+                    SelectorHandler.buildProjectLoader(projectName, projectID, annotationType);
                     message.reply(ReplyHandler.getOkReply());
-                } else {
+                }
+                else
+                {
                     //query database failed
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
@@ -140,6 +137,23 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             message.reply(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
 
+    }
+
+    public static void updateUUIDGeneratorSeed(@NonNull Integer projectID, @NonNull Integer seedNumber)
+    {
+        JsonArray params = new JsonArray().add(seedNumber).add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_UUID_GENERATOR_SEED, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                SelectorHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
+            }
+            else
+            {
+                log.error("Update seed number in Portfolio failed. Project expected to hit error: ", fetch.cause().getMessage());
+            }
+        });
     }
 
     public void updateLabelList(Message<JsonObject> message)
@@ -182,7 +196,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     JsonObject response = ReplyHandler.getOkReply();
 
                     String strList = row.getString(0);
+                    Integer uuidGeneratorSeed = row.getInteger(1);
+
                     response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(strList));//row.getString(0)));
+                    response.put(ParamConfig.UUID_GENERATOR_PARAM, uuidGeneratorSeed);
+
                     message.reply(response);
                 }
                 catch (Exception e) {
@@ -194,61 +212,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
-    }
-
-    public void getThumbNailList(Message<JsonObject> message)
-    {
-        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-
-        JsonArray params = new JsonArray().add(projectID);
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_THUMBNAIL_LIST, params, fetch -> {
-
-            if(fetch.succeeded())
-            {
-                ResultSet resultSet = fetch.result();
-                JsonArray row = resultSet.getResults().get(0);
-
-                List<Integer> wholeUUIDList = ConversionHandler.string2IntegerList(row.getString(0));
-
-                List<Integer> subList = new ArrayList<>();
-
-                if(wholeUUIDList.isEmpty() == false)
-                {
-                    Integer previousUUIDPointer = row.getInteger(1);
-
-                    for(Integer item : wholeUUIDList)
-                    {
-                        if(item > previousUUIDPointer)
-                        {
-                            subList.add(item);
-                        }
-                    }
-
-                    Integer currentUUIDMarker = Collections.max(wholeUUIDList);
-
-                    JsonArray markerUpdateParams = new JsonArray().add(currentUUIDMarker).add(projectID);
-
-                    //this is for update of thumbnail list to not include the existing send one to front end
-                    portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_THUMBNAIL_MAX_INDEX, markerUpdateParams, markerFetch -> {
-
-                        if (!markerFetch.succeeded()) {
-                            log.error("Update thumbnail marker failed");
-                        }
-                    });
-
-                }
-                JsonObject response = ReplyHandler.getOkReply();
-                response.put(ParamConfig.UUID_LIST_PARAM, subList);
-                message.reply(response);
-
-            }
-            else {
-                //query database failed
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
-
     }
 
     public void getLabelList(Message<JsonObject> message)
@@ -310,56 +273,22 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public static void updateUUIDList(Pair projectInfo, List<Integer> newUUIDList)
+    public static void updateFileSystemUUIDList(@NonNull Integer projectID)
     {
-        Integer projectID = SelectorHandler.getProjectID(projectInfo);
+        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST,  new JsonArray().add(projectID), fetch ->{
+        List<Integer> uuidList = loader.getSanityUUIDList();
 
-            if(fetch.succeeded())
+        JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
+
+            if(!reply.succeeded())
             {
-                String UUIDString = fetch.result().getResults().get(0).getString(0);
-
-                List<Integer> UUIDListString = ConversionHandler.string2IntegerList(UUIDString);
-
-                UUIDListString.addAll(newUUIDList);
-
-                List<Integer> verifiedUUIDListString = ListHandler.convertListToUniqueList(UUIDListString);
-
-                JsonArray jsonUpdateBody = new JsonArray().add(verifiedUUIDListString.toString()).add(projectID);
-
-                portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
-
-                    if(reply.succeeded())
-                    {
-
-                        ProjectLoader loader = SelectorHandler.getProjectLoader(projectInfo);
-
-                        if(loader != null)
-                        {
-                            loader.setSanityUUIDList(verifiedUUIDListString);
-                        }
-                        else if(loader == null)
-                        {
-                            log.info("Project Loader null. New uuid list failed to add into Project Loader. Program expected to failed");
-                        }
-
-                    }
-                    else
-                    {
-                        log.error("Update list of uuids to Portfolio Database failed");
-                    }
-                });
-
-            }
-            else {
-                log.error("Retrieving list of uuids from Portfolio Database failed");
+                log.error("Update list of uuids to Portfolio Database failed");
             }
         });
     }
-
-
-
 
     public void configurePortfolioVerticle()
     {
@@ -378,11 +307,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     log.debug("Project ID List is empty. Initiate generator id from 0");
                     SelectorHandler.setProjectIDGenerator(0);
                 }
-                else {
+                else
+                {
+                    //set the seed generator when creating new project
                     Integer maxProjectID = Collections.max(projectIDList);
                     SelectorHandler.setProjectIDGenerator(maxProjectID);
 
-                    //set projectIDNameDict and projectNameIDDict in SelectorHandler
+                    //set projectIDLoaderDict and projectIDSearch in SelectorHandler
                     for (Integer projectID : projectIDList)
                     {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
@@ -397,24 +328,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     JsonArray row = resultSet.getResults().get(0);
 
                                     String projectName = row.getString(0);
-
                                     Integer annotationType = row.getInteger(1);
-
                                     Integer thisProjectID = projectIDJson.getInteger(0);
 
-                                    SelectorHandler.configureNewProject(projectName, thisProjectID, annotationType);
-
-                                    JsonArray thumbnailIDJson = new JsonArray().add(0).add(thisProjectID);
-
-                                    portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_THUMBNAIL_MAX_INDEX, thumbnailIDJson, thumbnailFetch -> {
-
-                                        if (!thumbnailFetch.succeeded()) {
-                                            log.error("Fail in updating thumbnail max in tutorial");
-                                        }
-                                    });
+                                    SelectorHandler.buildProjectLoader(projectName, thisProjectID, annotationType);
                                 }
                             } else {
-                                log.error("Retrieving project name failed");
+                                log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
                             }
                         });
                     }
