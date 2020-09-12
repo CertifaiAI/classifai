@@ -15,7 +15,6 @@
  */
 package ai.classifai.selector;
 
-import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
@@ -28,7 +27,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -83,8 +81,19 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
+                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
                             ImageHandler.processFolder(projectID, rootFolder);
                         }
+                        else
+                        {
+                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        }
+                    }
+                    else
+                    {
+
+                        SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
                 }
             });

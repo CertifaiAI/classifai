@@ -29,7 +29,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Open browser to select files
@@ -85,12 +84,18 @@ public class FileSelector{
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
+                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
                             ImageHandler.processFile(projectID, files);
                         }
                         else
                         {
                             SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
+                    }
+                    else
+                    {
+                        SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
 
                 }

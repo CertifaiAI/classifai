@@ -16,9 +16,7 @@
 package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.segdb.SegDbQuery;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
@@ -33,6 +31,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -122,7 +121,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         });
     }
 
-    public static void updateUUID(Integer projectID, File file, Integer UUID, Integer currentProcessedLength)
+    public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
@@ -142,8 +141,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
-            projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
-                if(fetch.succeeded())
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
+            {
+                if(!fetch.succeeded())
                 {
                     log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                 }
@@ -224,6 +224,12 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
 
         message.reply(ReplyHandler.getOkReply());
+
+        if(oriUUIDList.isEmpty())
+        {
+            loader.updateDBLoadingProgress(1);
+            return;
+        }
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
 

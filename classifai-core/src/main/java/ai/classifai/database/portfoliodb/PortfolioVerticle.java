@@ -18,6 +18,7 @@ package ai.classifai.database.portfoliodb;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
@@ -122,7 +123,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 if (fetch.succeeded())
                 {
-                    SelectorHandler.buildProjectLoader(projectName, projectID, annotationType);
+                    SelectorHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED);
                     message.reply(ReplyHandler.getOkReply());
                 }
                 else
@@ -331,7 +332,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     Integer annotationType = row.getInteger(1);
                                     Integer thisProjectID = projectIDJson.getInteger(0);
 
-                                    SelectorHandler.buildProjectLoader(projectName, thisProjectID, annotationType);
+                                    SelectorHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED);
                                 }
                             } else {
                                 log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());

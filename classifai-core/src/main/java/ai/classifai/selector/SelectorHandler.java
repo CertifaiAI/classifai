@@ -18,15 +18,15 @@ package ai.classifai.selector;
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -122,23 +122,6 @@ public class SelectorHandler {
         }
     }
 
-    public static List<Integer> getProgressUpdate(String projectName, AnnotationType annotationType)
-    {
-        try
-        {
-            Integer projectID = getProjectID(projectName, annotationType.ordinal());
-
-            ProjectLoader projectLoader = (ProjectLoader) projectIDLoaderDict.get(projectID);
-
-            return projectLoader.getProgressUpdate();
-        }
-        catch(Exception e)
-        {
-            log.info("Error occurs when getting progress update", e);
-            return null;
-        }
-    }
-
     public static Integer getProjectID(String projectName, Integer annotationType)
     {
         Pair key = new ImmutablePair(projectName, annotationType);
@@ -147,7 +130,7 @@ public class SelectorHandler {
     }
 
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType)
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus)
     {
         if(!checkAnnotationSanity(annotationType))
         {
@@ -160,7 +143,7 @@ public class SelectorHandler {
         projectIDSearch.put(projectNameWithType, projectID);
         projectNameSearch.put(projectID, projectNameWithType);
 
-        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType));
+        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus));
     }
 
     private static boolean checkAnnotationSanity(Integer annotationTypeInt)

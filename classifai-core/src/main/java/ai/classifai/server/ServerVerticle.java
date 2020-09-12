@@ -21,7 +21,9 @@ import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioDbQuery;
 import ai.classifai.database.segdb.SegDbQuery;
-import ai.classifai.selector.*;
+import ai.classifai.selector.FileSelector;
+import ai.classifai.selector.FolderSelector;
+import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -341,6 +343,8 @@ public class ServerVerticle extends AbstractVerticle
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
+        System.out.println(loaderStatus.ordinal());
+
         if (loaderStatus == LoaderStatus.LOADING)
         {
             JsonObject jsonObject = new JsonObject();
@@ -417,6 +421,7 @@ public class ServerVerticle extends AbstractVerticle
         else
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
             String fileType = context.request().getParam(ParamConfig.FILE_SYS_PARAM);
 
             if(!SelectorHandler.initSelector(fileType))
@@ -501,17 +506,17 @@ public class ServerVerticle extends AbstractVerticle
 
         JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
 
-        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
+        {
+            res.put(ParamConfig.PROGRESS_METADATA, loader.getProgressUpdate());
+            HTTPResponseHandler.configureOK(context, res);
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
         {
             List<Integer> newAddedUUIDList = loader.getFileSysNewUUIDList();
 
             res.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.integerList2JsonArray(newAddedUUIDList));
 
-            HTTPResponseHandler.configureOK(context, res);
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
-        {
-            res.put(ParamConfig.PROGRESS_METADATA, loader.getProgressUpdate());
             HTTPResponseHandler.configureOK(context, res);
         }
         else

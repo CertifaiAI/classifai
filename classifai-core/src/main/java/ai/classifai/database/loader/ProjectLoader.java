@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.loader;
 
+import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +31,6 @@ import java.util.*;
 @Slf4j
 public class ProjectLoader
 {
-
     @Getter private Integer annotationType;
     @Getter private Integer projectID;
     private String projectName;
@@ -40,7 +40,7 @@ public class ProjectLoader
     @Getter @Setter private LoaderStatus loaderStatus;
 
     //Status when dealing with file/folder opener
-    @Getter @Setter private FileSystemStatus fileSystemStatus;
+    @Getter private FileSystemStatus fileSystemStatus;
 
     //a list of unique uuid representing number of data points in one project
     @Getter private List<Integer> sanityUUIDList;
@@ -64,13 +64,13 @@ public class ProjectLoader
 
     @Getter @Setter private List<Integer> progressUpdate;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt)
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus loaderStatus)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
         annotationType = annotationTypeInt;
 
-        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
+        loaderStatus = loaderStatus;
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
@@ -179,6 +179,16 @@ public class ProjectLoader
     {
         fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
         return fileSysNewUUIDList;
+    }
+
+    public void setFileSystemStatus(FileSystemStatus status)
+    {
+        fileSystemStatus = status;
+
+        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || fileSystemStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
+        {
+            SelectorHandler.setIsCurrentFileSystemDBUpdating(false);
+        }
     }
 
 }

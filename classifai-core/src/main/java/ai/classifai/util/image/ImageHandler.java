@@ -288,8 +288,8 @@ public class ImageHandler {
         Integer uuidNewSeed = filesCollection.size() + loader.getUuidGeneratorSeed();
         PortfolioVerticle.updateUUIDGeneratorSeed(projectID, uuidNewSeed);
 
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING); // can be better
         loader.setFileSysTotalUUIDSize(filesCollection.size());
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING); // can be better
 
         Integer annotationTypeInt = loader.getAnnotationType();
 
@@ -313,23 +313,6 @@ public class ImageHandler {
             }
         }
 
-        long start = System.currentTimeMillis();
-
-        while(true)
-        {
-            float seconds = (System.currentTimeMillis() - start ) / 1000F;
-
-            //force terminate after 3 hours
-            if((Float.compare(seconds, 180) > 0) || loader.isAllFileSysProcessed())
-            {
-                loader.updateNewUUIDList();
-
-                PortfolioVerticle.updateFileSystemUUIDList(projectID);
-
-                SelectorHandler.setIsCurrentFileSystemDBUpdating(false);
-                break;
-            }
-        }
     }
 
 
@@ -342,7 +325,6 @@ public class ImageHandler {
             List<File> files = checkFile(file);
             validatedFilesList.addAll(files);
         }
-
 
         saveToDatabase(projectID, validatedFilesList);
     }
