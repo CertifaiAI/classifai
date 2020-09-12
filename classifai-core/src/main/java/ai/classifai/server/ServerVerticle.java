@@ -343,8 +343,6 @@ public class ServerVerticle extends AbstractVerticle
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
-        System.out.println(loaderStatus.ordinal());
-
         if (loaderStatus == LoaderStatus.LOADING)
         {
             JsonObject jsonObject = new JsonObject();

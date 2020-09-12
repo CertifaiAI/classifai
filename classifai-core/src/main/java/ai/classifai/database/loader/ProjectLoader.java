@@ -64,13 +64,13 @@ public class ProjectLoader
 
     @Getter @Setter private List<Integer> progressUpdate;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus loaderStatus)
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
         annotationType = annotationTypeInt;
 
-        loaderStatus = loaderStatus;
+        loaderStatus = currentLoaderStatus;
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
