@@ -143,12 +143,18 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
             projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
             {
-                if(!fetch.succeeded())
+                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+                if(fetch.succeeded())
+                {
+                    loader.pushDBValidUUID(UUID);
+
+                }
+                else
                 {
                     log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                 }
 
-                SelectorHandler.getProjectLoader(projectID).updateFileSysLoadingProgress(currentProcessedLength);
+                loader.updateFileSysLoadingProgress(currentProcessedLength);
             });
         }
     }
@@ -235,7 +241,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            final Integer currentLength = i;
+            final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
@@ -252,7 +258,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                         if (ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
                     }
                 }
-                loader.updateDBLoadingProgress(currentLength + 1);
+
+                loader.updateDBLoadingProgress(currentLength);
             });
         }
 

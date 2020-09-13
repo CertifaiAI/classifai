@@ -84,6 +84,7 @@ public class FileSelector{
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
+
                             SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFile(projectID, files);

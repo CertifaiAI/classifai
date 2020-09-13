@@ -143,12 +143,19 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add((Integer)imgMetadata.get("height"));
 
             projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
-                if(!fetch.succeeded())
+
+                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+
+                if(fetch.succeeded()) {
+                    loader.pushDBValidUUID(UUID);
+                }
+                else
                 {
                     log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+
                 }
 
-                SelectorHandler.getProjectLoader(projectID).updateFileSysLoadingProgress(currentProcessedLength);
+                loader.updateFileSysLoadingProgress(currentProcessedLength);
             });
         }
     }

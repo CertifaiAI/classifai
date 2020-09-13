@@ -54,7 +54,7 @@ public class ProjectLoader
     private Set<Integer> uuidUniqueSet;
 
     //list to send the new added datapoints as thumbnails to front end
-    private List<Integer> fileSysNewUUIDList;
+    @Getter private List<Integer> fileSysNewUUIDList;
 
     //used when checking for progress in
     //(1) validity of database data point
@@ -62,7 +62,7 @@ public class ProjectLoader
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
-    @Getter @Setter private List<Integer> progressUpdate;
+    @Getter private List<Integer> progressUpdate;
 
     public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
     {
@@ -77,10 +77,10 @@ public class ProjectLoader
 
         uuidGeneratorSeed = 0;
 
-        reset();
+        reset(FileSystemStatus.DID_NOT_INITIATE);
     }
 
-    private void reset()
+    public void reset(FileSystemStatus currentFileSystemStatus)
     {
         uuidUniqueSet = new HashSet<>();
         fileSysNewUUIDList = new ArrayList<>();
@@ -90,7 +90,7 @@ public class ProjectLoader
 
         progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
-        fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+        fileSystemStatus = currentFileSystemStatus;
     }
 
     //loading project from database
@@ -117,6 +117,7 @@ public class ProjectLoader
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
         }
+
     }
 
     public void updateDBLoadingProgress(Integer currentSize)
@@ -141,20 +142,26 @@ public class ProjectLoader
     public void updateFileSysLoadingProgress(Integer currentSize)
     {
         currentUUIDMarker = currentSize;
+        progressUpdate.set(0, currentUUIDMarker);
 
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
-            sanityUUIDList = new ArrayList<>(uuidUniqueSet);
+            fileSysNewUUIDList = new ArrayList<>(uuidUniqueSet);
 
-            if(sanityUUIDList.isEmpty())
+            sanityUUIDList.addAll(fileSysNewUUIDList);
+
+            if(fileSysNewUUIDList.isEmpty())
             {
                 fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
             }
             else
             {
+
                 fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
             }
+
+            SelectorHandler.setIsCurrentFileSystemDBUpdating(false);
         }
     }
 
@@ -165,20 +172,10 @@ public class ProjectLoader
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
+
         totalUUIDMaxLen = totalUUIDSizeBuffer;
-    }
+        progressUpdate = Arrays.asList(new Integer[]{0, totalUUIDMaxLen});
 
-    public void updateNewUUIDList()
-    {
-        fileSysNewUUIDList = new ArrayList<>(uuidUniqueSet);
-        sanityUUIDList.addAll(fileSysNewUUIDList);
-        uuidUniqueSet.clear();
-    }
-
-    public List<Integer> getFileSysNewUUIDList()
-    {
-        fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
-        return fileSysNewUUIDList;
     }
 
     public void setFileSystemStatus(FileSystemStatus status)

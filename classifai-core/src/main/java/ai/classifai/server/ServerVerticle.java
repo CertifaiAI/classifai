@@ -343,7 +343,7 @@ public class ServerVerticle extends AbstractVerticle
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
-        if (loaderStatus == LoaderStatus.LOADING)
+        if (loaderStatus.equals(LoaderStatus.LOADING))
         {
             JsonObject jsonObject = new JsonObject();
             jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
@@ -352,17 +352,17 @@ public class ServerVerticle extends AbstractVerticle
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
-        } else if (loaderStatus == LoaderStatus.LOADED) {
+        } else if (loaderStatus.equals(LoaderStatus.LOADED)) {
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(),loaderStatus.ordinal());
+            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
 
             jsonObject.put(ParamConfig.LABEL_LIST_PARAM, projectLoader.getLabelList());
             jsonObject.put(ParamConfig.UUID_LIST_PARAM, projectLoader.getSanityUUIDList());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
-        } else if ((loaderStatus == LoaderStatus.DID_NOT_INITIATED) || (loaderStatus == LoaderStatus.ERROR))
+        } else if (loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.ERROR))
         {
             JsonObject jsonObject = new JsonObject();
             jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.ERROR.ordinal());
@@ -430,6 +430,8 @@ public class ServerVerticle extends AbstractVerticle
             }
 
             Integer currentProjectID = loader.getProjectID();
+
+            SelectorHandler.getProjectLoader(currentProjectID).setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
             if (fileType.equals(ParamConfig.FILE))
             {
@@ -507,20 +509,16 @@ public class ServerVerticle extends AbstractVerticle
         if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
         {
             res.put(ParamConfig.PROGRESS_METADATA, loader.getProgressUpdate());
-            HTTPResponseHandler.configureOK(context, res);
         }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) | (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
         {
             List<Integer> newAddedUUIDList = loader.getFileSysNewUUIDList();
 
-            res.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.integerList2JsonArray(newAddedUUIDList));
+            res.put(ParamConfig.UUID_LIST_PARAM, newAddedUUIDList);
 
-            HTTPResponseHandler.configureOK(context, res);
         }
-        else
-        {
-            HTTPResponseHandler.configureOK(context, res);
-        }
+
+        HTTPResponseHandler.configureOK(context, res);
     }
 
     /**
