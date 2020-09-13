@@ -42,8 +42,8 @@ public class WelcomeConsole
     private static int PANE_WIDTH = 640;
     private static int PANE_HEIGHT = 480;
 
-    final static int BTN_X_COORD = 215;
-    final static int BTN_Y_COORD = 332;
+    final static int BTN_X_COORD = 217;
+    final static int BTN_Y_COORD = 342;
 
     final static int BTN_WIDTH = 55;
     final static int BTN_HEIGHT = 55;
@@ -96,13 +96,13 @@ public class WelcomeConsole
 
         frame.add(panel);
 
-        //frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
+        /*frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
 
-        int frameWidth = PANE_WIDTH + (frame.getInsets().left + frame.getInsets().right);
-        int frameHeight = PANE_HEIGHT + (frame.getInsets().top + frame.getInsets().bottom);
-
+        int frameWidth = PANE_WIDTH - (frame.getInsets().left + frame.getInsets().right);
+        int frameHeight = PANE_HEIGHT - (frame.getInsets().top + frame.getInsets().bottom);
 
         frame.setPreferredSize(new Dimension(frameWidth, frameHeight));
+         */
 
         frame.pack();
         frame.setLocationRelativeTo(null);
