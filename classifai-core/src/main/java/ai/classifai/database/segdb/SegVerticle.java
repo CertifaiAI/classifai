@@ -17,9 +17,9 @@ package ai.classifai.database.segdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -35,6 +35,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -144,7 +145,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
             projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
 
-                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
                 if(fetch.succeeded()) {
                     loader.pushDBValidUUID(UUID);
@@ -224,25 +225,29 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
         Integer projectID  = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         message.reply(ReplyHandler.getOkReply());
 
+
         if(oriUUIDList.isEmpty())
         {
-            loader.updateDBLoadingProgress(1);
+            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
             return;
         }
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
+        //sanity check on seed and write on database if needed
+        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.UUID_GENERATOR_PARAM));
+
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            final Integer currentLength = i;
+            final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
@@ -261,7 +266,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                         if(ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
                     }
                 }
-                loader.updateDBLoadingProgress(currentLength + 1);
+                loader.updateDBLoadingProgress(currentLength);
             });
         }
     }

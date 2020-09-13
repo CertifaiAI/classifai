@@ -17,9 +17,9 @@ package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -35,6 +35,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -143,7 +144,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
             projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
             {
-                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
                 if(fetch.succeeded())
                 {
                     loader.pushDBValidUUID(UUID);
@@ -227,17 +228,20 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         message.reply(ReplyHandler.getOkReply());
 
         if(oriUUIDList.isEmpty())
         {
-            loader.updateDBLoadingProgress(1);
+            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
             return;
         }
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
+
+        //sanity check on seed and write on database if needed
+        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.UUID_GENERATOR_PARAM));
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {

@@ -20,6 +20,7 @@ import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class FileSelector{
 
     public void runFileSelector(@NonNull Integer projectID)
     {
-        SelectorHandler.setIsCurrentFileSystemDBUpdating(true);
+        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -85,18 +86,18 @@ public class FileSelector{
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
 
-                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFile(projectID, files);
                         }
                         else
                         {
-                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                     }
                     else
                     {
-                        SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
 
                 }
@@ -104,8 +105,8 @@ public class FileSelector{
         }
         catch (Exception e){
 
-            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-            log.info("SelectorHandler for File type failed to open", e);
+            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            log.info("ProjectHandler for File type failed to open", e);
         }
 
     }

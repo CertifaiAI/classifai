@@ -39,8 +39,8 @@ public class WelcomeConsole
 
     final static String BUTTON_PATH;
 
-    private static int FRAME_WIDTH = 640;
-    private static int FRAME_HEIGHT = 480;
+    private static int PANE_WIDTH = 640;
+    private static int PANE_HEIGHT = 480;
 
     final static int BTN_X_COORD = 217;
     final static int BTN_Y_COORD = 342;
@@ -62,7 +62,7 @@ public class WelcomeConsole
         frame = new JFrame("Welcome to Classifai");
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        panel.setSize(PANE_WIDTH, PANE_HEIGHT);
 
         JButton openButton = getButton("Open_Button.png", "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
@@ -96,7 +96,13 @@ public class WelcomeConsole
 
         frame.add(panel);
 
-        //frame.getContentPane().setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
+        //frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
+
+        int frameWidth = PANE_WIDTH + (frame.getInsets().left + frame.getInsets().right);
+        int frameHeight = PANE_HEIGHT + (frame.getInsets().top + frame.getInsets().bottom);
+
+
+        frame.setPreferredSize(new Dimension(frameWidth, frameHeight));
 
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -142,11 +148,11 @@ public class WelcomeConsole
         {
             BufferedImage oriImg = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
 
-            BufferedImage img = resize(oriImg, FRAME_WIDTH, FRAME_HEIGHT);
+            BufferedImage img = resize(oriImg, PANE_WIDTH, PANE_HEIGHT);
 
             JLabel bgLabel = new JLabel(new ImageIcon(img));
             bgLabel.setLayout(null);
-            bgLabel.setBounds(0,0, FRAME_WIDTH, FRAME_HEIGHT);
+            bgLabel.setBounds(0,0, PANE_WIDTH, PANE_HEIGHT);
 
             return bgLabel;
         }

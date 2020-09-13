@@ -21,8 +21,8 @@ import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
-import ai.classifai.selector.SelectorHandler;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.ProjectHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,6 +45,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class ImageHandler {
+
+    private static final int MAX_FILE_SYS_PROCESSING_SEC = 10800;
 
     private static String getImageHeader(String input)
     {
@@ -174,10 +176,6 @@ public class ImageHandler {
     {
         Map<String, Integer> map = new HashMap<>();
 
-        Integer width = 0;
-        Integer height = 0;
-        Integer depth = -1;
-
         try{
             BufferedImage bimg = ImageIO.read(file);
 
@@ -188,13 +186,13 @@ public class ImageHandler {
             }
             else
             {
-                width = bimg.getWidth();
-                height = bimg.getHeight();
+                Integer width = bimg.getWidth();
+                Integer height = bimg.getHeight();
 
                 int type = bimg.getColorModel().getColorSpace().getType();
                 boolean grayscale = (type==ColorSpace.TYPE_GRAY || type==ColorSpace.CS_GRAY);
 
-                depth = grayscale ? 1 : 3;
+                Integer depth = grayscale ? 1 : 3;
 
                 map.put("width", width);
                 map.put("height", height);
@@ -281,7 +279,7 @@ public class ImageHandler {
 
     public static void saveToDatabase(@NonNull Integer projectID, @NonNull List<File> filesCollection)
     {
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
         AtomicInteger uuidGenerator = new AtomicInteger(loader.getUuidGeneratorSeed());
 
         //update Portfolio Verticle Generator Seed
@@ -319,7 +317,14 @@ public class ImageHandler {
         {
             float seconds = (System.currentTimeMillis() - start ) / 1000F;
 
-            if((Float.compare(seconds, 180) > 0) || (SelectorHandler.isCurrentFileSystemDBUpdating() == false))
+            //If times takes more than ? , terminate and update
+            if(Float.compare(seconds, MAX_FILE_SYS_PROCESSING_SEC) > 0)
+            {
+                //update uuid list
+                loader.offloadUUIDUniqueSet2List();
+            }
+
+            if(ProjectHandler.isCurrentFileSystemDBUpdating() == false)
             {
                 PortfolioVerticle.updateFileSystemUUIDList(projectID);
 

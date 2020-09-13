@@ -19,6 +19,7 @@ import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class FolderSelector{
 
     public void runFolderSelector(@NonNull Integer projectID)
     {
-        SelectorHandler.setIsCurrentFileSystemDBUpdating(true);
+        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -81,26 +82,26 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
                         }
                         else
                         {
-                            SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                     }
                     else
                     {
 
-                        SelectorHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
                 }
             });
         }
         catch (Exception e)
         {
-            log.info("SelectorHandler for Folder type failed to open", e);
+            log.info("ProjectHandler for Folder type failed to open", e);
         }
 
     }

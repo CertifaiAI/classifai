@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector;
+package ai.classifai.util;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.server.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -30,12 +31,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Selector Handler for File & Folder Selector and Database Update
+ * Project Handler for File & Folder Selector and Database Update
  *
  * @author ChiaWei
  */
 @Slf4j
-public class SelectorHandler {
+public class ProjectHandler {
 
     //unique project id generator for each project
     private static AtomicInteger projectIDGenerator;
@@ -104,7 +105,7 @@ public class SelectorHandler {
         }
         catch (Exception e)
         {
-            log.info("Error when retriveing ProjectLoader in SelectorHandler, ", e);
+            log.info("Error when retriveing ProjectLoader in ProjectHandler, ", e);
         }
         return null;
     }
@@ -162,6 +163,24 @@ public class SelectorHandler {
             log.debug("Annotation integer unmatched in AnnotationType: " + annotationTypeInt);
             return false;
         }
+    }
+
+    public static void checkUUIDGeneratorSeedSanity(@NonNull Integer projectID, @NonNull Integer listUUIDSeed, @NonNull Integer dbUUIDSeed)
+    {
+        Integer validUUIDGeneratorSeed = null;
+        if(listUUIDSeed > dbUUIDSeed)
+        {
+            validUUIDGeneratorSeed = new Integer(listUUIDSeed);
+            PortfolioVerticle.updateUUIDGeneratorSeed(projectID, listUUIDSeed);
+        }
+        else
+        {
+            validUUIDGeneratorSeed = new Integer(dbUUIDSeed);
+        }
+
+        ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
+
+        loader.setUuidGeneratorSeed(validUUIDGeneratorSeed);
     }
 
     public static boolean initSelector(String selection)

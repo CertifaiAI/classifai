@@ -20,9 +20,9 @@ import ai.classifai.annotation.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -100,7 +100,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         String projectName = request.getString(ParamConfig.PROJECT_NAME_PARAM);
         Integer annotationType = request.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-        if(SelectorHandler.isProjectNameUnique(projectName, annotationType)) {
+        if(ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
 
             String annotationName = "";
 
@@ -115,7 +115,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
 
-            Integer projectID = SelectorHandler.generateProjectID();
+            Integer projectID = ProjectHandler.generateProjectID();
 
             JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.EMPTY_ARRAY).add(0).add(ParamConfig.EMPTY_ARRAY);
 
@@ -123,7 +123,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 if (fetch.succeeded())
                 {
-                    SelectorHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED);
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED);
                     message.reply(ReplyHandler.getOkReply());
                 }
                 else
@@ -142,16 +142,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public static void updateUUIDGeneratorSeed(@NonNull Integer projectID, @NonNull Integer seedNumber)
     {
+        ProjectHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
+
         JsonArray params = new JsonArray().add(seedNumber).add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_UUID_GENERATOR_SEED, params, fetch -> {
 
-            if(fetch.succeeded())
-            {
-                SelectorHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
-            }
-            else
-            {
+            if(!fetch.succeeded()) {
                 log.error("Update seed number in Portfolio failed. Project expected to hit error: ", fetch.cause().getMessage());
             }
         });
@@ -169,7 +166,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 //update Project loader too
                 List<String> labelListArray = ConversionHandler.jsonArray2StringList(labelList);
 
-                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
                 loader.setLabelList(labelListArray);
 
@@ -199,7 +196,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     String strList = row.getString(0);
                     Integer uuidGeneratorSeed = row.getInteger(1);
 
-                    response.put(ParamConfig.UUID_LIST_PARAM, ConversionHandler.string2IntegerList(strList));//row.getString(0)));
+                    List<Integer> uuidList = ConversionHandler.string2IntegerList(strList);
+                    //FIX ME: GET THE MAXIMUM AND set the generator if needed
+                    response.put(ParamConfig.UUID_LIST_PARAM, uuidList);//row.getString(0)));
                     response.put(ParamConfig.UUID_GENERATOR_PARAM, uuidGeneratorSeed);
 
                     message.reply(response);
@@ -229,7 +228,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
 
-                ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
                 if(loader != null)
                 {
@@ -276,7 +275,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public static void updateFileSystemUUIDList(@NonNull Integer projectID)
     {
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         List<Integer> uuidList = loader.getSanityUUIDList();
 
@@ -306,15 +305,15 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 if(projectIDList.isEmpty())
                 {
                     log.debug("Project ID List is empty. Initiate generator id from 0");
-                    SelectorHandler.setProjectIDGenerator(0);
+                    ProjectHandler.setProjectIDGenerator(0);
                 }
                 else
                 {
                     //set the seed generator when creating new project
                     Integer maxProjectID = Collections.max(projectIDList);
-                    SelectorHandler.setProjectIDGenerator(maxProjectID);
+                    ProjectHandler.setProjectIDGenerator(maxProjectID);
 
-                    //set projectIDLoaderDict and projectIDSearch in SelectorHandler
+                    //set projectIDLoaderDict and projectIDSearch in ProjectHandler
                     for (Integer projectID : projectIDList)
                     {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
@@ -332,7 +331,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     Integer annotationType = row.getInteger(1);
                                     Integer thisProjectID = projectIDJson.getInteger(0);
 
-                                    SelectorHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED);
+                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED);
                                 }
                             } else {
                                 log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
