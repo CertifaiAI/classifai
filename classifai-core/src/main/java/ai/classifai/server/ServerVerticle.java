@@ -78,7 +78,7 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject()
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.BOUNDINGBOX.ordinal());
 
-        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
+        getAllProjects(context, request);
     }
 
     /**
@@ -91,10 +91,10 @@ public class ServerVerticle extends AbstractVerticle
         JsonObject request = new JsonObject()
                 .put(ParamConfig.ANNOTATE_TYPE_PARAM, AnnotationType.SEGMENTATION.ordinal());
 
-        getAllProjects(context, request, AnnotationType.SEGMENTATION);
+        getAllProjects(context, request);
     }
 
-    private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
+    private void getAllProjects(RoutingContext context, JsonObject request)
     {
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE);
 
