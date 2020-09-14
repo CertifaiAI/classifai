@@ -107,7 +107,6 @@ public class FileSelector{
         }
         catch (Exception e){
 
-            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
             log.info("ProjectHandler for File type failed to open", e);
         }
 
