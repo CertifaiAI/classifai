@@ -31,7 +31,7 @@ import java.awt.image.BufferedImage;
  * @author Chiawei Lim
  */
 @Slf4j
-public class WelcomeConsole
+public class WelcomeLauncher
 {
     private static JFrame frame;
     private static String browserURL;
@@ -125,7 +125,7 @@ public class WelcomeConsole
 
         try {
 
-            Image img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+            Image img = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + fileName));
 
             Image scaledImg = img.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
 
@@ -146,7 +146,7 @@ public class WelcomeConsole
     {
         try
         {
-            BufferedImage oriImg = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + fileName));
 
             BufferedImage img = resize(oriImg, PANE_WIDTH, PANE_HEIGHT);
 

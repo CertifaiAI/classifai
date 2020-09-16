@@ -18,7 +18,7 @@ package ai.classifai.selector;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
-import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.ui.WelcomeLauncher;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import lombok.NonNull;
@@ -74,7 +74,7 @@ public class FolderSelector{
                     frame.dispose();
 
                     //prevent Welcome Console from popping out
-                    WelcomeConsole.setToBackground();
+                    WelcomeLauncher.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
