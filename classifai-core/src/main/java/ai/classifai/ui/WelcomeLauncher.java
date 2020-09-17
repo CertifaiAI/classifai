@@ -15,11 +15,11 @@
  */
 package ai.classifai.ui;
 
-import ai.classifai.os.LogHandler;
-import ai.classifai.os.ProgramOpener;
-import ai.classifai.server.ParamConfig;
-import ai.classifai.os.BrowserHandler;
-import ai.classifai.os.OSManager;
+
+import ai.classifai.ui.button.BrowserHandler;
+import ai.classifai.ui.button.LogHandler;
+import ai.classifai.ui.button.OSManager;
+import ai.classifai.ui.button.ProgramOpener;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -38,8 +38,6 @@ import java.awt.image.BufferedImage;
 public class WelcomeLauncher
 {
     private static JFrame frame;
-    private static String browserURL;
-    private static String logPath;
     private static OSManager osManager;
 
     final static String BUTTON_PATH;
@@ -58,9 +56,8 @@ public class WelcomeLauncher
     static
     {
         BUTTON_PATH = "/console/";
-        browserURL = "http://localhost:" + ParamConfig.getHostingPort();
+
         osManager = new OSManager();
-        logPath = System.getProperty("user.home") + "\\logs\\" +  ParamConfig.LOG_FILE_NAME;
     }
 
     public static void start()
@@ -70,40 +67,9 @@ public class WelcomeLauncher
         JPanel panel = new JPanel(new BorderLayout());
         panel.setSize(PANE_WIDTH, PANE_HEIGHT);
 
-        JButton openButton = getButton("Open_Button.png", "Open");
-        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ProgramOpener.launch(osManager.getCurrentOS(), BrowserHandler.getBrowserKey(), browserURL);
-            }
-        });
-
-        JButton closeButton = getButton("Close_Button.png", "Close");
-        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        JButton logOpenButton = getButton("Log_Button.png", "License");
-        logOpenButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        logOpenButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), logPath);
-            }
-        });
-
-        panel.add(openButton);
-        panel.add(closeButton);
-        panel.add(logOpenButton);
+        panel.add(getOpenButton());
+        panel.add(getCloseButton());
+        panel.add(getLogButton());
 
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
@@ -132,6 +98,55 @@ public class WelcomeLauncher
     {
         frame.setState(Frame.ICONIFIED);
     }
+
+    private static JButton getOpenButton()
+    {
+        JButton openButton = getButton("Open_Button.png", "Open");
+        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProgramOpener.launch(osManager.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), true);
+            }
+        });
+
+        return openButton;
+    }
+
+
+    private static JButton getCloseButton()
+    {
+        JButton closeButton = getButton("Close_Button.png", "Close");
+        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        return closeButton;
+    }
+
+
+    private static JButton getLogButton()
+    {
+        JButton logOpenButton = getButton("Log_Button.png", "License");
+        logOpenButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        logOpenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), LogHandler.getLogPath(), false);
+            }
+        });
+
+        return logOpenButton;
+    }
+
 
     private static JButton getButton(String fileName, String altText)
     {

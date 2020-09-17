@@ -13,8 +13,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.os;
+package ai.classifai.ui.button;
 
+import ai.classifai.server.ParamConfig;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 public class LogHandler
 {
     @Getter private static Map<String, List<String>> textEditorKey;
+    @Getter private static String logPath;
 
     static
     {
@@ -40,9 +42,10 @@ public class LogHandler
         winEditorPath.add("C:\\Windows\\System32\\notepad.exe");
         winEditorPath.add("C:\\Windows\\notepad.exe");
 
-
         textEditorKey.put(OS.MAC.name(), null);
         textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
         textEditorKey.put(OS.LINUX.name(), null);
+
+        logPath = System.getProperty("user.home") + "\\logs\\" +  ParamConfig.LOG_FILE_NAME;
     }
 }

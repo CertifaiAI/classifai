@@ -102,6 +102,15 @@ public class ConversionHandler
         return null;
     }
 
+    public static String arrayString2String(String[] input)
+    {
+        StringBuffer sb = new StringBuffer();
+        for(int i = 0; i < input.length; i++) {
+            sb.append(input[i]);
+        }
+        return sb.toString();
+    }
+
     public static List<String> string2StringList(String input)
     {
         String content = preprocessStringToArray(input);

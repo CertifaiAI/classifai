@@ -13,15 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.os;
+package ai.classifai.ui.button;
 
+import ai.classifai.server.ParamConfig;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +39,12 @@ import static javax.swing.JOptionPane.showMessageDialog;
 public class BrowserHandler {
 
     @Getter private static Map<String, List<String>> browserKey;
+    @Getter private static String browserURL;
 
     static
     {
+        browserURL = "http://localhost:" + ParamConfig.getHostingPort();
+
         browserKey = new HashMap<>();
 
         List macBrowserKey = new ArrayList<String>();
@@ -68,7 +68,6 @@ public class BrowserHandler {
         browserKey.put(OS.MAC.name(), macBrowserKey);
         browserKey.put(OS.WINDOWS.name(), winBrowserKey);
         //browserKey.put(OS.LINUX.name(), linuxBrowserKey);
-
 
     }
 
