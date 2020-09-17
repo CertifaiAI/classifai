@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.ui;
+package ai.classifai.os;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,8 @@ enum OS
 {
     WINDOWS,
     MAC,
+    UBUNTU,
+    LINUX,
     UNIX,
     SOLARIS,
     NULL
@@ -51,6 +53,10 @@ public class OSManager
         else if(osPropertyName.indexOf("win") >= 0)
         {
             return OS.WINDOWS;
+        }
+        else if(osPropertyName.indexOf("linux") >= 0)
+        {
+            return OS.LINUX;
         }
         else if(osPropertyName.indexOf("nix") >= 0 || osPropertyName.indexOf("nux") >= 0 || osPropertyName.indexOf("aix") > 0)
         {

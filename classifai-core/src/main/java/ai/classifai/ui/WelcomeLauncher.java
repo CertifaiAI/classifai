@@ -15,7 +15,11 @@
  */
 package ai.classifai.ui;
 
+import ai.classifai.os.LogHandler;
+import ai.classifai.os.ProgramOpener;
 import ai.classifai.server.ParamConfig;
+import ai.classifai.os.BrowserHandler;
+import ai.classifai.os.OSManager;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -35,6 +39,7 @@ public class WelcomeLauncher
 {
     private static JFrame frame;
     private static String browserURL;
+    private static String logPath;
     private static OSManager osManager;
 
     final static String BUTTON_PATH;
@@ -55,6 +60,7 @@ public class WelcomeLauncher
         BUTTON_PATH = "/console/";
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
         osManager = new OSManager();
+        logPath = System.getProperty("user.home") + "\\logs\\" +  ParamConfig.LOG_FILE_NAME;
     }
 
     public static void start()
@@ -70,7 +76,7 @@ public class WelcomeLauncher
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                BrowserHandler.openOnBrowser(browserURL, osManager);
+                ProgramOpener.launch(osManager.getCurrentOS(), BrowserHandler.getBrowserKey(), browserURL);
             }
         });
 
@@ -84,12 +90,20 @@ public class WelcomeLauncher
             }
         });
 
-        JButton acknowledgementButton = getButton("Acknowledge_Button.png", "License");
-        acknowledgementButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+        JButton logOpenButton = getButton("Log_Button.png", "License");
+        logOpenButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        logOpenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), logPath);
+            }
+        });
 
         panel.add(openButton);
         panel.add(closeButton);
-        panel.add(acknowledgementButton);
+        panel.add(logOpenButton);
 
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST

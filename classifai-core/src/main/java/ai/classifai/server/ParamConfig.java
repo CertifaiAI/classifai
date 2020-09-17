@@ -69,5 +69,7 @@ public class ParamConfig
 
     public static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
 
+    public static final String LOG_FILE_NAME = "classifai.log";
+
     @Getter @Setter private static Integer hostingPort;
 }
