@@ -16,11 +16,10 @@
 package ai.classifai.database.segdb;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -32,9 +31,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -122,7 +123,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
     }
 
-    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID, int currentIndex, int maxIndex)
+    public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
@@ -130,7 +131,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         {
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
-                    .add(SelectorHandler.getCurrentFileSystemProjectID()) //projectid) //projectid
+                    .add(projectID) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
                     .add((Integer)imgMetadata.get("depth")) //img_depth
@@ -143,22 +144,20 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add((Integer)imgMetadata.get("height"));
 
             projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
-                if(fetch.succeeded())
-                {
-                    uuidList.add(UUID);
+
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+                if(fetch.succeeded()) {
+                    loader.pushDBValidUUID(UUID);
                 }
                 else
                 {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+                    log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+
                 }
 
-                if(currentIndex >= maxIndex)
-                {
-                    SelectorHandler.setIsCurrentFileSystemDBUpdated(true);
-                }
+                loader.updateFileSysLoadingProgress(currentProcessedLength);
             });
-
-
         }
     }
 
@@ -226,61 +225,51 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
         Integer projectID  = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
+
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
-        if(loader == null)
-        {
-            message.reply(ReplyHandler.getFailedReply());
-            return;
-        }
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         message.reply(ReplyHandler.getOkReply());
 
+
         if(oriUUIDList.isEmpty())
         {
-            loader.setLoaderStatus(LoaderStatus.LOADED);
+            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
+            return;
         }
-        else
+
+        loader.setDbOriUUIDSize(oriUUIDList.size());
+
+        //sanity check on seed and write on database if needed
+        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.UUID_GENERATOR_PARAM));
+
+        for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            loader.setTotalUUIDSize(oriUUIDList.size());
-            loader.setLoaderStatus(LoaderStatus.LOADING);
+            final Integer currentLength = i + 1;
+            final Integer UUID = oriUUIDList.get(i);
+            JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            for(int i = 0; i < oriUUIDList.size(); ++i)
-            {
-                final Integer currentLength = i;
-                final Integer UUID = oriUUIDList.get(i);
-                JsonArray params = new JsonArray().add(UUID).add(projectID);
+            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
-                projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
+                if (fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
 
-                    if (fetch.succeeded())
+                    if (resultSet.getNumRows() != 0)
                     {
-                        ResultSet resultSet = fetch.result();
+                        JsonArray row = resultSet.getResults().get(0);
 
-                        if (resultSet.getNumRows() != 0)
-                        {
-                            JsonArray row = resultSet.getResults().get(0);
+                        String dataPath = row.getString(0);
 
-                            String dataPath = row.getString(0);
-
-                            if(ImageHandler.isImageReadable(dataPath)) loader.pushToUUIDSet(UUID);
-                        }
-                        loader.updateProgress(currentLength + 1);
+                        if(ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
                     }
-                    else
-                    {
-                        loader.updateProgress(currentLength + 1);
-                    }
-                });
-            }
+                }
+                loader.updateDBLoadingProgress(currentLength);
+            });
         }
-
     }
-
-
 
 
     //PUT http://localhost:{port}/updatedata

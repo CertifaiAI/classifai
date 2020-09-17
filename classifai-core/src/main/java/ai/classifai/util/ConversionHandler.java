@@ -193,40 +193,8 @@ public class ConversionHandler
 
         return array;
     }
-  
-    public static JsonArray integerList2JsonArray(List<Integer> list)
-    {
-        JsonArray jsonArray = new JsonArray();
 
-        if(list.isEmpty())
-        {
-            jsonArray.add("[]");
-            return jsonArray;
-        }
 
-        jsonArray.add("[");
-
-        Iterator iter = list.iterator();
-
-        Integer item = (Integer) iter.next();
-        while(true)
-        {
-            jsonArray.add(item);
-
-            if(iter.hasNext())
-            {
-                jsonArray.add(", ");
-                item = (Integer) iter.next();
-            }
-            else
-            {
-                break;
-            }
-        }
-        jsonArray.add("]");
-
-        return jsonArray;
-    }
     //.json -> JSONObject
     public static org.json.simple.JSONObject loadFile2Json(File inputFilePath)
     {

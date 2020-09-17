@@ -16,11 +16,13 @@
 
 package ai.classifai.selector;
 
-import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -28,7 +30,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Open browser to select files
@@ -39,7 +40,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFileSelector(AnnotationType annotationType, AtomicInteger uuidGenerator) {
+    public void runFileSelector(@NonNull Integer projectID)
+    {
+        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -82,29 +85,29 @@ public class FileSelector{
 
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
-                            if( (SelectorHandler.getCurrentFileSystemProjectLoader() == null) || (SelectorHandler.getCurrentFileSystemProjectID() == null))
-                            {
-                                log.info("File System project loader is null. Update database failed");
-                            }
 
-                            SelectorHandler.startDatabaseUpdate();
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-                            ImageHandler.processFile(annotationType, files, uuidGenerator);
+                            ImageHandler.processFile(projectID, files);
+                        }
+                        else
+                        {
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                         }
                     }
                     else
                     {
-
-                        SelectorHandler.setWindowState(false);
+                        ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                     }
 
                 }
             });
         }
         catch (Exception e){
-            SelectorHandler.setWindowState(false);
 
-            log.info("SelectorHandler for File type failed to open", e);
+            log.info("ProjectHandler for File type failed to open", e);
         }
 
     }

@@ -23,9 +23,9 @@ import ai.classifai.database.portfoliodb.PortfolioDbQuery;
 import ai.classifai.database.segdb.SegDbQuery;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
-import ai.classifai.selector.SelectorHandler;
-import ai.classifai.selector.SelectorStatus;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -37,10 +37,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Main server verticle routing different url requests
@@ -210,32 +208,29 @@ public class ServerVerticle extends AbstractVerticle
     private void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
 
         log.info("Load project: " + projectName + " of annotation type: " + annotationType.name());
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectID);
+        ProjectLoader loader = getProjectLoader(context, projectName, annotationType);
 
-        if (loader == null)
-        {
-            String messageInfo = "Project Loader null. " + annotationType.name() + " project of name " + projectName + " cannot be found for loading";
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
-            return;
-        }
+        if(loader == null) return;
 
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
+        //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
         if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
-            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, projectID);//.put(ParamConfig.ANNOTATE_TYPE_PARAM, annotationType.ordinal());
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, loader.getProjectID());
 
             //load label list
             DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_LABEL_LIST);
+
             vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, labelOptions, labelReply ->
             {
-                if (labelReply.succeeded()) {
+                if (labelReply.succeeded())
+                {
                     JsonObject labelResponse = (JsonObject) labelReply.result().body();
 
                     if (ReplyHandler.isReplyOk(labelResponse))
@@ -245,19 +240,22 @@ public class ServerVerticle extends AbstractVerticle
 
                         vertx.eventBus().request(PortfolioDbQuery.QUEUE, jsonObject, options, reply ->
                         {
-                            if (reply.succeeded()) {
-                                JsonObject oriUUIDResponse = (JsonObject) reply.result().body();
+                            if (reply.succeeded())
+                            {
+                                JsonObject uuidResponse = (JsonObject) reply.result().body();
 
-                                if (ReplyHandler.isReplyOk(oriUUIDResponse))
+                                if (ReplyHandler.isReplyOk(uuidResponse))
                                 {
-                                    JsonArray uuidListArray = oriUUIDResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
+                                    JsonArray uuidListArray = uuidResponse.getJsonArray(ParamConfig.UUID_LIST_PARAM);
 
-                                    JsonObject removalObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray).put(ParamConfig.PROJECT_ID_PARAM, projectID);
+                                    Integer uuidGeneratorSeed = uuidResponse.getInteger(ParamConfig.UUID_GENERATOR_PARAM);
 
-                                    DeliveryOptions removalOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
+                                    JsonObject uuidListObject = jsonObject.put(ParamConfig.UUID_LIST_PARAM, uuidListArray).put(ParamConfig.PROJECT_ID_PARAM, loader.getProjectID()).put(ParamConfig.UUID_GENERATOR_PARAM, uuidGeneratorSeed);
+
+                                    DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, query);
 
                                     //start checking uuid if it's path is still exist
-                                    vertx.eventBus().request(queue, removalObject, removalOptions, fetch ->
+                                    vertx.eventBus().request(queue, uuidListObject, uuidListOptions, fetch ->
                                     {
                                         JsonObject removalResponse = (JsonObject) fetch.result().body();
 
@@ -289,7 +287,7 @@ public class ServerVerticle extends AbstractVerticle
                 }
             });
         }
-        else if(loaderStatus.equals(LoaderStatus.LOADED) || loaderStatus.equals(LoaderStatus.EMPTY) | loaderStatus.equals(LoaderStatus.LOADING))
+        else if(loaderStatus.equals(LoaderStatus.LOADED)  || loaderStatus.equals(LoaderStatus.LOADING))
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }
@@ -337,51 +335,39 @@ public class ServerVerticle extends AbstractVerticle
     private void loadProjectStatus(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(new ImmutablePair(projectName, annotationType.ordinal()));
-        ProjectLoader projectLoader = SelectorHandler.getProjectLoader(projectID);
 
-        if(projectLoader == null)
-        {
-            String messageInfo = "Project name " + projectName + " cannot be found for loading";
-            log.info("Project Loader null. " + messageInfo);
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
-            return;
-        }
+        ProjectLoader projectLoader = getProjectLoader(context, projectName, annotationType);
+
+        if (projectLoader == null) return;
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
-
-        if(loaderStatus == LoaderStatus.LOADING)
+        if (loaderStatus.equals(LoaderStatus.LOADING))
         {
-            JsonObject jsonObject = ReplyHandler.getOkReply();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
+
             jsonObject.put(ParamConfig.PROGRESS_METADATA, projectLoader.getProgress());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
-        }
-        else if((loaderStatus == LoaderStatus.LOADED) || (loaderStatus == LoaderStatus.EMPTY))
-        {
+
+        } else if (loaderStatus.equals(LoaderStatus.LOADED)) {
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.LOADED.ordinal());
+            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
 
             jsonObject.put(ParamConfig.LABEL_LIST_PARAM, projectLoader.getLabelList());
             jsonObject.put(ParamConfig.UUID_LIST_PARAM, projectLoader.getSanityUUIDList());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
-        }
-        else if(loaderStatus == LoaderStatus.DID_NOT_INITIATED)
+        } else if (loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.ERROR))
         {
-            JsonObject object = new JsonObject();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.ERROR.ordinal());
+            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
 
-            object.put(ReplyHandler.getMessageKey(), LoaderStatus.DID_NOT_INITIATED.ordinal());
-
-            HTTPResponseHandler.configureOK(context, object);
-
-        }
-        else if(loaderStatus == LoaderStatus.ERROR)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading failed. LoaderStatus error for project " + projectName));
+            HTTPResponseHandler.configureOK(context, jsonObject);
         }
     }
 
@@ -396,7 +382,9 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void selectBndBoxFileSystemType(RoutingContext context)
     {
-        selectFileSystemType(context, AnnotationType.BOUNDINGBOX);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+
+        selectFileSystemType(context, projectName, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -410,102 +398,65 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void selectSegFileSystemType(RoutingContext context)
     {
-        selectFileSystemType(context, AnnotationType.SEGMENTATION);
+        String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+
+        selectFileSystemType(context, projectName, AnnotationType.SEGMENTATION);
     }
 
-    private void selectFileSystemType(RoutingContext context, AnnotationType annotationType)
+    private void selectFileSystemType(RoutingContext context, String projectName, AnnotationType annotationType)
     {
-        if(SelectorHandler.isLoaderProcessing()) //file or folder selecting and updating
-        {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), 2);
-            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Database is updating");
+        ProjectLoader loader = getProjectLoader(context, projectName, annotationType);
 
-            HTTPResponseHandler.configureOK(context, jsonObject);
-        }
-        else if (SelectorHandler.isWindowOpen())
-        {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), 2);
-            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Window is open");
+        if(loader == null) return;
 
-            HTTPResponseHandler.configureOK(context, jsonObject);
+        FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
+
+        if(ProjectHandler.isCurrentFileSystemDBUpdating() || fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("File system processing. Not allowed to proceed"));
         }
         else
         {
-            String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
             String fileType = context.request().getParam(ParamConfig.FILE_SYS_PARAM);
 
-            if(SelectorHandler.isProjectNameInMemory(projectName, annotationType.ordinal()) == false)
+            if(!ProjectHandler.initSelector(fileType))
             {
-                String messageInfo = "Project Loader not found. Project name: " + projectName + " Annotation Type: " + annotationType.name();
-
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
+                JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Filetype with parameter " + fileType + " is not recognizable");
+                HTTPResponseHandler.configureOK(context, jsonObject);
+                return;
             }
-            else
+
+            Integer currentProjectID = loader.getProjectID();
+
+            ProjectHandler.getProjectLoader(currentProjectID).setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+
+            if (fileType.equals(ParamConfig.FILE))
             {
-                Integer projectID = SelectorHandler.setFileSystemProjectID(projectName, annotationType);
-
-                if(projectID == null)
-                {
-                    String messageInfo = "Failed to set ProjectLoader for current file system selector. Choose file/folder abort";
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(messageInfo));
-                }
-                else
-                {
-                    boolean isFileTypeSupported = SelectorHandler.initSelector(fileType);
-
-                    if(!isFileTypeSupported)
-                    {
-                        JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Filetype with parameter " + fileType + " is not recognizable");
-                        jsonObject.put(ReplyHandler.getMessageKey(), ReplyHandler.getFailedSignal());
-
-                        HTTPResponseHandler.configureOK(context, jsonObject);
-                    }
-                    else
-                    {
-                        //set uuid generator
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_PROJECT_UUID_LIST);
-                        vertx.eventBus().request(PortfolioDbQuery.QUEUE, new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, projectID), options, reply ->
-                        {
-                            if(reply.succeeded())
-                            {
-                                JsonObject response = (JsonObject) reply.result().body();
-
-                                if(ReplyHandler.isReplyOk(response))
-                                {
-                                    //this is to initiate the generator id to the end of existing list
-                                    List<Integer> uuidList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
-
-                                    Integer seedNumber = uuidList.isEmpty() ? 0 : uuidList.size();
-
-                                    SelectorHandler.configureOpenWindow(seedNumber);
-
-                                    if (fileType.equals(ParamConfig.FILE))
-                                    {
-                                        fileSelector.runFileSelector(annotationType, new AtomicInteger(seedNumber));
-                                    }
-                                    else if (fileType.equals(ParamConfig.FOLDER))
-                                    {
-                                        folderSelector.runFolderSelector(annotationType, new AtomicInteger(seedNumber));
-                                    }
-
-                                    HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-                                }
-                                else
-                                {
-                                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Initiation of uuid generator failed. Not able to initiate file/folder selector"));
-
-                                    return;
-                                }
-                            }
-                        });
-                    }
-                }
-
-
+                fileSelector.runFileSelector(currentProjectID);
             }
+            else if (fileType.equals(ParamConfig.FOLDER))
+            {
+                folderSelector.runFolderSelector(currentProjectID);
+            }
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }
+    }
+
+    private ProjectLoader getProjectLoader(RoutingContext context, String projectName, AnnotationType annotationType)
+    {
+        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, annotationType);
+
+        if(projectLoader == null)
+        {
+            String messageInfo = "Project name " + projectName + " cannot be found for loading";
+            log.info("Project Loader null. " + messageInfo);
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportProjectNameError(messageInfo));
+            return null;
+        }
+
+        return projectLoader;
     }
 
     /**
@@ -549,77 +500,24 @@ public class ServerVerticle extends AbstractVerticle
 
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        //check project name if exist
-        /*if(SelectorHandler.isProjectNameInMemory(projectName, annotationType.ordinal()) == false)
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
+        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+
+        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+
+        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
         {
-            JsonObject object = new JsonObject();
-            object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
-            object.put(ReplyHandler.getErrorMesageKey(), "Project name did not exist");
-            log.info("Project Loader not found. Project name: " + projectName);
-            HTTPResponseHandler.configureOK(context, object);
-        }*/
-
-        if(SelectorHandler.isWindowOpen())
+            res.put(ParamConfig.PROGRESS_METADATA, loader.getProgressUpdate());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) | (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
         {
-            HTTPResponseHandler.configureOK(context, new JsonObject().put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_OPEN.ordinal()));
+            List<Integer> newAddedUUIDList = loader.getFileSysNewUUIDList();
+
+            res.put(ParamConfig.UUID_LIST_PARAM, newAddedUUIDList);
+
         }
-        else if (SelectorHandler.isLoaderProcessing())
-        {
-            JsonObject res = new JsonObject();
 
-            SelectorStatus selectorStatus = SelectorHandler.getSelectorStatus();
-
-            res.put(ParamConfig.PROGRESS_METADATA, SelectorHandler.getProgressUpdate(projectName, annotationType));
-            res.put(ReplyHandler.getMessageKey(), selectorStatus.ordinal());
-
-            HTTPResponseHandler.configureOK(context, res);
-        }
-        else {
-            Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
-
-            JsonObject request = new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, PortfolioDbQuery.GET_THUMBNAIL_LIST);
-
-            vertx.eventBus().request(PortfolioDbQuery.QUEUE, request, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        List<Integer> intList = ConversionHandler.jsonArray2IntegerList(response.getJsonArray(ParamConfig.UUID_LIST_PARAM));
-
-                        if(intList.isEmpty())
-                        {
-                            response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED.ordinal());
-                            HTTPResponseHandler.configureOK(context, response);
-                        }
-                        else
-                        {
-                            response.put(ReplyHandler.getMessageKey(), SelectorStatus.WINDOW_CLOSE_DATABASE_UPDATED.ordinal());
-                            HTTPResponseHandler.configureOK(context, response);
-                        }
-                    }
-                    else
-                    {
-                        //temporary fix to fit this function
-                        response.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                }
-                else
-                {
-                    JsonObject object = new JsonObject();
-
-                    object.put(ReplyHandler.getMessageKey(), SelectorStatus.ERROR.ordinal());
-                    object.put(ReplyHandler.getErrorMesageKey(), "Failed in getting thumbnail list");
-
-                    HTTPResponseHandler.configureOK(context, object);
-                }
-            });
-        }
+        HTTPResponseHandler.configureOK(context, res);
     }
 
     /**
@@ -655,7 +553,7 @@ public class ServerVerticle extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         context.request().bodyHandler(h ->
         {
@@ -686,7 +584,7 @@ public class ServerVerticle extends AbstractVerticle
     public void getBndBoxMetadata(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
+        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
@@ -705,7 +603,7 @@ public class ServerVerticle extends AbstractVerticle
     public void getSegMetadata(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
+        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
@@ -730,7 +628,7 @@ public class ServerVerticle extends AbstractVerticle
             }
             else
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail. "));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail: " + fetch.cause().getMessage()));
             }
         });
     }
@@ -745,7 +643,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     public void getBndBoxImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
+        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
@@ -763,7 +661,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     public void getSegImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
+        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.UUID_PARAM));
 
         JsonObject request = new JsonObject().put(ParamConfig.UUID_PARAM, uuid)
@@ -808,7 +706,7 @@ public class ServerVerticle extends AbstractVerticle
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, BoundingBoxDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, SelectorHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal()));
+            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal()));
 
             vertx.eventBus().request(BoundingBoxDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
@@ -841,7 +739,7 @@ public class ServerVerticle extends AbstractVerticle
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.ACTION_KEYWORD, SegDbQuery.UPDATE_DATA);
 
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, SelectorHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
+            jsonObject.put(ParamConfig.PROJECT_ID_PARAM, ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
 
             vertx.eventBus().request(SegDbQuery.QUEUE, jsonObject, updateOptions, fetch ->
             {
@@ -895,7 +793,7 @@ public class ServerVerticle extends AbstractVerticle
     private void updateLabels(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID = SelectorHandler.getProjectID(projectName, annotationType.ordinal());
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         context.request().bodyHandler(h ->
         {
