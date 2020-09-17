@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 /***
  * Handler to open classifai in browser.
  * Options goes to
@@ -55,7 +53,7 @@ public class BrowserHandler {
 
         String chromeNativePath = System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe";
 
-        winBrowserKey.add("app\\chrome-win\\chrome.exe");
+        winBrowserKey.add("C:\\Program Files\\classifai\\app\\chrome-win\\chrome.exe");
         winBrowserKey.add(chromeNativePath);
         winBrowserKey.add("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
 

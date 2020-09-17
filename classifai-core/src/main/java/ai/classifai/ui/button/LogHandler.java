@@ -31,8 +31,6 @@ import java.util.Map;
 public class LogHandler
 {
     @Getter private static Map<String, List<String>> textEditorKey;
-    @Getter private static String logPath;
-
     static
     {
         textEditorKey = new HashMap<>();
@@ -45,7 +43,5 @@ public class LogHandler
         textEditorKey.put(OS.MAC.name(), null);
         textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
         textEditorKey.put(OS.LINUX.name(), null);
-
-        logPath = System.getProperty("user.home") + "\\logs\\" +  ParamConfig.LOG_FILE_NAME;
     }
 }

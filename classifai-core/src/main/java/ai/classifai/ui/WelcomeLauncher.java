@@ -16,6 +16,7 @@
 package ai.classifai.ui;
 
 
+import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.button.BrowserHandler;
 import ai.classifai.ui.button.LogHandler;
 import ai.classifai.ui.button.OSManager;
@@ -140,7 +141,7 @@ public class WelcomeLauncher
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), LogHandler.getLogPath(), false);
+                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.LOG_FILE_PATH, false);
             }
         });
 
