@@ -16,6 +16,7 @@
 package ai.classifai.selector;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeLauncher;
@@ -74,6 +75,8 @@ public class FolderSelector{
                     //prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
 
+                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
@@ -82,18 +85,18 @@ public class FolderSelector{
                         {
                             ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
 
-                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
                         }
                         else
                         {
-                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                     }
                     else
                     {
-                        ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
                 }
             });

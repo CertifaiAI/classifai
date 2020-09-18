@@ -220,6 +220,7 @@ public class ServerVerticle extends AbstractVerticle
         //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
         if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
         {
+            loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.PROJECT_ID_PARAM, loader.getProjectID());
@@ -287,7 +288,12 @@ public class ServerVerticle extends AbstractVerticle
                 }
             });
         }
-        else if(loaderStatus.equals(LoaderStatus.LOADED)  || loaderStatus.equals(LoaderStatus.LOADING))
+        else if(loaderStatus.equals(LoaderStatus.LOADED))
+        {
+            loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+        }
+        else if(loaderStatus.equals(LoaderStatus.LOADING))
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }
@@ -427,20 +433,24 @@ public class ServerVerticle extends AbstractVerticle
                 HTTPResponseHandler.configureOK(context, jsonObject);
                 return;
             }
-
-            Integer currentProjectID = loader.getProjectID();
-
-            ProjectHandler.getProjectLoader(currentProjectID).setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
-
-            if (fileType.equals(ParamConfig.FILE))
+            else
             {
-                fileSelector.runFileSelector(currentProjectID);
+                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+
+                Integer currentProjectID = loader.getProjectID();
+
+                if (fileType.equals(ParamConfig.FILE))
+                {
+                    fileSelector.runFileSelector(currentProjectID);
+                }
+                else if (fileType.equals(ParamConfig.FOLDER))
+                {
+                    folderSelector.runFolderSelector(currentProjectID);
+                }
+                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
             }
-            else if (fileType.equals(ParamConfig.FOLDER))
-            {
-                folderSelector.runFolderSelector(currentProjectID);
-            }
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
+
         }
     }
 
@@ -498,12 +508,15 @@ public class ServerVerticle extends AbstractVerticle
      */
     public void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
 
+
         String projectName = context.request().getParam(ParamConfig.PROJECT_NAME_PARAM);
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
+
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
         JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+
 
         if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
         {
@@ -514,6 +527,8 @@ public class ServerVerticle extends AbstractVerticle
             List<Integer> newAddedUUIDList = loader.getFileSysNewUUIDList();
 
             res.put(ParamConfig.UUID_LIST_PARAM, newAddedUUIDList);
+
+            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
 
         }
 
