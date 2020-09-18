@@ -124,40 +124,35 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
     public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
-        Map imgMetadata = ImageHandler.getImageMetadata(file);
+        JsonArray params = new JsonArray()
+                .add(UUID) //uuid
+                .add(projectID) //projectid
+                .add(file.getAbsolutePath()) //imgpath
+                .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                .add(0) //img_depth
+                .add(0) //imgX
+                .add(0) //imgY
+                .add(0) //imgW
+                .add(0) //imgH
+                .add(0) //file_size
+                .add(0)
+                .add(0);
 
-        if(imgMetadata != null)
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
         {
-            JsonArray params = new JsonArray()
-                    .add(UUID) //uuid
-                    .add(projectID) //projectid
-                    .add(file.getAbsolutePath()) //imgpath
-                    .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                    .add((Integer)imgMetadata.get("depth")) //img_depth
-                    .add(0) //imgX
-                    .add(0) //imgY
-                    .add(0) //imgW
-                    .add(0) //imgH
-                    .add(0) //file_size
-                    .add((Integer)imgMetadata.get("width"))
-                    .add((Integer)imgMetadata.get("height"));
-
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
+            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+            if(fetch.succeeded())
             {
-                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-                if(fetch.succeeded())
-                {
-                    loader.pushDBValidUUID(UUID);
+                loader.pushFileSysNewUUIDList(UUID);
+            }
+            else
+            {
+                log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+            }
 
-                }
-                else
-                {
-                    log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-                }
+            loader.updateFileSysLoadingProgress(currentProcessedLength);
+        });
 
-                loader.updateFileSysLoadingProgress(currentProcessedLength);
-            });
-        }
     }
 
 
@@ -191,7 +186,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
 
-                    String thumbnail = ImageHandler.getThumbNail(dataPath);
+                    Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
 
@@ -200,15 +195,15 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                     response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
                     response.put(ParamConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGE_DEPTH, Integer.parseInt(imgData.get(ParamConfig.IMAGE_DEPTH)));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.FILE_SIZE_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
+                    response.put(ParamConfig.IMAGEORIW_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIW_PARAM)));
+                    response.put(ParamConfig.IMAGEORIH_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIH_PARAM)));
+                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, imgData.get(ParamConfig.BASE64_PARAM));
                     message.reply(response);
                 }
 
@@ -245,16 +240,18 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
+
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
 
                 if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
 
-                    if (resultSet.getNumRows() != 0) {
+                    if (resultSet.getNumRows() != 0)
+                    {
                         JsonArray row = resultSet.getResults().get(0);
 
                         String dataPath = row.getString(0);
@@ -283,6 +280,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
             JsonArray params = new JsonArray()
                     .add(boundingBox)
+                    .add(requestBody.getInteger(ParamConfig.IMAGE_DEPTH))
                     .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
                     .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
                     .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
@@ -343,7 +341,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 connection.execute(BoundingBoxDbQuery.CREATE_PROJECT, create -> {
                     connection.close();
                     if (create.failed()) {
-                        log.error("BoundingBoxVerticle database preparation error", create.cause());
+                        log.error("BoundingBox Verticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
                     } else

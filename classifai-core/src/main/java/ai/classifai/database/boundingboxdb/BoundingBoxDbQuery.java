@@ -33,7 +33,7 @@ public class BoundingBoxDbQuery
 
     public final static String RETRIEVE_DATA_PATH = "select img_path from Project where uuid = ? and project_id = ?";
 
-    public final static String UPDATE_DATA = "update Project set bnd_box = ?, img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
+    public final static String UPDATE_DATA = "update Project set bnd_box = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
 
     public final static String DELETE_DATA = "delete from Project where uuid = ? and project_id = ?";
 

@@ -55,6 +55,8 @@ public class ParamConfig
     public final static String IMAGEORIW_PARAM = "img_ori_w";
     public final static String IMAGEORIH_PARAM = "img_ori_h";
 
+    public final static String BASE64_PARAM = "base64";
+
     public final static String FILE_SIZE_PARAM = "file_size";
 
     public final static String ACTION_KEYWORD = "action";

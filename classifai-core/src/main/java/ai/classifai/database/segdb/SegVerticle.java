@@ -125,30 +125,26 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
     public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
-        Map imgMetadata = ImageHandler.getImageMetadata(file);
-
-        if(imgMetadata != null)
-        {
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
                     .add(projectID) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                    .add((Integer)imgMetadata.get("depth")) //img_depth
+                    .add(0) //img_depth
                     .add(0) //imgX
                     .add(0) //imgY
                     .add(0) //imgW
                     .add(0) //imgH
                     .add(0) //file_size
-                    .add((Integer)imgMetadata.get("width"))
-                    .add((Integer)imgMetadata.get("height"));
+                    .add(0)
+                    .add(0);
 
             projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
 
                 ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
                 if(fetch.succeeded()) {
-                    loader.pushDBValidUUID(UUID);
+                    loader.pushFileSysNewUUIDList(UUID);
                 }
                 else
                 {
@@ -158,7 +154,6 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                 loader.updateFileSysLoadingProgress(currentProcessedLength);
             });
-        }
     }
 
     /*
@@ -192,7 +187,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
 
-                    String thumbnail = ImageHandler.getThumbNail(dataPath);
+                    Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
 
@@ -201,15 +196,15 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                     response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
                     response.put(ParamConfig.SEGMENTATION_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGE_DEPTH,  Integer.parseInt(imgData.get(ParamConfig.IMAGE_DEPTH)));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.FILE_SIZE_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
+                    response.put(ParamConfig.IMAGEORIW_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIW_PARAM)));
+                    response.put(ParamConfig.IMAGEORIH_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIH_PARAM)));
+                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, imgData.get(ParamConfig.BASE64_PARAM));
                     message.reply(response);
                 }
             }
@@ -251,7 +246,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
 
                 if (fetch.succeeded())
                 {
@@ -285,6 +280,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
             JsonArray params = new JsonArray()
                     .add(segContent)
+                    .add(requestBody.getInteger(ParamConfig.IMAGE_DEPTH))
                     .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
                     .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
                     .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))

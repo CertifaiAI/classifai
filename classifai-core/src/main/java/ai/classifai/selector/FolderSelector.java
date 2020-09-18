@@ -41,8 +41,6 @@ public class FolderSelector{
 
     public void runFolderSelector(@NonNull Integer projectID)
     {
-        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
-
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -82,6 +80,8 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
+                            ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
+
                             ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
@@ -89,13 +89,11 @@ public class FolderSelector{
                         else
                         {
                             ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                         }
                     }
                     else
                     {
                         ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                     }
                 }
             });
