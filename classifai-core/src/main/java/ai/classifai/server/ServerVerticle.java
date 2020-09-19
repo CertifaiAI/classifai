@@ -287,7 +287,12 @@ public class ServerVerticle extends AbstractVerticle
                 }
             });
         }
-        else if(loaderStatus.equals(LoaderStatus.LOADED)  || loaderStatus.equals(LoaderStatus.LOADING))
+        else if(loaderStatus.equals(LoaderStatus.LOADED))
+        {
+            loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+        }
+        else if(loaderStatus.equals(LoaderStatus.LOADING))
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }
@@ -430,15 +435,13 @@ public class ServerVerticle extends AbstractVerticle
 
             Integer currentProjectID = loader.getProjectID();
 
-            ProjectHandler.getProjectLoader(currentProjectID).setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
-
             if (fileType.equals(ParamConfig.FILE))
             {
-                fileSelector.runFileSelector(currentProjectID);
+                fileSelector.run(currentProjectID);
             }
             else if (fileType.equals(ParamConfig.FOLDER))
             {
-                folderSelector.runFolderSelector(currentProjectID);
+                folderSelector.run(currentProjectID);
             }
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }

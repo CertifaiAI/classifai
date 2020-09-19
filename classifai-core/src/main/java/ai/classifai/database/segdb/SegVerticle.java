@@ -37,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Segmentation Verticle
@@ -155,9 +156,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         });
     }
 
-    /*
-    GET http://localhost:{port}/retrievedata/:uuid
-    */
+    //GET http://localhost:{port}/retrievedata/:uuid
     public void retrieveData(Message<JsonObject> message)
     {
 
@@ -186,7 +185,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     Integer counter = 0;
                     String dataPath = row.getString(counter++);
 
-                    String thumbnail = ImageHandler.getThumbNail(dataPath);
+                    Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
 
@@ -195,15 +194,15 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                     response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
                     response.put(ParamConfig.SEGMENTATION_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGE_DEPTH,  Integer.parseInt(imgData.get(ParamConfig.IMAGE_DEPTH)));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.FILE_SIZE_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
+                    response.put(ParamConfig.IMAGEORIW_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIW_PARAM)));
+                    response.put(ParamConfig.IMAGEORIH_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIH_PARAM)));
+                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, imgData.get(ParamConfig.BASE64_PARAM));
                     message.reply(response);
                 }
             }

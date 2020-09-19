@@ -22,12 +22,14 @@ import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -106,7 +108,8 @@ public class ImageHandler {
 
     }
 
-    public static String getThumbNail(String imageAbsPath)
+
+    public static Map<String, String> getThumbNail(String imageAbsPath)
     {
         try
         {
@@ -116,6 +119,11 @@ public class ImageHandler {
 
             Integer oriHeight = img.getHeight();
             Integer oriWidth = img.getWidth();
+
+            int type = img.getColorModel().getColorSpace().getType();
+            boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
+
+            Integer depth = grayscale ? 1 : 3;
 
             Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
             Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -135,7 +143,14 @@ public class ImageHandler {
             g2d.drawImage(tmp, 0, 0, null);
             g2d.dispose();
 
-            return base64FromBufferedImage(resized);
+
+            Map<String, String> imageData = new HashMap<>();
+            imageData.put(ParamConfig.IMAGE_DEPTH, Integer.toString(depth));
+            imageData.put(ParamConfig.IMAGEORIH_PARAM, Integer.toString(oriHeight));
+            imageData.put(ParamConfig.IMAGEORIW_PARAM, Integer.toString(oriWidth));
+            imageData.put(ParamConfig.BASE64_PARAM, base64FromBufferedImage(resized));
+
+            return imageData;
 
         }
         catch (IOException e) {
@@ -143,7 +158,6 @@ public class ImageHandler {
             return null;
         }
     }
-
     public static String encodeFileToBase64Binary(File file)
     {
         try
