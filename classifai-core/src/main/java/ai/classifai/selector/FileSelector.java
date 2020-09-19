@@ -42,8 +42,6 @@ public class FileSelector{
 
     public void runFileSelector(@NonNull Integer projectID)
     {
-        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
-
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -93,13 +91,11 @@ public class FileSelector{
                         else
                         {
                             ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                         }
                     }
                     else
                     {
                         ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                     }
 
                 }

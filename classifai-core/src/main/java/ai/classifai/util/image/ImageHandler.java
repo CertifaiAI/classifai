@@ -46,8 +46,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class ImageHandler {
 
-    private static final int MAX_FILE_SYS_PROCESSING_SEC = 10800;
-
     private static String getImageHeader(String input)
     {
         Integer lastIndex = input.length();
@@ -274,21 +272,6 @@ public class ImageHandler {
 
             }
         }
-
-        long start = System.currentTimeMillis();
-
-        while(ProjectHandler.isCurrentFileSystemDBUpdating())
-        {
-            float seconds = (System.currentTimeMillis() - start ) / 1000F;
-
-            //If times takes more than ? , terminate and update
-            if(Float.compare(seconds, MAX_FILE_SYS_PROCESSING_SEC) > 0)
-            {
-                loader.offloadFileSysNewList2List();
-                break;
-            }
-        }
-
     }
     public static void processFile(@NonNull Integer projectID, @NonNull List<File> filesInput)
     {

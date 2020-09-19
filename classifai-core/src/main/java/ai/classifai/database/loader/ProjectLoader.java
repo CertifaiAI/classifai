@@ -159,7 +159,7 @@ public class ProjectLoader
 
     }
 
-    public void offloadFileSysNewList2List()
+    private void offloadFileSysNewList2List()
     {
         sanityUUIDList.addAll(fileSysNewUUIDList);
 
@@ -172,8 +172,6 @@ public class ProjectLoader
 
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
-
-        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
 
         PortfolioVerticle.updateFileSystemUUIDList(projectID);
     }
@@ -194,11 +192,6 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
-
-        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || fileSystemStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
-        {
-            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
-        }
     }
 
 }

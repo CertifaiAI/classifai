@@ -411,7 +411,7 @@ public class ServerVerticle extends AbstractVerticle
 
         FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
 
-        if(ProjectHandler.isCurrentFileSystemDBUpdating() || fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
+        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("File system processing. Not allowed to proceed"));
         }
