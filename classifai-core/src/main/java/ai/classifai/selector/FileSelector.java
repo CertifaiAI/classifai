@@ -23,15 +23,12 @@ import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.WelcomeLauncher;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -47,9 +44,13 @@ public class FileSelector{
     public void runFileSelector(@NonNull Integer projectID)
     {
         try {
+            System.out.println("EventQueue.invokeLater(new Runnable() {");
+
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+
+                    System.out.println("******************** -1 *******************");
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
@@ -57,7 +58,6 @@ public class FileSelector{
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.setLocation(pt);
                     frame.requestFocus();
-                    frame.setVisible(false);
 
                     JFileChooser chooser = new JFileChooser() {
                         @Override
@@ -76,11 +76,12 @@ public class FileSelector{
                     chooser.setMultiSelectionEnabled(true);
                     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
 
+                    frame.setVisible(false);
+                    System.out.println("Step 1: " ); WelcomeLauncher.setToBackground();
+                    System.out.println("Step 2: " ); frame.dispose();
+                    //prevent Welcome Console from popping
 
-                    //prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
 
                     ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -95,11 +96,16 @@ public class FileSelector{
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFile(projectID, files);
+
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+
+
                         }
                         else
                         {
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
+
                     }
                     else
                     {

@@ -42,17 +42,24 @@ public class FolderSelector{
 
     public void runFolderSelector(@NonNull Integer projectID)
     {
+        System.out.println("runFolderSelector(@NonNull Integer projectID)");
+
         try {
+            System.out.println("try");
+
             EventQueue.invokeLater(new Runnable() {
+
                 @Override
                 public void run() {
+
+                    System.out.println("******************** -1 *******************");
+
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
                     frame.setAlwaysOnTop(true);
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.setLocation(pt);
                     frame.requestFocus();
-                    frame.setVisible(false);
 
                     JFileChooser chooser = new JFileChooser() {
                         @Override
@@ -70,10 +77,15 @@ public class FolderSelector{
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
+
+                    frame.setVisible(false);
 
                     //prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
+                    System.out.println("Step 1: " ); WelcomeLauncher.setToBackground();
+
+                    System.out.println("Step 2: " ); frame.dispose();
+
+
 
                     ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -88,6 +100,10 @@ public class FolderSelector{
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
+
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+
+
                         }
                         else
                         {

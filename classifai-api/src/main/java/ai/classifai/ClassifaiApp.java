@@ -47,7 +47,7 @@ public class ClassifaiApp
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
-        vertxOptions.setMaxEventLoopExecuteTime(15); //for bulk images upload
+        vertxOptions.setMaxEventLoopExecuteTime(60); //for bulk images upload
 
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);

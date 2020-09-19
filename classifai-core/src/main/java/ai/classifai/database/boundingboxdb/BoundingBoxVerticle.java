@@ -144,6 +144,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
             if(fetch.succeeded())
             {
                 loader.pushFileSysNewUUIDList(UUID);
+                System.out.println(UUID);
             }
             else
             {

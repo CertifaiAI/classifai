@@ -50,17 +50,19 @@ public class ServerVerticle extends AbstractVerticle
 {
     private FileSelector fileSelector;
     private FolderSelector folderSelector;
+    private Thread threadfile;
+    private Thread threadfolder;
 
     public ServerVerticle()
     {
-        Thread threadfile = new Thread(){
+        threadfile = new Thread(){
             public void run(){
                 fileSelector = new FileSelector();
             }
         };
         threadfile.start();
 
-        Thread threadfolder = new Thread(){
+        threadfolder = new Thread(){
             public void run(){
                 folderSelector = new FolderSelector();
             }
@@ -435,6 +437,7 @@ public class ServerVerticle extends AbstractVerticle
             }
             else
             {
+
                 loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                 Integer currentProjectID = loader.getProjectID();
@@ -447,10 +450,11 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     folderSelector.runFolderSelector(currentProjectID);
                 }
+
+
                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
             }
-
-
         }
     }
 

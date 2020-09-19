@@ -154,6 +154,7 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
+            System.out.println("offloadFileSysNewList2List()");
             offloadFileSysNewList2List();
         }
 
@@ -161,8 +162,6 @@ public class ProjectLoader
 
     public void offloadFileSysNewList2List()
     {
-        System.out.println("offloadFileSysNewList2List");
-
         sanityUUIDList.addAll(fileSysNewUUIDList);
 
         if(fileSysNewUUIDList.isEmpty())
