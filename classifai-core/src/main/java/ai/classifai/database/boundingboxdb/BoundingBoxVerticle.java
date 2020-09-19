@@ -122,42 +122,38 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         });
     }
 
-    public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
+    public static void  updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
-        Map imgMetadata = ImageHandler.getImageMetadata(file);
+        JsonArray params = new JsonArray()
+                .add(UUID) //uuid
+                .add(projectID) //projectid
+                .add(file.getAbsolutePath()) //imgpath
+                .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                .add(0) //img_depth
+                .add(0) //imgX
+                .add(0) //imgY
+                .add(0) //imgW
+                .add(0) //imgH
+                .add(0) //file_size
+                .add(0)
+                .add(0);
 
-        if(imgMetadata != null)
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
         {
-            JsonArray params = new JsonArray()
-                    .add(UUID) //uuid
-                    .add(projectID) //projectid
-                    .add(file.getAbsolutePath()) //imgpath
-                    .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                    .add((Integer)imgMetadata.get("depth")) //img_depth
-                    .add(0) //imgX
-                    .add(0) //imgY
-                    .add(0) //imgW
-                    .add(0) //imgH
-                    .add(0) //file_size
-                    .add((Integer)imgMetadata.get("width"))
-                    .add((Integer)imgMetadata.get("height"));
-
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
+            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+            if(fetch.succeeded())
             {
-                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-                if(fetch.succeeded())
-                {
-                    loader.pushDBValidUUID(UUID);
+                loader.pushFileSysNewUUIDList(UUID);
+                System.out.println(UUID);
+            }
+            else
+            {
+                log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+            }
 
-                }
-                else
-                {
-                    log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-                }
+            loader.updateFileSysLoadingProgress(currentProcessedLength);
+        });
 
-                loader.updateFileSysLoadingProgress(currentProcessedLength);
-            });
-        }
     }
 
 
@@ -249,7 +245,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
 
                 if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
@@ -283,6 +279,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
             JsonArray params = new JsonArray()
                     .add(boundingBox)
+                    .add(requestBody.getInteger(ParamConfig.IMAGE_DEPTH))
                     .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
                     .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
                     .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
