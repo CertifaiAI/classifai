@@ -233,7 +233,12 @@ public class ImageHandler {
 
         if(isfileSupported(currentFileFullPath))
         {
-            if(PdfHandler.isPdf(currentFileFullPath)) {
+            if(isImageFileValid(currentFileFullPath))
+            {
+                verifiedFilesList.add(file);
+            }
+
+            /*if(PdfHandler.isPdf(currentFileFullPath)) {
 
                 java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
 
@@ -246,6 +251,7 @@ public class ImageHandler {
             {
                 verifiedFilesList.add(file);
             }
+            */
         }
 
         return verifiedFilesList;
