@@ -29,7 +29,7 @@ public class BoundingBoxDbQuery
 
     public final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    public final static String RETRIEVE_DATA = "select img_path, bnd_box, img_depth, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project where uuid = ? and project_id = ?";
+    public final static String RETRIEVE_DATA = "select img_path, bnd_box, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project where uuid = ? and project_id = ?";
 
     public final static String RETRIEVE_DATA_PATH = "select img_path from Project where uuid = ? and project_id = ?";
 
