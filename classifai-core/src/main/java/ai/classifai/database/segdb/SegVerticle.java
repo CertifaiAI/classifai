@@ -203,6 +203,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     response.put(ParamConfig.SEGMENTATION_PARAM, new JsonArray(row.getString(counter++)));
                     response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
+                    response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
