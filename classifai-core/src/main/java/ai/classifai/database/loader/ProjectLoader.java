@@ -15,8 +15,8 @@
  */
 package ai.classifai.database.loader;
 
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.ProjectHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -138,6 +138,11 @@ public class ProjectLoader
         uuidUniqueSet.add(uuid);
     }
 
+    public void pushFileSysNewUUIDList(Integer uuid)
+    {
+        fileSysNewUUIDList.add(uuid);
+    }
+
     //updating project from file system
     public void updateFileSysLoadingProgress(Integer currentSize)
     {
@@ -147,14 +152,13 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
-            offloadUUIDUniqueSet2List();
+            offloadFileSysNewList2List();
         }
+
     }
 
-    public void offloadUUIDUniqueSet2List()
+    private void offloadFileSysNewList2List()
     {
-        fileSysNewUUIDList = new ArrayList<>(uuidUniqueSet);
-
         sanityUUIDList.addAll(fileSysNewUUIDList);
 
         if(fileSysNewUUIDList.isEmpty())
@@ -167,7 +171,7 @@ public class ProjectLoader
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
 
-        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
+        PortfolioVerticle.updateFileSystemUUIDList(projectID);
     }
 
     public boolean isAllFileSysProcessed()
@@ -186,11 +190,6 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
-
-        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || fileSystemStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
-        {
-            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
-        }
     }
 
 }

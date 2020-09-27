@@ -53,9 +53,6 @@ public class ProjectHandler {
     //value: Pair<String projectName, Integer annotationType>
     private static Map projectNameSearch;
 
-    //boolean to check ifi writing to database
-    //if true, file/folder selector is diable to function to prevent writing concurrently to database
-    private static boolean isCurrentFileSystemDBUpdating;
 
     static {
 
@@ -64,8 +61,6 @@ public class ProjectHandler {
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
         projectIDSearch = new HashMap<Pair<String, Integer>, Integer>();
         projectNameSearch = new HashMap<Integer, Pair<String, Integer>>();
-
-        isCurrentFileSystemDBUpdating = false;
     }
 
 
@@ -222,15 +217,4 @@ public class ProjectHandler {
 
         return isProjectNameUnique;
     }
-
-    public static boolean isCurrentFileSystemDBUpdating()
-    {
-        return isCurrentFileSystemDBUpdating;
-    }
-
-    public static void setIsCurrentFileSystemDBUpdating(boolean state)
-    {
-        isCurrentFileSystemDBUpdating = state;
-    }
-
 }

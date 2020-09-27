@@ -38,7 +38,7 @@ public class ImageFileType {
 
     private static final Map base64header;
 
-    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
+    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "bmp", "JPG", "PNG", "JPEG"}; //{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
 
     static
     {

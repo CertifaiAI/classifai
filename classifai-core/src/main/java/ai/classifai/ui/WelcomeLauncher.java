@@ -15,7 +15,12 @@
  */
 package ai.classifai.ui;
 
+
 import ai.classifai.server.ParamConfig;
+import ai.classifai.ui.button.BrowserHandler;
+import ai.classifai.ui.button.LogHandler;
+import ai.classifai.ui.button.OSManager;
+import ai.classifai.ui.button.ProgramOpener;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -31,10 +36,9 @@ import java.awt.image.BufferedImage;
  * @author Chiawei Lim
  */
 @Slf4j
-public class WelcomeConsole
+public class WelcomeLauncher
 {
     private static JFrame frame;
-    private static String browserURL;
     private static OSManager osManager;
 
     final static String BUTTON_PATH;
@@ -53,7 +57,7 @@ public class WelcomeConsole
     static
     {
         BUTTON_PATH = "/console/";
-        browserURL = "http://localhost:" + ParamConfig.getHostingPort();
+
         osManager = new OSManager();
     }
 
@@ -64,32 +68,9 @@ public class WelcomeConsole
         JPanel panel = new JPanel(new BorderLayout());
         panel.setSize(PANE_WIDTH, PANE_HEIGHT);
 
-        JButton openButton = getButton("Open_Button.png", "Open");
-        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                BrowserHandler.openOnBrowser(browserURL, osManager);
-            }
-        });
-
-        JButton closeButton = getButton("Close_Button.png", "Close");
-        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        JButton acknowledgementButton = getButton("Acknowledge_Button.png", "License");
-        acknowledgementButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        panel.add(openButton);
-        panel.add(closeButton);
-        panel.add(acknowledgementButton);
+        panel.add(getOpenButton());
+        panel.add(getCloseButton());
+        panel.add(getLogButton());
 
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
         if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
@@ -97,10 +78,8 @@ public class WelcomeConsole
         frame.add(panel);
 
         /*frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
-
         int frameWidth = PANE_WIDTH - (frame.getInsets().left + frame.getInsets().right);
         int frameHeight = PANE_HEIGHT - (frame.getInsets().top + frame.getInsets().bottom);
-
         frame.setPreferredSize(new Dimension(frameWidth, frameHeight));
          */
 
@@ -119,13 +98,62 @@ public class WelcomeConsole
         frame.setState(Frame.ICONIFIED);
     }
 
+    private static JButton getOpenButton()
+    {
+        JButton openButton = getButton("Open_Button.png", "Open");
+        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProgramOpener.launch(osManager.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), true);
+            }
+        });
+
+        return openButton;
+    }
+
+
+    private static JButton getCloseButton()
+    {
+        JButton closeButton = getButton("Close_Button.png", "Close");
+        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        return closeButton;
+    }
+
+
+    private static JButton getLogButton()
+    {
+        JButton logOpenButton = getButton("Log_Button.png", "License");
+        logOpenButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        logOpenButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.LOG_FILE_PATH, false);
+            }
+        });
+
+        return logOpenButton;
+    }
+
+
     private static JButton getButton(String fileName, String altText)
     {
         JButton button = new JButton();
 
         try {
 
-            Image img = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+            Image img = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + fileName));
 
             Image scaledImg = img.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
 
@@ -146,7 +174,7 @@ public class WelcomeConsole
     {
         try
         {
-            BufferedImage oriImg = ImageIO.read(WelcomeConsole.class.getResource(BUTTON_PATH + fileName));
+            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + fileName));
 
             BufferedImage img = resize(oriImg, PANE_WIDTH, PANE_HEIGHT);
 

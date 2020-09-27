@@ -17,9 +17,10 @@
 package ai.classifai.selector;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
-import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.ui.WelcomeLauncher;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import lombok.NonNull;
@@ -40,14 +41,15 @@ import java.util.ArrayList;
 public class FileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFileSelector(@NonNull Integer projectID)
+    public void run(@NonNull Integer projectID)
     {
-        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
-
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+
+                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
@@ -77,7 +79,7 @@ public class FileSelector{
                     frame.dispose();
 
                     //prevent Welcome Console from popping out
-                    WelcomeConsole.setToBackground();
+                    WelcomeLauncher.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -86,20 +88,18 @@ public class FileSelector{
                         if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
 
-                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFile(projectID, files);
                         }
                         else
                         {
-                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                     }
                     else
                     {
-                        ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
+                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
 
                 }
