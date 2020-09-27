@@ -35,6 +35,7 @@ classifai.log
 
 #classifai-distro
 output/*
+input/*
 
 #windows-distro
 *.msi
