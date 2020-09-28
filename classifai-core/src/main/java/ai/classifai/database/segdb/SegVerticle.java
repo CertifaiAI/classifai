@@ -13,16 +13,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.segdb;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.selector.SelectorHandler;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -34,12 +31,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Segmentation Verticle
@@ -76,31 +74,33 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         {
             this.updateData(message);
         }
-        else if (action.equals(SegDbQuery.REMOVE_OBSOLETE_UUID_LIST))
+        else if (action.equals(SegDbQuery.LOAD_VALID_PROJECT_UUID))
         {
-            this.removeObsoleteUUID(message);
+            this.loadValidProjectUUID(message);
         }
         else
         {
-            log.error("Project query error: Action did not found follow up with function");
+            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
         }
     }
 
 
     public void retrieveDataPath(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+
+        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(projectID);
 
         projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
 
-                if (resultSet.getNumRows() == 0) {
-                    message.reply(ReplyHandler.reportUserDefinedError("Image Data Path not found"));
+                if (resultSet.getNumRows() == 0)
+                {
+                    message.reply(ReplyHandler.reportUserDefinedError("Image data path not found"));
                 }
                 else
                 {
@@ -123,7 +123,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
     }
 
-    public static void updateUUID(List<Integer> uuidList, File file, Integer UUID)
+    public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
         Map imgMetadata = ImageHandler.getImageMetadata(file);
 
@@ -131,7 +131,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         {
             JsonArray params = new JsonArray()
                     .add(UUID) //uuid
-                    .add(SelectorHandler.getProjectIDFromBuffer()) //projectid
+                    .add(projectID) //projectid
                     .add(file.getAbsolutePath()) //imgpath
                     .add(new JsonArray().toString()) //new ArrayList<Integer>()
                     .add((Integer)imgMetadata.get("depth")) //img_depth
@@ -139,18 +139,24 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add(0) //imgY
                     .add(0) //imgW
                     .add(0) //imgH
+                    .add(0) //file_size
                     .add((Integer)imgMetadata.get("width"))
                     .add((Integer)imgMetadata.get("height"));
 
             projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
-                if(!fetch.succeeded())
-                {
-                    log.error("Update metadata in database failed: " + fetch.cause().getMessage());
+
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+                if(fetch.succeeded()) {
+                    loader.pushDBValidUUID(UUID);
                 }
                 else
                 {
-                    uuidList.add(UUID);
+                    log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+
                 }
+
+                loader.updateFileSysLoadingProgress(currentProcessedLength);
             });
         }
     }
@@ -160,10 +166,12 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     */
     public void retrieveData(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+
+        String projectName =  message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
+        Integer projectID =  message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
 
-        JsonArray params = new JsonArray().add(uuid).add(SelectorHandler.getProjectID(projectName));
+        JsonArray params = new JsonArray().add(uuid).add(projectID);
 
         projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
@@ -173,8 +181,10 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    log.debug("Should not get null");
-                    message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid did not found"));
+                    log.info("SegVerticle: Project id: " + params.getInteger(1));
+
+                    String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
+                    message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else {
                     JsonArray row = resultSet.getResults().get(0);
@@ -196,93 +206,68 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
                     response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
+                    response.put(ParamConfig.FILE_SIZE_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEORIW_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGEORIH_PARAM, row.getInteger(counter++));
                     response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, thumbnail);
                     message.reply(response);
                 }
-
             }
-            else {
-                message.reply(ReplyHandler.reportUserDefinedError("Database query to retrieve thumbnail uuid failed"));
+            else
+            {
+                String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
             }
         });
     }
 
 
-    public void removeObsoleteUUID(Message<JsonObject> message)
+    public void loadValidProjectUUID(Message<JsonObject> message)
     {
-        String projectName = message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID  = SelectorHandler.getProjectID(projectName);
-
+        Integer projectID  = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
+
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
-        ProjectLoader loader = SelectorHandler.getProjectLoader(projectName);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        message.reply(ReplyHandler.getOkReply());
+
 
         if(oriUUIDList.isEmpty())
         {
-            loader.setLoaderStatus(LoaderStatus.EMPTY);
-            message.reply(ReplyHandler.getOkReply());
+            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
             return;
         }
-        else
+
+        loader.setDbOriUUIDSize(oriUUIDList.size());
+
+        //sanity check on seed and write on database if needed
+        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.UUID_GENERATOR_PARAM));
+
+        for(int i = 0; i < oriUUIDList.size(); ++i)
         {
-            message.reply(ReplyHandler.getOkReply());
+            final Integer currentLength = i + 1;
+            final Integer UUID = oriUUIDList.get(i);
+            JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            loader.setLoaderStatus(LoaderStatus.LOADING);
-            loader.setTotalUUIDSize(oriUUIDList.size());
+            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
 
-            final Integer maxSize = oriUUIDList.size() - 1;
+                if (fetch.succeeded())
+                {
+                    ResultSet resultSet = fetch.result();
 
-            for(int i = 0; i < oriUUIDList.size(); ++i)
-            {
-                final Integer currentLength = i;
-                final Integer UUID = oriUUIDList.get(i);
-                JsonArray params = new JsonArray().add(UUID).add(projectID);
-
-                projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
-
-                    if (fetch.succeeded())
+                    if (resultSet.getNumRows() != 0)
                     {
-                        ResultSet resultSet = fetch.result();
+                        JsonArray row = resultSet.getResults().get(0);
 
-                        if (resultSet.getNumRows() != 0)
-                        {
-                            JsonArray row = resultSet.getResults().get(0);
+                        String dataPath = row.getString(0);
 
-                            String dataPath = row.getString(0);
-
-                            if(ImageHandler.isImageReadable(dataPath) == false)
-                            {
-                                projectJDBCClient.queryWithParams(SegDbQuery.DELETE_DATA, params, reply -> {
-
-                                    if(reply.failed())
-                                    {
-                                        //remove on next round
-                                        SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-
-                                        log.error("Failed to remove obsolete uuid from database");
-                                    }
-                                });
-                            }
-                            else {
-                                SelectorHandler.updateSanityUUIDItem(projectName, UUID);
-                            }
-                        }
+                        if(ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
                     }
-
-                    SelectorHandler.updateProgress(projectName, currentLength);
-
-                    if(currentLength.equals(maxSize))
-                    {
-                        //request on portfolio database
-                        Set<Integer> uuidCheckedList = SelectorHandler.getProjectLoaderUUIDList(projectName);
-
-                        PortfolioVerticle.resetUUIDList(projectName, ConversionHandler.set2List(uuidCheckedList));
-                    }
-                });
-            }
+                }
+                loader.updateDBLoadingProgress(currentLength);
+            });
         }
     }
 
@@ -290,32 +275,44 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     //PUT http://localhost:{port}/updatedata
     public void updateData(Message<JsonObject> message)
     {
-        JsonObject requestBody = message.body();
+        try
+        {
+            JsonObject requestBody = message.body();
 
-        String projectName = requestBody.getString(ParamConfig.PROJECT_NAME_PARAM);
-        String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
+            String segContent = requestBody.getJsonArray(ParamConfig.SEGMENTATION_PARAM).encode();
 
-        JsonArray params = new JsonArray()
-                .add(segContent)
-                .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
-                .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
-                .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
-                .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
-                .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
-                .add(SelectorHandler.getProjectID(projectName));
+            Integer projectID = requestBody.getInteger(ParamConfig.PROJECT_ID_PARAM);
+
+            JsonArray params = new JsonArray()
+                    .add(segContent)
+                    .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
+                    .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
+                    .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.FILE_SIZE_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
+                    .add(projectID);
 
 
-        projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {
-            if(fetch.succeeded())
-            {
-                message.reply(ReplyHandler.getOkReply());
-            }
-            else {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+            projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {
+                if(fetch.succeeded())
+                {
+                    message.reply(ReplyHandler.getOkReply());
+                }
+                else {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            log.info("SegVerticle: " + message.body().toString());
+            String messageInfo = "Error occur when updating data, " + e;
+            message.reply(ReplyHandler.reportBadParamError(messageInfo));
+        }
+
     }
 
     @Override

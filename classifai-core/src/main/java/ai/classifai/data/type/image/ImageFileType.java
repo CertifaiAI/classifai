@@ -23,12 +23,14 @@ import java.util.Map;
 
 /**
  * Support images & documents
+ *
+ * @author Chiawei Lim
  */
 @NoArgsConstructor
 public class ImageFileType {
 
-    private static final Integer MAX_WIDTH = 5000;
-    private static final Integer MAX_HEIGHT = 5000;
+    private static final Integer MAX_WIDTH = 15000; //5000
+    private static final Integer MAX_HEIGHT = 15000; //5000
 
     private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;

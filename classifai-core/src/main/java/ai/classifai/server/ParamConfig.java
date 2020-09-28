@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.server;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.File;
 
 /**
  * Parameter for server in general
@@ -27,7 +28,9 @@ import lombok.Setter;
 public class ParamConfig
 {
     public final static String PROJECT_NAME_PARAM = "project_name";
+    public final static String PROJECT_ID_PARAM = "project_id";
     public final static String FILE_SYS_PARAM = "file_sys";
+    public final static String UUID_GENERATOR_PARAM = "uuid_generator_seed";
 
     public final static String ANNOTATE_TYPE_PARAM = "annotation_type";
 
@@ -52,6 +55,8 @@ public class ParamConfig
     public final static String IMAGEORIW_PARAM = "img_ori_w";
     public final static String IMAGEORIH_PARAM = "img_ori_h";
 
+    public final static String FILE_SIZE_PARAM = "file_size";
+
     public final static String ACTION_KEYWORD = "action";
     public final static String CONTENT = "content";
 
@@ -59,6 +64,10 @@ public class ParamConfig
 
     public final static String IMAGE_DEPTH = "img_depth";
 
-    @Getter @Setter private static Integer hostingPort;
+    public static final String FILE = "file";
+    public static final String FOLDER = "folder";
 
+    public static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
+
+    @Getter @Setter private static Integer hostingPort;
 }

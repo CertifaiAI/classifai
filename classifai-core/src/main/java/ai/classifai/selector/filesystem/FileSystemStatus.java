@@ -13,20 +13,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
-package ai.classifai.selector;
+package ai.classifai.selector.filesystem;
 
 /**
  * State of windows to select file/folder
  *
  * @author Chiawei Lim
  */
-public enum SelectorStatus
+public enum FileSystemStatus
 {
     WINDOW_OPEN,
     WINDOW_CLOSE_DATABASE_NOT_UPDATED,
     WINDOW_CLOSE_LOADING_FILES,
     WINDOW_CLOSE_DATABASE_UPDATING,
     WINDOW_CLOSE_DATABASE_UPDATED,
-    ERROR
+    DID_NOT_INITIATE
 }

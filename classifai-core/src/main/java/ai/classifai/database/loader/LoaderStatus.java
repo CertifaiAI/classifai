@@ -13,17 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.loader;
 
 import lombok.extern.slf4j.Slf4j;
 
+/***
+ * Loader status for project loading
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public enum LoaderStatus
 {
     ERROR,
     LOADING,
-    LOADED,
-    DID_NOT_INITIATED,
-    EMPTY
+    LOADED, //projectloader will have this status once create new project
+    DID_NOT_INITIATED, //default value when ProjectLoader created from database
 }

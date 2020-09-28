@@ -35,11 +35,13 @@ classifai.log
 
 #classifai-distro
 output/*
+input/*
 
 #windows-distro
 *.msi
 *.exe
 chrome-win/*
+*.dll
 
 #mac-distro
 *.pkg

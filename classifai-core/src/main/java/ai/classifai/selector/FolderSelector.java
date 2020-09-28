@@ -13,19 +13,21 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.selector;
 
-import ai.classifai.data.DataType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.server.ParamConfig;
+import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -37,7 +39,9 @@ public class FolderSelector{
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void runFolderSelector(String projectName, AtomicInteger uuidGenerator) {
+    public void runFolderSelector(@NonNull Integer projectID)
+    {
+        ProjectHandler.setIsCurrentFileSystemDBUpdating(true);
 
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -62,12 +66,15 @@ public class FolderSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(SelectorHandler.getRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.ROOT_SEARCH_PATH);
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
+
+                    //prevent Welcome Console from popping out
+                    WelcomeConsole.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -75,27 +82,27 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            SelectorHandler.startDatabaseUpdate(projectName);
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-                            DataType dataType = SelectorHandler.getProjectDataType(projectName);
-
-                            if (dataType == DataType.IMAGE) ImageHandler.processFolder(rootFolder, uuidGenerator);
-
-                            SelectorHandler.stopDatabaseUpdate();
+                            ImageHandler.processFolder(projectID, rootFolder);
+                        }
+                        else
+                        {
+                            ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                         }
                     }
                     else
                     {
-                        SelectorHandler.setWindowState(false);
+                        ProjectHandler.getProjectLoader(projectID).setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        ProjectHandler.setIsCurrentFileSystemDBUpdating(false);
                     }
-
                 }
             });
         }
         catch (Exception e)
         {
-            SelectorHandler.setWindowState(false);
-            log.debug("Select folder failed to open", e);
+            log.info("ProjectHandler for Folder type failed to open", e);
         }
 
     }
