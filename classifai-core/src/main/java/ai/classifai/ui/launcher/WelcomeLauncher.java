@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.ui;
+package ai.classifai.ui.launcher;
 
 
 import ai.classifai.server.ParamConfig;
