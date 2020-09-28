@@ -22,6 +22,7 @@ import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +46,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class ImageHandler {
-
-    private static final int MAX_FILE_SYS_PROCESSING_SEC = 10800;
 
     private static String getImageHeader(String input)
     {
@@ -90,9 +89,14 @@ public class ImageHandler {
     {
         File file = new File(imagePath);
 
-        if(file.exists() == false) return false;
+        if((file.exists() == false) && (file.length() < 5)) //length() stands for file size
+        {
+            return false;
+        }
 
-        try
+        return true;
+
+        /*try
         {
             ImageIO.read(file);
         }
@@ -100,12 +104,12 @@ public class ImageHandler {
         {
             log.debug("Image is not readable: ", e);
             return false;
-        }
+        }*/
 
-        return true;
     }
 
-    public static String getThumbNail(String imageAbsPath)
+
+    public static Map<String, String> getThumbNail(String imageAbsPath)
     {
         try
         {
@@ -115,6 +119,11 @@ public class ImageHandler {
 
             Integer oriHeight = img.getHeight();
             Integer oriWidth = img.getWidth();
+
+            int type = img.getColorModel().getColorSpace().getType();
+            boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
+
+            Integer depth = grayscale ? 1 : 3;
 
             Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
             Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -134,7 +143,14 @@ public class ImageHandler {
             g2d.drawImage(tmp, 0, 0, null);
             g2d.dispose();
 
-            return base64FromBufferedImage(resized);
+
+            Map<String, String> imageData = new HashMap<>();
+            imageData.put(ParamConfig.IMAGE_DEPTH, Integer.toString(depth));
+            imageData.put(ParamConfig.IMAGEORIH_PARAM, Integer.toString(oriHeight));
+            imageData.put(ParamConfig.IMAGEORIW_PARAM, Integer.toString(oriWidth));
+            imageData.put(ParamConfig.BASE64_PARAM, base64FromBufferedImage(resized));
+
+            return imageData;
 
         }
         catch (IOException e) {
@@ -142,7 +158,6 @@ public class ImageHandler {
             return null;
         }
     }
-
     public static String encodeFileToBase64Binary(File file)
     {
         try
@@ -167,46 +182,6 @@ public class ImageHandler {
         return null;
     }
 
-    /**
-     *
-     * @param file
-     * @return width, height, depth
-     */
-    public static Map<String, Integer> getImageMetadata(File file)
-    {
-        Map<String, Integer> map = new HashMap<>();
-
-        try{
-            BufferedImage bimg = ImageIO.read(file);
-
-            if(bimg == null)
-            {
-                log.error("Failed in reading " + file.getAbsolutePath());
-                return null;
-            }
-            else
-            {
-                Integer width = bimg.getWidth();
-                Integer height = bimg.getHeight();
-
-                int type = bimg.getColorModel().getColorSpace().getType();
-                boolean grayscale = (type==ColorSpace.TYPE_GRAY || type==ColorSpace.CS_GRAY);
-
-                Integer depth = grayscale ? 1 : 3;
-
-                map.put("width", width);
-                map.put("height", height);
-                map.put("depth", depth);
-            }
-        }
-        catch(Exception e)
-        {
-            log.error("Error in reading image ", e);
-            return null;
-        }
-
-        return map;
-    }
 
     private static boolean isfileSupported(String file)
     {
@@ -258,7 +233,12 @@ public class ImageHandler {
 
         if(isfileSupported(currentFileFullPath))
         {
-            if(PdfHandler.isPdf(currentFileFullPath)) {
+            if(isImageFileValid(currentFileFullPath))
+            {
+                verifiedFilesList.add(file);
+            }
+
+            /*if(PdfHandler.isPdf(currentFileFullPath)) {
 
                 java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
 
@@ -271,6 +251,7 @@ public class ImageHandler {
             {
                 verifiedFilesList.add(file);
             }
+            */
         }
 
         return verifiedFilesList;
@@ -310,30 +291,7 @@ public class ImageHandler {
 
             }
         }
-
-        long start = System.currentTimeMillis();
-
-        while(true)
-        {
-            float seconds = (System.currentTimeMillis() - start ) / 1000F;
-
-            //If times takes more than ? , terminate and update
-            if(Float.compare(seconds, MAX_FILE_SYS_PROCESSING_SEC) > 0)
-            {
-                //update uuid list
-                loader.offloadUUIDUniqueSet2List();
-            }
-
-            if(ProjectHandler.isCurrentFileSystemDBUpdating() == false)
-            {
-                PortfolioVerticle.updateFileSystemUUIDList(projectID);
-
-                break;
-            }
-        }
-
     }
-
     public static void processFile(@NonNull Integer projectID, @NonNull List<File> filesInput)
     {
         List<File> validatedFilesList = new ArrayList<>();

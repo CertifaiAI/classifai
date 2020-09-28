@@ -46,6 +46,15 @@ public class ConversionHandler
         return list;
     }
 
+    public static String arrayString2String(String[] input)
+    {
+        StringBuffer sb = new StringBuffer();
+        for(int i = 0; i < input.length; i++) {
+            sb.append(input[i]);
+        }
+        return sb.toString();
+    }
+
     //JSONObject -> .json
     public static void saveJson2File(org.json.simple.JSONObject jsonInput, File outputFilePath)
     {

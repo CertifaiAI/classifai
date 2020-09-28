@@ -55,6 +55,8 @@ public class ParamConfig
     public final static String IMAGEORIW_PARAM = "img_ori_w";
     public final static String IMAGEORIH_PARAM = "img_ori_h";
 
+    public final static String BASE64_PARAM = "base64";
+
     public final static String FILE_SIZE_PARAM = "file_size";
 
     public final static String ACTION_KEYWORD = "action";
@@ -68,6 +70,8 @@ public class ParamConfig
     public static final String FOLDER = "folder";
 
     public static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
+
+    public static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
 
     @Getter @Setter private static Integer hostingPort;
 }
