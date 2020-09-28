@@ -13,9 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.message;
-
-import org.slf4j.Logger;
+package ai.classifai.ui;
 
 
 /**

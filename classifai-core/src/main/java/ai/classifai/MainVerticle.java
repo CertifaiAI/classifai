@@ -20,14 +20,13 @@ import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.server.ServerVerticle;
-import ai.classifai.util.message.LogoLauncher;
+import ai.classifai.ui.LogoLauncher;
 import ai.classifai.ui.WelcomeLauncher;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Main verticle to create multiple verticles
