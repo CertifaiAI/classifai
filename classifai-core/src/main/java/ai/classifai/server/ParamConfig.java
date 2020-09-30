@@ -27,57 +27,103 @@ import java.io.File;
  */
 public class ParamConfig
 {
-    public final static String PROJECT_NAME_PARAM = "project_name";
-    public final static String PROJECT_ID_PARAM = "project_id";
-    public final static String FILE_SYS_PARAM = "file_sys";
-    public final static String UUID_GENERATOR_PARAM = "uuid_generator_seed";
-
-    public final static String ANNOTATE_TYPE_PARAM = "annotation_type";
-
-    public final static String UUID_LIST_PARAM = "uuid_list";
-    public final static String LABEL_LIST_PARAM = "label_list";
-
-    public final static String UUID_PARAM = "uuid";
-    public final static String IMAGE_PATH_PARAM = "img_path";
-
-    public final static String EMPTY_ARRAY = "[]";
-    public final static String IMAGE_THUMBNAIL_PARAM = "img_thumbnail";
-    public final static String IMAGE_SRC_PARAM = "img_src";
-
-    public final static String BOUNDING_BOX_PARAM = "bnd_box";
-    public final static String SEGMENTATION_PARAM = "polygons";
-
-    public final static String IMAGEX_PARAM = "img_x";
-    public final static String IMAGEY_PARAM = "img_y";
-    public final static String IMAGEW_PARAM = "img_w";
-
-    public final static String IMAGEH_PARAM = "img_h";
-    public final static String IMAGEORIW_PARAM = "img_ori_w";
-    public final static String IMAGEORIH_PARAM = "img_ori_h";
-
-    public final static String BASE64_PARAM = "base64";
-
-    public final static String FILE_SIZE_PARAM = "file_size";
-
-    public final static String ACTION_KEYWORD = "action";
-    public final static String CONTENT = "content";
-
-    public final static String PROGRESS_METADATA = "progress";
-
-    public final static String IMAGE_DEPTH = "img_depth";
-
-    public static final String FILE = "file";
-    public static final String FOLDER = "folder";
-
-    public static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-
-    public static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
-
     @Getter @Setter private static Integer hostingPort;
 
     static
     {
         hostingPort = 9999;
     }
+
+    private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
+    private static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
+
+    private final static String PROJECT_NAME_PARAM = "project_name";
+    private final static String PROJECT_ID_PARAM = "project_id";
+    private final static String FILE_SYS_PARAM = "file_sys";
+
+    private final static String UUID_GENERATOR_PARAM = "uuid_generator_seed";
+    private final static String ANNOTATE_TYPE_PARAM = "annotation_type";
+
+    private final static String UUID_LIST_PARAM = "uuid_list";
+    private final static String LABEL_LIST_PARAM = "label_list";
+
+    private final static String UUID_PARAM = "uuid";
+    private final static String IMAGE_PATH_PARAM = "img_path";
+
+    private final static String EMPTY_ARRAY = "[]";
+
+    private final static String IMAGE_THUMBNAIL_PARAM = "img_thumbnail";
+    private final static String IMAGE_SRC_PARAM = "img_src";
+
+    private final static String BOUNDING_BOX_PARAM = "bnd_box";
+    private final static String SEGMENTATION_PARAM = "polygons";
+
+    private final static String IMAGEX_PARAM = "img_x";
+    private final static String IMAGEY_PARAM = "img_y";
+
+    private final static String IMAGEW_PARAM = "img_w";
+    private final static String IMAGEH_PARAM = "img_h";
+    private final static String IMAGEORIW_PARAM = "img_ori_w";
+    private final static String IMAGEORIH_PARAM = "img_ori_h";
+
+    private final static String IMAGE_DEPTH = "img_depth";
+
+    private final static String BASE64_PARAM = "base64";
+    private final static String FILE_SIZE_PARAM = "file_size";
+
+    private static final String FILE_PARAM = "file";
+    private static final String FOLDER_PARAM = "folder";
+
+
+    private final static String ACTION_KEYWORD = "action";
+    private final static String CONTENT = "content";
+    private final static String PROGRESS_METADATA = "progress";
+
+    public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
+    public static String getLogFilePath() { return LOG_FILE_PATH; }
+
+    public static String getProjectNameParam() { return PROJECT_NAME_PARAM; }
+    public static String getProjectIDParam() { return PROJECT_ID_PARAM; }
+    public static String getFileSysParam() { return FILE_SYS_PARAM; }
+
+    public static String getUuidGeneratorParam() { return UUID_GENERATOR_PARAM; }
+    public static String getAnnotateTypeParam() { return ANNOTATE_TYPE_PARAM; }
+
+    public static String getUUIDListParam() { return UUID_LIST_PARAM; }
+    public static String getLabelListParam() { return LABEL_LIST_PARAM;}
+
+    public static String getUUIDParam(){ return UUID_PARAM; }
+    public static String getImagePathParam(){ return IMAGE_PATH_PARAM; }
+
+    public static String getEmptyArray(){ return EMPTY_ARRAY; }
+
+    public static String getImageThumbnailParam(){ return IMAGE_THUMBNAIL_PARAM; }
+    public static String getImageSourceParam(){ return IMAGE_SRC_PARAM; }
+
+    public static String getBoundingBoxParam(){ return BOUNDING_BOX_PARAM; }
+    public static String getSegmentationParam(){ return SEGMENTATION_PARAM; }
+
+    public static String getImageXParam() { return IMAGEX_PARAM; }
+    public static String getImageYParam() { return IMAGEY_PARAM; }
+
+    public static String getImageWParam() { return IMAGEW_PARAM; }
+    public static String getImageHParam() { return IMAGEH_PARAM; }
+
+    public static String getImageORIWParam() { return IMAGEORIW_PARAM; }
+    public static String getImageORIHParam() { return IMAGEORIH_PARAM; }
+
+    public static String getImageDepth() { return IMAGE_DEPTH; }
+
+    public static String getBase64Param() { return BASE64_PARAM; }
+    public static String getFileSizeParam() { return FILE_SIZE_PARAM; }
+
+
+    public static String getFileParam(){ return FILE_PARAM; }
+    public static String getFolderParam(){ return FOLDER_PARAM; }
+
+    public static String getActionKeyword() { return ACTION_KEYWORD; }
+    public static String getContent() { return CONTENT; }
+    public static String getProgressMetadata() { return PROGRESS_METADATA; }
+
 
 }

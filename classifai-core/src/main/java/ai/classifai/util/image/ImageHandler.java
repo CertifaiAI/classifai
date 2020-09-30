@@ -145,10 +145,10 @@ public class ImageHandler {
 
 
             Map<String, String> imageData = new HashMap<>();
-            imageData.put(ParamConfig.IMAGE_DEPTH, Integer.toString(depth));
-            imageData.put(ParamConfig.IMAGEORIH_PARAM, Integer.toString(oriHeight));
-            imageData.put(ParamConfig.IMAGEORIW_PARAM, Integer.toString(oriWidth));
-            imageData.put(ParamConfig.BASE64_PARAM, base64FromBufferedImage(resized));
+            imageData.put(ParamConfig.getImageDepth(), Integer.toString(depth));
+            imageData.put(ParamConfig.getImageORIHParam(), Integer.toString(oriHeight));
+            imageData.put(ParamConfig.getImageORIWParam(), Integer.toString(oriWidth));
+            imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
             return imageData;
 

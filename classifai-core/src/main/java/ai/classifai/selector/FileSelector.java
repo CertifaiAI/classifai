@@ -70,7 +70,7 @@ public class FileSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(ParamConfig.ROOT_SEARCH_PATH);
+                    chooser.setCurrentDirectory(ParamConfig.getFileSysRootSearchPath());
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);

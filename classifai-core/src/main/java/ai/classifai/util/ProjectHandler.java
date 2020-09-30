@@ -180,7 +180,7 @@ public class ProjectHandler {
 
     public static boolean initSelector(String selection)
     {
-        if((selection.equals(ParamConfig.FILE)) || selection.equals(ParamConfig.FOLDER))
+        if((selection.equals(ParamConfig.getFileParam())) || selection.equals(ParamConfig.getFolderParam()))
         {
             return true;
         }

@@ -52,15 +52,15 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
     public void onMessage(Message<JsonObject> message) {
 
-        if (!message.headers().contains(ParamConfig.ACTION_KEYWORD))
+        if (!message.headers().contains(ParamConfig.getActionKeyword()))
         {
             log.error("No action header specified for message with headers {} and body {}",
                     message.headers(), message.body().encodePrettily());
 
-            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.ACTION_KEYWORD + " specified");
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
             return;
         }
-        String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
+        String action = message.headers().get(ParamConfig.getActionKeyword());
 
         if(action.equals(BoundingBoxDbQuery.retrieveData()))
         {
@@ -87,8 +87,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
     public void retrieveDataPath(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-        Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        Integer uuid = message.body().getInteger(ParamConfig.getUUIDParam());
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -110,7 +110,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                     String imagePath = row.getString(0);
 
-                    response.put(ParamConfig.IMAGE_SRC_PARAM, ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
+                    response.put(ParamConfig.getImageSourceParam(), ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
 
                     message.reply(response);
 
@@ -161,9 +161,9 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     */
     public void retrieveData(Message<JsonObject> message)
     {
-        String projectName =  message.body().getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer projectID =  message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-        Integer uuid = message.body().getInteger(ParamConfig.UUID_PARAM);
+        String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
+        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+        Integer uuid = message.body().getInteger(ParamConfig.getUUIDParam());
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -190,20 +190,20 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                     JsonObject response = ReplyHandler.getOkReply();
 
-                    response.put(ParamConfig.UUID_PARAM, uuid);
-                    response.put(ParamConfig.PROJECT_NAME_PARAM, projectName);
+                    response.put(ParamConfig.getUUIDParam(), uuid);
+                    response.put(ParamConfig.getProjectNameParam(), projectName);
 
-                    response.put(ParamConfig.IMAGE_PATH_PARAM, dataPath);
-                    response.put(ParamConfig.BOUNDING_BOX_PARAM, new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.IMAGE_DEPTH, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEX_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEY_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEW_PARAM, row.getDouble(counter++));
-                    response.put(ParamConfig.IMAGEH_PARAM, row.getDouble(counter++));
-                    response.put(ParamConfig.FILE_SIZE_PARAM, row.getInteger(counter++));
-                    response.put(ParamConfig.IMAGEORIW_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIW_PARAM)));
-                    response.put(ParamConfig.IMAGEORIH_PARAM, Integer.parseInt(imgData.get(ParamConfig.IMAGEORIH_PARAM)));
-                    response.put(ParamConfig.IMAGE_THUMBNAIL_PARAM, imgData.get(ParamConfig.BASE64_PARAM));
+                    response.put(ParamConfig.getImagePathParam(), dataPath);
+                    response.put(ParamConfig.getBoundingBoxParam(), new JsonArray(row.getString(counter++)));
+                    response.put(ParamConfig.getImageDepth(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
+                    response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
+                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
+                    response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
+                    response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
                     message.reply(response);
                 }
 
@@ -218,8 +218,8 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
     public void loadValidProjectUUID(Message<JsonObject> message)
     {
-        Integer projectID  = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.UUID_LIST_PARAM);
+        Integer projectID  = message.body().getInteger(ParamConfig.getProjectIDParam());
+        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.getUUIDListParam());
 
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
@@ -236,7 +236,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
         //sanity check on seed and write on database if needed
-        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.UUID_GENERATOR_PARAM));
+        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.getUuidGeneratorParam()));
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
@@ -272,21 +272,21 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         try
         {
-            Integer projectID = requestBody.getInteger(ParamConfig.PROJECT_ID_PARAM);
+            Integer projectID = requestBody.getInteger(ParamConfig.getProjectIDParam());
 
-            String boundingBox = requestBody.getJsonArray(ParamConfig.BOUNDING_BOX_PARAM).encode();
+            String boundingBox = requestBody.getJsonArray(ParamConfig.getBoundingBoxParam()).encode();
 
             JsonArray params = new JsonArray()
                     .add(boundingBox)
-                    .add(requestBody.getInteger(ParamConfig.IMAGE_DEPTH))
-                    .add(requestBody.getInteger(ParamConfig.IMAGEX_PARAM))
-                    .add(requestBody.getInteger(ParamConfig.IMAGEY_PARAM))
-                    .add(requestBody.getDouble(ParamConfig.IMAGEW_PARAM))
-                    .add(requestBody.getDouble(ParamConfig.IMAGEH_PARAM))
-                    .add(requestBody.getInteger(ParamConfig.FILE_SIZE_PARAM))
-                    .add(requestBody.getInteger(ParamConfig.IMAGEORIW_PARAM))
-                    .add(requestBody.getInteger(ParamConfig.IMAGEORIH_PARAM))
-                    .add(requestBody.getInteger(ParamConfig.UUID_PARAM))
+                    .add(requestBody.getInteger(ParamConfig.getImageDepth()))
+                    .add(requestBody.getInteger(ParamConfig.getImageXParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImageYParam()))
+                    .add(requestBody.getDouble(ParamConfig.getImageWParam()))
+                    .add(requestBody.getDouble(ParamConfig.getImageHParam()))
+                    .add(requestBody.getInteger(ParamConfig.getFileSizeParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImageORIWParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImageORIHParam()))
+                    .add(requestBody.getInteger(ParamConfig.getUUIDParam()))
                     .add(projectID);
 
 

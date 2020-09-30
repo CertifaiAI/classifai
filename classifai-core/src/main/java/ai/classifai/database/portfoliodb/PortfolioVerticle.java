@@ -55,17 +55,17 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void onMessage(Message<JsonObject> message)
     {
-        if (!message.headers().contains(ParamConfig.ACTION_KEYWORD))
+        if (!message.headers().contains(ParamConfig.getActionKeyword()))
         {
             log.error("No action header specified for message with headers {} and body {}",
                     message.headers(), message.body().encodePrettily());
 
-            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.ACTION_KEYWORD + " specified");
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
 
             return;
         }
 
-        String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
+        String action = message.headers().get(ParamConfig.getActionKeyword());
 
         if(action.equals(PortfolioDbQuery.createNewProject()))
         {
@@ -97,8 +97,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         JsonObject request = message.body();
 
-        String projectName = request.getString(ParamConfig.PROJECT_NAME_PARAM);
-        Integer annotationType = request.getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+        String projectName = request.getString(ParamConfig.getProjectNameParam());
+        Integer annotationType = request.getInteger(ParamConfig.getAnnotateTypeParam());
 
         if(ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
 
@@ -117,7 +117,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             Integer projectID = ProjectHandler.generateProjectID();
 
-            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.EMPTY_ARRAY).add(0).add(ParamConfig.EMPTY_ARRAY);
+            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.getEmptyArray()).add(0).add(ParamConfig.getEmptyArray());
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
@@ -156,8 +156,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void updateLabelList(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
-        JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        JsonArray labelList = message.body().getJsonArray(ParamConfig.getLabelListParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateLabelList(), new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
 
@@ -180,7 +180,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getProjectUUIDList(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -198,8 +198,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     List<Integer> uuidList = ConversionHandler.string2IntegerList(strList);
                     //FIX ME: GET THE MAXIMUM AND set the generator if needed
-                    response.put(ParamConfig.UUID_LIST_PARAM, uuidList);//row.getString(0)));
-                    response.put(ParamConfig.UUID_GENERATOR_PARAM, uuidGeneratorSeed);
+                    response.put(ParamConfig.getUUIDListParam(), uuidList);//row.getString(0)));
+                    response.put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
 
                     message.reply(response);
                 }
@@ -216,7 +216,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getLabelList(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -250,7 +250,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
     {
-        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
             if (fetch.succeeded()) {
@@ -263,7 +263,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .collect(Collectors.toList());
 
                 JsonObject response = ReplyHandler.getOkReply();
-                response.put(ParamConfig.CONTENT, projectNameList);
+                response.put(ParamConfig.getContent(), projectNameList);
 
                 message.reply(response);
             }

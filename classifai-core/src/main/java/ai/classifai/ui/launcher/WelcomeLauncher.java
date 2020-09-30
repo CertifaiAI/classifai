@@ -139,7 +139,7 @@ public class WelcomeLauncher
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.LOG_FILE_PATH, false);
+                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), false);
             }
         });
 
