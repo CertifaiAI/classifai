@@ -62,19 +62,19 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
         }
         String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
-        if(action.equals(SegDbQuery.RETRIEVE_DATA))
+        if(action.equals(SegDbQuery.retrieveData()))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(SegDbQuery.RETRIEVE_DATA_PATH))
+        else if(action.equals(SegDbQuery.retrieveDataPath()))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(SegDbQuery.UPDATE_DATA))
+        else if(action.equals(SegDbQuery.updateData()))
         {
             this.updateData(message);
         }
-        else if (action.equals(SegDbQuery.LOAD_VALID_PROJECT_UUID))
+        else if (action.equals(SegDbQuery.loadValidProjectUUID()))
         {
             this.loadValidProjectUUID(message);
         }
@@ -93,7 +93,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
-        projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+        projectJDBCClient.queryWithParams(SegDbQuery.retrieveDataPath(), params, fetch -> {
             if(fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
@@ -139,7 +139,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                 .add(0)
                 .add(0);
 
-        projectJDBCClient.queryWithParams(SegDbQuery.CREATE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(SegDbQuery.createData(), params, fetch -> {
 
             ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -166,7 +166,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
-        projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(SegDbQuery.retrieveData(), params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -244,7 +244,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            projectJDBCClient.queryWithParams(SegDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+            projectJDBCClient.queryWithParams(SegDbQuery.retrieveDataPath(), params, fetch -> {
 
                 if (fetch.succeeded())
                 {
@@ -290,7 +290,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     .add(projectID);
 
 
-            projectJDBCClient.queryWithParams(SegDbQuery.UPDATE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(SegDbQuery.updateData(), params, fetch -> {
                 if(fetch.succeeded())
                 {
                     message.reply(ReplyHandler.getOkReply());
@@ -338,7 +338,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
 
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(SegDbQuery.CREATE_PROJECT, create -> {
+                connection.execute(SegDbQuery.createProject(), create -> {
                     connection.close();
                     if (create.failed()) {
                         log.error("SegVerticle database preparation error", create.cause());
@@ -347,7 +347,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
                     } else
                     {
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(SegDbQuery.QUEUE, this::onMessage);
+                        vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
                         promise.complete();
                     }
                 });

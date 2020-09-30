@@ -74,4 +74,10 @@ public class ParamConfig
     public static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
 
     @Getter @Setter private static Integer hostingPort;
+
+    static
+    {
+        hostingPort = 9999;
+    }
+
 }

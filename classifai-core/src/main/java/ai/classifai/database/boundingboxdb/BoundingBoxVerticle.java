@@ -62,19 +62,19 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         }
         String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
-        if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA))
+        if(action.equals(BoundingBoxDbQuery.retrieveData()))
         {
             this.retrieveData(message);
         }
-        else if(action.equals(BoundingBoxDbQuery.RETRIEVE_DATA_PATH))
+        else if(action.equals(BoundingBoxDbQuery.retrieveDataPath()))
         {
             this.retrieveDataPath(message);
         }
-        else if(action.equals(BoundingBoxDbQuery.UPDATE_DATA))
+        else if(action.equals(BoundingBoxDbQuery.updateData()))
         {
             this.updateData(message);
         }
-        else if (action.equals(BoundingBoxDbQuery.LOAD_VALID_PROJECT_UUID))
+        else if (action.equals(BoundingBoxDbQuery.loadValidProjectUUID()))
         {
             this.loadValidProjectUUID(message);
         }
@@ -92,7 +92,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.retrieveDataPath(), params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -138,7 +138,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                 .add(0)
                 .add(0);
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.CREATE_DATA, params, fetch ->
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.createData(), params, fetch ->
         {
             ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
             if(fetch.succeeded())
@@ -167,7 +167,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
-        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA, params, fetch -> {
+        projectJDBCClient.queryWithParams(BoundingBoxDbQuery.retrieveData(), params, fetch -> {
 
             if(fetch.succeeded())
             {
@@ -244,7 +244,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
             final Integer UUID = oriUUIDList.get(i);
             JsonArray params = new JsonArray().add(UUID).add(projectID);
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.RETRIEVE_DATA_PATH, params, fetch -> {
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.retrieveDataPath(), params, fetch -> {
 
                 if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
@@ -290,7 +290,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     .add(projectID);
 
 
-            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.UPDATE_DATA, params, fetch -> {
+            projectJDBCClient.queryWithParams(BoundingBoxDbQuery.updateData(), params, fetch -> {
                 if(fetch.succeeded())
                 {
                     message.reply(ReplyHandler.getOkReply());
@@ -336,7 +336,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(BoundingBoxDbQuery.CREATE_PROJECT, create -> {
+                connection.execute(BoundingBoxDbQuery.createProject(), create -> {
                     connection.close();
                     if (create.failed()) {
                         log.error("BoundingBoxVerticle database preparation error", create.cause());
@@ -345,7 +345,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
                     } else
                     {
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(BoundingBoxDbQuery.QUEUE, this::onMessage);
+                        vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
                         promise.complete();
                     }
                 });

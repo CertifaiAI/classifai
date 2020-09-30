@@ -31,38 +31,37 @@ import java.util.*;
 @Slf4j
 public class ProjectLoader
 {
-    @Getter private Integer annotationType;
-    @Getter private Integer projectID;
-    private String projectName;
-
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     @Getter @Setter private LoaderStatus loaderStatus;
 
+    @Getter @Setter private Integer uuidGeneratorSeed;
+    @Getter @Setter private List<String> labelList;
+
+    @Getter private Integer annotationType;
+    @Getter private Integer projectID;
+    private String projectName;
+
     //Status when dealing with file/folder opener
     @Getter private FileSystemStatus fileSystemStatus;
+
+    //list to send the new added datapoints as thumbnails to front end
+    @Getter private List<Integer> fileSysNewUUIDList;
 
     //a list of unique uuid representing number of data points in one project
     @Getter private List<Integer> sanityUUIDList;
 
-    @Setter @Getter private Integer uuidGeneratorSeed;
-
-    @Getter @Setter private List<String> labelList;
+    @Getter private List<Integer> progressUpdate;
 
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
     private Set<Integer> uuidUniqueSet;
-
-    //list to send the new added datapoints as thumbnails to front end
-    @Getter private List<Integer> fileSysNewUUIDList;
 
     //used when checking for progress in
     //(1) validity of database data point
     //(2) adding new data point through file/folder
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
-
-    @Getter private List<Integer> progressUpdate;
 
     public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
     {

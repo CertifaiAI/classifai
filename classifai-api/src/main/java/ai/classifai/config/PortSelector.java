@@ -27,13 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PortSelector {
 
-    private final static Integer DEFAULT_PORT = 9999;
-
-    static
-    {
-        setHostingPort(DEFAULT_PORT);
-    }
-
     public static void configurePort(@NonNull String inputArg)
     {
         if((inputArg != null) && (inputArg.length() > 0) && (inputArg.matches("[0-9]+")))

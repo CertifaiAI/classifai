@@ -67,23 +67,23 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         String action = message.headers().get(ParamConfig.ACTION_KEYWORD);
 
-        if(action.equals(PortfolioDbQuery.CREATE_NEW_PROJECT))
+        if(action.equals(PortfolioDbQuery.createNewProject()))
         {
             this.createNewProject(message);
         }
-        else if(action.equals(PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE))
+        else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
         {
             this.getAllProjectsForAnnotationType(message);
         }
-        else if(action.equals(PortfolioDbQuery.UPDATE_LABEL_LIST))
+        else if(action.equals(PortfolioDbQuery.updateLabelList()))
         {
             this.updateLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.GET_PROJECT_UUID_LIST))
+        else if(action.equals(PortfolioDbQuery.getProjectUUIDListt()))
         {
             this.getProjectUUIDList(message);
         }
-        else if(action.equals(PortfolioDbQuery.GET_PROJECT_LABEL_LIST))
+        else if(action.equals(PortfolioDbQuery.getProjectLabelList()))
         {
             this.getLabelList(message);
         }
@@ -119,7 +119,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.EMPTY_ARRAY).add(0).add(ParamConfig.EMPTY_ARRAY);
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.CREATE_NEW_PROJECT, params, fetch -> {
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
                 if (fetch.succeeded())
                 {
@@ -146,7 +146,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         JsonArray params = new JsonArray().add(seedNumber).add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_UUID_GENERATOR_SEED, params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateUUIDGeneratorSeed(), params, fetch -> {
 
             if(!fetch.succeeded()) {
                 log.error("Update seed number in Portfolio failed. Project expected to hit error: ", fetch.cause().getMessage());
@@ -159,7 +159,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         Integer projectID = message.body().getInteger(ParamConfig.PROJECT_ID_PARAM);
         JsonArray labelList = message.body().getJsonArray(ParamConfig.LABEL_LIST_PARAM);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_LABEL_LIST, new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateLabelList(), new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
 
             if(fetch.succeeded())
             {
@@ -184,7 +184,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_UUID_LIST, params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDListt(), params, fetch -> {
 
             if(fetch.succeeded()) {
                 try {
@@ -220,7 +220,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_LABEL_LIST, params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectLabelList(), params, fetch -> {
 
             if (fetch.succeeded()) {
                 ResultSet resultSet = fetch.result();
@@ -252,7 +252,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.ANNOTATE_TYPE_PARAM);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE, new JsonArray().add(annotationTypeIndex), fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
             if (fetch.succeeded()) {
 
                 List<String> projectNameList = fetch.result()
@@ -281,7 +281,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.UPDATE_PROJECT, jsonUpdateBody, reply -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
 
             if(!reply.succeeded())
             {
@@ -292,7 +292,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public void configurePortfolioVerticle()
     {
-        portfolioDbClient.query(PortfolioDbQuery.GET_PROJECT_ID_LIST, fetch -> {
+        portfolioDbClient.query(PortfolioDbQuery.getProjectIDList(), fetch -> {
             if (fetch.succeeded()) {
 
                 List<Integer> projectIDList = fetch.result()
@@ -318,7 +318,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
 
-                        portfolioDbClient.queryWithParams(PortfolioDbQuery.GET_PROJECT_NAME, projectIDJson, projectNameFetch -> {
+                        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectName(), projectIDJson, projectNameFetch -> {
 
                             if (projectNameFetch.succeeded()) {
                                 ResultSet resultSet = projectNameFetch.result();
@@ -370,13 +370,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 if (ar.succeeded()) {
 
                     SQLConnection connection = ar.result();
-                    connection.execute(PortfolioDbQuery.CREATE_PORTFOLIO_TABLE, create -> {
+                    connection.execute(PortfolioDbQuery.createPortfolioTable(), create -> {
                         connection.close();
 
                         if (create.succeeded()) {
 
                             //the consumer methods registers an event bus destination handler
-                            vertx.eventBus().consumer(PortfolioDbQuery.QUEUE, this::onMessage);
+                            vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
                             configurePortfolioVerticle();
 
