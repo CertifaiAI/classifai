@@ -30,18 +30,23 @@ public class DbConfig
 {
     public static boolean checkDatabase(boolean unlockDatabase)
     {
+
+        File portfolioLockPath = new File(DatabaseConfig.getPortfolioLockFile());
+        File boundingBoxLockPath = new File(DatabaseConfig.getBBLockFile());
+        File segmentationLockPath = new File(DatabaseConfig.getSegLockFile());
+
         if(unlockDatabase)
         {
-            File portfolioLockPath = new File(DatabaseConfig.PORTFOLIO_DB_LCKFILE);
-            File projectLockPath = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
-
             if(portfolioLockPath.exists()) portfolioLockPath.delete();
 
-            if(projectLockPath.exists()) projectLockPath.delete();
+            if(boundingBoxLockPath.exists()) boundingBoxLockPath.delete();
+
+            if(segmentationLockPath.exists()) segmentationLockPath.delete();
+
         }
         else
         {
-            if((new File(DatabaseConfig.PORTFOLIO_DB_LCKFILE).exists()) || new File(DatabaseConfig.BNDBOX_DB_LCKFILE).exists())
+            if(portfolioLockPath.exists() || boundingBoxLockPath.exists() || segmentationLockPath.exists())
             {
                 log.info("Database is locked. Try with --unlockdb=true. \n" +
                         "WARNING: This might be hazardous by allowing multiple access to the database.");

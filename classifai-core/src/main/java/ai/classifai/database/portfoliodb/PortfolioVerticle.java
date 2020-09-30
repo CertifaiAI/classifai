@@ -349,7 +349,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
         log.info("Portfolio Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.PORTFOLIO_DB_LCKFILE);
+        File lockFile = new File(DatabaseConfig.getPortfolioLockFile());
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -362,7 +362,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     {
 
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.PORTFOLIO_DB)
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 

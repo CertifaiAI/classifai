@@ -41,10 +41,10 @@ public class WelcomeLauncher
     private static JFrame frame;
     private static OSManager osManager;
 
-    final static String BUTTON_PATH;
-
     private static int PANE_WIDTH = 640;
     private static int PANE_HEIGHT = 480;
+
+    final static String BUTTON_PATH;
 
     final static int BTN_X_COORD = 217;
     final static int BTN_Y_COORD = 342;

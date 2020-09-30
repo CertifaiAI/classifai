@@ -27,18 +27,17 @@ import java.io.File;
 @Slf4j
 public class DatabaseConfig
 {
-    public final static String DB_ROOT_PATH;
+    private final static String DB_ROOT_PATH;
 
-    public final static String LCK_FILE_EXTENSION;
+    private final static String LCK_FILE_EXTENSION;
 
-    public final static String PORTFOLIO_DB;
-    public final static String BNDBOX_DB;
-    public final static String SEGMENTATION_DB;
+    private final static String PORTFOLIO_DB;
+    private final static String BNDBOX_DB;
+    private final static String SEGMENTATION_DB;
 
-
-    public final static String PORTFOLIO_DB_LCKFILE;
-    public final static String BNDBOX_DB_LCKFILE;
-    public final static String SEGMENTATION_DB_LCKFILE;
+    private final static String PORTFOLIO_DB_LCKFILE;
+    private final static String BNDBOX_DB_LCKFILE;
+    private final static String SEGMENTATION_DB_LCKFILE;
 
     static
     {
@@ -54,4 +53,20 @@ public class DatabaseConfig
         BNDBOX_DB_LCKFILE = BNDBOX_DB + LCK_FILE_EXTENSION;
         SEGMENTATION_DB_LCKFILE = SEGMENTATION_DB + LCK_FILE_EXTENSION;
     }
+
+    public static String getDbRootPath() { return DB_ROOT_PATH; }
+
+    public static String getPortfolioDb() { return PORTFOLIO_DB; }
+
+    public static String getBndboxDb() { return BNDBOX_DB; }
+
+    public static String getSegDb() { return SEGMENTATION_DB; }
+
+    public static String getPortfolioLockFile() { return PORTFOLIO_DB_LCKFILE; }
+
+    public static String getBBLockFile() { return BNDBOX_DB_LCKFILE; }
+
+    public static String getSegLockFile() { return SEGMENTATION_DB_LCKFILE; }
+
+
 }

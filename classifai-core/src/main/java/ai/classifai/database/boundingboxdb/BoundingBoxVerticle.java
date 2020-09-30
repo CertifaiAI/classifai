@@ -313,7 +313,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     {
         log.info("Bounding Box Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.BNDBOX_DB_LCKFILE);
+        File lockFile = new File(DatabaseConfig.getBBLockFile());
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -324,7 +324,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
     public void start(Promise<Void> promise) throws Exception
     {
         projectJDBCClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.BNDBOX_DB)
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 

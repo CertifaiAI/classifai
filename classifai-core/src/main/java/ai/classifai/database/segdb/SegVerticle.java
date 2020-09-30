@@ -314,7 +314,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     {
         log.info("SegVerticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.SEGMENTATION_DB_LCKFILE);
+        File lockFile = new File(DatabaseConfig.getSegLockFile());
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -325,7 +325,7 @@ public class SegVerticle extends AbstractVerticle implements SegDbServiceable
     public void start(Promise<Void> promise) throws Exception
     {
         projectJDBCClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.SEGMENTATION_DB)
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 

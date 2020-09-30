@@ -38,21 +38,21 @@ public class MainVerticle extends AbstractVerticle
 {
     public void configureDatabase()
     {
-        File dataRootPath = new File(DatabaseConfig.DB_ROOT_PATH);
+        File dataRootPath = new File(DatabaseConfig.getDbRootPath());
 
         if(dataRootPath.exists())
         {
-            log.info("Existing database of classifai on " + DatabaseConfig.DB_ROOT_PATH);
+            log.info("Existing database of classifai on " + dataRootPath);
         }
         else
         {
-            log.info("Database of classifai created on " + DatabaseConfig.DB_ROOT_PATH);
+            log.info("Database of classifai created on " + dataRootPath);
 
             boolean databaseIsBuild = dataRootPath.mkdir();
 
             if(!databaseIsBuild)
             {
-                log.debug("Root database could not created: ", DatabaseConfig.DB_ROOT_PATH);
+                log.debug("Root database could not created: ", dataRootPath);
             }
         }
     }

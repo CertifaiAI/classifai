@@ -30,6 +30,7 @@ import java.util.Map;
 public class LogHandler
 {
     @Getter private static Map<String, List<String>> textEditorKey;
+
     static
     {
         textEditorKey = new HashMap<>();

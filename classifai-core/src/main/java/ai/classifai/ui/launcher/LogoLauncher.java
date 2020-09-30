@@ -34,5 +34,4 @@ public class LogoLauncher {
         System.out.println("   *********  *********  ***    ***  *********  *********  *********  ***        ***   ***  *********  ");
         System.out.println("\n");
     }
-
 }

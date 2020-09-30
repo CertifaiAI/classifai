@@ -35,9 +35,10 @@ enum OS
  * @author Chiawei Lim
  */
 @Slf4j
+@Getter
 public class OSManager
 {
-    @Getter private OS currentOS;
+    private OS currentOS;
 
     public OSManager()
     {
