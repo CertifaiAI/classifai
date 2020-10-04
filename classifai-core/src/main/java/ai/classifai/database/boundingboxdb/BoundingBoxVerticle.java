@@ -195,7 +195,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
 
                     response.put(ParamConfig.getImagePathParam(), dataPath);
                     response.put(ParamConfig.getBoundingBoxParam(), new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.getImageDepth(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImageDepth(), Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
                     response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
                     response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
                     response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
