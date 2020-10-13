@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 /**
  * Handler for conversion of different formats
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ConversionHandler
@@ -131,7 +131,7 @@ public class ConversionHandler
 
         input = input.replace("\"","");
 
-        String content = "";
+        String content;
 
         if(input.substring(0, 1).equals("["))
         {

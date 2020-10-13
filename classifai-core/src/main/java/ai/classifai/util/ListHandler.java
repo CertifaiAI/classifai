@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Handling list operation
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class ListHandler
 {
