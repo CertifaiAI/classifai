@@ -13,11 +13,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+package ai.classifai.selector.filesystem;
 
-package ai.classifai.annotation;
-
-public enum AnnotationOutput
+/**
+ * State of windows to select file/folder
+ *
+ * @author Chiawei Lim
+ */
+public enum FileSystemStatus
 {
-    PASCALVOC,
-    YOLO
+    WINDOW_OPEN,
+    WINDOW_CLOSE_DATABASE_NOT_UPDATED,
+    WINDOW_CLOSE_LOADING_FILES,
+    WINDOW_CLOSE_DATABASE_UPDATING,
+    WINDOW_CLOSE_DATABASE_UPDATED,
+    DID_NOT_INITIATE
 }

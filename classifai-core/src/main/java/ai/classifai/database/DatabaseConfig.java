@@ -13,10 +13,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
 
 /**
  * Configurations for files and paths of database
@@ -26,18 +27,46 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DatabaseConfig
 {
-    public final static String DB_ROOT_PATH;
-    public final static String PORTFOLIO_DB;
-    public final static String PROJECT_DB;
-    public final static String PORTFOLIO_LCKFILE;
-    public final static String PROJECT_LCKFILE;
+    private final static String DB_ROOT_PATH;
+
+    private final static String LCK_FILE_EXTENSION;
+
+    private final static String PORTFOLIO_DB;
+    private final static String BNDBOX_DB;
+    private final static String SEGMENTATION_DB;
+
+    private final static String PORTFOLIO_DB_LCKFILE;
+    private final static String BNDBOX_DB_LCKFILE;
+    private final static String SEGMENTATION_DB_LCKFILE;
 
     static
     {
-        DB_ROOT_PATH = System.getProperty("user.home") + "/.classifai";
-        PORTFOLIO_DB = DB_ROOT_PATH + "/" +  "portfolio/portfoliodb";
-        PROJECT_DB = DB_ROOT_PATH + "/" + "project/projectdb";
-        PORTFOLIO_LCKFILE = PORTFOLIO_DB + ".lck";
-        PROJECT_LCKFILE = PROJECT_DB + ".lck";
+        LCK_FILE_EXTENSION = ".lck";
+
+        DB_ROOT_PATH = System.getProperty("user.home") + File.separator + ".classifai";
+
+        PORTFOLIO_DB = DB_ROOT_PATH + File.separator +  "portfolio/portfoliodb";
+        BNDBOX_DB = DB_ROOT_PATH + File.separator + "bbproject/bbprojectdb";
+        SEGMENTATION_DB = DB_ROOT_PATH + File.separator + "segproject/segprojectdb";
+
+        PORTFOLIO_DB_LCKFILE = PORTFOLIO_DB + LCK_FILE_EXTENSION;
+        BNDBOX_DB_LCKFILE = BNDBOX_DB + LCK_FILE_EXTENSION;
+        SEGMENTATION_DB_LCKFILE = SEGMENTATION_DB + LCK_FILE_EXTENSION;
     }
+
+    public static String getDbRootPath() { return DB_ROOT_PATH; }
+
+    public static String getPortfolioDb() { return PORTFOLIO_DB; }
+
+    public static String getBndboxDb() { return BNDBOX_DB; }
+
+    public static String getSegDb() { return SEGMENTATION_DB; }
+
+    public static String getPortfolioLockFile() { return PORTFOLIO_DB_LCKFILE; }
+
+    public static String getBBLockFile() { return BNDBOX_DB_LCKFILE; }
+
+    public static String getSegLockFile() { return SEGMENTATION_DB_LCKFILE; }
+
+
 }

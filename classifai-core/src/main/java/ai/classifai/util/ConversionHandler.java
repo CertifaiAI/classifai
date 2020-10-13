@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util;
 
 import io.vertx.core.json.JsonArray;
@@ -29,6 +28,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Handler for conversion of different formats
+ *
+ * @author codenamewei
+ */
 @Slf4j
 public class ConversionHandler
 {
@@ -40,6 +44,15 @@ public class ConversionHandler
         for (T t : setList) list.add(t);
 
         return list;
+    }
+
+    public static String arrayString2String(String[] input)
+    {
+        StringBuffer sb = new StringBuffer();
+        for(int i = 0; i < input.length; i++) {
+            sb.append(input[i]);
+        }
+        return sb.toString();
     }
 
     //JSONObject -> .json
@@ -58,16 +71,15 @@ public class ConversionHandler
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                log.debug("FileWriter IOException while saving org.json.simple.JSONObject to File: ", e);
             }
         }
         catch(Exception e)
         {
-            log.error("Open FileWriter to save JSONObject to file failed");
-            e.printStackTrace();
+            log.debug("FileWriter Exception while writing org.json.simple.JSONObject to File: ", e);
         }
 
-        log.info("JSONObject saved to " + outputFilePath.getAbsolutePath());
+        log.info("org.json.simple.JSONObject saved to " + outputFilePath.getAbsolutePath());
     }
 
 
@@ -93,8 +105,7 @@ public class ConversionHandler
 
         }
         catch (Exception e){
-            log.error("Error in parsing string to vertx.JsonObject");
-            e.printStackTrace();
+            log.error("Error in parsing Object to io.vertx.core.json.JsonObject", e);
         }
 
         return null;
@@ -118,7 +129,9 @@ public class ConversionHandler
             return "";
         }
 
-        String content = "";
+        input = input.replace("\"","");
+
+        String content;
 
         if(input.substring(0, 1).equals("["))
         {
@@ -176,39 +189,21 @@ public class ConversionHandler
         return array;
     }
 
-    public static JsonArray integerList2JsonArray(List<Integer> list)
+    public static List<String> jsonArray2StringList(JsonArray json)
     {
-        JsonArray jsonArray = new JsonArray();
+        if((json == null) || (json.size() == 0)) return new ArrayList<>();
 
-        if(list.isEmpty())
+        List<String> array = new ArrayList<>();
+
+        for(int i = 0 ; i < json.size(); ++i)
         {
-            jsonArray.add("[]");
-            return jsonArray;
+            array.add(json.getString(i));
         }
 
-        jsonArray.add("[");
-
-        Iterator iter = list.iterator();
-
-        Integer item = (Integer) iter.next();
-        while(true)
-        {
-            jsonArray.add(item);
-
-            if(iter.hasNext())
-            {
-                jsonArray.add(", ");
-                item = (Integer) iter.next();
-            }
-            else
-            {
-                break;
-            }
-        }
-        jsonArray.add("]");
-
-        return jsonArray;
+        return array;
     }
+
+
     //.json -> JSONObject
     public static org.json.simple.JSONObject loadFile2Json(File inputFilePath)
     {
@@ -225,12 +220,12 @@ public class ConversionHandler
             else
             {
                 jsonObject = null;
-                log.error("JSONObject not found");
+                log.debug("File loading from File to org.json.simple.JSONObject failed");
             }
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug("Exception when loading from File to org.json.simple.JSONObject", e);
         }
 
         return jsonObject;

@@ -13,14 +13,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.image;
 
+import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.database.project.ProjectVerticle;
-import ai.classifai.selector.SelectorHandler;
-import ai.classifai.selector.SelectorStatus;
+import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.segdb.SegVerticle;
+import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ProjectHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,6 +39,11 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Image Handler
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ImageHandler {
 
@@ -56,7 +64,8 @@ public class ImageHandler {
             }
         }
 
-        log.error("File format not supported");
+        log.debug("File format not supported");
+
         return null;
     }
 
@@ -70,8 +79,7 @@ public class ImageHandler {
 
             return src;
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("error in base64FromBufferedImage");
+            log.debug("Error in converting BufferedImage into base64: ", e);
             return "";
         }
 
@@ -81,20 +89,27 @@ public class ImageHandler {
     {
         File file = new File(imagePath);
 
-        if(file.exists() == false) return false;
-
-        try {
-            BufferedImage img = ImageIO.read(file);
-        }
-        catch(Exception e)
+        if((file.exists() == false) && (file.length() < 5)) //length() stands for file size
         {
             return false;
         }
 
         return true;
+
+        /*try
+        {
+            ImageIO.read(file);
+        }
+        catch(Exception e)
+        {
+            log.debug("Image is not readable: ", e);
+            return false;
+        }*/
+
     }
 
-    public static String getThumbNail(String imageAbsPath)
+
+    public static Map<String, String> getThumbNail(String imageAbsPath)
     {
         try
         {
@@ -104,6 +119,11 @@ public class ImageHandler {
 
             Integer oriHeight = img.getHeight();
             Integer oriWidth = img.getWidth();
+
+            int type = img.getColorModel().getColorSpace().getType();
+            boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
+
+            Integer depth = grayscale ? 1 : 3;
 
             Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
             Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -123,15 +143,21 @@ public class ImageHandler {
             g2d.drawImage(tmp, 0, 0, null);
             g2d.dispose();
 
-            return base64FromBufferedImage(resized);
+
+            Map<String, String> imageData = new HashMap<>();
+            imageData.put(ParamConfig.getImageDepth(), Integer.toString(depth));
+            imageData.put(ParamConfig.getImageORIHParam(), Integer.toString(oriHeight));
+            imageData.put(ParamConfig.getImageORIWParam(), Integer.toString(oriWidth));
+            imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
+
+            return imageData;
 
         }
         catch (IOException e) {
-            log.error("Failed in getting thumbnail: ", e);
+            log.debug("Failed in getting thumbnail for path " + imageAbsPath, e);
             return null;
         }
     }
-
     public static String encodeFileToBase64Binary(File file)
     {
         try
@@ -150,57 +176,12 @@ public class ImageHandler {
         }
         catch(Exception e)
         {
-            log.error("Failed while converting File to base64");
-            e.printStackTrace();
+            log.error("Failed while converting File to base64", e);
         }
 
         return null;
     }
 
-    /**
-     *
-     * @param file
-     * @return width, height, depth
-     */
-    public static Map<String, Integer> getImageMetadata(File file)
-    {
-        Map<String, Integer> map = new HashMap<>();
-
-        Integer width = 0;
-        Integer height = 0;
-        Integer depth = -1;
-
-        try{
-            BufferedImage bimg = ImageIO.read(file);
-
-            if(bimg == null)
-            {
-                log.error("Failed in reading " + file.getAbsolutePath());
-                return null;
-            }
-            else
-            {
-                width = bimg.getWidth();
-                height = bimg.getHeight();
-
-                int type = bimg.getColorModel().getColorSpace().getType();
-                boolean grayscale = (type==ColorSpace.TYPE_GRAY || type==ColorSpace.CS_GRAY);
-
-                depth = grayscale ? 1 : 3;
-
-                map.put("width", width);
-                map.put("height", height);
-                map.put("depth", depth);
-            }
-        }
-        catch(Exception e)
-        {
-            log.error("Error in reading image ", e);
-            return null;
-        }
-
-        return map;
-    }
 
     private static boolean isfileSupported(String file)
     {
@@ -237,7 +218,7 @@ public class ImageHandler {
         }
         catch(Exception e)
         {
-            log.debug("Error: ", e);
+            log.debug("Error in checking if image file valid - " + file, e);
             return false;
         }
 
@@ -252,7 +233,12 @@ public class ImageHandler {
 
         if(isfileSupported(currentFileFullPath))
         {
-            if(PdfHandler.isPdf(currentFileFullPath)) {
+            if(isImageFileValid(currentFileFullPath))
+            {
+                verifiedFilesList.add(file);
+            }
+
+            /*if(PdfHandler.isPdf(currentFileFullPath)) {
 
                 java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
 
@@ -265,46 +251,50 @@ public class ImageHandler {
             {
                 verifiedFilesList.add(file);
             }
+            */
         }
 
         return verifiedFilesList;
     }
 
 
-    public static void saveToDatabase(@NonNull List<File> filesCollection, AtomicInteger uuidGenerator)
+    public static void saveToDatabase(@NonNull Integer projectID, @NonNull List<File> filesCollection)
     {
-        SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        AtomicInteger uuidGenerator = new AtomicInteger(loader.getUuidGeneratorSeed());
 
-        List<Integer> uuidList = new ArrayList<>();
+        //update Portfolio Verticle Generator Seed
+        Integer uuidNewSeed = filesCollection.size() + loader.getUuidGeneratorSeed();
+        PortfolioVerticle.updateUUIDGeneratorSeed(projectID, uuidNewSeed);
 
-        AtomicInteger progressCounter = new AtomicInteger(0);
+        loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        loader.setFileSysTotalUUIDSize(filesCollection.size());
 
-        for(File item : filesCollection)
+        Integer annotationTypeInt = loader.getAnnotationType();
+
+        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
-            Integer uuid = uuidGenerator.incrementAndGet();
-
-            ProjectVerticle.updateUUID(uuidList, item, uuid);
-
-            //update progress
-            SelectorHandler.setProgressUpdate(SelectorHandler.getProjectNameBuffer(), new ArrayList<>(Arrays.asList(progressCounter.incrementAndGet(), filesCollection.size())));
-        }
-
-        while(true)
-        {
-            if((uuidList.size() == filesCollection.size()) || (!SelectorHandler.isLoaderProcessing()))
+            for(int i = 0; i < filesCollection.size(); ++i)
             {
-                PortfolioVerticle.updateUUIDList(SelectorHandler.getProjectNameBuffer(), uuidList);
-                break;
+                Integer uuid = uuidGenerator.incrementAndGet();
+
+                BoundingBoxVerticle.updateUUID(projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
+        else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
+        {
+            for(int i = 0; i < filesCollection.size(); ++i)
+            {
+                Integer uuid = uuidGenerator.incrementAndGet();
 
+                SegVerticle.updateUUID(projectID, filesCollection.get(i), uuid, i + 1);
+
+            }
+        }
     }
-
-    public static void processFile(@NonNull List<File> filesInput, AtomicInteger uuidGenerator)
+    public static void processFile(@NonNull Integer projectID, @NonNull List<File> filesInput)
     {
         List<File> validatedFilesList = new ArrayList<>();
-
-        //SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_LOADING_FILES);
 
         for(File file : filesInput)
         {
@@ -312,18 +302,16 @@ public class ImageHandler {
             validatedFilesList.addAll(files);
         }
 
-        saveToDatabase(validatedFilesList, uuidGenerator);
+        saveToDatabase(projectID, validatedFilesList);
     }
 
-    public static void processFolder(@NonNull File rootPath, AtomicInteger uuidGenerator)
+    public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
 
         Stack<File> folderStack = new Stack<>();
 
         folderStack.push(rootPath);
-
-        //SelectorHandler.setSelectorStatus(SelectorStatus.WINDOW_CLOSE_LOADING_FILES);
 
         while(folderStack.isEmpty() != true)
         {
@@ -345,6 +333,6 @@ public class ImageHandler {
             }
         }
 
-        saveToDatabase(totalFilelist, uuidGenerator);
+        saveToDatabase(projectID, totalFilelist);
     }
 }

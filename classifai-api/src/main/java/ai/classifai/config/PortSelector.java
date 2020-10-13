@@ -16,13 +16,8 @@
 package ai.classifai.config;
 
 import ai.classifai.server.ParamConfig;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.Random;
 
 /**
  * Port Configuration for hosting classifai
@@ -32,72 +27,16 @@ import java.util.Random;
 @Slf4j
 public class PortSelector {
 
-    @Getter private static Integer hostingPort;
-    private final static Integer DEFAULT_PORT = 9999;
-    private final static Integer MIN = 9000;
-    private final static Integer MAX = DEFAULT_PORT;
-
-    static
-    {
-        setHostingPort(DEFAULT_PORT);
-
-        //checkPort();
-    }
-
     public static void configurePort(@NonNull String inputArg)
     {
         if((inputArg != null) && (inputArg.length() > 0) && (inputArg.matches("[0-9]+")))
         {
             setHostingPort(Integer.parseInt(inputArg));
         }
-
-        //checkPort();
     }
 
-    private static ServerSocket checkPortSanity(Integer port)
+    private static void setHostingPort(Integer port)
     {
-        try {
-            return new ServerSocket(port);
-        }
-        catch (IOException ex) {
-            // if the program gets here, no port in the range was found
-            log.error("IOException error during configure port " + port, ex);
-            return null;
-        }
-    }
-
-    private static void checkPort()
-    {
-        if(checkPortSanity(hostingPort) == null)
-        {
-            for(int i = 0 ; i < 50; ++i) // try 50 times to get a port to host
-            {
-                ServerSocket socket = checkPortSanity(getRandomNumberInRange(MIN, MAX));
-
-                if(socket != null)
-                {
-                    setHostingPort(socket.getLocalPort());
-                    break;
-                }
-            }
-
-            log.error("Error: Port could not be correctly configured. Program expected to not work fine.");
-        }
-    }
-
-    private static void setHostingPort(Integer port) {
-        hostingPort = port;
         ParamConfig.setHostingPort(port);
     }
-
-    private static Integer getRandomNumberInRange(Integer min, Integer max) {
-
-        if (min >= max) {
-            throw new IllegalArgumentException("max must be greater than min");
-        }
-
-        Random r = new Random();
-        return r.nextInt((max - min) + 1) + min;
-    }
-
 }

@@ -13,11 +13,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai;
 
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
+import ai.classifai.server.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -27,10 +27,15 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * Main program to start Classifai
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ClassifaiApp
 {
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
     {
         boolean isConfigured = configure(args);
 
@@ -47,7 +52,7 @@ public class ClassifaiApp
 
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
-        opt.setConfig(new JsonObject().put("http.port", PortSelector.getHostingPort()));
+        opt.setConfig(new JsonObject().put("http.port", ParamConfig.getHostingPort()));
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);

@@ -15,7 +15,8 @@
  */
 package ai.classifai.database.loader;
 
-import ai.classifai.data.DataType;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,54 +31,164 @@ import java.util.*;
 @Slf4j
 public class ProjectLoader
 {
+    //Load an existing project from database
+    //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     @Getter @Setter private LoaderStatus loaderStatus;
-    @Getter private Set<Integer> sanityUUIDList;
-    private Integer currentProcessedLength;
-    @Setter private Integer totalUUIDSize;
 
-    @Getter private DataType dataType = DataType.IMAGE;
+    @Getter @Setter private Integer uuidGeneratorSeed;
+    @Getter @Setter private List<String> labelList;
 
-    @Setter @Getter private List<Integer> progressUpdate;
+    @Getter private Integer annotationType;
+    @Getter private Integer projectID;
+    private String projectName;
 
-    public ProjectLoader()
+    //Status when dealing with file/folder opener
+    @Getter private FileSystemStatus fileSystemStatus;
+
+    //list to send the new added datapoints as thumbnails to front end
+    @Getter private List<Integer> fileSysNewUUIDList;
+
+    //a list of unique uuid representing number of data points in one project
+    @Getter private List<Integer> sanityUUIDList;
+
+    @Getter private List<Integer> progressUpdate;
+
+    //Set to push in unique uuid to prevent recurrence
+    //this will eventually port into List<Integer>
+    private Set<Integer> uuidUniqueSet;
+
+    //used when checking for progress in
+    //(1) validity of database data point
+    //(2) adding new data point through file/folder
+    private Integer currentUUIDMarker;
+    private Integer totalUUIDMaxLen;
+
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
     {
-        setProjectLoader(LoaderStatus.DID_NOT_INITIATED);
+        projectID = currentProjectID;
+        projectName = currentProjectName;
+        annotationType = annotationTypeInt;
 
-        progressUpdate = new ArrayList<>(Arrays.asList(0, 1)); //temporary fix to prevent frontend display nan
+        loaderStatus = currentLoaderStatus;
+
+        labelList = new ArrayList<>();
+        sanityUUIDList = new ArrayList<>();
+
+        uuidGeneratorSeed = 0;
+
+        reset(FileSystemStatus.DID_NOT_INITIATE);
     }
 
-    public void resetLoaderStatus()
+    public void reset(FileSystemStatus currentFileSystemStatus)
     {
-        loaderStatus = LoaderStatus.DID_NOT_INITIATED;
-        currentProcessedLength = 0;
-        sanityUUIDList.clear();
+        uuidUniqueSet = new HashSet<>();
+        fileSysNewUUIDList = new ArrayList<>();
+
+        currentUUIDMarker = 0;
+        totalUUIDMaxLen = 1;
+
+        progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
+
+        fileSystemStatus = currentFileSystemStatus;
     }
 
-    private void setProjectLoader(LoaderStatus status)
-    {
-        loaderStatus = status;
-        sanityUUIDList = new HashSet<>();
-        currentProcessedLength = 0;
-    }
-
+    //loading project from database
     public List<Integer> getProgress()
     {
         List<Integer> progressBar = new ArrayList<>();
 
-        progressBar.add(currentProcessedLength);
-        progressBar.add(totalUUIDSize);
+        progressBar.add(currentUUIDMarker);
+        progressBar.add(totalUUIDMaxLen);
 
         return progressBar;
     }
 
-    public void updateSanityUUIDItem(Integer uuid)
+    public void setDbOriUUIDSize(Integer totalUUIDSizeBuffer)
     {
-        sanityUUIDList.add(uuid);
+        totalUUIDMaxLen = totalUUIDSizeBuffer;
+
+        if(totalUUIDMaxLen == 0)
+        {
+            loaderStatus = LoaderStatus.LOADED;
+        }
+        else if(totalUUIDMaxLen < 0)
+        {
+            log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
+            loaderStatus = LoaderStatus.ERROR;
+        }
+
     }
 
-    public void updateProgress(Integer lengthNow)
+    public void updateDBLoadingProgress(Integer currentSize)
     {
-        currentProcessedLength = lengthNow;
+        currentUUIDMarker = currentSize;
+
+        //if done, offload set to list
+        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        {
+            sanityUUIDList = new ArrayList<>(uuidUniqueSet);
+
+            loaderStatus = LoaderStatus.LOADED;
+        }
+    }
+
+    public void pushDBValidUUID(Integer uuid)
+    {
+        uuidUniqueSet.add(uuid);
+    }
+
+    public void pushFileSysNewUUIDList(Integer uuid)
+    {
+        fileSysNewUUIDList.add(uuid);
+    }
+
+    //updating project from file system
+    public void updateFileSysLoadingProgress(Integer currentSize)
+    {
+        currentUUIDMarker = currentSize;
+        progressUpdate.set(0, currentUUIDMarker);
+
+        //if done, offload set to list
+        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        {
+            offloadFileSysNewList2List();
+        }
+
+    }
+
+    private void offloadFileSysNewList2List()
+    {
+        sanityUUIDList.addAll(fileSysNewUUIDList);
+
+        if(fileSysNewUUIDList.isEmpty())
+        {
+            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
+        }
+        else
+        {
+
+            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
+        }
+
+        PortfolioVerticle.updateFileSystemUUIDList(projectID);
+    }
+
+    public boolean isAllFileSysProcessed()
+    {
+        return currentUUIDMarker.equals(totalUUIDMaxLen);
+    }
+
+    public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
+    {
+
+        totalUUIDMaxLen = totalUUIDSizeBuffer;
+        progressUpdate = Arrays.asList(new Integer[]{0, totalUUIDMaxLen});
+
+    }
+
+    public void setFileSystemStatus(FileSystemStatus status)
+    {
+        fileSystemStatus = status;
     }
 
 }

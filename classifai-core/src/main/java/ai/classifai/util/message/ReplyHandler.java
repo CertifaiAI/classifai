@@ -13,12 +13,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.util.message;
 
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Default reply handler for response
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class ReplyHandler {
 
@@ -52,6 +56,7 @@ public class ReplyHandler {
     public static JsonObject reportDatabaseQueryError(Throwable cause)
     {
         log.error("Database query error", cause);
+
         //message.fail(ErrorCodes.DB_ERROR.ordinal(), cause.getMessage());
         return new JsonObject().put(MESSAGE_KEY, FAILED)
                                .put(ERROR_CODE, ErrorCodes.DB_ERROR.ordinal())
@@ -69,7 +74,8 @@ public class ReplyHandler {
 
     public static JsonObject reportUserDefinedError(String userDefinedMessage)
     {
-        log.error(userDefinedMessage);
+        log.info(userDefinedMessage);
+
         return new JsonObject().put(MESSAGE_KEY, FAILED)
                 .put(ERROR_CODE, ErrorCodes.OTHER_ERROR.ordinal())
                 .put(ERROR_MESSAGE, userDefinedMessage);
@@ -77,21 +83,20 @@ public class ReplyHandler {
 
     public static JsonObject reportBadParamError(String userDefinedMessage)
     {
-        log.error(userDefinedMessage);
+        log.info(userDefinedMessage);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
                 .put(ERROR_CODE, ErrorCodes.BAD_QUERY_PARAM.ordinal())
                 .put(ERROR_MESSAGE, userDefinedMessage);
     }
 
-    public static JsonObject reportProjectNameError()
+    public static JsonObject reportProjectNameError(String info)
     {
-        String projectNameNotExist = "Project name is not registered in database";
-        log.error(projectNameNotExist);
+        log.info(info);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
                 .put(ERROR_CODE, ErrorCodes.BAD_QUERY_PARAM.ordinal())
-                .put(ERROR_MESSAGE, projectNameNotExist);
+                .put(ERROR_MESSAGE, info);
     }
 
 

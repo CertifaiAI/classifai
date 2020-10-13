@@ -13,32 +13,47 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.database.project.ProjectVerticle;
+import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.server.ServerVerticle;
-import ai.classifai.ui.WelcomeConsole;
+import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.ui.launcher.WelcomeLauncher;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 
+/**
+ * Main verticle to create multiple verticles
+ *
+ * @author Chiawei Lim
+ */
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
     public void configureDatabase()
     {
-        File dataRootPath = new File(DatabaseConfig.DB_ROOT_PATH);
+        File dataRootPath = new File(DatabaseConfig.getDbRootPath());
 
-        if(!dataRootPath.exists())
+        if(dataRootPath.exists())
         {
+            log.info("Existing database of classifai on " + dataRootPath);
+        }
+        else
+        {
+            log.info("Database of classifai created on " + dataRootPath);
+
             boolean databaseIsBuild = dataRootPath.mkdir();
 
-            if(!databaseIsBuild) log.error("Database could not created");
+            if(!databaseIsBuild)
+            {
+                log.debug("Root database could not created: ", dataRootPath);
+            }
         }
     }
 
@@ -52,9 +67,16 @@ public class MainVerticle extends AbstractVerticle
 
         portfolioDeployment.future().compose(id_ -> {
 
-            Promise<String> profileDeployment = Promise.promise();
-            vertx.deployVerticle(new ProjectVerticle(), profileDeployment);
-            return profileDeployment.future();
+            Promise<String> bndBoxDeployment = Promise.promise();
+            vertx.deployVerticle(new BoundingBoxVerticle(), bndBoxDeployment);
+            return bndBoxDeployment.future();
+
+        }).compose(id_ -> {
+
+            Promise<String> segDeployment = Promise.promise();
+            vertx.deployVerticle(new SegVerticle(), segDeployment);
+
+            return segDeployment.future();
 
         }).compose(id_ -> {
 
@@ -66,7 +88,9 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
-                WelcomeConsole.start();
+                LogoLauncher.print();
+                
+                WelcomeLauncher.start();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
