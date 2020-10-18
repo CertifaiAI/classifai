@@ -13,5 +13,3 @@ jpackage --type pkg \
          --arguments --unlockdb=true --arguments --port=9999 \
          --resource-dir metadata \
          --verbose
-
-
