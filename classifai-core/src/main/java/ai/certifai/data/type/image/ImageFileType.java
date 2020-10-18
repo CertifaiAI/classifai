@@ -48,8 +48,6 @@ public class ImageFileType {
         base64header.put("png", "data:image/jpeg;base64,");
         base64header.put("PNG", "data:image/png;base64,");
         base64header.put("bmp", "data:image/bmp;base64,");
-        base64header.put("tif", "data:image/png;base64,");
-        base64header.put("tiff", "data:image/png;base64,");
     }
 
     public static String[] getImageFileTypes()
