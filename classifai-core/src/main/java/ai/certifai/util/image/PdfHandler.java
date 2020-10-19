@@ -110,10 +110,17 @@ public class PdfHandler
                         throw new Exception("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
                     }
 
-                    pdf2Images.add(fImageSavedFullPath);
-
                     // suffix in filename will be used as the file format
-                    ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
+                    boolean bSavedSuccess = ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
+
+                    if(!bSavedSuccess)
+                    {
+                        throw new Exception("Save PDF image failed: " + fImageSavedFullPath);
+                    }
+                    else
+                    {
+                        pdf2Images.add(fImageSavedFullPath);
+                    }
                 }
             }
 

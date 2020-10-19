@@ -100,10 +100,17 @@ public class TifHandler
                     }
 
 
-                    ImageIO.write(bim, "png", new File(imageSavedFullPath));
+                    boolean bSavedSuccess = ImageIO.write(bim, "png", new File(imageSavedFullPath));
 
-                    tif2Images.add(fImageSavedFullPath);
 
+                    if(!bSavedSuccess)
+                    {
+                        throw new Exception("Save TIF image failed: " + fImageSavedFullPath);
+                    }
+                    else
+                    {
+                        tif2Images.add(fImageSavedFullPath);
+                    }
                 }
 
             }
