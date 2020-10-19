@@ -22,7 +22,9 @@ import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -98,10 +100,30 @@ public class TifHandler
                     }
 
 
+                    int type = bim.getColorModel().getColorSpace().getType();
+                    boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
+
+
+                    if(grayscale)
+                    {
+                        System.out.println("Grayscale: " + fImageSavedFullPath);
+
+
+                        // suffix in filename will be used as the file format
+                        ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
+                    }
+                    else
+                    {
+                        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+                        ColorConvertOp op = new ColorConvertOp(cs, null);
+
+                        BufferedImage bufferedImage = new BufferedImage(fImageSavedFullPath.p, 200,
+                                BufferedImage.TYPE_BYTE_INDEXED);
+                        bufferedImage = op.filter(bim , null);
+                    }
+
                     tif2Images.add(fImageSavedFullPath);
 
-                    // suffix in filename will be used as the file format
-                    ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
                 }
 
             }

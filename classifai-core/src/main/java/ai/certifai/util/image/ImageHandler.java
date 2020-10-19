@@ -40,12 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class ImageHandler {
 
-    private static File tifImageBuffer;
-
-    static
-    {
-        tifImageBuffer = new File(System.getProperty("java.io.tmpdir") + "/temp.png");
-    }
     private static String getImageHeader(String input)
     {
         Integer lastIndex = input.length();
@@ -277,7 +271,12 @@ public class ImageHandler {
             }
             else if(TifHandler.isTifFormat(currentFileFullPath))
             {
+                java.util.List<File> tif2ImagePaths = TifHandler.saveTif2Image(currentFileFullPath);
 
+                if(tif2ImagePaths != null)
+                {
+                    verifiedFilesList.addAll(tif2ImagePaths);
+                }
             }
             else if(isImageFileValid(currentFileFullPath))
             {
