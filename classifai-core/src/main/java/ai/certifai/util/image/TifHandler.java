@@ -100,27 +100,7 @@ public class TifHandler
                     }
 
 
-                    int type = bim.getColorModel().getColorSpace().getType();
-                    boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
-
-
-                    if(grayscale)
-                    {
-                        System.out.println("Grayscale: " + fImageSavedFullPath);
-
-
-                        // suffix in filename will be used as the file format
-                        ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
-                    }
-                    else
-                    {
-                        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-                        ColorConvertOp op = new ColorConvertOp(cs, null);
-
-                        BufferedImage bufferedImage = new BufferedImage(fImageSavedFullPath.p, 200,
-                                BufferedImage.TYPE_BYTE_INDEXED);
-                        bufferedImage = op.filter(bim , null);
-                    }
+                    ImageIO.write(bim, "png", new File(imageSavedFullPath));
 
                     tif2Images.add(fImageSavedFullPath);
 
