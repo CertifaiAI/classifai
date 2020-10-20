@@ -87,6 +87,8 @@ public class TifHandler
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
+                System.out.println("PDF Debugging: " + fImageSavedFullPath);
+
                 if(fImageSavedFullPath.exists() == false)
                 {
                     BufferedImage bim = reader.read(page);
@@ -95,8 +97,9 @@ public class TifHandler
                     {
 
                         //TODO: is this the best way to handle this?
-
-                        throw new Exception("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
+                        String errorMessage = "Image width and/or height bigger than " + ImageFileType.getMaxHeight();
+                        log.info(errorMessage);
+                        throw new Exception(errorMessage);
                     }
 
 
@@ -105,12 +108,18 @@ public class TifHandler
 
                     if(!bSavedSuccess)
                     {
-                        throw new Exception("Save TIF image failed: " + fImageSavedFullPath);
+                        String errorMessage = "Save TIF image failed: " + fImageSavedFullPath;
+                        log.info(errorMessage);
+                        throw new Exception(errorMessage);
                     }
                     else
                     {
                         tif2Images.add(fImageSavedFullPath);
                     }
+                }
+                else
+                {
+                    tif2Images.add(fImageSavedFullPath);
                 }
 
             }

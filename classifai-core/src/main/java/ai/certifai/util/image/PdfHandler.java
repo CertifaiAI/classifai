@@ -82,8 +82,10 @@ public class PdfHandler
 
     public static List<File> savePdf2Image(String pdfFileName)
     {
+        PDDocument document = null;
+
         try {
-            PDDocument document = PDDocument.load(new File(pdfFileName));
+            document = PDDocument.load(new File(pdfFileName));
             PDFRenderer pdfRenderer = new PDFRenderer(document);
             List<File> pdf2Images = new ArrayList<>();
 
@@ -98,6 +100,8 @@ public class PdfHandler
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
+                System.out.println("PDF Debugging: " + fImageSavedFullPath);
+
                 if(fImageSavedFullPath.exists() == false)
                 {
                     BufferedImage bim = pdfRenderer.renderImageWithDPI(page, dotsPerInch, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
@@ -106,8 +110,9 @@ public class PdfHandler
                     {
                         document.close();
 
-                        //TODO: is this the best way to handle this?
-                        throw new Exception("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
+                        String errorMessage = "Image width and/or height bigger than " + ImageFileType.getMaxHeight();
+                        log.info(errorMessage);
+                        throw new Exception(errorMessage);
                     }
 
                     // suffix in filename will be used as the file format
@@ -115,12 +120,18 @@ public class PdfHandler
 
                     if(!bSavedSuccess)
                     {
-                        throw new Exception("Save PDF image failed: " + fImageSavedFullPath);
+                        String errorMessage = "Save PDF image failed: " + fImageSavedFullPath;
+                        log.info(errorMessage);
+                        throw new Exception(errorMessage);
                     }
                     else
                     {
                         pdf2Images.add(fImageSavedFullPath);
                     }
+                }
+                else
+                {
+                    pdf2Images.add(fImageSavedFullPath);
                 }
             }
 
@@ -132,6 +143,17 @@ public class PdfHandler
         {
             log.info("PDF Skipped. Failed to read in pdf: " + pdfFileName);
             log.debug("Error: ", e);
+        }
+        finally
+        {
+            try
+            {
+                if(document != null) document.close();
+            }
+            catch(IOException error)
+            {
+                log.info("Error when closing pdf document: ", error.getMessage());
+            }
         }
 
         return null;
