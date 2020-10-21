@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI
+ * Copyright (c) 2020 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -45,7 +45,6 @@ public class PortfolioDbQuery
     //private final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
 
     private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
-
 
     public static String getQueue(){ return QUEUE; }
 

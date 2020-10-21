@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI
+ * Copyright (c) 2020 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -65,8 +65,5 @@ public class BrowserHandler {
         browserKey.put(OS.MAC.name(), macBrowserKey);
         browserKey.put(OS.WINDOWS.name(), winBrowserKey);
         //browserKey.put(OS.LINUX.name(), linuxBrowserKey);
-
     }
-
-
 }
