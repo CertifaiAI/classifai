@@ -107,6 +107,9 @@ public class ProgramOpener
                 commandPath = new String[]{programPath + " " + param};
             }
 
+        }else if(os.equals(OS.LINUX))
+        {
+            commandPath = new String[]{"bash", "-c", programPath + " "+ param};
         }
 
         try

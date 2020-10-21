@@ -56,14 +56,18 @@ public class BrowserHandler {
         winBrowserKey.add("C:\\Program Files\\classifai\\app\\chrome-win\\chrome.exe");
         winBrowserKey.add(chromeNativePath);
         winBrowserKey.add("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
+        winBrowserKey.add("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 
 
-        //List linuxBrowserKey = new ArrayList<String>();
+        List linuxBrowserKey = new ArrayList<String>();
 
-        //linuxBrowserKey.add("/usr/bin/firefox");
+        linuxBrowserKey.add("/usr/bin/firefox");
 
         browserKey.put(OS.MAC.name(), macBrowserKey);
         browserKey.put(OS.WINDOWS.name(), winBrowserKey);
+        browserKey.put(OS.LINUX.name(), linuxBrowserKey);
+        
         //browserKey.put(OS.LINUX.name(), linuxBrowserKey);
+
     }
 }
