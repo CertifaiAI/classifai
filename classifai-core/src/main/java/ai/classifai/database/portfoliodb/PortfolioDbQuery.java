@@ -46,7 +46,6 @@ public class PortfolioDbQuery
 
     private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 
-
     public static String getQueue(){ return QUEUE; }
 
     public static String createPortfolioTable() { return CREATE_PORTFOLIO_TABLE; }
