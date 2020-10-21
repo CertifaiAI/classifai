@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ */
+
 package ai.classifai;
 
 import io.vertx.core.Vertx;
