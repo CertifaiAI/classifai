@@ -65,11 +65,9 @@ public class BrowserHandler {
 
         browserKey.put(OS.MAC.name(), macBrowserKey);
         browserKey.put(OS.WINDOWS.name(), winBrowserKey);
-<<<<<<< HEAD
         browserKey.put(OS.LINUX.name(), linuxBrowserKey);
-
-=======
+        
         //browserKey.put(OS.LINUX.name(), linuxBrowserKey);
->>>>>>> b676e49ac9cba714b52dcc7b6ca6f884abf8299e
+
     }
 }
