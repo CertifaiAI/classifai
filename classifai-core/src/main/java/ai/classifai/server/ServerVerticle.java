@@ -53,19 +53,11 @@ public class ServerVerticle extends AbstractVerticle
 
     public ServerVerticle()
     {
-        Thread threadfile = new Thread(){
-            public void run(){
-                fileSelector = new FileSelector();
-            }
-        };
-        threadfile.start();
+        Thread threadFile = new Thread(() -> fileSelector = new FileSelector());
+        threadFile.start();
 
-        Thread threadfolder = new Thread(){
-            public void run(){
-                folderSelector = new FolderSelector();
-            }
-        };
-        threadfolder.start();
+        Thread threadFolder = new Thread(() -> folderSelector = new FolderSelector());
+        threadFolder.start();
     }
 
     /**
