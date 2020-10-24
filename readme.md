@@ -1,6 +1,9 @@
-<p><img align="left" src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120" style="float:left/></p>
-
+<p>
+<img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120" style="float:left/></p>
+                                                                                  
   
+  
+
 Classifai is a deep learning powered data annotator toolkit.  
 
 Data labelling tasks are challenging due to a few factors:
