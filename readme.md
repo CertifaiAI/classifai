@@ -1,5 +1,5 @@
 <p align="center">
-  <img align="left" src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="420" height="130"/>
+  <img align="left" src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120"/>
 </p>
 
 <p align="center">
