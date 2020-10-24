@@ -1,5 +1,4 @@
-<p>
-<img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120" style="float:left/></p>
+<p><img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120" style="float:left"/></p>
                                                                                   
   
   
@@ -16,6 +15,7 @@ We aim to solve these in classifai to provide significant value to the data scie
 <p align="center">
   <img align="middle" src="metadata/Classifai.gif" width="700" height="425"/>
 </p>
+
 
 
 ## Features
