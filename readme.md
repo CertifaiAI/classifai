@@ -1,4 +1,4 @@
-<p><img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120" style="float:left"/></p>
+<img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="380" height="120" style="float:left"/>
                                                                                   
   
   
