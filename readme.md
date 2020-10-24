@@ -2,6 +2,11 @@
   <img align="left" src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="420" height="130"/>
 </p>
 
+<p align="center">
+  <img align="middle" src="metadata/Classifai.gif" width="700" height="425"/>
+</p>
+
+  
 Classifai is a deep learning powered data annotator toolkit.  
 
 Data labelling tasks are challenging due to a few factors:
@@ -11,10 +16,6 @@ Data labelling tasks are challenging due to a few factors:
 
 We aim to solve these in classifai to provide significant value to the data science workflow.
 
-
-<p align="center">
-  <img align="middle" src="metadata/Classifai.gif" width="700" height="425"/>
-</p>
 
 ## Features
 - Platform-agnostic (Currently tested on Mac and Windows)
