@@ -90,27 +90,16 @@ Classifai supports the following Operating Systems.
 </p>
 
 
-## On Mac/Linux
-Run  
-```
-./startClassifai.sh --port=8888 --unlockdb=false  
-```
+## Learn More 
 
-## On Windows
-Run  
-```
-startClassifai.bat --port=8888 --unlockdb=false  
-```
 
-## Alternatively
-```
-./mvnw -Puberjar -Dmaven.test.skip=true clean package  
-cd classifai-uberjar/target  
-java -jar classifai-uberjar-1.0-SNAPSHOT-dev.jar --port=8888 --unlockdb=false  
-```
+| Section | Description |
+|-|-|
+| [Website](https://classifai.ai/) | Official Website|
+| [Documentation]() | Full API documentation and tutorials |
+| [Blogs]() | Technical Posts |
+| [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 
-This repo is tested on both Windows and Mac in current stage.  
-Do submit issues or contact us at _helloannotation@certifai.ai_.  
+## Contact us  
 
-##
-
+Contact us at _hello@classifai.ai_ for any collaborations or feedbacks! :smiley:
