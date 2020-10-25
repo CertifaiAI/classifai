@@ -1,10 +1,15 @@
-<img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="280" height="70" style="float:left"/>
-                                                                                  
-  
-  
+<p align="center">
+<img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="450" height="110" style="float:left"/>
+</p>                                                                                   
+
+
+<h3 align="center">
+Data Annotation Platform for AI Training
+</h3>
 
 **Classifai** is the more comprehensive open-source data annotation platform.  
-It supports the labelling of various data types with intended outputs for AI model training. 
+It supports the labelling of various data types with multi labelled outputs for AI model training. 
+
 
 
 Data labelling tasks are challenging due to a few factors:
