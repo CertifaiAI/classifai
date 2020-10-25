@@ -27,7 +27,8 @@ We aim to solve these in classifai to provide significant value to the data scie
 - In-memory Java-based database
 - Conversion of conventional data types to preferred formats
 - Current supported data type formats  
-
+<center>
+  
 | Images        | Documents|Video|Tabular|Voice|
 |:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
 |jpg, JPEG, JPG| pdf |Coming soon... |Coming soon... |Coming soon... |
@@ -35,6 +36,7 @@ We aim to solve these in classifai to provide significant value to the data scie
 |tif, tiff| | | | | |  
 |bmp| | | | | |  
 
+</center>
 
 - [Still WIP. Stay tune with these features coming up below]   
   - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.  
