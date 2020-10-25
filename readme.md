@@ -91,13 +91,14 @@ Classifai supports the following Operating Systems.
   <img align="middle" width="550" height="310" src="metadata/os.jpg"/>
 </p>
 
+Installation 
 
 | Operating System | Installation package format |
 |:-------------:|:-------------:|
 | [Windows](https://classifai.ai/) | .msi|
-| [Mac]() | .dmg |
-| [Ubuntu]() | TBD |
-| [Centos](https://discord.gg/WsBFgNP) | TBD |
+| [Mac](https://classifai.ai/) | .dmg |
+| [Ubuntu](https://classifai.ai/) | TBD |
+| [Centos](https://classifai.ai/) | TBD |
 
 ## Learn More 
 
