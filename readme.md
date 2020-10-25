@@ -109,7 +109,7 @@ The installation packages and formats are listed below.
 | Section | Description |
 |:-------------:|:-------------:|
 | [Website](https://classifai.ai/) | Official Website|
-| [Documentation]() | Full API documentation and tutorials |
+| [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
 | [Blogs]() | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 
