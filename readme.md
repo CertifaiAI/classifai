@@ -71,9 +71,9 @@ then proceed to open a browser and put in url _http://localhost:9999/_
 Classifai support **bounding box** and **segmentation** annotation for now.  
 Click on the sub-category accordingly for the desired operation. 
 
-### Bounding Box Annotation
+**Bounding Box Annotation**
 
-### Segmentation Annotation
+**Segmentation Annotation**
 
 
 ## Installation
