@@ -61,7 +61,7 @@ There are two ways to open classifai in the browser
   <img align="middle" width="650" height="390" src="metadata/launcher_0.gif"/>
 </p>
 
-2. Open a browser and put in url _http://localhost:9999/_
+2. Alternatively, start classifai, then proceed to open a browser and put in url _http://localhost:9999/_
 
 <p align="center">
   <img align="middle" width="650" height="390" src="metadata/browser_0.gif"/>
