@@ -11,7 +11,7 @@ Data Annotation Platform for AI Training
 It supports the labelling of various data types with multi labelled outputs for AI model training. 
 
 <p align="center">
-  <img align="middle" src="metadata/classifai_workflow0.gif" width="780" height="302"/>
+  <img align="middle" src="metadata/classifai_workflow_0_0.gif" width="740" height="302"/>
 </p>
 
 Data labelling tasks are challenging due to a few factors:
@@ -22,7 +22,7 @@ Data labelling tasks are challenging due to a few factors:
 We aim to solve these in classifai to provide significant value to the data science workflow.
 
 <p align="center">
-  <img align="middle" src="metadata/Classifai.gif" width="700" height="425"/>
+  <img align="middle" src="metadata/Classifai.gif" width="800" height="425"/>
 </p>
 
 
