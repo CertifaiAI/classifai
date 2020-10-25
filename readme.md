@@ -92,6 +92,9 @@ Classifai supports the following Operating Systems.
 </p>
 
 
+[![button](metadata/os.jpg)](https://google.com)
+
+
 ## Learn More 
 
 
