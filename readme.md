@@ -51,7 +51,18 @@ We aim to solve these in classifai to provide significant value to the data scie
 
 ## Quick Tour
 
-Classifai is a web-based application which can opens in either **Chrome / Firefox** browser.  
+**Classifai** support **bounding box** and **segmentation** annotation for now.  
+Click on the sub-category accordingly for the desired operation. 
+
+**Bounding Box Annotation**
+<p align="center">
+  <img align="middle" width="650" height="390" src="metadata/bounding_box_0.gif"/>
+</p>
+
+**Segmentation Annotation**
+
+
+**Classifai** is a web-based application which can opens in either **Chrome / Firefox** browser.  
 (Note: Internet Explorer is not supported)  
 
 There are two ways to open classifai in the browser
@@ -68,12 +79,6 @@ then proceed to open a browser and put in url _http://localhost:9999/_
   <img align="middle" width="650" height="390" src="metadata/browser_0.gif"/>
 </p>
 
-Classifai support **bounding box** and **segmentation** annotation for now.  
-Click on the sub-category accordingly for the desired operation. 
-
-**Bounding Box Annotation**
-
-**Segmentation Annotation**
 
 
 ## Installation
