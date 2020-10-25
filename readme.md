@@ -56,10 +56,15 @@ Classifai is a web-based application which can opens in either **Chrome / Firefo
 
 There are two ways to open classifai in the browser
 1. Click on the first button of **Welcome Launcher**
+
+<p align="center">
+  <img align="middle" width="650" height="390" src="metadata/launcher_0.gif"/>
+</p>
+
 2. Open a browser and put in url _http://localhost:9999/_
 
 <p align="center">
-  <img align="middle" width="950" height="510" src="metadata/browser_0.gif"/>
+  <img align="middle" width="650" height="390" src="metadata/browser_0.gif"/>
 </p>
 
 
