@@ -60,7 +60,9 @@ Click on the sub-category accordingly for the desired operation.
 </p>
 
 **Segmentation Annotation**
-
+<p align="center">
+  <img align="middle" width="650" height="390" src="metadata/segmentation_0.gif"/>
+</p>
 
 **Classifai** is a web-based application which can opens in either **Chrome / Firefox** browser.  
 (Note: Internet Explorer is not supported)  
