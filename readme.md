@@ -91,7 +91,8 @@ Classifai supports the following Operating Systems.
   <img align="middle" width="550" height="310" src="metadata/os.jpg"/>
 </p>
 
-Installation 
+Installation comes in distribution built with Java for each operating system.  
+The installation packages and formats are listed below.
 
 | Operating System | Installation package format |
 |:-------------:|:-------------:|
