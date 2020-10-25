@@ -55,7 +55,9 @@ We aim to solve these in classifai to provide significant value to the data scie
 
 Classifai supports the following Operating Systems.  
 
-
+<p align="center">
+  <img align="middle" width="550" height="310" src="metadata/os.jpg"/>
+</p>
 
 
 ## On Mac/Linux
