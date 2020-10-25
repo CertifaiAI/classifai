@@ -61,11 +61,19 @@ There are two ways to open classifai in the browser
   <img align="middle" width="650" height="390" src="metadata/launcher_0.gif"/>
 </p>
 
-2. Alternatively, start classifai, then proceed to open a browser and put in url _http://localhost:9999/_
+2. Alternatively, start classifai,  
+then proceed to open a browser and put in url _http://localhost:9999/_
 
 <p align="center">
   <img align="middle" width="650" height="390" src="metadata/browser_0.gif"/>
 </p>
+
+Classifai support **bounding box** and **segmentation** annotation for now.  
+Click on the sub-category accordingly for the desired operation. 
+
+### Bounding Box Annotation
+
+### Segmentation Annotation
 
 
 ## Installation
