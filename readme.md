@@ -51,11 +51,20 @@ We aim to solve these in classifai to provide significant value to the data scie
 
 ## Quick Tour
 
+Classifai is a web-based application which can opens in either **Chrome / Firefox** browser.  
+(Note: Internet Explorer is not supported)  
+
+There are two ways to open classifai in the browser
+1. Click on the first button of **Welcome Launcher**
+2. Open a browser and put in url _http://localhost:9999/_
+
 ## How to Run 
 
 Classifai supports the following Operating Systems.  
 
-
+<p align="center">
+  <img align="middle" width="550" height="310" src="metadata/os.jpg"/>
+</p>
 
 
 ## On Mac/Linux
