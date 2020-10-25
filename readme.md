@@ -3,7 +3,9 @@
   
   
 
-Classifai is a deep learning powered data annotator toolkit.  
+**Classifai** is the more comprehensive open-source data annotation platform.  
+It supports the labelling of various data types with intended outputs for AI model training. 
+
 
 Data labelling tasks are challenging due to a few factors:
 - long hours of human workforce to label the data manually, 
