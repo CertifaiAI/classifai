@@ -58,7 +58,12 @@ There are two ways to open classifai in the browser
 1. Click on the first button of **Welcome Launcher**
 2. Open a browser and put in url _http://localhost:9999/_
 
-## How to Run 
+<p align="center">
+  <img align="middle" width="950" height="510" src="metadata/browser_0.gif"/>
+</p>
+
+
+## Installation
 
 Classifai supports the following Operating Systems.  
 
