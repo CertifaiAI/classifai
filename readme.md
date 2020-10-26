@@ -87,6 +87,8 @@ then proceed to open a browser and put in url _http://localhost:9999/_
 
 ## Installation
 
+The installation packages of Classifai can be found in [here](https://classifai.ai/).  
+
 Classifai supports the following Operating Systems.  
 
 <p align="center">
