@@ -77,7 +77,7 @@ public class ReplyHandler {
         log.info(userDefinedMessage);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
-                .put(ERROR_CODE, ErrorCodes.OTHER_ERROR.ordinal())
+                .put(ERROR_CODE, ErrorCodes.USER_DEFINED_ERROR.ordinal())
                 .put(ERROR_MESSAGE, userDefinedMessage);
     }
 
