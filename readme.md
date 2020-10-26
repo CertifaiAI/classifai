@@ -114,6 +114,7 @@ The installation packages and formats are listed below.
 | [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
 | [Blogs]() | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
+| [Training](https://classifai.ai/ | Training about Data Annotation and the use of Classifai |
 
 ## Contact us  
 
