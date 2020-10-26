@@ -86,7 +86,7 @@ public class ReplyHandler {
         log.info(userDefinedMessage);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
-                .put(ERROR_CODE, ErrorCodes.BAD_QUERY_PARAM.ordinal())
+                .put(ERROR_CODE, ErrorCodes.BAD_PARAM.ordinal())
                 .put(ERROR_MESSAGE, userDefinedMessage);
     }
 
@@ -95,7 +95,7 @@ public class ReplyHandler {
         log.info(info);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
-                .put(ERROR_CODE, ErrorCodes.BAD_QUERY_PARAM.ordinal())
+                .put(ERROR_CODE, ErrorCodes.BAD_PARAM.ordinal())
                 .put(ERROR_MESSAGE, info);
     }
 
