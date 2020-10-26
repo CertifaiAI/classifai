@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * HTTP Status Code for different scenarios
  *
- * @author Chiawei Lim
+ * @author codenamewei
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">httpStatusCode</a>
  */
 public class HTTPResponseCode{

@@ -117,7 +117,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             Integer projectID = ProjectHandler.generateProjectID();
 
-            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.getEmptyArray()).add(0).add(ParamConfig.getEmptyArray());
+            JsonArray params = new JsonArray()
+                    .add(projectID)                    //project_id
+                    .add(projectName)                  //project_name
+                    .add(annotationType)               //annotation_type
+                    .add(ParamConfig.getEmptyArray())  //label_list
+                    .add(0)                            //uuid_generator_seed
+                    .add(ParamConfig.getEmptyArray()); //uuid_list
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
