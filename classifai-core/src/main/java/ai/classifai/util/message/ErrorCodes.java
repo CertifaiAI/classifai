@@ -24,7 +24,7 @@ public enum ErrorCodes
 {
     DB_ERROR,
     USER_DEFINED_ERROR,
-    BAD_QUERY_PARAM,
+    BAD_PARAM,
     NO_ACTION_SPECIFIED,
     OTHER_ERROR,
 }
