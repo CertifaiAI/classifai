@@ -109,7 +109,6 @@ public class ProgramOpener
             else
             {
                 commandPath = new String[]{programPath + " " + param};
-                System.out.println(Arrays.asList(commandPath));
             }
 
         }else if(os.equals(OS.LINUX))
@@ -121,9 +120,7 @@ public class ProgramOpener
         {
             if(isOpenInPrompt)
             {
-                System.out.println(Arrays.asList(commandPath)+"here");
                 Runtime.getRuntime().exec(commandPath);
-                System.out.println("here");
             }
             else
             {
