@@ -16,12 +16,12 @@
 package ai.classifai.ui.launcher;
 
 
+import ai.classifai.MainVerticle;
 import ai.classifai.ui.button.BrowserHandler;
 import ai.classifai.ui.button.LogHandler;
 import ai.classifai.ui.button.OSManager;
 import ai.classifai.ui.button.ProgramOpener;
 import ai.classifai.util.ParamConfig;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -30,6 +30,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+
+
+
 
 /**
  * GUI for starting classifai
@@ -66,9 +69,9 @@ public class WelcomeLauncher
         configure();
     }
 
-    public static void setRunningStatusText(String text)
+    public static void setRunningStatusText(RunningStatus status)
     {
-        runningStatus.setText(text);
+        runningStatus.setText(status.getText());
     }
 
     public static void start()
@@ -109,7 +112,7 @@ public class WelcomeLauncher
         panel.add(getCloseButton());
         panel.add(getLogButton());
 
-        runningStatus = new JLabel("Starting...");
+        runningStatus = new JLabel(RunningStatus.STARTING.getText());
         runningStatus.setFont(new Font("DialogInput", Font.BOLD, 16)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
         runningStatus.setForeground(Color.lightGray);
         runningStatus.setBounds(30, 200, PANE_WIDTH, PANE_HEIGHT);
@@ -144,7 +147,9 @@ public class WelcomeLauncher
 
         closeButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
+                MainVerticle.closeVerticles();
                 System.exit(0);
             }
         });

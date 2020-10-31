@@ -28,8 +28,6 @@ import io.vertx.ext.sql.SQLConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-
 /**
  * Bounding Box Verticle
  *
@@ -78,10 +76,6 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     public void stop(Promise<Void> promise)
     {
         log.info("Bounding Box Verticle stopping...");
-
-        File lockFile = new File(DatabaseConfig.getBBLockFile());
-
-        if(lockFile.exists()) lockFile.delete();
     }
 
     //obtain a JDBC client connection,
