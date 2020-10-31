@@ -24,7 +24,7 @@ import ai.classifai.database.annotation.AnnotationQuery;
  */
 public class BoundingBoxDbQuery extends AnnotationQuery
 {
-    static { QUEUE = "boundingbox.queue"; }
+    private static final String QUEUE = "boundingbox.queue";
 
     private static final String CREATE_PROJECT = "create table if not exists Project (uuid integer, project_id integer, img_path varchar(2000), bnd_box clob, img_depth integer, " +
                 "img_x integer, img_y integer, img_w double, img_h double, file_size integer, img_ori_w integer, img_ori_h integer, primary key(uuid, project_id))";
@@ -33,8 +33,9 @@ public class BoundingBoxDbQuery extends AnnotationQuery
 
     private static final String UPDATE_DATA = "update Project set bnd_box = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
 
-    public static String createProject() { return CREATE_PROJECT; }
+    public static String getQueue() { return QUEUE; }
 
+    public static String createProject() { return CREATE_PROJECT; }
     public static String retrieveData() { return RETRIEVE_DATA; }
 
     public static String updateData() { return UPDATE_DATA; }

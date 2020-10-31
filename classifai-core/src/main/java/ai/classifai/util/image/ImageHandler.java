@@ -289,7 +289,7 @@ public class ImageHandler {
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
-                SegVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), SegDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
+                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), SegDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
 
             }
         }

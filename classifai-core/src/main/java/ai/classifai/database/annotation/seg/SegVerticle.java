@@ -25,6 +25,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -37,7 +38,7 @@ import java.io.File;
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
 {
-    private static JDBCClient jdbcClient;
+    @Getter private static JDBCClient jdbcClient;
 
     public void onMessage(Message<JsonObject> message) {
 

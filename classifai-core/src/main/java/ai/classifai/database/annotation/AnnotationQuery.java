@@ -22,8 +22,6 @@ package ai.classifai.database.annotation;
  */
 public abstract class AnnotationQuery
 {
-    protected static String QUEUE;
-
     protected final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     protected final static String RETRIEVE_DATA_PATH = "select img_path from Project where uuid = ? and project_id = ?";
@@ -31,8 +29,6 @@ public abstract class AnnotationQuery
     protected final static String DELETE_DATA = "delete from Project where uuid = ? and project_id = ?";
 
     protected final static String LOAD_VALID_PROJECT_UUID = "load valid project uuid";
-
-    public static String getQueue() { return QUEUE; }
 
     public static String createData() { return CREATE_DATA; }
 

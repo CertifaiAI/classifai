@@ -198,7 +198,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
         catch(Exception e)
         {
-            log.info("BoundingBoxVerticle: " + message.body().toString());
+            log.info("AnnotationVerticle: " + message.body().toString());
             String messageInfo = "Error occur when updating data, " + e;
             message.reply(ReplyHandler.reportBadParamError(messageInfo));
         }
@@ -221,7 +221,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    log.info("SegVerticle: Project id: " + params.getInteger(1));
+                    log.info("Project id: " + params.getInteger(1));
 
                     String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));

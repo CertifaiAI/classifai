@@ -855,7 +855,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateBndBoxData);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
+        //router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
         //*******************************Segmentation*******************************
 
@@ -879,7 +879,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
-        router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
+        //router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
 
         vertx.createHttpServer()
                 .requestHandler(router)
