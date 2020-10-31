@@ -124,5 +124,18 @@ public class ParamConfig
     public static String getContent() { return CONTENT; }
     public static String getProgressMetadata() { return PROGRESS_METADATA; }
 
+    public static String getAnnotationParam(AnnotationType type)
+    {
+        if(type.equals(AnnotationType.BOUNDINGBOX))
+        {
+            return ParamConfig.getBoundingBoxParam();
+        }
+        else if(type.equals(AnnotationType.SEGMENTATION))
+        {
+            return ParamConfig.getSegmentationParam();
+        }
+        //TODO: Add more annotation type here when added
 
+        return null;
+    }
 }

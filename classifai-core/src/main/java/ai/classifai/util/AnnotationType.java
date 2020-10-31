@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.image;
+package ai.classifai.util;
 
 /**
  * Types of Annotation

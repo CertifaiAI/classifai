@@ -19,7 +19,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Common functionalities for Portfolio Database
+ * Common functionalities for Portfolio Verticle
  *
  * @author codenamewei
  */

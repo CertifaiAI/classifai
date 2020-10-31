@@ -16,8 +16,8 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.annotation.boundingboxdb.BoundingBoxVerticle;
-import ai.classifai.database.annotation.segdb.SegVerticle;
+import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.launcher.LogoLauncher;

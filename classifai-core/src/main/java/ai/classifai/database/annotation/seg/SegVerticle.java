@@ -13,32 +13,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.annotation.boundingboxdb;
+package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.image.AnnotationType;
+import ai.classifai.util.AnnotationType;
 import ai.classifai.util.message.ErrorCodes;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 
 /**
- * Bounding Box Verticle
+ * Segmentation Verticle
  *
  * @author codenamewei
  */
 @Slf4j
-public class BoundingBoxVerticle extends AnnotationVerticle
+public class SegVerticle extends AnnotationVerticle
 {
-    @Getter private static JDBCClient projectJDBCClient;
+    private static JDBCClient jdbcClient;
 
     public void onMessage(Message<JsonObject> message) {
 
@@ -52,34 +51,35 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if(action.equals(BoundingBoxDbQuery.retrieveData()))
+        if(action.equals(SegDbQuery.retrieveData()))
         {
-            this.retrieveData(projectJDBCClient, BoundingBoxDbQuery.retrieveData(), AnnotationType.BOUNDINGBOX, message);
+            this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
         }
-        else if(action.equals(BoundingBoxDbQuery.retrieveDataPath()))
+        else if(action.equals(SegDbQuery.updateData()))
         {
-            this.retrieveDataPath(projectJDBCClient, BoundingBoxDbQuery.retrieveDataPath(), message);
+            this.updateData(message, jdbcClient, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
         }
-        else if(action.equals(BoundingBoxDbQuery.updateData()))
+        else if(action.equals(SegDbQuery.retrieveDataPath()))
         {
-            this.updateData(projectJDBCClient, BoundingBoxDbQuery.updateData(), AnnotationType.BOUNDINGBOX, message);
+            this.retrieveDataPath(message, jdbcClient, SegDbQuery.retrieveDataPath());
         }
-        else if (action.equals(BoundingBoxDbQuery.loadValidProjectUUID()))
+        else if (action.equals(SegDbQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(projectJDBCClient, BoundingBoxDbQuery.retrieveDataPath(), message);
+            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.retrieveDataPath());
         }
         else
         {
-            log.error("Bounding Box Verticle query error. Action did not have an assigned function for handling.");
+            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
         }
     }
+
 
     @Override
     public void stop(Promise<Void> promise)
     {
-        log.info("Bounding Box Verticle stopping...");
+        log.info("Seg Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.getBBLockFile());
+        File lockFile = new File(DatabaseConfig.getSegLockFile());
 
         if(lockFile.exists()) lockFile.delete();
     }
@@ -89,29 +89,30 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     @Override
     public void start(Promise<Void> promise)
     {
-        projectJDBCClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDb())
+        jdbcClient = JDBCClient.create(vertx, new JsonObject()
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("max_pool_size", 30));
 
 
-        projectJDBCClient.getConnection(ar -> {
+        jdbcClient.getConnection(ar -> {
             if (ar.failed()) {
-                log.error("Could not open a database connection for Bounding Box Verticle", ar.cause());
+
+                log.error("Could not open a database connection for SegVerticle", ar.cause());
                 promise.fail(ar.cause());
 
             } else {
                 SQLConnection connection = ar.result();
-                connection.execute(BoundingBoxDbQuery.createProject(), create -> {
+                connection.execute(SegDbQuery.createProject(), create -> {
                     connection.close();
                     if (create.failed()) {
-                        log.error("BoundingBoxVerticle database preparation error", create.cause());
+                        log.error("SegVerticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
                     } else
                     {
                         //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
+                        vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
                         promise.complete();
                     }
                 });

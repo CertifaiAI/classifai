@@ -15,6 +15,12 @@
  */
 package ai.classifai.database.annotation;
 
+import ai.classifai.util.AnnotationType;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.jdbc.JDBCClient;
+import lombok.NonNull;
+
 
 /***
  * Common Functionalities for Each Annotation Verticle
@@ -23,11 +29,11 @@ package ai.classifai.database.annotation;
  */
 public interface AnnotationServiceable
 {
-    //void retrieveDataPath(Message<JsonObject> message);
+    void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType);
 
-    //void retrieveData(Message<JsonObject> message);
+    void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
-    //void loadValidProjectUUID(Message<JsonObject> message);
+    void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
-    //void updateData(Message<JsonObject> message);
+    void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType);
 }
