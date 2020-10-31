@@ -48,6 +48,7 @@ public class WelcomeLauncher extends JFrame
     private static OSManager osManager;
 
     private static JLabel runningStatus;
+    private static JLabel runningStatusLabel;
 
     private static int PANE_WIDTH = 640;
     private static int PANE_HEIGHT = 480;
@@ -73,7 +74,26 @@ public class WelcomeLauncher extends JFrame
 
     public static void setRunningStatusText(RunningStatus status)
     {
-        runningStatus.setText(status.getText());
+        String text = status.getText();
+        runningStatus.setText(text);
+
+        try
+        {
+            if(status.equals(RunningStatus.RUNNING))
+            {
+                BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "green.png"));
+
+                BufferedImage img = resize(oriImg, 10, 10);
+
+                runningStatusLabel.setIcon(new ImageIcon(img));
+
+            }
+        }
+        catch(Exception e)
+        {
+            log.info("Error: " + e);
+        }
+
     }
 
     public static void start()
@@ -131,6 +151,7 @@ public class WelcomeLauncher extends JFrame
         runningStatus.setForeground(Color.lightGray);
         runningStatus.setBounds(30, 200, PANE_WIDTH, PANE_HEIGHT);
 
+        panel.add(getRunningStatusIcon());
         panel.add(runningStatus);
 
         JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
@@ -152,6 +173,7 @@ public class WelcomeLauncher extends JFrame
         frame.setResizable(false);
     }
 
+
     @Deprecated
     private static JButton getCloseButton()
     {
@@ -170,6 +192,30 @@ public class WelcomeLauncher extends JFrame
         closeButton.setFocusPainted(true);
 
         return closeButton;
+    }
+
+
+    private static JLabel getRunningStatusIcon()
+    {
+        try
+        {
+            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "red.png"));
+
+            BufferedImage img = resize(oriImg, 10, 10);//PANE_WIDTH, PANE_HEIGHT);
+
+            runningStatusLabel = new JLabel(new ImageIcon(img));
+
+            runningStatusLabel.setBounds(0,0,  40, 884 );
+
+            return runningStatusLabel;
+        }
+        catch(Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return null;
+
     }
 
     private static JButton getLogButton()
