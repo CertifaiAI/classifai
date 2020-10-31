@@ -78,11 +78,9 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise)
     {
-        log.info("Seg Verticle stopping...");
+        log.debug("Seg Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.getSegLockFile());
-
-        if(lockFile.exists()) lockFile.delete();
+        //add action before stopped if necessary
     }
 
     //obtain a JDBC client connection,

@@ -111,9 +111,9 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                System.out.println("Classifai closed successfully...");
-
                 MainVerticle.closeVerticles();
+
+                log.info("Classifai closed successfully...");
 
                 System.exit(0);
             }

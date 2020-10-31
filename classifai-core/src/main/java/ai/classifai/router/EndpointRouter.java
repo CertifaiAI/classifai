@@ -767,7 +767,12 @@ public class EndpointRouter extends AbstractVerticle
         return false;
     }
 
+    @Override
+    public void stop(Promise<Void> promise) {
+        log.debug("Endpoint Router Verticle stopping...");
 
+        //add action before stopped if necessary
+    }
 
     @Override
     public void start(Promise<Void> promise)

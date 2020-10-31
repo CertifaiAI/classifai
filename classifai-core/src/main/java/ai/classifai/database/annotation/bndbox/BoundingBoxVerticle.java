@@ -75,7 +75,10 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise)
     {
-        log.info("Bounding Box Verticle stopping...");
+        log.debug("Bounding Box Verticle stopping...");
+
+        //add action before stopped if necessary
+
     }
 
     //obtain a JDBC client connection,
