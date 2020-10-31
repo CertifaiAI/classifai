@@ -15,7 +15,6 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.util.image.AnnotationType;
 import ai.classifai.database.annotation.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.segdb.SegDbQuery;
 import ai.classifai.database.portfoliodb.PortfolioDbQuery;
@@ -24,10 +23,11 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
+import ai.classifai.util.image.AnnotationType;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;

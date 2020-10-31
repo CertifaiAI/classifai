@@ -16,14 +16,14 @@
 
 package ai.classifai.database.portfoliodb;
 
-import ai.classifai.util.image.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.image.AnnotationType;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;

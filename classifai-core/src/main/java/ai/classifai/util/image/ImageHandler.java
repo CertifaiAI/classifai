@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Image Handler
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ImageHandler {

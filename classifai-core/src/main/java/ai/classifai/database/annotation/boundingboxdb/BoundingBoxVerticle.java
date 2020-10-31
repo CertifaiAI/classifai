@@ -19,21 +19,16 @@ import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.image.AnnotationType;
-import ai.classifai.util.image.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * Bounding Box Verticle
