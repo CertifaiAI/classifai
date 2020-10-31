@@ -64,6 +64,7 @@ public class WelcomeLauncher extends JFrame
     private static JButton logButton;
     private static JLabel backgroundLabel;
 
+
     static
     {
         OS_MANAGER = new OSManager();
@@ -84,7 +85,25 @@ public class WelcomeLauncher extends JFrame
         setUpOpenButton();
         setUpConverterButton();
         setUpLogButton();
+
         setUpBackground();
+    }
+
+    private static Image getClassifaiIcon()
+    {
+        try
+        {
+            final Image image = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "Classifai_Favicon_Light_BG.jpg"));
+
+            return image;
+        }
+        catch (Exception e)
+        {
+            log.info("Error when setting icon: " + e);
+        }
+
+
+        return null;
     }
 
     private static void setUpFrame()
@@ -121,6 +140,8 @@ public class WelcomeLauncher extends JFrame
         panel.add(runningStatusText);
 
         if(backgroundLabel != null) panel.add(backgroundLabel);
+
+        mainFrame.setIconImage(getClassifaiIcon());
 
         mainFrame.add(panel);
 
