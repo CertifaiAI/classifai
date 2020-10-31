@@ -35,7 +35,7 @@ import java.util.ArrayList;
 /**
  * Open browser to select files
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class FileSelector{

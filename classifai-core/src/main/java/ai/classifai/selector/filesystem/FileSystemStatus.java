@@ -18,7 +18,7 @@ package ai.classifai.selector.filesystem;
 /**
  * State of windows to select file/folder
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public enum FileSystemStatus
 {

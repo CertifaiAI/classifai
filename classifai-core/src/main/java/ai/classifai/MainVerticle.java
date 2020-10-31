@@ -18,7 +18,7 @@ package ai.classifai;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -31,7 +31,7 @@ import java.io.File;
 /**
  * Main verticle to create multiple verticles
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class MainVerticle extends AbstractVerticle

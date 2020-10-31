@@ -15,7 +15,7 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import lombok.NonNull;

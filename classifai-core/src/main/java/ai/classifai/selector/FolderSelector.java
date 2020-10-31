@@ -33,7 +33,7 @@ import java.io.File;
 /**
  * Open browser to select folder with importing list of data points in the folder
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class FolderSelector{

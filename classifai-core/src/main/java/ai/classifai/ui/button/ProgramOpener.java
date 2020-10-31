@@ -27,6 +27,11 @@ import java.util.Map;
 
 import static javax.swing.JOptionPane.showMessageDialog;
 
+/**
+ * Browser Opening for classifai
+ *
+ * @author codenamewei
+ */
 @Slf4j
 public class ProgramOpener
 {

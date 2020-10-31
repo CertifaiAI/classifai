@@ -15,7 +15,7 @@
  */
 package ai.classifai.loader;
 
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +26,7 @@ import java.util.*;
 /**
  * Class per project for managing the loading of project
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ProjectLoader

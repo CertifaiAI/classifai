@@ -22,11 +22,7 @@ package ai.classifai.database.annotation;
  */
 public abstract class AnnotationQuery
 {
-    protected static String CREATE_PROJECT;
-
-    protected static String RETRIEVE_DATA;
-
-    protected static String UPDATE_DATA;
+    protected static String QUEUE;
 
     protected final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -36,15 +32,13 @@ public abstract class AnnotationQuery
 
     protected final static String LOAD_VALID_PROJECT_UUID = "load valid project uuid";
 
-    public static String createData()
-    {
-        return CREATE_DATA;
-    }
+    public static String getQueue() { return QUEUE; }
+
+    public static String createData() { return CREATE_DATA; }
 
     public static String retrieveDataPath() { return RETRIEVE_DATA_PATH; }
 
     public static String loadValidProjectUUID() { return LOAD_VALID_PROJECT_UUID; }
 
     public static String deleteData() { return DELETE_DATA; }
-
 }

@@ -33,7 +33,7 @@ import java.awt.image.BufferedImage;
 /**
  * GUI for starting classifai
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class WelcomeLauncher

@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 /***
  * Main program to start Classifai
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ClassifaiApp

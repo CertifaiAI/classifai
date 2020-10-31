@@ -25,6 +25,8 @@ import java.util.Map;
 
 /**
  * Default text editor in current OS to open log
+ *
+ * @author codenamewei
  */
 @Slf4j
 public class LogHandler

@@ -20,7 +20,7 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.annotation.seg.SegVerticle;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.AnnotationType;

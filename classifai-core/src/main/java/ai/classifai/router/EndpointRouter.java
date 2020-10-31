@@ -17,7 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
-import ai.classifai.database.portfoliodb.PortfolioDbQuery;
+import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.FileSelector;
@@ -43,9 +43,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * Main server verticle routing different url requests
+ * Endpoint routing for different url requests
  *
- * @author codenameweis
+ * @author codenamewei
  */
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
