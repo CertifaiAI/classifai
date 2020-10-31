@@ -506,63 +506,6 @@ public class EndpointRouter extends AbstractVerticle
     }
 
     /**
-     * Create new label for bounding box annotation project
-     *
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-     */
-    private void createNewBndBoxLabels(RoutingContext context)
-    {
-        createNewLabels(context, AnnotationType.BOUNDINGBOX);
-    }
-
-    /**
-     * Create new label for segmentation annotation project
-     *
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-     */
-    private void createNewSegLabels(RoutingContext context)
-    {
-        createNewLabels(context, AnnotationType.SEGMENTATION);
-    }
-
-    /**
-     * Create new label for projects
-     *
-     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-     *
-     * Example:
-     * PUT http://localhost:{port}/bndbox/projects/helloworld/newlabels
-     */
-    private void createNewLabels(RoutingContext context, AnnotationType annotationType)
-    {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
-
-        if(checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateLabelList());
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
-        });
-    }
-
-    /**
      * Retrieve thumbnail with metadata
      *
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
@@ -847,15 +790,13 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getBndBoxFileSystemStatus);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewBndBoxLabels);
-
         router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxThumbnail);
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
 
         router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateBndBoxData);
 
-        //router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
+        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
         //*******************************Segmentation*******************************
 
@@ -871,15 +812,13 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/filesysstatus").handler(this::getSegFileSystemStatus);
 
-        router.put("/seg/projects/:project_name/newlabels").handler(this::createNewSegLabels);
-
         router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegThumbnail);
 
         router.get("/seg/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getSegImageSource);
 
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
-        //router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
+        router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
 
         vertx.createHttpServer()
                 .requestHandler(router)
