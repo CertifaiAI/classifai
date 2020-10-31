@@ -29,6 +29,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 
@@ -40,7 +42,7 @@ import java.awt.image.BufferedImage;
  * @author codenamewei
  */
 @Slf4j
-public class WelcomeLauncher
+public class WelcomeLauncher extends JFrame
 {
     private static JFrame frame;
     private static OSManager osManager;
@@ -105,6 +107,18 @@ public class WelcomeLauncher
     {
         frame = new JFrame("Welcome to Classifai");
 
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                System.out.println("Classifai closed successfully...");
+
+                MainVerticle.closeVerticles();
+
+                System.exit(0);
+            }
+        });
+
         JPanel panel = new JPanel(new BorderLayout());
         panel.setSize(PANE_WIDTH, PANE_HEIGHT);
 
@@ -133,13 +147,12 @@ public class WelcomeLauncher
         frame.pack();
         frame.setLocationRelativeTo(null);
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         frame.setResizable(false);
-
-
     }
 
+    @Deprecated
     private static JButton getCloseButton()
     {
         JButton closeButton = getButton("Close_Button.png", "Close");
@@ -158,7 +171,6 @@ public class WelcomeLauncher
 
         return closeButton;
     }
-
 
     private static JButton getLogButton()
     {
