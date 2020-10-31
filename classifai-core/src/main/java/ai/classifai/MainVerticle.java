@@ -60,6 +60,8 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise) {
 
+        WelcomeLauncher.start();
+
         configureDatabase();
 
         Promise<String> portfolioDeployment = Promise.promise();
@@ -89,11 +91,19 @@ public class MainVerticle extends AbstractVerticle
             if (ar.succeeded()) {
 
                 LogoLauncher.print();
-                
-                WelcomeLauncher.start();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
+
+                try {
+
+                    Thread.sleep(300);
+                    WelcomeLauncher.setRunningStatusText("Running...");
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
 
                 promise.complete();
 

@@ -21,6 +21,7 @@ import ai.classifai.ui.button.LogHandler;
 import ai.classifai.ui.button.OSManager;
 import ai.classifai.ui.button.ProgramOpener;
 import ai.classifai.util.ParamConfig;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -41,6 +42,8 @@ public class WelcomeLauncher
     private static JFrame frame;
     private static OSManager osManager;
 
+    private static JLabel runningStatus;
+
     private static int PANE_WIDTH = 640;
     private static int PANE_HEIGHT = 480;
 
@@ -54,42 +57,22 @@ public class WelcomeLauncher
 
     final static int X_GAP = 88;
 
+
     static
     {
         BUTTON_PATH = "/console/";
 
         osManager = new OSManager();
+        configure();
+    }
+
+    public static void setRunningStatusText(String text)
+    {
+        runningStatus.setText(text);
     }
 
     public static void start()
     {
-        frame = new JFrame("Welcome to Classifai");
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setSize(PANE_WIDTH, PANE_HEIGHT);
-
-        panel.add(getOpenButton());
-        panel.add(getCloseButton());
-        panel.add(getLogButton());
-
-        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
-        if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
-
-        frame.add(panel);
-
-        /*frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
-        int frameWidth = PANE_WIDTH - (frame.getInsets().left + frame.getInsets().right);
-        int frameHeight = PANE_HEIGHT - (frame.getInsets().top + frame.getInsets().bottom);
-        frame.setPreferredSize(new Dimension(frameWidth, frameHeight));
-         */
-
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        frame.setResizable(false);
-
         frame.setVisible(true);
     }
 
@@ -110,9 +93,49 @@ public class WelcomeLauncher
             }
         });
 
+        openButton.setFocusPainted(true);
+
         return openButton;
     }
 
+    private static void configure()
+    {
+        frame = new JFrame("Welcome to Classifai");
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setSize(PANE_WIDTH, PANE_HEIGHT);
+
+        panel.add(getOpenButton());
+        panel.add(getCloseButton());
+        panel.add(getLogButton());
+
+        runningStatus = new JLabel("Starting...");
+        runningStatus.setFont(new Font("DialogInput", Font.BOLD, 16)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
+        runningStatus.setForeground(Color.lightGray);
+        runningStatus.setBounds(30, 200, PANE_WIDTH, PANE_HEIGHT);
+
+        panel.add(runningStatus);
+
+        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
+        if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
+
+        frame.add(panel);
+
+        /*frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
+        int frameWidth = PANE_WIDTH - (frame.getInsets().left + frame.getInsets().right);
+        int frameHeight = PANE_HEIGHT - (frame.getInsets().top + frame.getInsets().bottom);
+        frame.setPreferredSize(new Dimension(frameWidth, frameHeight));
+         */
+
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        frame.setResizable(false);
+
+
+    }
 
     private static JButton getCloseButton()
     {
@@ -125,6 +148,8 @@ public class WelcomeLauncher
                 System.exit(0);
             }
         });
+
+        closeButton.setFocusPainted(true);
 
         return closeButton;
     }
@@ -142,6 +167,7 @@ public class WelcomeLauncher
                 ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), false);
             }
         });
+        logOpenButton.setFocusPainted(true);
 
         return logOpenButton;
     }

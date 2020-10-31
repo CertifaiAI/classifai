@@ -23,6 +23,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;

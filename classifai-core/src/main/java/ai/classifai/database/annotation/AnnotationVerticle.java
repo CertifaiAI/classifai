@@ -234,9 +234,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                     Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
 
-
                     JsonObject response = ReplyHandler.getOkReply();
-
 
                     response.put(ParamConfig.getUUIDParam(), uuid);
                     response.put(ParamConfig.getProjectNameParam(), projectName);
