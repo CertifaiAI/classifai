@@ -109,7 +109,7 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
                 try {
-                    WelcomeLauncher.setRunningStatusText(RunningStatus.RUNNING);
+                    WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
                 }
                 catch(Exception e)
                 {

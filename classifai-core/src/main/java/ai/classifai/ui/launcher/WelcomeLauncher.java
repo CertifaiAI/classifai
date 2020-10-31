@@ -15,7 +15,6 @@
  */
 package ai.classifai.ui.launcher;
 
-
 import ai.classifai.MainVerticle;
 import ai.classifai.ui.button.BrowserHandler;
 import ai.classifai.ui.button.LogHandler;
@@ -33,9 +32,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
-
-
-
 /**
  * GUI for starting classifai
  *
@@ -44,90 +40,59 @@ import java.awt.image.BufferedImage;
 @Slf4j
 public class WelcomeLauncher extends JFrame
 {
-    private static JFrame frame;
-    private static OSManager osManager;
+    private final static OSManager OS_MANAGER;
 
-    private static JLabel runningStatus;
+    private final static String BUTTON_PATH = "/console/";
+
+    private final static int PANE_WIDTH = 640;
+    private final static int PANE_HEIGHT = 480;
+
+    private final static int BTN_X_COORD = 217;
+    private final static int BTN_Y_COORD = 342;
+
+    private final static int BTN_WIDTH = 55;
+    private final static int BTN_HEIGHT = 55;
+
+    private final static int X_GAP = 88;
+
+    private static JFrame mainFrame;
+
+    private static JLabel runningStatusText;
     private static JLabel runningStatusLabel;
-
-    private static int PANE_WIDTH = 640;
-    private static int PANE_HEIGHT = 480;
-
-    final static String BUTTON_PATH;
-
-    final static int BTN_X_COORD = 217;
-    final static int BTN_Y_COORD = 342;
-
-    final static int BTN_WIDTH = 55;
-    final static int BTN_HEIGHT = 55;
-
-    final static int X_GAP = 88;
-
+    private static JButton openButton;
+    private static JButton converterButton;
+    private static JButton logButton;
+    private static JLabel backgroundLabel;
 
     static
     {
-        BUTTON_PATH = "/console/";
+        OS_MANAGER = new OSManager();
 
-        osManager = new OSManager();
         configure();
-    }
-
-    public static void setRunningStatusText(RunningStatus status)
-    {
-        String text = status.getText();
-        runningStatus.setText(text);
-
-        try
-        {
-            if(status.equals(RunningStatus.RUNNING))
-            {
-                BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "green.png"));
-
-                BufferedImage img = resize(oriImg, 10, 10);
-
-                runningStatusLabel.setIcon(new ImageIcon(img));
-
-            }
-        }
-        catch(Exception e)
-        {
-            log.info("Error: " + e);
-        }
-
-    }
-
-    public static void start()
-    {
-        frame.setVisible(true);
     }
 
     public static void setToBackground()
     {
-        frame.setState(Frame.ICONIFIED);
-    }
-
-    private static JButton getOpenButton()
-    {
-        JButton openButton = getButton("Open_Button.png", "Open");
-        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ProgramOpener.launch(osManager.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), true);
-            }
-        });
-
-        openButton.setFocusPainted(true);
-
-        return openButton;
+        mainFrame.setState(Frame.ICONIFIED);
     }
 
     private static void configure()
     {
-        frame = new JFrame("Welcome to Classifai");
 
-        frame.addWindowListener(new WindowAdapter() {
+        setUpFrame();
+        setRunningStatus(RunningStatus.STARTING);
+        setUpOpenButton();
+        setUpConverterButton();
+        setUpLogButton();
+        setUpBackground();
+    }
+
+    private static void setUpFrame()
+    {
+        mainFrame = new JFrame("Welcome to Classifai");
+
+        //to have verticles calling stop() before program exit
+        mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e)
             {
@@ -138,49 +103,56 @@ public class WelcomeLauncher extends JFrame
                 System.exit(0);
             }
         });
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setSize(PANE_WIDTH, PANE_HEIGHT);
-
-        panel.add(getOpenButton());
-        panel.add(getCloseButton());
-        panel.add(getLogButton());
-
-        runningStatus = new JLabel(RunningStatus.STARTING.getText());
-        runningStatus.setFont(new Font("DialogInput", Font.BOLD, 16)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
-        runningStatus.setForeground(Color.lightGray);
-        runningStatus.setBounds(30, 200, PANE_WIDTH, PANE_HEIGHT);
-
-        panel.add(getRunningStatusIcon());
-        panel.add(runningStatus);
-
-        JLabel backgroundLabel = getBackground("Classifai_WelcomeHandler_big.jpg");
-        if(backgroundLabel != null) panel.add(backgroundLabel); // NEED TO BE LAST
-
-        frame.add(panel);
-
-        /*frame.getContentPane().setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
-        int frameWidth = PANE_WIDTH - (frame.getInsets().left + frame.getInsets().right);
-        int frameHeight = PANE_HEIGHT - (frame.getInsets().top + frame.getInsets().bottom);
-        frame.setPreferredSize(new Dimension(frameWidth, frameHeight));
-         */
-
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-        frame.setResizable(false);
     }
 
 
-    @Deprecated
-    private static JButton getCloseButton()
+    public static void start()
     {
-        JButton closeButton = getButton("Close_Button.png", "Close");
-        closeButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setSize(PANE_WIDTH, PANE_HEIGHT);
 
-        closeButton.addActionListener(new ActionListener() {
+        panel.add(openButton);
+
+        panel.add(converterButton);
+
+        panel.add(logButton);
+
+        panel.add(runningStatusLabel);
+        panel.add(runningStatusText);
+
+        if(backgroundLabel != null) panel.add(backgroundLabel);
+
+        mainFrame.add(panel);
+
+        mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null);
+
+        mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        mainFrame.setResizable(false);
+
+        mainFrame.setVisible(true);
+    }
+
+    private static void setUpOpenButton()
+    {
+        openButton = getButton("Open_Button.png", "Open");
+        openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        openButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), true);
+            }
+        });
+    }
+
+    private static void setUpConverterButton()
+    {
+        converterButton = getButton("Close_Button.png", "Close");
+        converterButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
+
+        converterButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e)
             {
@@ -189,52 +161,39 @@ public class WelcomeLauncher extends JFrame
             }
         });
 
-        closeButton.setFocusPainted(true);
-
-        return closeButton;
     }
 
+    private static void setUpLogButton()
+    {
+        logButton = getButton("Log_Button.png", "License");
+        logButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-    private static JLabel getRunningStatusIcon()
+        logButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), false);
+            }
+        });
+    }
+
+    private static void setUpBackground()
     {
         try
         {
-            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "red.png"));
+            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "Classifai_WelcomeHandler_big.jpg"));
 
-            BufferedImage img = resize(oriImg, 10, 10);//PANE_WIDTH, PANE_HEIGHT);
+            BufferedImage img = resize(oriImg, PANE_WIDTH, PANE_HEIGHT);
 
-            runningStatusLabel = new JLabel(new ImageIcon(img));
-
-            runningStatusLabel.setBounds(0,0,  40, 884 );
-
-            return runningStatusLabel;
+            backgroundLabel = new JLabel(new ImageIcon(img));
+            backgroundLabel.setLayout(null);
+            backgroundLabel.setBounds(0,0, PANE_WIDTH, PANE_HEIGHT);
         }
         catch(Exception e) {
 
             e.printStackTrace();
         }
-
-        return null;
-
     }
-
-    private static JButton getLogButton()
-    {
-        JButton logOpenButton = getButton("Log_Button.png", "License");
-        logOpenButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
-
-        logOpenButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                ProgramOpener.launch(osManager.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), false);
-            }
-        });
-        logOpenButton.setFocusPainted(true);
-
-        return logOpenButton;
-    }
-
 
     private static JButton getButton(String fileName, String altText)
     {
@@ -258,31 +217,70 @@ public class WelcomeLauncher extends JFrame
         return button;
     }
 
-
-    private static JLabel getBackground(String fileName)
+    public static void setRunningStatus(RunningStatus status)
     {
+        //icon
+        setRunningStatusIcon(status);
+
+        //text
+        if(runningStatusText == null)
+        {
+            runningStatusText = new JLabel(status.getText());
+            runningStatusText.setFont(new Font("DialogInput", Font.BOLD, 16)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
+            runningStatusText.setForeground(Color.lightGray);
+            runningStatusText.setBounds(30, 200, PANE_WIDTH, PANE_HEIGHT);
+        }
+        else
+        {
+            String text = status.getText();
+            runningStatusText.setText(text);
+        }
+    }
+
+    private static void setRunningStatusIcon(RunningStatus status)
+    {
+        String imageName = null;
+
+        if(status.equals(RunningStatus.STARTING))
+        {
+            imageName ="red.png";
+        }
+        else if(status.equals(RunningStatus.RUNNING))
+        {
+            imageName = "green.png";
+        }
+        else
+        {
+            log.info("Running status icon could not be found");
+        }
+
         try
         {
-            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + fileName));
+            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + imageName));
 
-            BufferedImage img = resize(oriImg, PANE_WIDTH, PANE_HEIGHT);
+            BufferedImage img = resize(oriImg, 10, 10);
 
-            JLabel bgLabel = new JLabel(new ImageIcon(img));
-            bgLabel.setLayout(null);
-            bgLabel.setBounds(0,0, PANE_WIDTH, PANE_HEIGHT);
+            ImageIcon icon = new ImageIcon(img);
 
-            return bgLabel;
+            if(runningStatusLabel == null)
+            {
+                runningStatusLabel = new JLabel(icon);
+                runningStatusLabel.setBounds(0,0,  40, 884 );
+            }
+            else
+            {
+                runningStatusLabel.setIcon(icon);
+            }
+
+
         }
         catch(Exception e) {
 
-            e.printStackTrace();
+            log.info("Could not set up running status icon properly: ", e);
         }
-
-        return null;
-
     }
 
-    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+    private static BufferedImage resize(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
 
@@ -292,4 +290,5 @@ public class WelcomeLauncher extends JFrame
 
         return dimg;
     }
+
 }
