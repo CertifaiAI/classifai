@@ -36,6 +36,7 @@ public class BoundingBoxDbQuery extends AnnotationQuery
     public static String getQueue() { return QUEUE; }
 
     public static String createProject() { return CREATE_PROJECT; }
+
     public static String retrieveData() { return RETRIEVE_DATA; }
 
     public static String updateData() { return UPDATE_DATA; }
