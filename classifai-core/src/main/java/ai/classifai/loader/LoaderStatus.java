@@ -13,17 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.annotation;
+package ai.classifai.loader;
 
-/**
- * Types of Annotation
+import lombok.extern.slf4j.Slf4j;
+
+/***
+ * Loader status for project loading
  *
  * @author Chiawei Lim
  */
-public enum AnnotationType
+@Slf4j
+public enum LoaderStatus
 {
-    BOUNDINGBOX,
-    SEGMENTATION
-    //TODO: Add on more techniques of annotation
+    ERROR,
+    LOADING,
+    LOADED, //projectloader will have this status once create new project
+    DID_NOT_INITIATED, //default value when ProjectLoader created from database
 }
-

@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui.button;
 
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

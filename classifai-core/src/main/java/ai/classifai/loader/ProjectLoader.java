@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.loader;
+package ai.classifai.loader;
 
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;

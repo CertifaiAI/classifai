@@ -15,11 +15,10 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.annotation.AnnotationType;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.image.AnnotationType;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;

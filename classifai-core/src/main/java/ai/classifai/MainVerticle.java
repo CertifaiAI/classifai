@@ -16,10 +16,10 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.annotation.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.annotation.segdb.SegVerticle;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.segdb.SegVerticle;
-import ai.classifai.server.ServerVerticle;
+import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import io.vertx.core.AbstractVerticle;
@@ -81,7 +81,7 @@ public class MainVerticle extends AbstractVerticle
         }).compose(id_ -> {
 
             Promise<String> serverDeployment = Promise.promise();
-            vertx.deployVerticle(new ServerVerticle(), serverDeployment);
+            vertx.deployVerticle(new EndpointRouter(), serverDeployment);
             return serverDeployment.future();
 
         }).onComplete(ar ->

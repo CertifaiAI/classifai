@@ -13,27 +13,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+package ai.classifai.util.image;
 
 /**
- * Handling list operation
+ * Types of Annotation
  *
  * @author codenamewei
  */
-public class ListHandler
+public enum AnnotationType
 {
-    public static <T> List<T> convertListToUniqueList(List<T> list)
-    {
-        // create an empty set
-        Set<T> set = new HashSet<>();
-
-        for (T t : list)
-            set.add(t);
-
-        return ConversionHandler.set2List(set);
-    }
+    BOUNDINGBOX,
+    SEGMENTATION
+    //TODO: Add on more techniques of annotation
 }
+

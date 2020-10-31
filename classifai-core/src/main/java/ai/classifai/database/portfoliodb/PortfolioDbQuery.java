@@ -16,9 +16,9 @@
 package ai.classifai.database.portfoliodb;
 
 /***
- * Portfolio database query
+ * Generic Database Query
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class PortfolioDbQuery
 {

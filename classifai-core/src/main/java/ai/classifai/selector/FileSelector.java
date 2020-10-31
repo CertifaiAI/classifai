@@ -17,9 +17,9 @@
 package ai.classifai.selector;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.image.ImageHandler;

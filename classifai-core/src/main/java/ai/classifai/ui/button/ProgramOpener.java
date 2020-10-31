@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui.button;
 
-import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.collection.ConversionHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;

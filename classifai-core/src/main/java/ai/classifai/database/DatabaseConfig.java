@@ -22,7 +22,7 @@ import java.io.File;
 /**
  * Configurations for files and paths of database
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class DatabaseConfig
@@ -67,6 +67,4 @@ public class DatabaseConfig
     public static String getBBLockFile() { return BNDBOX_DB_LCKFILE; }
 
     public static String getSegLockFile() { return SEGMENTATION_DB_LCKFILE; }
-
-
 }

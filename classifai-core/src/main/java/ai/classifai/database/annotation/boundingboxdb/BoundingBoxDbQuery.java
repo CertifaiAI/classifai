@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.boundingboxdb;
+package ai.classifai.database.annotation.boundingboxdb;
 
 /***
  * Bounding box database query
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class BoundingBoxDbQuery
 {

@@ -15,14 +15,15 @@
  */
 package ai.classifai.util.image;
 
-import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
-import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.annotation.boundingboxdb.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.annotation.segdb.SegDbQuery;
+import ai.classifai.database.annotation.segdb.SegVerticle;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.segdb.SegVerticle;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -278,7 +279,7 @@ public class ImageHandler {
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
-                BoundingBoxVerticle.updateUUID(projectID, filesCollection.get(i), uuid, i + 1);
+                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getProjectJDBCClient(), BoundingBoxDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -287,7 +288,7 @@ public class ImageHandler {
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
-                SegVerticle.updateUUID(projectID, filesCollection.get(i), uuid, i + 1);
+                SegVerticle.updateUUID(BoundingBoxVerticle.getProjectJDBCClient(), SegDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
 
             }
         }

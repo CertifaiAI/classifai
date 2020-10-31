@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
+package ai.classifai.util.collection;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ConversionHandler
 {
-
     public static <T> List<T> set2List(Set<T> setList)
     {
         List<T> list = new ArrayList<T>();

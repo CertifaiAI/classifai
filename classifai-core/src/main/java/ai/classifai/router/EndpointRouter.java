@@ -13,18 +13,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.server;
+package ai.classifai.router;
 
-import ai.classifai.annotation.AnnotationType;
-import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.util.image.AnnotationType;
+import ai.classifai.database.annotation.boundingboxdb.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.segdb.SegDbQuery;
 import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-import ai.classifai.database.segdb.SegDbQuery;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -47,12 +48,12 @@ import java.util.List;
  * @author codenameweis
  */
 @Slf4j
-public class ServerVerticle extends AbstractVerticle
+public class EndpointRouter extends AbstractVerticle
 {
     private FileSelector fileSelector;
     private FolderSelector folderSelector;
 
-    public ServerVerticle()
+    public EndpointRouter()
     {
         Thread threadFile = new Thread(() -> fileSelector = new FileSelector());
         threadFile.start();

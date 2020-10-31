@@ -13,27 +13,21 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.portfoliodb;
+package ai.classifai.database.annotation;
 
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
 
-/**
- * Common functionalities for Portfolio Database
+/***
+ * Common Functionalities for Each Annotation Verticle
  *
  * @author codenamewei
  */
-public interface PortfolioServiceable
+public interface AnnotationServiceable
 {
-    void createNewProject(Message<JsonObject> message);
+    //void retrieveDataPath(Message<JsonObject> message);
 
-    void updateLabelList(Message<JsonObject> message);
+    //void retrieveData(Message<JsonObject> message);
 
-    void getLabelList(Message<JsonObject> message);
+    //void loadValidProjectUUID(Message<JsonObject> message);
 
-    void getProjectUUIDList(Message<JsonObject> message);
-
-    void getAllProjectsForAnnotationType(Message<JsonObject> message);
-
-    void configurePortfolioVerticle();
+    //void updateData(Message<JsonObject> message);
 }

@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.segdb;
+package ai.classifai.database.annotation.segdb;
 
 /***
  * Segmentation database query
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class SegDbQuery
 {
