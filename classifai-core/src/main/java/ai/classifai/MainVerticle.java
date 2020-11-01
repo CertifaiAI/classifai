@@ -20,7 +20,7 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.router.EndpointRouter;
-import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import io.vertx.core.AbstractVerticle;
@@ -103,7 +103,7 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
-                LogoLauncher.print();
+                LogoHandler.print();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));

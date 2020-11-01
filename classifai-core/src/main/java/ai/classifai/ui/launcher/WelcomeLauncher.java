@@ -89,22 +89,7 @@ public class WelcomeLauncher extends JFrame
         setUpBackground();
     }
 
-    private static Image getClassifaiIcon()
-    {
-        try
-        {
-            final Image image = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "Classifai_Favicon_Light_BG.jpg"));
 
-            return image;
-        }
-        catch (Exception e)
-        {
-            log.info("Error when setting icon: " + e);
-        }
-
-
-        return null;
-    }
 
     private static void setUpFrame()
     {
@@ -128,7 +113,7 @@ public class WelcomeLauncher extends JFrame
     public static void start()
     {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setSize(PANE_WIDTH, PANE_HEIGHT);
+        panel.setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
 
         panel.add(openButton);
 
@@ -141,7 +126,7 @@ public class WelcomeLauncher extends JFrame
 
         if(backgroundLabel != null) panel.add(backgroundLabel);
 
-        mainFrame.setIconImage(getClassifaiIcon());
+        mainFrame.setIconImage(LogoHandler.getClassifaiIcon());
 
         mainFrame.add(panel);
 
@@ -177,8 +162,7 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                MainVerticle.closeVerticles();
-                System.exit(0);
+                new ConverterLauncher().launch();
             }
         });
 

@@ -15,12 +15,18 @@
  */
 package ai.classifai.ui.launcher;
 
+import lombok.extern.slf4j.Slf4j;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+
 /**
  * Print Logo on command prompt / terminal
  *
  * @author Kenge
  */
-public class LogoLauncher {
+@Slf4j
+public class LogoHandler {
 
     public static void print()
     {
@@ -34,4 +40,23 @@ public class LogoLauncher {
         System.out.println("   *********  *********  ***    ***  *********  *********  *********  ***        ***   ***  *********  ");
         System.out.println("\n");
     }
+
+    public static Image getClassifaiIcon()
+    {
+        try
+        {
+            final Image image = ImageIO.read(WelcomeLauncher.class.getResource( "/console/" + "Classifai_Favicon_Light_BG.jpg"));
+
+            return image;
+        }
+        catch (Exception e)
+        {
+            log.info("Error when setting icon: " + e);
+        }
+
+
+        return null;
+    }
+
+
 }
