@@ -13,8 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
-package ai.classifai.selector;
+package ai.classifai.selector.annotation;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
@@ -30,15 +29,15 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
 
 /**
- * Open browser to select files
+ * Open browser to select folder with importing list of data points in the folder
  *
  * @author codenamewei
  */
 @Slf4j
-public class FileSelector{
+public class ToolFolderSelector {
+
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
     public void run(@NonNull Integer projectID)
@@ -47,7 +46,6 @@ public class FileSelector{
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-
                     ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
                     loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
@@ -72,9 +70,8 @@ public class FileSelector{
 
                     chooser.setCurrentDirectory(ParamConfig.getFileSysRootSearchPath());
                     chooser.setFileFilter(imgfilter);
-                    chooser.setDialogTitle("Select Files");
-                    chooser.setMultiSelectionEnabled(true);
-                    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    chooser.setDialogTitle("Select Directory");
+                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
@@ -83,14 +80,13 @@ public class FileSelector{
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(chooser.getSelectedFiles()));
+                        File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
 
-                        if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
+                        if((rootFolder != null) && (rootFolder.exists()))
                         {
-
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-                            ImageHandler.processFile(projectID, files);
+                            ImageHandler.processFolder(projectID, rootFolder);
                         }
                         else
                         {
@@ -101,13 +97,12 @@ public class FileSelector{
                     {
                         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
-
                 }
             });
         }
-        catch (Exception e){
-
-            log.info("ProjectHandler for File type failed to open", e);
+        catch (Exception e)
+        {
+            log.info("ProjectHandler for Folder type failed to open", e);
         }
 
     }

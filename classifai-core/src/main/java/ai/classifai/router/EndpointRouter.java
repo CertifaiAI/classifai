@@ -20,8 +20,8 @@ import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.FileSelector;
-import ai.classifai.selector.FolderSelector;
+import ai.classifai.selector.annotation.ToolFileSelector;
+import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -50,15 +50,15 @@ import java.util.List;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    private FileSelector fileSelector;
-    private FolderSelector folderSelector;
+    private ToolFileSelector fileSelector;
+    private ToolFolderSelector folderSelector;
 
     public EndpointRouter()
     {
-        Thread threadFile = new Thread(() -> fileSelector = new FileSelector());
+        Thread threadFile = new Thread(() -> fileSelector = new ToolFileSelector());
         threadFile.start();
 
-        Thread threadFolder = new Thread(() -> folderSelector = new FolderSelector());
+        Thread threadFolder = new Thread(() -> folderSelector = new ToolFolderSelector());
         threadFolder.start();
     }
 

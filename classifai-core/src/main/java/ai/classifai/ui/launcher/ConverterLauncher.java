@@ -15,6 +15,10 @@
  */
 package ai.classifai.ui.launcher;
 
+import ai.classifai.selector.annotation.ToolFileSelector;
+import ai.classifai.selector.annotation.ToolFolderSelector;
+import ai.classifai.selector.conversion.ConverterFolderSelector;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 import java.awt.*;
@@ -34,6 +38,10 @@ public class ConverterLauncher extends JPanel
         implements ActionListener,
         PropertyChangeListener
 {
+
+    private ConverterFolderSelector inputFolderSelector;
+    private ConverterFolderSelector outputFolderSelector;
+
     private final int MAX_PAGE = 20;
 
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
@@ -67,6 +75,15 @@ public class ConverterLauncher extends JPanel
 
     private Task task;
     private JFrame frame;
+
+    public ConverterLauncher()
+    {
+        Thread threadFile = new Thread(() -> inputFolderSelector = new ConverterFolderSelector());
+        threadFile.start();
+
+        Thread threadFolder = new Thread(() -> outputFolderSelector = new ConverterFolderSelector());
+        threadFolder.start();
+    }
 
     class Task extends SwingWorker<Void, Void> {
         /*
@@ -211,7 +228,10 @@ public class ConverterLauncher extends JPanel
         outputFolderField.setPreferredSize(new Dimension(100, ELEMENT_HEIGHT - 10));
 
         design(inputBrowserButton);
+        inputBrowserButton.addActionListener(new InputFolderListener());
+
         design(outputBrowserButton);
+        outputBrowserButton.addActionListener(new OutputFolderListener());
 
         design(inputFormatCombo);
         design(outputFormatCombo);
@@ -362,6 +382,20 @@ public class ConverterLauncher extends JPanel
             progressBar.setValue(progress);
             taskOutput.append(String.format(
                     "Completed %d%% of task.\n", progress));
+        }
+    }
+
+    class InputFolderListener implements ActionListener {
+        public void actionPerformed(ActionEvent e)
+        {
+            inputFolderSelector.run();
+        }
+    }
+
+    class OutputFolderListener implements ActionListener {
+        public void actionPerformed(ActionEvent e)
+        {
+            outputFolderSelector.run();
         }
     }
 }

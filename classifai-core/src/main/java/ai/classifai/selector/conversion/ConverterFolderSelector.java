@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector;
+package ai.classifai.selector.conversion;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
@@ -31,23 +31,21 @@ import java.awt.*;
 import java.io.File;
 
 /**
- * Open browser to select folder with importing list of data points in the folder
+ * Open browser to select folder for conversion
  *
  * @author codenamewei
  */
 @Slf4j
-public class FolderSelector{
+public class ConverterFolderSelector {
 
-    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
+    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes()); //FIX ME
 
-    public void run(@NonNull Integer projectID)
+    public void run()
     {
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
@@ -76,7 +74,7 @@ public class FolderSelector{
                     frame.dispose();
 
                     //prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
+                    //WelcomeLauncher.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -84,18 +82,15 @@ public class FolderSelector{
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-                            ImageHandler.processFolder(projectID, rootFolder);
                         }
                         else
                         {
-                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+
                         }
                     }
                     else
                     {
-                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
                 }
             });
