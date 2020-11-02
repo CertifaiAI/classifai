@@ -17,6 +17,7 @@ package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoHandler;
+import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,8 +51,9 @@ public class ConverterLauncher extends JPanel
     private static final int ELEMENT_HEIGHT = 40;
     private static final int TEXT_FIELD_LENGTH = 25;
 
-    private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
-    private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    //JTextField.getText()
+    @Getter private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    @Getter private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
 
     private final static String DEFAULT_OUTPUT_PATH = "Same as source file";
 
@@ -61,9 +63,8 @@ public class ConverterLauncher extends JPanel
     private JButton inputBrowserButton = new JButton("Browse");
     private JButton outputBrowserButton = new JButton("Browse");
 
-    private JComboBox inputFormatCombo = new JComboBox(new String[]{"   PDF", "   TIFF"});
-
-    private JComboBox outputFormatCombo = new JComboBox(new String[]{"   JPG", "   PNG"});
+    private static JComboBox inputFormatCombo;
+    private static JComboBox outputFormatCombo;
 
     private JLabel maxPage = new JLabel("Maximum Page: ");
     private JTextField maxPageTextField = new JTextField("   " + MAX_PAGE);
@@ -76,6 +77,23 @@ public class ConverterLauncher extends JPanel
 
     private Task task;
     private JFrame frame;
+
+    static {
+
+        String gap = "   ";
+        String[] inputFormat = new String[] {
+                gap + FileFormat.PDF.getUpperCase(),
+                gap + FileFormat.TIF.getUpperCase()
+        };
+
+        String[] outputFormat = new String[] {
+                gap + FileFormat.JPG.getUpperCase(),
+                gap + FileFormat.PNG.getUpperCase()
+        };
+
+        inputFormatCombo = new JComboBox(inputFormat);
+        outputFormatCombo = new JComboBox(outputFormat);
+    }
 
     public ConverterLauncher()
     {
@@ -94,6 +112,21 @@ public class ConverterLauncher extends JPanel
     public static void setOutputFolderPath(String outputPath)
     {
         outputFolderField.setText(outputPath);
+    }
+
+    public static String getInputFormat()
+    {
+        String inputFormat = (String) inputFormatCombo.getSelectedItem();
+
+        return inputFormat.trim();
+    }
+
+
+    public static String getOutputFormat()
+    {
+        String outputFormat = (String) outputFormatCombo.getSelectedItem();
+
+        return outputFormat.trim();
     }
 
     class Task extends SwingWorker<Void, Void> {
@@ -237,7 +270,7 @@ public class ConverterLauncher extends JPanel
         inputFolderField.setPreferredSize(folderDimension);
 
         design(outputFolderField);
-=        outputFolderField.setPreferredSize(folderDimension);
+        outputFolderField.setPreferredSize(folderDimension);
 
         design(inputBrowserButton);
         inputBrowserButton.addActionListener(new InputFolderListener());
