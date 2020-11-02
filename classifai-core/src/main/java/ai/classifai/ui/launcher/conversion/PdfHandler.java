@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.image;
+package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.data.type.image.ImageFileType;
 import lombok.extern.slf4j.Slf4j;

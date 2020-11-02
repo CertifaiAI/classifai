@@ -38,7 +38,8 @@ import java.util.ArrayList;
  * @author codenamewei
  */
 @Slf4j
-public class ToolFileSelector {
+public class ToolFileSelector
+{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
     public void run(@NonNull Integer projectID)
