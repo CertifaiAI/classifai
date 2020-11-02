@@ -79,7 +79,6 @@ public class WelcomeLauncher extends JFrame
 
     private static void configure()
     {
-
         setUpFrame();
         setRunningStatus(RunningStatus.STARTING);
         setUpOpenButton();
