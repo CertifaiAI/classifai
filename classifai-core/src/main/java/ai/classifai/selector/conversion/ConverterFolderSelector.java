@@ -15,18 +15,13 @@
  */
 package ai.classifai.selector.conversion;
 
-import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.ui.launcher.WelcomeLauncher;
+import ai.classifai.ui.launcher.conversion.ConversionSelection;
+import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.image.ImageHandler;
-import lombok.NonNull;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
@@ -38,9 +33,7 @@ import java.io.File;
 @Slf4j
 public class ConverterFolderSelector {
 
-    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes()); //FIX ME
-
-    public void run()
+    public void run(ConversionSelection selection)
     {
         try {
             EventQueue.invokeLater(new Runnable() {
@@ -66,8 +59,8 @@ public class ConverterFolderSelector {
                         }
                     };
 
+
                     chooser.setCurrentDirectory(ParamConfig.getFileSysRootSearchPath());
-                    chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = chooser.showOpenDialog(frame);
@@ -83,21 +76,23 @@ public class ConverterFolderSelector {
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
 
+                            if(selection.equals(ConversionSelection.INPUT))
+                            {
+                                ConverterLauncher.setInputFolderPath(rootFolder.getAbsolutePath());
+                            }
+                            else if(selection.equals(ConversionSelection.OUTPUT))
+                            {
+                                ConverterLauncher.setOutputFolderPath(rootFolder.getAbsolutePath());
+                            }
                         }
-                        else
-                        {
 
-                        }
-                    }
-                    else
-                    {
                     }
                 }
             });
         }
         catch (Exception e)
         {
-            log.info("ProjectHandler for Folder type failed to open", e);
+            log.info("Error of FolderSelector in handling conversion: ", e);
         }
 
     }

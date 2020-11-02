@@ -13,11 +13,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.ui.launcher;
+package ai.classifai.ui.launcher.conversion;
 
-import ai.classifai.selector.annotation.ToolFileSelector;
-import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.conversion.ConverterFolderSelector;
+import ai.classifai.ui.launcher.LogoHandler;
+import ai.classifai.util.ParamConfig;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicProgressBarUI;
@@ -38,24 +40,22 @@ public class ConverterLauncher extends JPanel
         implements ActionListener,
         PropertyChangeListener
 {
-
     private ConverterFolderSelector inputFolderSelector;
     private ConverterFolderSelector outputFolderSelector;
-
-    private final int MAX_PAGE = 20;
+    @Getter private final int MAX_PAGE = 20;
 
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
 
-    private final int ELEMENT_HEIGHT = 40;
-    private final int TEXT_FIELD_LENGTH = 25;
+    private static final int ELEMENT_HEIGHT = 40;
+    private static final int TEXT_FIELD_LENGTH = 25;
 
-    private final String DEFAULT_OUTPUT_PATH = "Same as source file";
+    private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+
+    private final static String DEFAULT_OUTPUT_PATH = "Same as source file";
 
     private JLabel inputFolderLabel =  new JLabel("Input Folder     : ");
     private JLabel outputFolderLabel = new JLabel("Output Folder  : ");
-
-    private JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
-    private JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
 
     private JButton inputBrowserButton = new JButton("Browse");
     private JButton outputBrowserButton = new JButton("Browse");
@@ -83,6 +83,16 @@ public class ConverterLauncher extends JPanel
 
         Thread threadFolder = new Thread(() -> outputFolderSelector = new ConverterFolderSelector());
         threadFolder.start();
+    }
+
+    public static void setInputFolderPath(String inputPath)
+    {
+        inputFolderField.setText(inputPath);
+    }
+
+    public static void setOutputFolderPath(String outputPath)
+    {
+        outputFolderField.setText(outputPath);
     }
 
     class Task extends SwingWorker<Void, Void> {
@@ -188,7 +198,6 @@ public class ConverterLauncher extends JPanel
 
         progressBar.setValue(0);
 
-
         constraints.gridwidth = 3;
         constraints.gridx = 0; constraints.gridy = 4;
         panel.add(progressBar, constraints);
@@ -204,6 +213,7 @@ public class ConverterLauncher extends JPanel
         frame.setResizable(false);
         frame.pack();
         frame.setLocationRelativeTo(null);
+
     }
 
     private void configure()
@@ -220,12 +230,14 @@ public class ConverterLauncher extends JPanel
 
         design(inputFolderField);
         inputFolderField.setEditable(false);
-        inputFolderField.setText((new File(System.getProperty("user.home")).getAbsolutePath()));//FIXME: Replace with path to start with
+        inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath());
         inputFolderField.setPreferredSize(new Dimension(100, ELEMENT_HEIGHT - 10));
+        inputFolderField.setBackground(Color.WHITE);
 
         design(outputFolderField);
         outputFolderField.setEditable(false);
         outputFolderField.setPreferredSize(new Dimension(100, ELEMENT_HEIGHT - 10));
+        inputFolderField.setBackground(Color.WHITE);
 
         design(inputBrowserButton);
         inputBrowserButton.addActionListener(new InputFolderListener());
@@ -351,6 +363,8 @@ public class ConverterLauncher extends JPanel
 
                 configure();
                 start();
+
+
                 frame.setVisible(true);
             }
         });
@@ -388,14 +402,15 @@ public class ConverterLauncher extends JPanel
     class InputFolderListener implements ActionListener {
         public void actionPerformed(ActionEvent e)
         {
-            inputFolderSelector.run();
+            inputFolderSelector.run(ConversionSelection.INPUT);
         }
     }
 
     class OutputFolderListener implements ActionListener {
         public void actionPerformed(ActionEvent e)
         {
-            outputFolderSelector.run();
+            outputFolderSelector.run(ConversionSelection.OUTPUT);
         }
+
     }
 }

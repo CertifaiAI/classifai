@@ -20,6 +20,7 @@ import ai.classifai.ui.button.BrowserHandler;
 import ai.classifai.ui.button.LogHandler;
 import ai.classifai.ui.button.OSManager;
 import ai.classifai.ui.button.ProgramOpener;
+import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 
