@@ -295,6 +295,7 @@ public class ConverterLauncher extends JPanel
 
             JTextField textField = (JTextField) obj;
             textField.setFont(font);
+            textField.setBackground(Color.WHITE);
         }
         else if(obj instanceof JButton)
         {
