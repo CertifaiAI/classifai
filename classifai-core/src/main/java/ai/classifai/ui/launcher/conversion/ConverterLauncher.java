@@ -42,6 +42,7 @@ public class ConverterLauncher extends JPanel
 {
     private ConverterFolderSelector inputFolderSelector;
     private ConverterFolderSelector outputFolderSelector;
+
     @Getter private final int MAX_PAGE = 20;
 
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
@@ -231,13 +232,12 @@ public class ConverterLauncher extends JPanel
         design(inputFolderField);
         inputFolderField.setEditable(false);
         inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath());
-        inputFolderField.setPreferredSize(new Dimension(100, ELEMENT_HEIGHT - 10));
-        inputFolderField.setBackground(Color.WHITE);
+
+        Dimension folderDimension = new Dimension(100, ELEMENT_HEIGHT - 10);
+        inputFolderField.setPreferredSize(folderDimension);
 
         design(outputFolderField);
-        outputFolderField.setEditable(false);
-        outputFolderField.setPreferredSize(new Dimension(100, ELEMENT_HEIGHT - 10));
-        inputFolderField.setBackground(Color.WHITE);
+=        outputFolderField.setPreferredSize(folderDimension);
 
         design(inputBrowserButton);
         inputBrowserButton.addActionListener(new InputFolderListener());
@@ -250,7 +250,6 @@ public class ConverterLauncher extends JPanel
 
         design(maxPage);
         design(maxPageTextField);
-        maxPageTextField.setEditable(false);
         maxPageTextField.setPreferredSize(new Dimension(50, ELEMENT_HEIGHT - 10));
 
         taskOutput = new JTextArea(5, 20);
@@ -296,6 +295,7 @@ public class ConverterLauncher extends JPanel
             JTextField textField = (JTextField) obj;
             textField.setFont(font);
             textField.setBackground(Color.WHITE);
+            textField.setEditable(false);
         }
         else if(obj instanceof JButton)
         {
