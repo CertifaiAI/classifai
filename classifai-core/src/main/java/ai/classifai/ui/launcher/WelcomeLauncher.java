@@ -276,7 +276,7 @@ public class WelcomeLauncher extends JFrame
             if(runningStatusLabel == null)
             {
                 runningStatusLabel = new JLabel(icon);
-                runningStatusLabel.setBounds(0,0,  82, 876 );
+                runningStatusLabel.setBounds(0,0,  82, 874 );
             }
             else
             {
