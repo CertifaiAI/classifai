@@ -347,7 +347,8 @@ public class ConverterLauncher extends JPanel
 
             Dimension dimension = new Dimension(80, ELEMENT_HEIGHT);
 
-            comboBox.setPreferredSize(dimension);
+            //comboBox.setPreferredSize(dimension);
+            comboBox.setMaximumSize(dimension);
         }
         else if(obj instanceof JProgressBar)
         {
