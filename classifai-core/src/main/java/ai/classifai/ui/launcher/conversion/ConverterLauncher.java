@@ -47,7 +47,7 @@ public class ConverterLauncher extends JPanel
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
 
     private static final int ELEMENT_HEIGHT = 40;
-    private static final int TEXT_FIELD_LENGTH = 25;
+    private static final int TEXT_FIELD_LENGTH = 23;
 
     //JTextField.getText()
     @Getter private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
@@ -353,7 +353,7 @@ public class ConverterLauncher extends JPanel
         {
             Dimension dimension = new Dimension(100, ELEMENT_HEIGHT / 2);
 
-            Font font = new Font(FONT_TYPE, Font.BOLD, 14);
+            Font font = new Font(FONT_TYPE, Font.PLAIN, 14);
 
 
             JProgressBar progressBar = (JProgressBar) obj;
