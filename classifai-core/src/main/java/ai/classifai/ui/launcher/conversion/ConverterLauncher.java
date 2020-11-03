@@ -19,6 +19,7 @@ import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.data.FileHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Random;
 
 /**
@@ -372,9 +374,6 @@ public class ConverterLauncher extends JPanel
         convertButton.setForeground(Color.LIGHT_GRAY);
         progressBar.setIndeterminate(true);
 
-        String currentOutputFolderField = outputFolderField.getText();
-        String outputFolder = currentOutputFolderField.equals(DEFAULT_OUTPUT_PATH) ? inputFolderField.getText() : outputFolderField.getText();
-        FileFormatConversionHandler.convert(inputFolderField.getText(), getInputFormat(), outputFolder, getOutputFormat());
 
         task = new Task();
         task.addPropertyChangeListener(this::propertyChange);
@@ -390,6 +389,12 @@ public class ConverterLauncher extends JPanel
         {
             //iterate to get number of files
 
+            String[] inputExtension = getInputExtension((String) inputFormatCombo.getSelectedItem());
+
+            java.util.List<File> inputFiles = FileHandler.processFolder(new File(inputFolderField.getText()), inputExtension);
+
+            String currentOutputFolderField = outputFolderField.getText();
+            String outputFolder = currentOutputFolderField.equals(DEFAULT_OUTPUT_PATH) ? inputFolderField.getText() : outputFolderField.getText();
 
             Random random = new Random();
 
@@ -419,7 +424,6 @@ public class ConverterLauncher extends JPanel
          */
         public void done()
         {
-            Toolkit.getDefaultToolkit().beep();
             convertButton.setForeground(Color.BLACK);
             convertButton.setEnabled(true);
 
@@ -455,5 +459,21 @@ public class ConverterLauncher extends JPanel
             outputFolderSelector.run(ConversionSelection.OUTPUT);
         }
 
+    }
+
+    private String[] getInputExtension(String input)
+    {
+
+        String extensionRepresentative = input.trim();
+        if(extensionRepresentative.equals(FileFormat.PDF.getUpperCase()))
+        {
+            return new String[]{"pdf"};
+        }
+        else if(extensionRepresentative.equals(FileFormat.TIF.getUpperCase()))
+        {
+            return new String[]{"tif", "tiff"};
+        }
+
+        return null;
     }
 }

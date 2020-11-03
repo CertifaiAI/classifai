@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.image;
+package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
@@ -185,20 +185,7 @@ public class ImageHandler {
     }
 
 
-    private static boolean isfileSupported(String file)
-    {
-        for(String format : ImageFileType.getImageFileTypes())
-        {
-            Integer beginIndex = file.length() - format.length();
-            Integer endIndex = file.length();
 
-            if(file.substring(beginIndex, endIndex).equals(format))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private static boolean isImageFileValid(String file)
     {
@@ -233,7 +220,7 @@ public class ImageHandler {
 
         String currentFileFullPath = file.getAbsolutePath();
 
-        if(isfileSupported(currentFileFullPath))
+        if(FileHandler.isfileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
         {
             if(isImageFileValid(currentFileFullPath))
             {
