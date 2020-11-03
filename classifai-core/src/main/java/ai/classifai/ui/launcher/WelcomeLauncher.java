@@ -167,7 +167,10 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                new ConverterLauncher().launch();
+                if(!ConverterLauncher.isOpened())
+                {
+                    new ConverterLauncher().launch();
+                }
             }
         });
 

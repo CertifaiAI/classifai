@@ -15,12 +15,14 @@
  */
 package ai.classifai.ui.launcher.conversion;
 
+import ai.classifai.MainVerticle;
 import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.FileHandler;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -29,6 +31,8 @@ import javax.swing.plaf.basic.BasicProgressBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -46,6 +50,8 @@ public class ConverterLauncher extends JPanel
 {
     private ConverterFolderSelector inputFolderSelector;
     private ConverterFolderSelector outputFolderSelector;
+
+    @Getter private static boolean isOpened;
 
     @Getter private final int MAX_PAGE = 20;
 
@@ -72,14 +78,15 @@ public class ConverterLauncher extends JPanel
     private JLabel maxPage = new JLabel("Maximum Page: ");
     private JTextField maxPageTextField = new JTextField("   " + MAX_PAGE);
 
-    private JTextArea taskOutput;
+    @Getter private static JTextArea taskOutput;
     private JScrollPane progressPane;
 
     private JProgressBar progressBar = new JProgressBar(0, 100);
-    private JButton convertButton = new JButton("Convert");
+    @Getter private static JButton convertButton = new JButton("Convert");
 
     private Task task;
     private JFrame frame;
+
 
     static {
 
@@ -96,15 +103,17 @@ public class ConverterLauncher extends JPanel
 
         inputFormatCombo = new JComboBox(inputFormat);
         outputFormatCombo = new JComboBox(outputFormat);
+
+        isOpened = false;
     }
 
     public ConverterLauncher()
     {
-        Thread threadFile = new Thread(() -> inputFolderSelector = new ConverterFolderSelector());
-        threadFile.start();
+        Thread inputFolderThread = new Thread(() -> inputFolderSelector = new ConverterFolderSelector());
+        inputFolderThread.start();
 
-        Thread threadFolder = new Thread(() -> outputFolderSelector = new ConverterFolderSelector());
-        threadFolder.start();
+        Thread outputFolderThread = new Thread(() -> outputFolderSelector = new ConverterFolderSelector());
+        outputFolderThread.start();
     }
 
     public static void setInputFolderPath(String inputPath)
@@ -142,6 +151,23 @@ public class ConverterLauncher extends JPanel
     public void start()
     {
         frame = new JFrame("Files Format Converter");
+
+        frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowOpened(WindowEvent e)
+            {
+                super.windowOpened(e);
+
+                isOpened = true;
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                isOpened = false;
+            }
+        });
 
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setPreferredSize(new Dimension(640, 420));

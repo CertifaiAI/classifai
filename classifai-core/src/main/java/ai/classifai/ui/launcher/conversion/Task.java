@@ -1,6 +1,5 @@
 package ai.classifai.ui.launcher.conversion;
 
-
 import ai.classifai.util.data.FileHandler;
 
 import javax.swing.*;
@@ -43,6 +42,7 @@ class Task extends SwingWorker<Void, Void> {
             } catch (InterruptedException ignore) {}
             //Make random progress.
             progress += random.nextInt(10);
+
             setProgress(Math.min(progress, 100));
         }
 
@@ -53,9 +53,11 @@ class Task extends SwingWorker<Void, Void> {
      */
     public void done()
     {
+        JButton convertButton = ConverterLauncher.getConvertButton();
+
         convertButton.setForeground(Color.BLACK);
         convertButton.setEnabled(true);
 
-        taskOutput.append("Done!\n");
+        ConverterLauncher.getTaskOutput().append("Done!\n");
     }
 }
