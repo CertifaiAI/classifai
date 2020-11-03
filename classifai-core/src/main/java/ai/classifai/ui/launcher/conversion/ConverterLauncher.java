@@ -55,8 +55,8 @@ public class ConverterLauncher extends JPanel
     private static final int TEXT_FIELD_LENGTH = 23;
 
     //JTextField.getText()
-    @Getter private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
-    @Getter private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
 
     private final static String DEFAULT_OUTPUT_PATH = "Same as source file";
 
@@ -115,6 +115,11 @@ public class ConverterLauncher extends JPanel
     public static void setOutputFolderPath(String outputPath)
     {
         outputFolderField.setText(outputPath);
+    }
+
+    public static String getDefaultOutputPath()
+    {
+        return DEFAULT_OUTPUT_PATH;
     }
 
     public static String getInputFormat()
@@ -380,56 +385,6 @@ public class ConverterLauncher extends JPanel
         task.execute();
     }
 
-    class Task extends SwingWorker<Void, Void> {
-        /*
-         * Main task. Executed in background thread.
-         */
-        @Override
-        public Void doInBackground()
-        {
-            //iterate to get number of files
-
-            String[] inputExtension = getInputExtension((String) inputFormatCombo.getSelectedItem());
-
-            java.util.List<File> inputFiles = FileHandler.processFolder(new File(inputFolderField.getText()), inputExtension);
-
-            String currentOutputFolderField = outputFolderField.getText();
-            String outputFolder = currentOutputFolderField.equals(DEFAULT_OUTPUT_PATH) ? inputFolderField.getText() : outputFolderField.getText();
-
-            Random random = new Random();
-
-            int progress = 0;
-            //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
-
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
-
-            while (progress < 100) {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
-                setProgress(Math.min(progress, 100));
-            }
-
-            return null;
-        }
-        /*
-         * Executed in event dispatch thread
-         */
-        public void done()
-        {
-            convertButton.setForeground(Color.BLACK);
-            convertButton.setEnabled(true);
-
-            taskOutput.append("Done!\n");
-        }
-    }
 
     /**
      * Invoked when task's progress property changes.
@@ -461,10 +416,10 @@ public class ConverterLauncher extends JPanel
 
     }
 
-    private String[] getInputExtension(String input)
+    public static String[] getInputExtension()
     {
 
-        String extensionRepresentative = input.trim();
+        String extensionRepresentative = ((String) inputFormatCombo.getSelectedItem()).trim();
         if(extensionRepresentative.equals(FileFormat.PDF.getUpperCase()))
         {
             return new String[]{"pdf"};
@@ -475,5 +430,22 @@ public class ConverterLauncher extends JPanel
         }
 
         return null;
+    }
+
+    public static String getInputFolderPath()
+    {
+        return inputFolderField.getText();
+    }
+
+    public static String getOutputFolderPath()
+    {
+        String buffer = (String) outputFolderField.getText();
+
+        if(buffer.equals(DEFAULT_OUTPUT_PATH))
+        {
+            buffer = inputFolderField.getText();
+        }
+
+        return buffer;
     }
 }
