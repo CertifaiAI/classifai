@@ -44,6 +44,11 @@ public class WelcomeLauncher extends JFrame
     private final static OSManager OS_MANAGER;
 
     private final static String BUTTON_PATH = "/console/";
+    private final static String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler_V2.jpg";
+    private final static String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
+    private final static String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
+    private final static String LOG_BUTTON_FILE_NAME = "Log_Button.png";
+
 
     private final static int PANE_WIDTH = 640;
     private final static int PANE_HEIGHT = 480;
@@ -142,7 +147,7 @@ public class WelcomeLauncher extends JFrame
 
     private static void setUpOpenButton()
     {
-        openButton = getButton("Open_Button.png", "Open");
+        openButton = getButton(OPEN_BUTTON_FILE_NAME, "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         openButton.addActionListener(new ActionListener() {
@@ -155,7 +160,7 @@ public class WelcomeLauncher extends JFrame
 
     private static void setUpConverterButton()
     {
-        converterButton = getButton("Close_Button.png", "Close");
+        converterButton = getButton(CONFIG_BUTTON_FILE_NAME, "Conversion");
         converterButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         converterButton.addActionListener(new ActionListener() {
@@ -170,7 +175,7 @@ public class WelcomeLauncher extends JFrame
 
     private static void setUpLogButton()
     {
-        logButton = getButton("Log_Button.png", "License");
+        logButton = getButton(LOG_BUTTON_FILE_NAME, "Logs");
         logButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
         logButton.addActionListener(new ActionListener() {
@@ -186,7 +191,7 @@ public class WelcomeLauncher extends JFrame
     {
         try
         {
-            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + "Classifai_WelcomeHandler_big.jpg"));
+            BufferedImage oriImg = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + BACKGROUND_FILE_NAME));
 
             BufferedImage img = resize(oriImg, PANE_WIDTH, PANE_HEIGHT);
 
@@ -231,9 +236,9 @@ public class WelcomeLauncher extends JFrame
         if(runningStatusText == null)
         {
             runningStatusText = new JLabel(status.getText());
-            runningStatusText.setFont(new Font("DialogInput", Font.BOLD, 16)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
+            runningStatusText.setFont(new Font("SansSerif", Font.BOLD, 14)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
             runningStatusText.setForeground(Color.lightGray);
-            runningStatusText.setBounds(30, 200, PANE_WIDTH, PANE_HEIGHT);
+            runningStatusText.setBounds(40, 196, PANE_WIDTH, PANE_HEIGHT);
         }
         else
         {
@@ -248,16 +253,17 @@ public class WelcomeLauncher extends JFrame
 
         if(status.equals(RunningStatus.STARTING))
         {
-            imageName ="red.png";
+            imageName ="RedLight.png";
         }
         else if(status.equals(RunningStatus.RUNNING))
         {
-            imageName = "green.png";
+            imageName = "GreenLight.png";
         }
         else
         {
             log.info("Running status icon could not be found");
         }
+
 
         try
         {
@@ -270,7 +276,7 @@ public class WelcomeLauncher extends JFrame
             if(runningStatusLabel == null)
             {
                 runningStatusLabel = new JLabel(icon);
-                runningStatusLabel.setBounds(0,0,  40, 884 );
+                runningStatusLabel.setBounds(0,0,  50, 876 );
             }
             else
             {

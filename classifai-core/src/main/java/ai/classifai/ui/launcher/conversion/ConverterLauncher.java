@@ -20,7 +20,6 @@ import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicProgressBarUI;
@@ -29,7 +28,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Random;
 
 /**
