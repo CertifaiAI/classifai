@@ -20,6 +20,7 @@ import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -36,6 +37,7 @@ import java.util.Random;
  *
  * @author codenamewei
  */
+@Slf4j
 public class ConverterLauncher extends JPanel
         implements ActionListener,
         PropertyChangeListener
@@ -128,56 +130,7 @@ public class ConverterLauncher extends JPanel
         return outputFormat.trim();
     }
 
-    class Task extends SwingWorker<Void, Void> {
-        /*
-         * Main task. Executed in background thread.
-         */
-        @Override
-        public Void doInBackground() {
-            Random random = new Random();
-            int progress = 0;
-            //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
-            while (progress < 100) {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
-                setProgress(Math.min(progress, 100));
-            }
-            return null;
-        }
 
-        /**
-         * Invoked when task's progress property changes.
-         */
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ("progress" == evt.getPropertyName()) {
-                int progress = (Integer) evt.getNewValue();
-                progressBar.setIndeterminate(false);
-                progressBar.setValue(progress);
-                taskOutput.append(String.format(
-                        "Completed %d%% of task.\n", progress));
-            }
-        }
-
-        /*
-         * Executed in event dispatch thread
-         */
-        public void done() {
-            Toolkit.getDefaultToolkit().beep();
-            convertButton.setForeground(Color.BLACK);
-            convertButton.setEnabled(true);
-
-            taskOutput.append("Done!\n");
-        }
-    }
 
     public void start()
     {
@@ -383,7 +336,7 @@ public class ConverterLauncher extends JPanel
 
         if(obj == null)
         {
-            System.out.println("Object is null");
+            log.info("Object for ConversionLauncher is null");
         }
     }
 
@@ -412,24 +365,66 @@ public class ConverterLauncher extends JPanel
     /**
      * Invoked when the user presses the start button.
      */
-    public void actionPerformed(ActionEvent evt) {
+    public void actionPerformed(ActionEvent evt)
+    {
 
         convertButton.setEnabled(false);
         convertButton.setForeground(Color.LIGHT_GRAY);
         progressBar.setIndeterminate(true);
 
-        //Instances of javax.swing.SwingWorker are not reusuable, so
-        //we create new instances as needed.
+        String currentOutputFolderField = outputFolderField.getText();
+        String outputFolder = currentOutputFolderField.equals(DEFAULT_OUTPUT_PATH) ? inputFolderField.getText() : outputFolderField.getText();
+        FileFormatConversionHandler.convert(inputFolderField.getText(), getInputFormat(), outputFolder, getOutputFormat());
+
+
         task = new Task();
         task.addPropertyChangeListener(this);
         task.execute();
+    }
+
+    class Task extends SwingWorker<Void, Void> {
+        /*
+         * Main task. Executed in background thread.
+         */
+        @Override
+        public Void doInBackground() {
+            Random random = new Random();
+            int progress = 0;
+            //Initialize progress property.
+            setProgress(0);
+            //Sleep for at least one second to simulate "startup".
+            try {
+                Thread.sleep(1000 + random.nextInt(2000));
+            } catch (InterruptedException ignore) {}
+            while (progress < 100) {
+                //Sleep for up to one second.
+                try {
+                    Thread.sleep(random.nextInt(1000));
+                } catch (InterruptedException ignore) {}
+                //Make random progress.
+                progress += random.nextInt(10);
+                setProgress(Math.min(progress, 100));
+            }
+            return null;
+        }
+        /*
+         * Executed in event dispatch thread
+         */
+        public void done() {
+            Toolkit.getDefaultToolkit().beep();
+            convertButton.setForeground(Color.BLACK);
+            convertButton.setEnabled(true);
+
+            taskOutput.append("Done!\n");
+        }
     }
 
     /**
      * Invoked when task's progress property changes.
      */
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("progress" == evt.getPropertyName()) {
+        if ("progress" == evt.getPropertyName())
+        {
             int progress = (Integer) evt.getNewValue();
             progressBar.setIndeterminate(false);
             progressBar.setValue(progress);
