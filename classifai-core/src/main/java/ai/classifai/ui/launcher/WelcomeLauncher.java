@@ -238,7 +238,7 @@ public class WelcomeLauncher extends JFrame
             runningStatusText = new JLabel(status.getText());
             runningStatusText.setFont(new Font("SansSerif", Font.BOLD, 14)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
             runningStatusText.setForeground(Color.lightGray);
-            runningStatusText.setBounds(40, 196, PANE_WIDTH, PANE_HEIGHT);
+            runningStatusText.setBounds(52, 196, PANE_WIDTH, PANE_HEIGHT);
         }
         else
         {
@@ -276,7 +276,7 @@ public class WelcomeLauncher extends JFrame
             if(runningStatusLabel == null)
             {
                 runningStatusLabel = new JLabel(icon);
-                runningStatusLabel.setBounds(0,0,  50, 876 );
+                runningStatusLabel.setBounds(0,0,  82, 876 );
             }
             else
             {
