@@ -16,6 +16,8 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.ui.launcher.conversion.ConverterLauncher;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
@@ -24,8 +26,6 @@ import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * PDF Handler
@@ -35,68 +35,48 @@ import java.util.List;
 @Slf4j
 public class PdfHandler
 {
-    private static String PDFFORMAT = "pdf";
-    private static final Integer MAX_ALLOWED_PAGES = 20; //only allow max 20 pages per document
-    private static Integer dotsPerInch = 300; //standard dots per inch is 300
+    private static final Integer DOTS_PER_INCH = 300; //standard dots per inch is 300
 
-    public static boolean isPdf(String pdfFileName)
+    private static String getFileName(@NonNull String pdfFilePath)
     {
-        Integer beginIndex = pdfFileName.length() - PDFFORMAT.length();
-        Integer endIndex = pdfFileName.length();
+        String[] subString = pdfFilePath.split(File.separator);
+        String fileNameWithExtension = subString[subString.length - 1];
 
-        if(pdfFileName.substring(beginIndex, endIndex).equals(PDFFORMAT))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        System.out.println("Debugging: " + fileNameWithExtension);
+
+        String[] separator = fileNameWithExtension.split("\\.");
+
+        int fileEndIndex = pdfFilePath.length() -  separator[(separator.length - 1)].length() - 1;
+
+        int fileStartIndex = pdfFilePath.length() - fileNameWithExtension.length() - 1;
+
+        String fileName = fileNameWithExtension.substring(fileStartIndex, fileEndIndex);
+
+        return fileName;
     }
 
-    //FIXME: Poorly written
-    public static String getPathToFile(String pdfFileName)
+    public static String savePdf2Image(@NonNull File pdfFileName, @NonNull String outputPath, @NonNull String extensionFormat)
     {
-        String[] subString = pdfFileName.split("/");
-        String fullPathName = subString[subString.length - 1];
+        PDDocument document = null;
 
-        String[] separator = fullPathName.split("\\.");
-
-        int fileEndIndex = fullPathName.length() -  separator[(separator.length - 1)].length() - 1;
-        String fileName = fullPathName.substring(0, fileEndIndex);
-
-        Integer pathLength = pdfFileName.length() - fullPathName.length();
-        String pathToSave = pdfFileName.substring(0, pathLength);
-
-        fileName = fileName.replace(".", "_"); //replace any possible "." with "_"
-        fileName = fileName.replace(" ", ""); //replace any possible " " with ""
-
-        String pathFirstHalf = pathToSave + fileName;
-
-        return pathFirstHalf;
-    }
-
-    public static List<File> savePdf2Image(String pdfFileName)
-    {
         try {
-            PDDocument document = PDDocument.load(new File(pdfFileName));
+            document = PDDocument.load(pdfFileName);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
-            List<File> pdf2Images = new ArrayList<>();
 
             int maxPages = document.getNumberOfPages();
-            if(maxPages > MAX_ALLOWED_PAGES) maxPages = MAX_ALLOWED_PAGES;
+            if(maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
 
-            String pathFirstHalf = getPathToFile(pdfFileName);
+            String fileName = getFileName(pdfFileName.getAbsolutePath());
 
             for (int page = 0; page < maxPages; ++page)
             {
-                String imageSavedFullPath = pathFirstHalf + "_" + (page+1) + ".png";
+                String imageSavedFullPath = outputPath + File.separator + fileName + "_" + (page+1) + "." + extensionFormat;
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
                 if(fImageSavedFullPath.exists() == false)
                 {
-                    BufferedImage bim = pdfRenderer.renderImageWithDPI(page, dotsPerInch, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
+                    BufferedImage bim = pdfRenderer.renderImageWithDPI(page, DOTS_PER_INCH, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
 
                     if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {
@@ -104,22 +84,33 @@ public class PdfHandler
                         log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
                     }
 
-                    pdf2Images.add(fImageSavedFullPath);
-
                     // suffix in filename will be used as the file format
-                    ImageIOUtil.writeImage(bim, imageSavedFullPath, dotsPerInch);
+                    ImageIOUtil.writeImage(bim, imageSavedFullPath, DOTS_PER_INCH);
                 }
             }
 
             document.close();
 
-            return pdf2Images;
         }
         catch(Exception e)
         {
             log.info("PDF Skipped. Failed in reading pdf of file: " + pdfFileName, e);
         }
+        finally
+        {
+            try
+            {
+                if(document != null)
+                {
+                    document.close();
+                }
+            }
+            catch(Exception e)
+            {
+                log.info("Error when closing pdf. ", e);
+            }
 
+        }
         return null;
     }
 }

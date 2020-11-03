@@ -15,14 +15,13 @@
  */
 package ai.classifai.ui.launcher.conversion;
 
-import ai.classifai.MainVerticle;
 import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.data.FileHandler;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -36,7 +35,6 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Random;
 
 /**
  * Converter to convert files from Welcome Launcher
@@ -53,7 +51,8 @@ public class ConverterLauncher extends JPanel
 
     @Getter private static boolean isOpened;
 
-    @Getter private final int MAX_PAGE = 20;
+    private static final int MAX_PAGE = 20;
+
 
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
 
@@ -131,11 +130,17 @@ public class ConverterLauncher extends JPanel
         return DEFAULT_OUTPUT_PATH;
     }
 
+
+    public static int getMaxPage()
+    {
+        return MAX_PAGE;
+    }
+
     public static String getInputFormat()
     {
         String inputFormat = (String) inputFormatCombo.getSelectedItem();
 
-        return inputFormat.trim();
+        return inputFormat.trim().toLowerCase();
     }
 
 
@@ -143,9 +148,8 @@ public class ConverterLauncher extends JPanel
     {
         String outputFormat = (String) outputFormatCombo.getSelectedItem();
 
-        return outputFormat.trim();
+        return outputFormat.trim().toLowerCase();
     }
-
 
 
     public void start()
@@ -249,7 +253,7 @@ public class ConverterLauncher extends JPanel
 
         design(inputFolderField);
         inputFolderField.setEditable(false);
-        inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath());
+        inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath() + File.separator + "Desktop");
 
         Dimension folderDimension = new Dimension(100, ELEMENT_HEIGHT - 10);
         inputFolderField.setPreferredSize(folderDimension);
@@ -290,7 +294,7 @@ public class ConverterLauncher extends JPanel
         design(progressBar);
         design(convertButton);
 
-        convertButton.addActionListener(this);
+        //convertButton.addActionListener(this);
     }
 
     private void design(Object obj)
@@ -334,7 +338,6 @@ public class ConverterLauncher extends JPanel
 
             Dimension dimension = new Dimension(80, ELEMENT_HEIGHT);
 
-            //comboBox.setPreferredSize(dimension);
             comboBox.setMaximumSize(dimension);
         }
         else if(obj instanceof JProgressBar)
@@ -422,9 +425,15 @@ public class ConverterLauncher extends JPanel
             int progress = (Integer) evt.getNewValue();
             progressBar.setIndeterminate(false);
             progressBar.setValue(progress);
-            taskOutput.append(String.format(
-                    "Completed %d%% of task.\n", progress));
+
+            //taskOutput.append(String.format("Completed %d%% of task.\n", progress));
         }
+    }
+
+    public static void appendTaskOutput(@NonNull String message)
+    {
+        taskOutput.append(message + "\n");
+        log.debug(message);
     }
 
     class InputFolderListener implements ActionListener {
