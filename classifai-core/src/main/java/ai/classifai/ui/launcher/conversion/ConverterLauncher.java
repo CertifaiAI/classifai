@@ -22,6 +22,7 @@ import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -356,12 +357,17 @@ public class ConverterLauncher extends JPanel
 
             Font font = new Font(FONT_TYPE, Font.PLAIN, 14);
 
-
             JProgressBar progressBar = (JProgressBar) obj;
             progressBar.setFont(font);
 
             progressBar.setForeground(Color.GREEN);
             progressBar.setPreferredSize(dimension);
+
+
+            progressBar.setBorderPainted(true);
+
+                Border border = BorderFactory.createEtchedBorder(0);
+            progressBar.setBorder(border);
         }
         else if(obj instanceof JComponent)
         {
