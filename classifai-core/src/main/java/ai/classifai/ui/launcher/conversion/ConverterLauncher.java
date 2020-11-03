@@ -376,9 +376,8 @@ public class ConverterLauncher extends JPanel
         String outputFolder = currentOutputFolderField.equals(DEFAULT_OUTPUT_PATH) ? inputFolderField.getText() : outputFolderField.getText();
         FileFormatConversionHandler.convert(inputFolderField.getText(), getInputFormat(), outputFolder, getOutputFormat());
 
-
         task = new Task();
-        task.addPropertyChangeListener(this);
+        task.addPropertyChangeListener(this::propertyChange);
         task.execute();
     }
 
@@ -387,15 +386,22 @@ public class ConverterLauncher extends JPanel
          * Main task. Executed in background thread.
          */
         @Override
-        public Void doInBackground() {
+        public Void doInBackground()
+        {
+            //iterate to get number of files
+
+
             Random random = new Random();
+
             int progress = 0;
             //Initialize progress property.
             setProgress(0);
             //Sleep for at least one second to simulate "startup".
+
             try {
                 Thread.sleep(1000 + random.nextInt(2000));
             } catch (InterruptedException ignore) {}
+
             while (progress < 100) {
                 //Sleep for up to one second.
                 try {
@@ -405,12 +411,14 @@ public class ConverterLauncher extends JPanel
                 progress += random.nextInt(10);
                 setProgress(Math.min(progress, 100));
             }
+
             return null;
         }
         /*
          * Executed in event dispatch thread
          */
-        public void done() {
+        public void done()
+        {
             Toolkit.getDefaultToolkit().beep();
             convertButton.setForeground(Color.BLACK);
             convertButton.setEnabled(true);
@@ -422,7 +430,8 @@ public class ConverterLauncher extends JPanel
     /**
      * Invoked when task's progress property changes.
      */
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(PropertyChangeEvent evt)
+    {
         if ("progress" == evt.getPropertyName())
         {
             int progress = (Integer) evt.getNewValue();
