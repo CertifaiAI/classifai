@@ -15,11 +15,9 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.annotation.AnnotationType;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -33,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Project Handler for File & Folder Selector and Database Update
  *
- * @author ChiaWei
+ * @author codenamewei
  */
 @Slf4j
 public class ProjectHandler {

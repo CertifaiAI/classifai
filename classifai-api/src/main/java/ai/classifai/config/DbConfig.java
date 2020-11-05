@@ -23,7 +23,7 @@ import java.io.File;
 /**
  * Database config before starting the server
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class DbConfig

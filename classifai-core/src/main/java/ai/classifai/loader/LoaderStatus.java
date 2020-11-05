@@ -13,27 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
+package ai.classifai.loader;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * Handling list operation
+/***
+ * Loader status for project loading
  *
  * @author codenamewei
  */
-public class ListHandler
+@Slf4j
+public enum LoaderStatus
 {
-    public static <T> List<T> convertListToUniqueList(List<T> list)
-    {
-        // create an empty set
-        Set<T> set = new HashSet<>();
-
-        for (T t : list)
-            set.add(t);
-
-        return ConversionHandler.set2List(set);
-    }
+    ERROR,
+    LOADING,
+    LOADED, //projectloader will have this status once create new project
+    DID_NOT_INITIATED, //default value when ProjectLoader created from database
 }

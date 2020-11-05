@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui.button;
 
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +31,7 @@ import java.util.Map;
  * (2) default browser in local system
  * Else, user have to open the url in selected browser
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class BrowserHandler {

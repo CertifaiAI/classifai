@@ -13,19 +13,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.portfoliodb;
+package ai.classifai.database;
 
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 /***
- * @author Chiawei Lim
+ * Common Functionalities for Each Verticle
+ *
+ * @author codenamewei
  */
-public interface PortfolioServiceable
+public interface VerticleServiceable
 {
-    void createNewProject(Message<JsonObject> message);
-
-    void getProjectUUIDList(Message<JsonObject> message);
-
-    void getAllProjectsForAnnotationType(Message<JsonObject> message);
+    void onMessage(Message<JsonObject> message);
 }

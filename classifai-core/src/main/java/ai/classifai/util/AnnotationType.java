@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.annotation;
+package ai.classifai.util;
 
 /**
  * Types of Annotation
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public enum AnnotationType
 {

@@ -13,19 +13,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.filesystem;
+package ai.classifai.database.portfolio;
+
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 /**
- * State of windows to select file/folder
+ * Common functionalities for Portfolio Verticle
  *
  * @author codenamewei
  */
-public enum FileSystemStatus
+public interface PortfolioServiceable
 {
-    WINDOW_OPEN,
-    WINDOW_CLOSE_DATABASE_NOT_UPDATED,
-    WINDOW_CLOSE_LOADING_FILES,
-    WINDOW_CLOSE_DATABASE_UPDATING,
-    WINDOW_CLOSE_DATABASE_UPDATED,
-    DID_NOT_INITIATE
+    void createNewProject(Message<JsonObject> message);
+
+    void updateLabelList(Message<JsonObject> message);
+
+    void getLabelList(Message<JsonObject> message);
+
+    void getProjectUUIDList(Message<JsonObject> message);
+
+    void getAllProjectsForAnnotationType(Message<JsonObject> message);
+
+    void configurePortfolioVerticle();
 }

@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * Support images & documents
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @NoArgsConstructor
 public class ImageFileType {

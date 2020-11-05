@@ -26,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ReplyHandler {
 
-    private static final String ERROR_CODE = "errorcode";
-    private static final String ERROR_MESSAGE = "errormessage";
+    private static final String ERROR_CODE = "error_code";
+    private static final String ERROR_MESSAGE = "error_message";
 
     private static final String MESSAGE_KEY = "message";
     private static final Integer SUCCESSFUL = 1;
@@ -77,7 +77,7 @@ public class ReplyHandler {
         log.info(userDefinedMessage);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
-                .put(ERROR_CODE, ErrorCodes.OTHER_ERROR.ordinal())
+                .put(ERROR_CODE, ErrorCodes.USER_DEFINED_ERROR.ordinal())
                 .put(ERROR_MESSAGE, userDefinedMessage);
     }
 
@@ -86,7 +86,7 @@ public class ReplyHandler {
         log.info(userDefinedMessage);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
-                .put(ERROR_CODE, ErrorCodes.BAD_QUERY_PARAM.ordinal())
+                .put(ERROR_CODE, ErrorCodes.BAD_PARAM.ordinal())
                 .put(ERROR_MESSAGE, userDefinedMessage);
     }
 
@@ -95,7 +95,7 @@ public class ReplyHandler {
         log.info(info);
 
         return new JsonObject().put(MESSAGE_KEY, FAILED)
-                .put(ERROR_CODE, ErrorCodes.BAD_QUERY_PARAM.ordinal())
+                .put(ERROR_CODE, ErrorCodes.BAD_PARAM.ordinal())
                 .put(ERROR_MESSAGE, info);
     }
 

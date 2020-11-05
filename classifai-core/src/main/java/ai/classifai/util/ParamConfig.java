@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.server;
+package ai.classifai.util;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +23,7 @@ import java.io.File;
 /**
  * Parameter for server in general
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class ParamConfig
 {
@@ -73,7 +73,6 @@ public class ParamConfig
 
     private static final String FILE_PARAM = "file";
     private static final String FOLDER_PARAM = "folder";
-
 
     private final static String ACTION_KEYWORD = "action";
     private final static String CONTENT = "content";
@@ -125,5 +124,18 @@ public class ParamConfig
     public static String getContent() { return CONTENT; }
     public static String getProgressMetadata() { return PROGRESS_METADATA; }
 
+    public static String getAnnotationParam(AnnotationType type)
+    {
+        if(type.equals(AnnotationType.BOUNDINGBOX))
+        {
+            return ParamConfig.getBoundingBoxParam();
+        }
+        else if(type.equals(AnnotationType.SEGMENTATION))
+        {
+            return ParamConfig.getSegmentationParam();
+        }
+        //TODO: Add more annotation type here when added
 
+        return null;
+    }
 }

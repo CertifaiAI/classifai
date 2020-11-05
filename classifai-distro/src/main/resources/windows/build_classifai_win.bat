@@ -20,5 +20,3 @@ jpackage --type msi^
          --resource-dir metadata^
          --verbose^
          --win-shortcut --win-dir-chooser --win-menu --win-console
-
-

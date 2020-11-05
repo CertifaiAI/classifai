@@ -13,20 +13,21 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.server;
+package ai.classifai.router;
 
-import ai.classifai.annotation.AnnotationType;
-import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-import ai.classifai.database.segdb.SegDbQuery;
+import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.seg.SegDbQuery;
+import ai.classifai.database.portfolio.PortfolioDbQuery;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.FileSelector;
 import ai.classifai.selector.FolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
+import ai.classifai.util.AnnotationType;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -42,17 +43,17 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * Main server verticle routing different url requests
+ * Endpoint routing for different url requests
  *
- * @author codenameweis
+ * @author codenamewei
  */
 @Slf4j
-public class ServerVerticle extends AbstractVerticle
+public class EndpointRouter extends AbstractVerticle
 {
     private FileSelector fileSelector;
     private FolderSelector folderSelector;
 
-    public ServerVerticle()
+    public EndpointRouter()
     {
         Thread threadFile = new Thread(() -> fileSelector = new FileSelector());
         threadFile.start();
@@ -505,63 +506,6 @@ public class ServerVerticle extends AbstractVerticle
     }
 
     /**
-     * Create new label for bounding box annotation project
-     *
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-     */
-    private void createNewBndBoxLabels(RoutingContext context)
-    {
-        createNewLabels(context, AnnotationType.BOUNDINGBOX);
-    }
-
-    /**
-     * Create new label for segmentation annotation project
-     *
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-     */
-    private void createNewSegLabels(RoutingContext context)
-    {
-        createNewLabels(context, AnnotationType.SEGMENTATION);
-    }
-
-    /**
-     * Create new label for projects
-     *
-     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-     *
-     * Example:
-     * PUT http://localhost:{port}/bndbox/projects/helloworld/newlabels
-     */
-    private void createNewLabels(RoutingContext context, AnnotationType annotationType)
-    {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
-
-        if(checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateLabelList());
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
-        });
-    }
-
-    /**
      * Retrieve thumbnail with metadata
      *
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
@@ -822,7 +766,12 @@ public class ServerVerticle extends AbstractVerticle
         return false;
     }
 
+    @Override
+    public void stop(Promise<Void> promise) {
+        log.debug("Endpoint Router Verticle stopping...");
 
+        //add action before stopped if necessary
+    }
 
     @Override
     public void start(Promise<Void> promise)
@@ -846,8 +795,6 @@ public class ServerVerticle extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getBndBoxFileSystemStatus);
 
-        router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewBndBoxLabels);
-
         router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxThumbnail);
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
@@ -869,8 +816,6 @@ public class ServerVerticle extends AbstractVerticle
         router.get("/seg/projects/:project_name/filesys/:file_sys").handler(this::selectSegFileSystemType);
 
         router.get("/seg/projects/:project_name/filesysstatus").handler(this::getSegFileSystemStatus);
-
-        router.put("/seg/projects/:project_name/newlabels").handler(this::createNewSegLabels);
 
         router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegThumbnail);
 

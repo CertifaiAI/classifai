@@ -15,14 +15,14 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Port Configuration for hosting classifai
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class PortSelector {

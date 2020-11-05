@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.portfoliodb;
+package ai.classifai.database.portfolio;
 
 /***
- * Portfolio database query
+ * Generic Database Query
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class PortfolioDbQuery
 {

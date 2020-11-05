@@ -13,19 +13,26 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.filesystem;
+package ai.classifai.ui.launcher;
+
 
 /**
- * State of windows to select file/folder
+ * Messages to show on WelcomeLauncher
  *
  * @author codenamewei
  */
-public enum FileSystemStatus
+public enum RunningStatus
 {
-    WINDOW_OPEN,
-    WINDOW_CLOSE_DATABASE_NOT_UPDATED,
-    WINDOW_CLOSE_LOADING_FILES,
-    WINDOW_CLOSE_DATABASE_UPDATING,
-    WINDOW_CLOSE_DATABASE_UPDATED,
-    DID_NOT_INITIATE
+    STARTING("Starting..."),
+    RUNNING("Running...");
+
+    private final String text;
+
+    RunningStatus(final String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
 }

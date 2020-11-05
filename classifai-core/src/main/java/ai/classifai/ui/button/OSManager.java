@@ -32,7 +32,7 @@ enum OS
 /**
  * Handler to manage different os
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 @Getter
