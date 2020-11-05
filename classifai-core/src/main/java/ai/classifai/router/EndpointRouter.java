@@ -28,6 +28,7 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
+import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -501,6 +502,11 @@ public class EndpointRouter extends AbstractVerticle
             res.put(ParamConfig.getUUIDListParam(), newAddedUUIDList);
 
         }
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        {
+            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
+        }
 
         HTTPResponseHandler.configureOK(context, res);
     }
@@ -650,7 +656,7 @@ public class EndpointRouter extends AbstractVerticle
 
                 }
                 else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project."));
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project: " + projectName));
                 }
             });
         });
@@ -687,7 +693,7 @@ public class EndpointRouter extends AbstractVerticle
 
                 }
                 else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project."));
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project: " + projectName));
                 }
             });
         });

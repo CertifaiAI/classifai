@@ -33,6 +33,8 @@ public class ReplyHandler {
     private static final Integer SUCCESSFUL = 1;
     private static final Integer FAILED = 0;
 
+    public static String getErrorCodeKey() { return ERROR_CODE; }
+
     public static String getMessageKey()
     {
         return MESSAGE_KEY;
