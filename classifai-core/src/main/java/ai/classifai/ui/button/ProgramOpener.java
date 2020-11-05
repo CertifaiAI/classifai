@@ -114,21 +114,27 @@ public class ProgramOpener
             else
             {
                 commandPath = new String[]{programPath + " " + param};
-                System.out.println(Arrays.asList(commandPath));
             }
 
         }else if(os.equals(OS.LINUX))
         {
-            commandPath = new String[]{"bash", "-c", programPath + " "+ param};
+            if(isOpenInPrompt)
+            {
+                commandPath = new String[]{"bash", "-c", programPath + " "+ param};
+            }
+            else
+            {
+                param = System.getProperty("user.home")+"/logs/"+"classifai.log";
+                commandPath = new String[]{programPath + " " + param};
+            }
+
         }
 
         try
         {
             if(isOpenInPrompt)
             {
-                System.out.println(Arrays.asList(commandPath)+"here");
                 Runtime.getRuntime().exec(commandPath);
-                System.out.println("here");
             }
             else
             {
