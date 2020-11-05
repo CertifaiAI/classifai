@@ -581,8 +581,10 @@ public class EndpointRouter extends AbstractVerticle
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
 
-        JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
-                .put(ParamConfig.getProjectIDParam(), projectID);
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getUUIDParam(), uuid)
+                .put(ParamConfig.getProjectIDParam(), projectID)
+                .put(ParamConfig.getProjectNameParam(), projectName);
 
         getImageSource(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveDataPath(), request);
     }
