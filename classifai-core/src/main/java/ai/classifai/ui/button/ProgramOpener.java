@@ -109,6 +109,7 @@ public class ProgramOpener
             {
                 //commandPath = new String[]{"cmd", "/c", "start ", "\"\"", "\"" + programPath + "\" " + param};
                 commandPath = new String[]{programPath + "\" " + param};
+                System.out.println(Arrays.toString(commandPath));
 
             }
             else
