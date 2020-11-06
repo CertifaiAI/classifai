@@ -23,3 +23,4 @@ jpackage --type msi^
          --copyright "Copyright 2020, All rights reserved"^
          --verbose^
          --win-shortcut --win-dir-chooser --win-menu
+REM --win-console
