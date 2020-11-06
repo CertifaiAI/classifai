@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.selector;
+package ai.classifai.selector.annotation;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
@@ -22,7 +22,7 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.image.ImageHandler;
+import ai.classifai.util.data.ImageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +38,8 @@ import java.util.ArrayList;
  * @author codenamewei
  */
 @Slf4j
-public class FileSelector{
+public class ToolFileSelector
+{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
     public void run(@NonNull Integer projectID)
