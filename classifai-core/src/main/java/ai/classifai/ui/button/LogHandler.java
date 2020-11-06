@@ -48,6 +48,6 @@ public class LogHandler
 
         textEditorKey.put(OS.MAC.name(), null);
         textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
-        textEditorKey.put(OS.LINUX.name(),linuxEditorPath);
+        textEditorKey.put(OS.LINUX.name(), linuxEditorPath);
     }
 }

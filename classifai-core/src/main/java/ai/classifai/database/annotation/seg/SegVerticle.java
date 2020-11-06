@@ -17,8 +17,8 @@ package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.AnnotationType;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -27,8 +27,6 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
 
 /**
  * Segmentation Verticle

@@ -17,7 +17,6 @@ package ai.classifai;
 
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
-import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;

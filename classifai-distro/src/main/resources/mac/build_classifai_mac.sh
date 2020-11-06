@@ -12,4 +12,7 @@ jpackage --type pkg \
          --main-class ai.classifai.ClassifaiApp \
          --arguments --unlockdb=true --arguments --port=9999 \
          --resource-dir metadata \
+         --description "Classifai data annotation tool" \
+         --vendor "CertifAI Sdn. Bhd." \
+         --copyright "Copyright 2020, All rights reserved" \
          --verbose

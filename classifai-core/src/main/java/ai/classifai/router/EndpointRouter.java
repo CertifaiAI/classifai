@@ -20,14 +20,15 @@ import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.FileSelector;
-import ai.classifai.selector.FolderSelector;
+import ai.classifai.selector.annotation.ToolFileSelector;
+import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.AnnotationType;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.AnnotationType;
+import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -50,15 +51,15 @@ import java.util.List;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    private FileSelector fileSelector;
-    private FolderSelector folderSelector;
+    private ToolFileSelector fileSelector;
+    private ToolFolderSelector folderSelector;
 
     public EndpointRouter()
     {
-        Thread threadFile = new Thread(() -> fileSelector = new FileSelector());
+        Thread threadFile = new Thread(() -> fileSelector = new ToolFileSelector());
         threadFile.start();
 
-        Thread threadFolder = new Thread(() -> folderSelector = new FolderSelector());
+        Thread threadFolder = new Thread(() -> folderSelector = new ToolFolderSelector());
         threadFolder.start();
     }
 
@@ -501,6 +502,11 @@ public class EndpointRouter extends AbstractVerticle
             res.put(ParamConfig.getUUIDListParam(), newAddedUUIDList);
 
         }
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        {
+            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
+        }
 
         HTTPResponseHandler.configureOK(context, res);
     }
@@ -575,8 +581,10 @@ public class EndpointRouter extends AbstractVerticle
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
 
-        JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
-                .put(ParamConfig.getProjectIDParam(), projectID);
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getUUIDParam(), uuid)
+                .put(ParamConfig.getProjectIDParam(), projectID)
+                .put(ParamConfig.getProjectNameParam(), projectName);
 
         getImageSource(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveDataPath(), request);
     }
@@ -650,7 +658,7 @@ public class EndpointRouter extends AbstractVerticle
 
                 }
                 else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project."));
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project: " + projectName));
                 }
             });
         });
@@ -687,7 +695,7 @@ public class EndpointRouter extends AbstractVerticle
 
                 }
                 else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project."));
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project: " + projectName));
                 }
             });
         });

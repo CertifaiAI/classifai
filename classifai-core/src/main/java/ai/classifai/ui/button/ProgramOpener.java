@@ -22,8 +22,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -107,9 +105,8 @@ public class ProgramOpener
         {
             if(isOpenInPrompt)
             {
-                //commandPath = new String[]{"cmd", "/c", "start ", "\"\"", "\"" + programPath + "\" " + param};
+                //commandPath = new String[]{"cmd", "/c", "start \"" + programPath + "\" " + param};
                 commandPath = new String[]{programPath + "\" " + param};
-                System.out.println(Arrays.toString(commandPath));
 
             }
             else
@@ -128,7 +125,6 @@ public class ProgramOpener
                 param = System.getProperty("user.home")+"/logs/"+"classifai.log";
                 commandPath = new String[]{programPath + " " + param};
             }
-
         }
 
         try

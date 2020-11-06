@@ -17,11 +17,11 @@ package ai.classifai.database.annotation;
 
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.AnnotationType;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
-import ai.classifai.util.AnnotationType;
-import ai.classifai.util.image.ImageHandler;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
@@ -59,7 +59,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    message.reply(ReplyHandler.reportUserDefinedError("Image data path not found"));
+                    String projectName = message.body().getString(ParamConfig.getProjectNameParam());
+                    String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                    message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else
                 {
