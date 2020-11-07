@@ -51,6 +51,8 @@ public class ProgramOpener
         }
     }
 
+    private ProgramOpener(){}
+
     public static void launch(OS currentOS, Map<String, List<String>> programKey, String param, boolean isCommandPrompt)
     {
         System.out.println("Debugging: Current OS " + currentOS.name());
@@ -64,12 +66,11 @@ public class ProgramOpener
             if((programList == null) || (programList.isEmpty()))
             {
                 failToOpenProgramPathMessage("Program for " + currentOS.name() + " cannot be found");
-                return;
             }
 
             for(String browser : programList)
             {
-                if((programNotFound == true) && (isProgramPathExist(browser)))
+                if(programNotFound && (isProgramPathExist(browser)))
                 {
                     System.out.println("Debugging: browser: " + browser);
                     System.out.println("Debugging param: " + param);
@@ -84,7 +85,6 @@ public class ProgramOpener
             if(programNotFound)
             {
                 failToOpenProgramPathMessage("Initialization of program path failed in current OS: " + currentOS.name());
-                return;
             }
 
         }
@@ -92,7 +92,6 @@ public class ProgramOpener
         {
             String osNotSupportedMessage = "Current selected OS is not supported yet";
             failToOpenProgramPathMessage(osNotSupportedMessage);
-            return;
         }
     }
 
@@ -118,7 +117,7 @@ public class ProgramOpener
 
         }else if(os.equals(OS.LINUX))
         {
-            commandPath = new String[]{"gio", "open ", programPath};// + " /usr/logs/classifai.log"};
+            commandPath = new String[]{"gio", "open ", " /usr/logs/classifai.log"};// + " /usr/logs/classifai.log"};
             //            commandPath = new String[]{"bash", "-c", programPath + " "+ param};
         }
 
@@ -145,7 +144,7 @@ public class ProgramOpener
 
     public static boolean isProgramPathExist(String appPath)
     {
-        if(new File(appPath).exists() == false)
+        if(!new File(appPath).exists())
         {
             log.debug("Program not found - " + appPath);
 
