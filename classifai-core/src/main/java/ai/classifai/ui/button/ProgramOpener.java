@@ -118,7 +118,7 @@ public class ProgramOpener
 
         }else if(os.equals(OS.LINUX))
         {
-            commandPath = new String[]{"bash", "-c", programPath);// + " /usr/logs/classifai.log"};
+            commandPath = new String[]{"bash", "-c", programPath};// + " /usr/logs/classifai.log"};
             //            commandPath = new String[]{"bash", "-c", programPath + " "+ param};
         }
 
