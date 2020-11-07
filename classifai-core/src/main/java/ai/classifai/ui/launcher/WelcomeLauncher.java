@@ -49,7 +49,6 @@ public class WelcomeLauncher extends JFrame
     private final static String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
     private final static String LOG_BUTTON_FILE_NAME = "Log_Button.png";
 
-
     private final static int PANE_WIDTH = 640;
     private final static int PANE_HEIGHT = 480;
 
@@ -152,7 +151,8 @@ public class WelcomeLauncher extends JFrame
 
         openButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
                 ProgramOpener.launch(OS_MANAGER.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), true);
             }
         });

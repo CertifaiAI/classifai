@@ -53,6 +53,8 @@ public class ProgramOpener
 
     public static void launch(OS currentOS, Map<String, List<String>> programKey, String param, boolean isCommandPrompt)
     {
+        System.out.println("Debugging: Current OS " + currentOS.name());
+
         boolean programNotFound = true;//default as true
 
         if(programKey.containsKey(currentOS.name()))

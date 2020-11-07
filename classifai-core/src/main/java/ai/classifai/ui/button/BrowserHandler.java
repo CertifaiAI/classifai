@@ -58,7 +58,6 @@ public class BrowserHandler {
         winBrowserKey.add("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
         winBrowserKey.add("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
 
-
         List linuxBrowserKey = new ArrayList<String>();
 
         linuxBrowserKey.add("/usr/bin/firefox");
