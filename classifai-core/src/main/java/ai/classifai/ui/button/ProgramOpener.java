@@ -117,11 +117,6 @@ public class ProgramOpener
 
         }else if(os.equals(OS.LINUX))
         {
-
-            System.out.println(param);
-            param = "/root/logs/classifai.log";
-            System.out.println(param);
-
             commandPath = new String[]{"gio", "open", param};
         }
 
