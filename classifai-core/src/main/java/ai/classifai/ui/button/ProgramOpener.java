@@ -117,6 +117,11 @@ public class ProgramOpener
 
         }else if(os.equals(OS.LINUX))
         {
+
+            System.out.println(param);
+            param = "/root/logs/classifai.log";
+            System.out.println(param);
+
             commandPath = new String[]{"gio", "open", param};
         }
 
@@ -131,7 +136,7 @@ public class ProgramOpener
                 Runtime.getRuntime().exec(ConversionHandler.arrayString2String(commandPath));
             }
 
-            isProgramAbleToRun =  true; // reach here means can run, else throw exception
+            isProgramAbleToRun =  true;
         }
         catch(Exception e)
         {
