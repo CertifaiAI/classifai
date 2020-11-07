@@ -35,7 +35,7 @@ public class ParamConfig
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
+    private static final String LOG_FILE_PATH = System.getProperty("user.home") +  File.separator + "logs" + File.separator + "classifai.log";
 
     private final static String PROJECT_NAME_PARAM = "project_name";
     private final static String PROJECT_ID_PARAM = "project_id";
