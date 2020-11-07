@@ -71,6 +71,8 @@ public class ProgramOpener
             {
                 if((programNotFound == true) && (isProgramPathExist(browser)))
                 {
+                    System.out.println("Debugging: browser: " + browser);
+                    System.out.println("Debugging param: " + param);
                     if(runProgramPath(currentOS, browser, param, isCommandPrompt))
                     {
                         programNotFound = false;
