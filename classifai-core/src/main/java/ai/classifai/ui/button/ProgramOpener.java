@@ -117,8 +117,7 @@ public class ProgramOpener
 
         }else if(os.equals(OS.LINUX))
         {
-            commandPath = new String[]{"gio", "open", "/root/logs/classifai.log"};//"/root/logs/classifai.log"};// + " /usr/logs/classifai.log"};
-            //            commandPath = new String[]{"bash", "-c", programPath + " "+ param};
+            commandPath = new String[]{"gio", "open", param};
         }
 
         try
@@ -144,6 +143,10 @@ public class ProgramOpener
 
     public static boolean isProgramPathExist(String appPath)
     {
+        if(appPath.equals("default"))
+        {
+            return true;
+        }
         if(!new File(appPath).exists())
         {
             log.debug("Program not found - " + appPath);

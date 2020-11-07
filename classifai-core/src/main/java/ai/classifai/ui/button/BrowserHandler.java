@@ -60,7 +60,7 @@ public class BrowserHandler {
 
         List linuxBrowserKey = new ArrayList<String>();
 
-        linuxBrowserKey.add("/usr/bin/firefox");
+        linuxBrowserKey.add("default");
 
         browserKey.put(OS.MAC.name(), macBrowserKey);
         browserKey.put(OS.WINDOWS.name(), winBrowserKey);
