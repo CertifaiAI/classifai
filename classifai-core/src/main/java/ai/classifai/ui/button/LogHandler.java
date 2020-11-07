@@ -44,7 +44,7 @@ public class LogHandler
 
         List linuxEditorPath = new ArrayList<String>();
 
-        linuxEditorPath.add("");//""/usr/bin/gedit");
+        linuxEditorPath.add("/usr/bin/gedit");
 
         textEditorKey.put(OS.MAC.name(), null);
         textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
