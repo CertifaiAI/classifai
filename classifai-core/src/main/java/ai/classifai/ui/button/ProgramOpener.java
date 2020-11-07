@@ -55,8 +55,6 @@ public class ProgramOpener
 
     public static void launch(OS currentOS, Map<String, List<String>> programKey, String param, boolean isCommandPrompt)
     {
-        System.out.println("Debugging: Current OS " + currentOS.name());
-
         boolean programNotFound = true;//default as true
 
         if(programKey.containsKey(currentOS.name()))
@@ -72,8 +70,6 @@ public class ProgramOpener
             {
                 if(programNotFound && (isProgramPathExist(browser)))
                 {
-                    System.out.println("Debugging: browser: " + browser);
-                    System.out.println("Debugging param: " + param);
                     if(runProgramPath(currentOS, browser, param, isCommandPrompt))
                     {
                         programNotFound = false;
@@ -122,7 +118,7 @@ public class ProgramOpener
 
         try
         {
-            if(isOpenInPrompt)
+            if(isOpenInPrompt || os.equals(OS.LINUX))
             {
                 Runtime.getRuntime().exec(commandPath);
             }

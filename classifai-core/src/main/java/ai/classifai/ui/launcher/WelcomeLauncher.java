@@ -185,7 +185,7 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), true);
+                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), false);
             }
         });
     }

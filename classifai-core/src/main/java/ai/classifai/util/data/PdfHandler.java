@@ -42,8 +42,6 @@ public class PdfHandler
         String[] subString = pdfFilePath.split(File.separator);
         String fileNameWithExtension = subString[subString.length - 1];
 
-        System.out.println("Debugging: " + fileNameWithExtension);
-
         String[] separator = fileNameWithExtension.split("\\.");
 
         int fileEndIndex = pdfFilePath.length() -  separator[(separator.length - 1)].length() - 1;
