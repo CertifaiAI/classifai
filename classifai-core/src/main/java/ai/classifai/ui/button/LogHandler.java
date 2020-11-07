@@ -42,8 +42,12 @@ public class LogHandler
         winEditorPath.add("C:\\Windows\\System32\\notepad.exe");
         winEditorPath.add("C:\\Windows\\notepad.exe");
 
+        List linuxEditorPath = new ArrayList<String>();
+
+        linuxEditorPath.add("/bin/nano");
+
         textEditorKey.put(OS.MAC.name(), null);
         textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
-        textEditorKey.put(OS.LINUX.name(), null);
+        textEditorKey.put(OS.LINUX.name(), linuxEditorPath);
     }
 }

@@ -55,7 +55,7 @@ public class OSManager
         {
             return OS.WINDOWS;
         }
-        else if(osPropertyName.indexOf("linux") >= 0)
+        else if(osPropertyName.indexOf("linux") >= 0) //centos
         {
             return OS.LINUX;
         }
