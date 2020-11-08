@@ -1,6 +1,7 @@
 package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.util.data.FileHandler;
+import ai.classifai.util.data.PdfHandler;
 import ai.classifai.util.type.FileFormat;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +46,6 @@ class Task extends SwingWorker<Void, Void> {
 
         if(inputFormat.equals(FileFormat.PDF.getText()))
         {
-            /*
             int fileProcessed = 0;
             for(File file: inputFiles)
             {
@@ -54,10 +54,9 @@ class Task extends SwingWorker<Void, Void> {
                 progress = (int) (++fileProcessed / file.length() * 100);
 
                 setProgress(progress);
-                ConverterLauncher.appendTaskOutput(outputFileName + " completed.");
 
+                ConverterLauncher.appendTaskOutput(outputFileName + " completed.");
             }
-            */
         }
         else if(inputFormat.equals(FileFormat.TIF.getText()))
         {

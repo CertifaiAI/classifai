@@ -57,6 +57,8 @@ public class PdfHandler
     {
         PDDocument document = null;
 
+        String fileName = getFileName(pdfFileName.getAbsolutePath());
+
         try {
             document = PDDocument.load(pdfFileName);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
@@ -64,7 +66,6 @@ public class PdfHandler
             int maxPages = document.getNumberOfPages();
             if(maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
 
-            String fileName = getFileName(pdfFileName.getAbsolutePath());
 
             for (int page = 0; page < maxPages; ++page)
             {
@@ -109,6 +110,6 @@ public class PdfHandler
             }
 
         }
-        return null;
+        return fileName;
     }
 }

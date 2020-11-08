@@ -85,7 +85,6 @@ public class ConverterLauncher extends JPanel
     private Task task;
     private JFrame frame;
 
-
     static {
 
         String gap = "   ";
@@ -293,7 +292,7 @@ public class ConverterLauncher extends JPanel
         design(progressBar);
         design(convertButton);
 
-        //convertButton.addActionListener(this);
+        convertButton.addActionListener(this);
     }
 
     private void design(Object obj)
@@ -454,6 +453,7 @@ public class ConverterLauncher extends JPanel
     {
 
         String extensionRepresentative = ((String) inputFormatCombo.getSelectedItem()).trim();
+
         if(extensionRepresentative.equals(FileFormat.PDF.getUpperCase()))
         {
             return new String[]{"pdf"};
@@ -473,7 +473,7 @@ public class ConverterLauncher extends JPanel
 
     public static String getOutputFolderPath()
     {
-        String buffer = (String) outputFolderField.getText();
+        String buffer = outputFolderField.getText();
 
         if(buffer.equals(DEFAULT_OUTPUT_PATH))
         {
