@@ -15,6 +15,7 @@
  */
 package ai.classifai.util;
 
+import ai.classifai.ui.button.OSManager;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,10 +29,14 @@ import java.io.File;
  */
 public class ParamConfig
 {
+
     @Getter @Setter private static Integer hostingPort;
+    private final static OSManager OS_MANAGER;
 
     static
     {
+        OS_MANAGER = new OSManager();
+
         hostingPort = 9999;
     }
 
@@ -79,6 +84,7 @@ public class ParamConfig
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
 
+    public static OSManager getOSManager() { return OS_MANAGER; }
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
 

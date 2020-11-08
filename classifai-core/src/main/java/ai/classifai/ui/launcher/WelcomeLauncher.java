@@ -45,8 +45,6 @@ import static javax.swing.JOptionPane.showMessageDialog;
 @Slf4j
 public class WelcomeLauncher extends JFrame
 {
-    private final static OSManager OS_MANAGER;
-
     private final static String BUTTON_PATH = "/console/";
     private final static String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler_V2.jpg";
     private final static String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
@@ -80,8 +78,6 @@ public class WelcomeLauncher extends JFrame
 
     static
     {
-        OS_MANAGER = new OSManager();
-
         browserFailedMessage = "Initialization of url failed.\n" +
                                "Open classifai in chrome/firefox with http://localhost:" + ParamConfig.getHostingPort();
 
@@ -180,7 +176,7 @@ public class WelcomeLauncher extends JFrame
             {
                 boolean isOpen = false;
 
-                OS currentOS = OS_MANAGER.getCurrentOS();
+                OS currentOS = ParamConfig.getOSManager().getCurrentOS();
 
                 java.util.List<String> programPath = BrowserHandler.getOSBrowser(currentOS);
 
@@ -248,7 +244,7 @@ public class WelcomeLauncher extends JFrame
 
                 boolean isOpen = false;
 
-                OS currentOS = OS_MANAGER.getCurrentOS();
+                OS currentOS = ParamConfig.getOSManager().getCurrentOS();
 
                 java.util.List<String> programPath = LogHandler.getOSEditor(currentOS);
 

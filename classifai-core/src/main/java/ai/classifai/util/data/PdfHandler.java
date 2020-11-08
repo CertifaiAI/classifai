@@ -16,7 +16,11 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.ui.button.OSManager;
+import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
+import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.OS;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -39,16 +43,27 @@ public class PdfHandler
 
     private static String getFileName(@NonNull String pdfFilePath)
     {
-        String[] subString = pdfFilePath.split(File.separator);
+        String[] subString = pdfFilePath.split("/");
+
         String fileNameWithExtension = subString[subString.length - 1];
 
         String[] separator = fileNameWithExtension.split("\\.");
 
         int fileEndIndex = pdfFilePath.length() -  separator[(separator.length - 1)].length() - 1;
 
+        System.out.println("Debugging 4-: " + fileEndIndex);
+
+        System.out.println("pdfFilePath.length(): " + pdfFilePath.length());
+        System.out.println("fileNameWithExtension.length(): " + fileNameWithExtension.length());
+
         int fileStartIndex = pdfFilePath.length() - fileNameWithExtension.length() - 1;
 
+        System.out.println("Debugging 4-: " + fileStartIndex);
+
         String fileName = fileNameWithExtension.substring(fileStartIndex, fileEndIndex);
+
+        System.out.println("Debugging 4-: " + fileName);
+
 
         return fileName;
     }
@@ -60,16 +75,18 @@ public class PdfHandler
         String fileName = getFileName(pdfFileName.getAbsolutePath());
 
         try {
+            System.out.println("Debugging 2");
             document = PDDocument.load(pdfFileName);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
 
             int maxPages = document.getNumberOfPages();
             if(maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
 
-
             for (int page = 0; page < maxPages; ++page)
             {
                 String imageSavedFullPath = outputPath + File.separator + fileName + "_" + (page+1) + "." + extensionFormat;
+
+                System.out.println("Output Path: " + imageSavedFullPath);
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
