@@ -266,7 +266,7 @@ public class WelcomeLauncher extends JFrame
                         }
                         else if(currentOS.equals(OS.WINDOWS))
                         {
-                            command = new String[]{programPath + " " + logPath};
+                            command = new String[]{editor + " " + logPath};
                         }
                         else if(currentOS.equals(OS.LINUX))
                         {
