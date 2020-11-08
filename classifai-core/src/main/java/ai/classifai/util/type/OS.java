@@ -13,17 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
+package ai.classifai.util.type;
 
 /**
- * Types of Annotation
+ * OS Types
  *
  * @author codenamewei
  */
-public enum AnnotationType
+public enum OS
 {
-    BOUNDINGBOX,
-    SEGMENTATION
-    //TODO: Add on more techniques of annotation
+    WINDOWS,
+    MAC,
+    UBUNTU,
+    LINUX,
+    UNIX,
+    SOLARIS,
+    NULL
 }
-

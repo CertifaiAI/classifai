@@ -15,19 +15,10 @@
  */
 package ai.classifai.ui.button;
 
+import ai.classifai.util.type.OS;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-enum OS
-{
-    WINDOWS,
-    MAC,
-    UBUNTU,
-    LINUX,
-    UNIX,
-    SOLARIS,
-    NULL
-}
 
 /**
  * Handler to manage different os
@@ -55,7 +46,7 @@ public class OSManager
         {
             return OS.WINDOWS;
         }
-        else if(osPropertyName.indexOf("linux") >= 0) //centos
+        else if(osPropertyName.indexOf("linux") >= 0) //centos, ubuntu
         {
             return OS.LINUX;
         }

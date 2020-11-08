@@ -15,6 +15,7 @@
  */
 package ai.classifai.util;
 
+import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
 import lombok.Setter;
 

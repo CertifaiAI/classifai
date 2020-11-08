@@ -22,6 +22,7 @@ import ai.classifai.ui.button.OSManager;
 import ai.classifai.ui.button.ProgramOpener;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.OS;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -32,6 +33,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * GUI for starting classifai
@@ -72,6 +76,7 @@ public class WelcomeLauncher extends JFrame
     private static JButton logButton;
     private static JLabel backgroundLabel;
 
+    private static ImageIcon browserNotFoundIcon;
 
     static
     {
@@ -82,7 +87,6 @@ public class WelcomeLauncher extends JFrame
 
         logFailedMessage = "Log file failed to open in editor.\n" +
             "Find the log file in " + ParamConfig.getLogFilePath();
-
 
         configure();
     }
@@ -101,6 +105,17 @@ public class WelcomeLauncher extends JFrame
         setUpLogButton();
 
         setUpBackground();
+
+        try {
+
+            Image iconImage = ImageIO.read(BrowserHandler.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
+
+            browserNotFoundIcon = new ImageIcon(iconImage);
+        }
+        catch (Exception e)
+        {
+            log.info("Classifai icon for program path not found", e);
+        }
     }
 
 
@@ -163,7 +178,43 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), browserFailedMessage);
+                boolean isOpen = false;
+
+                OS currentOS = OS_MANAGER.getCurrentOS();
+
+                java.util.List<String> programPath = BrowserHandler.getOSBrowser(currentOS);
+
+                for(String browser : programPath)
+                {
+                    if(isProgramPathExist(browser))
+                    {
+                        String[] command = null;
+
+                        if(currentOS.equals(OS.MAC))
+                        {
+                            command = new String[]{"/usr/bin/open", "-a", browser, BrowserHandler.getBrowserURL()};
+                        }
+                        else if(currentOS.equals(OS.WINDOWS))
+                        {
+                            command = new String[]{browser + " " + BrowserHandler.getBrowserURL()};
+                        }
+                        else if(currentOS.equals(OS.LINUX))
+                        {
+                            command = new String[]{"gio", "open", BrowserHandler.getBrowserURL()};
+                        }
+
+                        if(ProgramOpener.runProgramPath(currentOS, command))
+                        {
+                            isOpen = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(!isOpen)
+                {
+                    failToOpenProgramPathMessage(browserFailedMessage);
+                }
             }
         });
     }
@@ -193,9 +244,47 @@ public class WelcomeLauncher extends JFrame
 
         logButton.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e){
 
-                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), logFailedMessage);
+                boolean isOpen = false;
+
+                OS currentOS = OS_MANAGER.getCurrentOS();
+
+                java.util.List<String> programPath = LogHandler.getOSEditor(currentOS);
+
+                for(String editor : programPath)
+                {
+                    if(isProgramPathExist(editor))
+                    {
+                        String[] command = null;
+
+                        String logPath = ParamConfig.getLogFilePath();
+
+                        if(currentOS.equals(OS.MAC))
+                        {
+                            command = new String[]{"/usr/bin/open", "-e", logPath};
+                        }
+                        else if(currentOS.equals(OS.WINDOWS))
+                        {
+                            command = new String[]{programPath + " " + logPath};
+                        }
+                        else if(currentOS.equals(OS.LINUX))
+                        {
+                            command = new String[]{"gio", "open", logPath};
+                        }
+
+                        if(ProgramOpener.runProgramPath(currentOS, command))
+                        {
+                            isOpen = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(!isOpen)
+                {
+                    failToOpenProgramPathMessage(logFailedMessage);
+                }
             }
         });
     }
@@ -315,4 +404,26 @@ public class WelcomeLauncher extends JFrame
         return dimg;
     }
 
+    private static void failToOpenProgramPathMessage(String message)
+    {
+        log.info(message);
+        showMessageDialog(null, message,
+                "Oops!", JOptionPane.INFORMATION_MESSAGE, browserNotFoundIcon);
+    }
+
+    private static boolean isProgramPathExist(String appPath)
+    {
+        if(appPath.equals("default"))
+        {
+            return true;
+        }
+        if(!new File(appPath).exists())
+        {
+            log.debug("Program not found - " + appPath);
+
+            return false;
+        }
+
+        return true;
+    }
 }

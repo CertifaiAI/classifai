@@ -13,41 +13,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
-
+package ai.classifai.util.type;
 
 /**
- * Image Format Supported
+ * Types of Annotation
  *
  * @author codenamewei
  */
-public enum FileFormat
+public enum AnnotationType
 {
-
-    jpg("jpg"),
-    JPG("JPG"),
-    JPEG("JPEG"),
-    jpeg("jpeg"),
-    png("png"),
-    PNG("PNG"),
-    BMP("bmp"),
-    PDF("pdf"),
-    TIF("tif"),
-    TIFF("tiff");
-
-
-    private final String text;
-
-    FileFormat(final String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getUpperCase()
-    {
-        return text.toUpperCase();
-    }
+    BOUNDINGBOX,
+    SEGMENTATION
+    //TODO: Add on more techniques of annotation
 }
+

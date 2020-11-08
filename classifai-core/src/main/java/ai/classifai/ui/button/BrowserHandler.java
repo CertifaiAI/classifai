@@ -16,7 +16,9 @@
 package ai.classifai.ui.button;
 
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.OS;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.Map;
 @Slf4j
 public class BrowserHandler {
 
-    @Getter private static Map<String, List<String>> browserKey;
+    private static Map<OS, List<String>> browserKey;
     @Getter private static String browserURL;
 
     static
@@ -62,9 +64,15 @@ public class BrowserHandler {
 
         linuxBrowserKey.add("default");
 
-        browserKey.put(OS.MAC.name(), macBrowserKey);
-        browserKey.put(OS.WINDOWS.name(), winBrowserKey);
-        browserKey.put(OS.LINUX.name(), linuxBrowserKey);
-        
+        browserKey.put(OS.MAC, macBrowserKey);
+        browserKey.put(OS.WINDOWS, winBrowserKey);
+        browserKey.put(OS.LINUX, linuxBrowserKey);
+    }
+
+    public static List getOSBrowser(@NonNull OS os)
+    {
+        if(!browserKey.containsKey(os)) return null;
+
+        return browserKey.get(os);
     }
 }

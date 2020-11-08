@@ -17,11 +17,10 @@ package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoHandler;
-import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;

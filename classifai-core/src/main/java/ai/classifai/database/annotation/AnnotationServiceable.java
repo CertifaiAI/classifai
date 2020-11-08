@@ -15,7 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.util.AnnotationType;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
