@@ -60,6 +60,9 @@ public class WelcomeLauncher extends JFrame
 
     private final static int X_GAP = 88;
 
+    private final static String browserFailedMessage;
+    private final static String logFailedMessage;
+
     private static JFrame mainFrame;
 
     private static JLabel runningStatusText;
@@ -73,6 +76,13 @@ public class WelcomeLauncher extends JFrame
     static
     {
         OS_MANAGER = new OSManager();
+
+        browserFailedMessage = "Initialization of url failed.\n" +
+                               "Open classifai in chrome/firefox with http://localhost:" + ParamConfig.getHostingPort();
+
+        logFailedMessage = "Log file failed to open in editor.\n" +
+            "Find the log file in " + ParamConfig.getLogFilePath();
+
 
         configure();
     }
@@ -153,7 +163,7 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL());
+                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), BrowserHandler.getBrowserKey(), BrowserHandler.getBrowserURL(), browserFailedMessage);
             }
         });
     }
@@ -185,7 +195,7 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath());
+                ProgramOpener.launch(OS_MANAGER.getCurrentOS(), LogHandler.getTextEditorKey(), ParamConfig.getLogFilePath(), logFailedMessage);
             }
         });
     }

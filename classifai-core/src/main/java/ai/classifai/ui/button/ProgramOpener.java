@@ -47,13 +47,13 @@ public class ProgramOpener
         }
         catch (Exception e)
         {
-            log.info("Classifai icon for Program Path Not Found is missing", e);
+            log.info("Classifai icon for program path not found", e);
         }
     }
 
     private ProgramOpener(){}
 
-    public static void launch(OS currentOS, Map<String, List<String>> programKey, String param)
+    public static void launch(OS currentOS, Map<String, List<String>> programKey, String param, String failMessage)
     {
         boolean programNotFound = true;//default as true
 
@@ -61,26 +61,24 @@ public class ProgramOpener
         {
             List<String> programList = programKey.get(currentOS.name());
 
-            if((programList == null) || (programList.isEmpty()))
+            if((programList != null) && (!programList.isEmpty()))
             {
-                failToOpenProgramPathMessage("Program for " + currentOS.name() + " cannot be found");
-            }
-
-            for(String browser : programList)
-            {
-                if(programNotFound && (isProgramPathExist(browser)))
+                for(String browser : programList)
                 {
-                    if(runProgramPath(currentOS, browser, param))
+                    if(programNotFound && (isProgramPathExist(browser)))
                     {
-                        programNotFound = false;
-                        break;
+                        if(runProgramPath(currentOS, browser, param))
+                        {
+                            programNotFound = false;
+                            break;
+                        }
                     }
                 }
             }
 
             if(programNotFound)
             {
-                failToOpenProgramPathMessage("Initialization of program path failed in current OS: " + currentOS.name());
+                failToOpenProgramPathMessage(failMessage);
             }
 
         }
@@ -98,6 +96,8 @@ public class ProgramOpener
 
         if(os.equals(OS.MAC))
         {
+            System.out.println("Debugging: " + programPath);
+            System.out.println("Debugging param : " + param);
             commandPath = new String[]{"/usr/bin/open", "-a", programPath, param};
         }
         else if(os.equals(OS.WINDOWS))
@@ -112,7 +112,7 @@ public class ProgramOpener
 
         try
         {
-            if(os.equals(OS.LINUX))
+            if(os.equals(OS.LINUX) || os.equals(OS.MAC))
             {
                 Runtime.getRuntime().exec(commandPath);
             }

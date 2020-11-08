@@ -46,6 +46,9 @@ public class LogHandler
 
         linuxEditorPath.add("default");
 
+        List maxEditorPath = new ArrayList<String>();
+        maxEditorPath.add("default");
+
         textEditorKey.put(OS.MAC.name(), null);
         textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
         textEditorKey.put(OS.LINUX.name(), linuxEditorPath);
