@@ -43,9 +43,11 @@ public class PdfHandler
 
     private static String getFileName(@NonNull String pdfFilePath)
     {
-        String[] subString = pdfFilePath.split("/");
+        String[] subString = pdfFilePath.split("\\\\");
 
         String fileNameWithExtension = subString[subString.length - 1];
+
+        System.out.println("FileNameWithExtension: " + fileNameWithExtension);
 
         String[] separator = fileNameWithExtension.split("\\.");
 
