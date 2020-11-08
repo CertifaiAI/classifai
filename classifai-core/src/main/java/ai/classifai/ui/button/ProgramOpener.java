@@ -53,7 +53,7 @@ public class ProgramOpener
 
     private ProgramOpener(){}
 
-    public static void launch(OS currentOS, Map<String, List<String>> programKey, String param, boolean isCommandPrompt)
+    public static void launch(OS currentOS, Map<String, List<String>> programKey, String param)
     {
         boolean programNotFound = true;//default as true
 
@@ -70,7 +70,7 @@ public class ProgramOpener
             {
                 if(programNotFound && (isProgramPathExist(browser)))
                 {
-                    if(runProgramPath(currentOS, browser, param, isCommandPrompt))
+                    if(runProgramPath(currentOS, browser, param))
                     {
                         programNotFound = false;
                         break;
@@ -91,7 +91,7 @@ public class ProgramOpener
         }
     }
 
-    public static boolean runProgramPath(OS os, String programPath, String param, boolean isOpenInPrompt)
+    public static boolean runProgramPath(OS os, String programPath, String param)
     {
         boolean isProgramAbleToRun = false;
         String[] commandPath = null;
@@ -102,14 +102,8 @@ public class ProgramOpener
         }
         else if(os.equals(OS.WINDOWS))
         {
-            if(isOpenInPrompt)
-            {
-                commandPath = new String[]{"cmd", "/c", "start \"" + programPath + "\" " + param};
-            }
-            else
-            {
-                commandPath = new String[]{programPath + " " + param};
-            }
+            //commandPath = new String[]{"cmd", "/c", "start \"" + programPath + "\" " + param};
+            commandPath = new String[]{programPath + " " + param};
 
         }else if(os.equals(OS.LINUX))
         {
@@ -118,7 +112,7 @@ public class ProgramOpener
 
         try
         {
-            if(isOpenInPrompt || os.equals(OS.LINUX))
+            if(os.equals(OS.LINUX))
             {
                 Runtime.getRuntime().exec(commandPath);
             }
