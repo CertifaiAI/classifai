@@ -48,7 +48,7 @@ public class ParamConfig
         }
         else
         {
-            FILE_SEPARATOR = File.separator;
+            FILE_SEPARATOR = "\\\\";//File.separator;
         }
     }
 

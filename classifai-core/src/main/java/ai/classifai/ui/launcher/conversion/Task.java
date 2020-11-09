@@ -136,7 +136,6 @@ public class Task extends SwingWorker<Void, Void> {
     public void done()
     {
         ConverterLauncher.enableConvertButton();
-
        //ConverterLauncher.getTaskOutput().append("Completed!\n");
     }
 }
