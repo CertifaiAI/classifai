@@ -18,7 +18,6 @@ package ai.classifai.util.data;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
-import ai.classifai.util.ParamConfig;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
