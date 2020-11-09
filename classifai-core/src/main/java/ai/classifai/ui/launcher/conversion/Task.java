@@ -48,16 +48,13 @@ class Task extends SwingWorker<Void, Void> {
             int fileProcessed = 0;
             for(File file: inputFiles)
             {
-                System.out.println("File. " + file.getAbsolutePath());
                 String outputFileName = PdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
-
-                System.out.println("Output File Name: " + outputFileName);
 
                 progress = (int) (++fileProcessed / inputFiles.size() * 100);
 
                 setProgress(progress);
 
-                ConverterLauncher.appendTaskOutput(outputFileName + " completed.");
+                ConverterLauncher.appendTaskOutput(outputFileName);
             }
         }
         else if(inputFormat.equals(FileFormat.TIF.getText()))

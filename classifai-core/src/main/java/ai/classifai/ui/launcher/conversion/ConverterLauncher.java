@@ -149,7 +149,6 @@ public class ConverterLauncher extends JPanel
         return outputFormat.trim().toLowerCase();
     }
 
-
     public void start()
     {
         frame = new JFrame("Files Format Converter");

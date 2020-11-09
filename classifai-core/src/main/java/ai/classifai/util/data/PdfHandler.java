@@ -16,8 +16,6 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.ui.button.OSManager;
-import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.OS;
@@ -40,32 +38,33 @@ import java.io.File;
 public class PdfHandler
 {
     private static final Integer DOTS_PER_INCH = 300; //standard dots per inch is 300
+    private static final String FILE_SEPARATOR;
+
+    static
+    {
+
+        if(ParamConfig.getOSManager().getCurrentOS().equals(OS.WINDOWS))
+        {
+            FILE_SEPARATOR = "\\\\";
+        }
+        else
+        {
+            FILE_SEPARATOR = File.separator;
+        }
+    }
 
     private static String getFileName(@NonNull String pdfFilePath)
     {
-        String[] subString = pdfFilePath.split("\\\\");
+        String[] subString = pdfFilePath.split(FILE_SEPARATOR);
 
         String fileNameWithExtension = subString[subString.length - 1];
-
-        System.out.println("FileNameWithExtension: " + fileNameWithExtension);
 
         String[] separator = fileNameWithExtension.split("\\.");
 
         int fileEndIndex = pdfFilePath.length() -  separator[(separator.length - 1)].length() - 1;
+        int fileStartIndex = pdfFilePath.length() - fileNameWithExtension.length();
 
-        System.out.println("Debugging 4-: " + fileEndIndex);
-
-        System.out.println("pdfFilePath.length(): " + pdfFilePath.length());
-        System.out.println("fileNameWithExtension.length(): " + fileNameWithExtension.length());
-
-        int fileStartIndex = pdfFilePath.length() - fileNameWithExtension.length() - 1;
-
-        System.out.println("Debugging 4-: " + fileStartIndex);
-
-        String fileName = fileNameWithExtension.substring(fileStartIndex, fileEndIndex);
-
-        System.out.println("Debugging 4-: " + fileName);
-
+        String fileName = pdfFilePath.substring(fileStartIndex, fileEndIndex);
 
         return fileName;
     }
@@ -77,7 +76,6 @@ public class PdfHandler
         String fileName = getFileName(pdfFileName.getAbsolutePath());
 
         try {
-            System.out.println("Debugging 2");
             document = PDDocument.load(pdfFileName);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
 
@@ -86,9 +84,7 @@ public class PdfHandler
 
             for (int page = 0; page < maxPages; ++page)
             {
-                String imageSavedFullPath = outputPath + File.separator + fileName + "_" + (page+1) + "." + extensionFormat;
-
-                System.out.println("Output Path: " + imageSavedFullPath);
+                String imageSavedFullPath = outputPath + File.separator +  fileName + "_" + (page+1) + "." + extensionFormat;
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
@@ -129,6 +125,6 @@ public class PdfHandler
             }
 
         }
-        return fileName;
+        return fileName + ".pdf";
     }
 }
