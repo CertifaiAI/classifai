@@ -17,6 +17,7 @@ package ai.classifai.util;
 
 import ai.classifai.ui.button.OSManager;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.OS;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +32,8 @@ public class ParamConfig
 {
 
     @Getter @Setter private static Integer hostingPort;
+
+    private static final String FILE_SEPARATOR;
     private final static OSManager OS_MANAGER;
 
     static
@@ -38,6 +41,15 @@ public class ParamConfig
         OS_MANAGER = new OSManager();
 
         hostingPort = 9999;
+
+        if(OS_MANAGER.getCurrentOS().equals(OS.WINDOWS))
+        {
+            FILE_SEPARATOR = "\\\\";
+        }
+        else
+        {
+            FILE_SEPARATOR = File.separator;
+        }
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
@@ -85,6 +97,9 @@ public class ParamConfig
     private final static String PROGRESS_METADATA = "progress";
 
     public static OSManager getOSManager() { return OS_MANAGER; }
+
+    public static String getFileSeparator(){ return FILE_SEPARATOR; }
+
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
 

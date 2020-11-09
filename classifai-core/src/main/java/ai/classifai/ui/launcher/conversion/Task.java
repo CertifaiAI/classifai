@@ -2,6 +2,7 @@ package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.PdfHandler;
+import ai.classifai.util.data.TifHandler;
 import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,6 @@ public class Task extends SwingWorker<Void, Void> {
     @Override
     public Void doInBackground()
     {
-        PdfHandler pdfHandler = new PdfHandler();
         //iterate to get number of files
 
         String[] inputExtension = ConverterLauncher.getInputExtension();
@@ -44,7 +44,7 @@ public class Task extends SwingWorker<Void, Void> {
 
         if(inputFiles.isEmpty())
         {
-            ConverterLauncher.appendTaskOutput("Done!");
+            ConverterLauncher.appendTaskOutput("Input file lists empty. Task completed!");
             return null;
         }
 
@@ -56,27 +56,49 @@ public class Task extends SwingWorker<Void, Void> {
 
         int progress = 0;
         //Initialize progress property.
-        setProgress(0);
+        setProgress(progress);
+
+        int fileProcessed = 0;
 
         if(inputFormat.equals(FileFormat.PDF.getText()))
         {
-            int fileProcessed = 0;
+            PdfHandler pdfHandler = new PdfHandler();
+
             for(File file: inputFiles)
             {
                 if(isStop) break;
 
-                String outputFileName = pdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
+                ConverterLauncher.appendTaskOutput(file.getName());
+
+                String message = pdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
+
+                if(message != null) ConverterLauncher.appendTaskOutput(message);
 
                 progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
 
                 setProgress(Math.min(progress, 100));
 
-                ConverterLauncher.appendTaskOutput(outputFileName);
             }
         }
         else if(inputFormat.equals(FileFormat.TIF.getText()))
         {
-            log.info("TIF Conversion");
+            TifHandler tifHandler = new TifHandler();
+
+            for(File file: inputFiles)
+            {
+                if(isStop) break;
+
+                ConverterLauncher.appendTaskOutput(file.getName());
+
+                String message = tifHandler.saveTif2Image(file, outputFolderPath, outputFormat);
+
+                if(message != null) ConverterLauncher.appendTaskOutput(message);
+
+                progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
+
+                setProgress(Math.min(progress, 100));
+
+            }
         }
         else
         {
@@ -85,35 +107,6 @@ public class Task extends SwingWorker<Void, Void> {
         }
 
         done();
-
-        /*
-        if(false)
-        {
-            Random random = new Random();
-
-            int progress = 0;
-            //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
-
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
-
-            while (progress < 100)
-            {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
-
-                setProgress(Math.min(progress, 100));
-            }
-        }
-
-        */
 
         return null;
     }
@@ -124,7 +117,6 @@ public class Task extends SwingWorker<Void, Void> {
     {
         ConverterLauncher.enableConvertButton();
 
-
-        ConverterLauncher.getTaskOutput().append("Done!\n");
+       //ConverterLauncher.getTaskOutput().append("Completed!\n");
     }
 }

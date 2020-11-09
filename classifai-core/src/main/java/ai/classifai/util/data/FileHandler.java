@@ -1,5 +1,6 @@
 package ai.classifai.util.data;
 
+import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 
 import java.io.File;
@@ -55,5 +56,21 @@ public class FileHandler
             }
         }
         return false;
+    }
+
+    public static String getFileName(@NonNull String filePath)
+    {
+        String[] subString = filePath.split(ParamConfig.getFileSeparator());
+
+        String fileNameWithExtension = subString[subString.length - 1];
+
+        String[] separator = fileNameWithExtension.split("\\.");
+
+        int fileEndIndex = filePath.length() -  separator[(separator.length - 1)].length() - 1;
+        int fileStartIndex = filePath.length() - fileNameWithExtension.length();
+
+        String fileName = filePath.substring(fileStartIndex, fileEndIndex);
+
+        return fileName;
     }
 }

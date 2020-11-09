@@ -244,7 +244,7 @@ public class ConverterLauncher extends JPanel
         outputFolderField.setText(DEFAULT_OUTPUT_PATH);
 
         inputFormatCombo.setSelectedIndex(0);
-        outputFormatCombo.setSelectedIndex(0);
+        outputFormatCombo.setSelectedIndex(1);
 
         convertButton.setOpaque(true);
 
