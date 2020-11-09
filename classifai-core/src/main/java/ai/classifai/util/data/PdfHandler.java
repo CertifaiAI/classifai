@@ -37,12 +37,11 @@ import java.io.File;
 @Slf4j
 public class PdfHandler
 {
-    private static final Integer DOTS_PER_INCH = 300; //standard dots per inch is 300
-    private static final String FILE_SEPARATOR;
+    private final Integer DOTS_PER_INCH = 300; //standard dots per inch is 300
+    private final String FILE_SEPARATOR;
 
-    static
+    public PdfHandler()
     {
-
         if(ParamConfig.getOSManager().getCurrentOS().equals(OS.WINDOWS))
         {
             FILE_SEPARATOR = "\\\\";
@@ -53,7 +52,7 @@ public class PdfHandler
         }
     }
 
-    private static String getFileName(@NonNull String pdfFilePath)
+    private String getFileName(@NonNull String pdfFilePath)
     {
         String[] subString = pdfFilePath.split(FILE_SEPARATOR);
 
@@ -69,7 +68,7 @@ public class PdfHandler
         return fileName;
     }
 
-    public static String savePdf2Image(@NonNull File pdfFileName, @NonNull String outputPath, @NonNull String extensionFormat)
+    public String savePdf2Image(@NonNull File pdfFileName, @NonNull String outputPath, @NonNull String extensionFormat)
     {
         PDDocument document = null;
 

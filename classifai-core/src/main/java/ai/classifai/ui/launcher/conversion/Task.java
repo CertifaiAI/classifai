@@ -48,7 +48,7 @@ class Task extends SwingWorker<Void, Void> {
             int fileProcessed = 0;
             for(File file: inputFiles)
             {
-                String outputFileName = PdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
+                String outputFileName = new PdfHandler().savePdf2Image(file, outputFolderPath, outputFormat);
 
                 progress = (int) (++fileProcessed / inputFiles.size() * 100);
 

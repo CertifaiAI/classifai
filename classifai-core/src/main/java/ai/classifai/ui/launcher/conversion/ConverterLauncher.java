@@ -167,6 +167,10 @@ public class ConverterLauncher extends JPanel
             public void windowClosing(WindowEvent e)
             {
                 isOpened = false;
+                if(task != null)
+                {
+                    task.cancel(true);
+                }
             }
         });
 
@@ -402,11 +406,9 @@ public class ConverterLauncher extends JPanel
      */
     public void actionPerformed(ActionEvent evt)
     {
-
         convertButton.setEnabled(false);
         convertButton.setForeground(Color.LIGHT_GRAY);
         progressBar.setIndeterminate(true);
-
 
         task = new Task();
         task.addPropertyChangeListener(this::propertyChange);
