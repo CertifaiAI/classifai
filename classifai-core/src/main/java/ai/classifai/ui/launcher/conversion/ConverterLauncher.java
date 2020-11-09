@@ -251,14 +251,15 @@ public class ConverterLauncher extends JPanel
         design(outputFolderLabel);
 
         design(inputFolderField);
-        inputFolderField.setEditable(false);
         inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath() + File.separator + "Desktop");
 
-        Dimension folderDimension = new Dimension(100, ELEMENT_HEIGHT - 10);
+        design(outputFolderField);
+
+        /*Dimension folderDimension = new Dimension(100, ELEMENT_HEIGHT - 10);
         inputFolderField.setPreferredSize(folderDimension);
 
-        design(outputFolderField);
         outputFolderField.setPreferredSize(folderDimension);
+         */
 
         design(inputBrowserButton);
         inputBrowserButton.addActionListener(new InputFolderListener());
@@ -352,7 +353,6 @@ public class ConverterLauncher extends JPanel
 
             progressBar.setForeground(Color.GREEN);
             progressBar.setPreferredSize(dimension);
-
 
             progressBar.setBorderPainted(true);
 
