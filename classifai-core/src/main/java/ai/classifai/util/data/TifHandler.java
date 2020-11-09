@@ -40,15 +40,15 @@ import java.util.List;
 @NoArgsConstructor
 public class TifHandler
 {
-    public String saveTif2Image(@NonNull File tifFileName, @NonNull String outputPath, @NonNull String extensionFormat)
+    public String saveTif2Image(@NonNull File tifFullPath, String outputPath, @NonNull String extensionFormat)
     {
         String message = null;
-        String fileName = FileHandler.getFileName(tifFileName.getAbsolutePath());
+        String fileName = FileHandler.getFileName(tifFullPath.getAbsolutePath());
 
         try {
             List<File> tif2Images = new ArrayList<>();
 
-            ImageInputStream is = ImageIO.createImageInputStream(tifFileName);
+            ImageInputStream is = ImageIO.createImageInputStream(tifFullPath);
             if (is == null || is.length() == 0){
                 return message;
             }
@@ -69,7 +69,17 @@ public class TifHandler
             {
                 if(Task.isStop()) break;
 
-                String imageSavedFullPath = outputPath + File.separator +  fileName + "_" + (page+1) + "." + extensionFormat;
+                String savedPath;
+                if(outputPath == null)
+                {
+                    savedPath = FileHandler.getAbsolutePath(tifFullPath);
+                }
+                else
+                {
+                    savedPath = outputPath;
+                }
+
+                String imageSavedFullPath = savedPath + File.separator +  fileName + "_" + (page+1) + "." + extensionFormat;
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
@@ -88,7 +98,7 @@ public class TifHandler
                     if(!bSavedSuccess)
                     {
                         String messageHeader = "Save TIF image failed: ";
-                        message = messageHeader + tifFileName.getName();
+                        message = messageHeader + tifFullPath.getName();
                         log.info(messageHeader + fImageSavedFullPath);
                         throw new Exception(messageHeader + fImageSavedFullPath);
                     }
@@ -102,7 +112,7 @@ public class TifHandler
         }
         catch(Exception e)
         {
-            log.info("Tif Skipped. Failed in reading tif of file: " + tifFileName, e);
+            log.info("Tif Skipped. Failed in reading tif of file: " + tifFullPath, e);
         }
         return message;
     }

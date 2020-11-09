@@ -484,7 +484,7 @@ public class ConverterLauncher extends JPanel
 
         if(buffer.equals(DEFAULT_OUTPUT_PATH))
         {
-            buffer = inputFolderField.getText();
+            return null; // for same path
         }
 
         return buffer;

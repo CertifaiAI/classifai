@@ -58,6 +58,19 @@ public class FileHandler
         return false;
     }
 
+    public static String getAbsolutePath(@NonNull File filePath)
+    {
+        String fullPath = filePath.getAbsolutePath();
+
+        String[] subString = fullPath.split(ParamConfig.getFileSeparator());
+
+        String fileNameWithExtension = subString[subString.length - 1];
+
+        int fileStartIndex = fullPath.length() - fileNameWithExtension.length();
+
+        return fullPath.substring(0, fileStartIndex);
+    }
+
     public static String getFileName(@NonNull String filePath)
     {
         String[] subString = filePath.split(ParamConfig.getFileSeparator());

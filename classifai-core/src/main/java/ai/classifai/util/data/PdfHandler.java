@@ -40,15 +40,15 @@ public class PdfHandler
 {
     private final Integer DOTS_PER_INCH = 300; //standard dots per inch is 300
 
-    public String savePdf2Image(@NonNull File pdfFileName, @NonNull String outputPath, @NonNull String extensionFormat)
+    public String savePdf2Image(@NonNull File pdfFullPath, String outputPath, @NonNull String extensionFormat)
     {
         String message = null;
 
         PDDocument document = null;
 
-        String fileName = FileHandler.getFileName(pdfFileName.getAbsolutePath());
+        String fileName = FileHandler.getFileName(pdfFullPath.getAbsolutePath());
         try {
-            document = PDDocument.load(pdfFileName);
+            document = PDDocument.load(pdfFullPath);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
 
             int maxPages = document.getNumberOfPages();
@@ -58,7 +58,18 @@ public class PdfHandler
             {
                 if(Task.isStop()) break;
 
-                String imageSavedFullPath = outputPath + File.separator +  fileName + "_" + (page+1) + "." + extensionFormat;
+                String savedPath;
+
+                if(outputPath == null)
+                {
+                    savedPath = FileHandler.getAbsolutePath(pdfFullPath);
+                }
+                else
+                {
+                    savedPath = outputPath;
+                }
+
+                String imageSavedFullPath = savedPath + File.separator +  fileName + "_" + (page+1) + "." + extensionFormat;
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
@@ -84,9 +95,9 @@ public class PdfHandler
         {
             String messageHeader = "PDF Skipped. Failed in reading pdf of file: ";
 
-            message = messageHeader + pdfFileName.getName();
+            message = messageHeader + pdfFullPath.getName();
 
-            log.info(messageHeader + pdfFileName, e);
+            log.info(messageHeader + pdfFullPath, e);
         }
         finally
         {
