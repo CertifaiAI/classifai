@@ -77,7 +77,9 @@ public class ConverterLauncher extends JPanel
     private JScrollPane progressPane;
 
     private JProgressBar progressBar = new JProgressBar(0, 100);
-    @Getter private static JButton convertButton = new JButton("Convert");
+    private static JButton convertButton = new JButton("Convert");
+
+    private static boolean isConvertButtonClicked = false;
 
     private Task task;
     private JFrame frame;
@@ -400,9 +402,6 @@ public class ConverterLauncher extends JPanel
         });
     }
 
-
-
-
     public static void appendTaskOutput(@NonNull String message)
     {
         taskOutput.append(message + "\n");
@@ -413,15 +412,18 @@ public class ConverterLauncher extends JPanel
     {
         public void actionPerformed(ActionEvent e)
         {
-            System.out.println("Convert button pressed");
+            if(!isConvertButtonClicked) //prevent multiple clicks
+            {
+                task = new Task();
+                task.addPropertyChangeListener(this::propertyChange);
+                task.execute();
 
-            task = new Task();
-            task.addPropertyChangeListener(this::propertyChange);
-            task.execute();
+                convertButton.setEnabled(false);
+                convertButton.setForeground(Color.LIGHT_GRAY);
+                progressBar.setIndeterminate(true);
 
-            convertButton.setEnabled(false);
-            convertButton.setForeground(Color.LIGHT_GRAY);
-            progressBar.setIndeterminate(true);
+                isConvertButtonClicked = true;
+            }
         }
 
         /**
@@ -486,5 +488,13 @@ public class ConverterLauncher extends JPanel
         }
 
         return buffer;
+    }
+
+    public static void enableConvertButton()
+    {
+        convertButton.setForeground(Color.BLACK);
+        convertButton.setEnabled(true);
+
+        isConvertButtonClicked = false;
     }
 }

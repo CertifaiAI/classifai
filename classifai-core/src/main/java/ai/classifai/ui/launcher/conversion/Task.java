@@ -122,10 +122,8 @@ public class Task extends SwingWorker<Void, Void> {
      */
     public void done()
     {
-        JButton convertButton = ConverterLauncher.getConvertButton();
+        ConverterLauncher.enableConvertButton();
 
-        convertButton.setForeground(Color.BLACK);
-        convertButton.setEnabled(true);
 
         ConverterLauncher.getTaskOutput().append("Done!\n");
     }
