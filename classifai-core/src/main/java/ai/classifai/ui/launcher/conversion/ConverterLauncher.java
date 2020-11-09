@@ -226,7 +226,6 @@ public class ConverterLauncher extends JPanel
         constraints.gridx = 0; constraints.gridy = 4;
         panel.add(progressBar, constraints);
 
-
         constraints.gridwidth = 1;
         constraints.gridx = 3; constraints.gridy = 4;
         panel.add(convertButton, constraints);
@@ -320,6 +319,7 @@ public class ConverterLauncher extends JPanel
             textField.setFont(font);
             textField.setBackground(Color.WHITE);
             textField.setEditable(false);
+            textField.setPreferredSize(new Dimension(TEXT_FIELD_LENGTH, 1));
         }
         else if(obj instanceof JButton)
         {
@@ -395,7 +395,6 @@ public class ConverterLauncher extends JPanel
 
                 configure();
                 start();
-
 
                 frame.setVisible(true);
             }
