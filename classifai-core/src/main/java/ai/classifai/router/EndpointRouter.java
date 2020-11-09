@@ -665,7 +665,7 @@ public class EndpointRouter extends AbstractVerticle
                 });
             } catch( Exception e)
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Null value have been updated in project: " + projectName +". "+e));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
             }
         });
     }
@@ -707,7 +707,7 @@ public class EndpointRouter extends AbstractVerticle
                 });
             }catch(Exception e)
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Null values have been updated in project, "+e));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
             }
         });
     }
@@ -772,7 +772,7 @@ public class EndpointRouter extends AbstractVerticle
                 });
             }catch(Exception e)
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Null label have been updated in project: " + projectName +". "+e));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
 
             }
         });
