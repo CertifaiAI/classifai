@@ -3,6 +3,7 @@ package ai.classifai.ui.launcher.conversion;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.PdfHandler;
 import ai.classifai.util.type.FileFormat;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -11,13 +12,27 @@ import java.io.File;
 
 
 @Slf4j
-class Task extends SwingWorker<Void, Void> {
+public class Task extends SwingWorker<Void, Void> {
     /*
      * Main task. Executed in background thread.
      */
+    @Getter
+    private static boolean isStop = false;
+
+    public static void stop()
+    {
+        isStop = true;
+    }
+
+    public Task()
+    {
+        isStop = false;
+    }
+
     @Override
     public Void doInBackground()
     {
+        PdfHandler pdfHandler = new PdfHandler();
         //iterate to get number of files
 
         String[] inputExtension = ConverterLauncher.getInputExtension();
@@ -48,7 +63,9 @@ class Task extends SwingWorker<Void, Void> {
             int fileProcessed = 0;
             for(File file: inputFiles)
             {
-                String outputFileName = new PdfHandler().savePdf2Image(file, outputFolderPath, outputFormat);
+                if(isStop) break;
+
+                String outputFileName = pdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
 
                 progress = (int) (++fileProcessed / inputFiles.size() * 100);
 
@@ -74,7 +91,6 @@ class Task extends SwingWorker<Void, Void> {
         {
             Random random = new Random();
 
-
             int progress = 0;
             //Initialize progress property.
             setProgress(0);
@@ -95,7 +111,6 @@ class Task extends SwingWorker<Void, Void> {
 
                 setProgress(Math.min(progress, 100));
             }
-
         }
 
         */

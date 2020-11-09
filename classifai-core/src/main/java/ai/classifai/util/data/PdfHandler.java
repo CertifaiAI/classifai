@@ -17,6 +17,7 @@ package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
+import ai.classifai.ui.launcher.conversion.Task;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.OS;
 import lombok.NonNull;
@@ -83,6 +84,8 @@ public class PdfHandler
 
             for (int page = 0; page < maxPages; ++page)
             {
+                if(Task.isStop()) break;
+
                 String imageSavedFullPath = outputPath + File.separator +  fileName + "_" + (page+1) + "." + extensionFormat;
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);

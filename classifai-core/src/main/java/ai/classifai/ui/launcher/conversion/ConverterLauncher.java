@@ -32,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 
 /**
@@ -42,8 +41,6 @@ import java.io.File;
  */
 @Slf4j
 public class ConverterLauncher extends JPanel
-        implements ActionListener,
-        PropertyChangeListener
 {
     private ConverterFolderSelector inputFolderSelector;
     private ConverterFolderSelector outputFolderSelector;
@@ -169,6 +166,7 @@ public class ConverterLauncher extends JPanel
                 isOpened = false;
                 if(task != null)
                 {
+                    Task.stop();
                     task.cancel(true);
                 }
             }
@@ -237,7 +235,6 @@ public class ConverterLauncher extends JPanel
         frame.setResizable(false);
         frame.pack();
         frame.setLocationRelativeTo(null);
-
     }
 
     private void configure()
@@ -288,6 +285,7 @@ public class ConverterLauncher extends JPanel
             protected Color getSelectionForeground() { return Color.BLACK; }
         });
 
+
         //Call setStringPainted now so that the progress bar height
         //stays the same whether or not the string is shown.
         progressBar.setStringPainted(true);
@@ -295,7 +293,8 @@ public class ConverterLauncher extends JPanel
         design(progressBar);
         design(convertButton);
 
-        convertButton.addActionListener(this);
+        convertButton.addActionListener(new ConvertButtonListener());
+
     }
 
     private void design(Object obj)
@@ -356,7 +355,7 @@ public class ConverterLauncher extends JPanel
 
             progressBar.setBorderPainted(true);
 
-                Border border = BorderFactory.createEtchedBorder(0);
+            Border border = BorderFactory.createEtchedBorder(0);
             progressBar.setBorder(border);
         }
         else if(obj instanceof JComponent)
@@ -401,35 +400,8 @@ public class ConverterLauncher extends JPanel
         });
     }
 
-    /**
-     * Invoked when the user presses the start button.
-     */
-    public void actionPerformed(ActionEvent evt)
-    {
-        convertButton.setEnabled(false);
-        convertButton.setForeground(Color.LIGHT_GRAY);
-        progressBar.setIndeterminate(true);
-
-        task = new Task();
-        task.addPropertyChangeListener(this::propertyChange);
-        task.execute();
-    }
 
 
-    /**
-     * Invoked when task's progress property changes.
-     */
-    public void propertyChange(PropertyChangeEvent evt)
-    {
-        if ("progress" == evt.getPropertyName())
-        {
-            int progress = (Integer) evt.getNewValue();
-            progressBar.setIndeterminate(false);
-            progressBar.setValue(progress);
-
-            //taskOutput.append(String.format("Completed %d%% of task.\n", progress));
-        }
-    }
 
     public static void appendTaskOutput(@NonNull String message)
     {
@@ -437,6 +409,36 @@ public class ConverterLauncher extends JPanel
         log.debug(message);
     }
 
+    class ConvertButtonListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            System.out.println("Convert button pressed");
+
+            task = new Task();
+            task.addPropertyChangeListener(this::propertyChange);
+            task.execute();
+
+            convertButton.setEnabled(false);
+            convertButton.setForeground(Color.LIGHT_GRAY);
+            progressBar.setIndeterminate(true);
+        }
+
+        /**
+         * Invoked when task's progress property changes.
+         */
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if ("progress" == evt.getPropertyName())
+            {
+                int progress = (Integer) evt.getNewValue();
+                progressBar.setIndeterminate(false);
+                progressBar.setValue(progress);
+
+                //taskOutput.append(String.format("Completed %d%% of task.\n", progress));
+            }
+        }
+    }
     class InputFolderListener implements ActionListener {
         public void actionPerformed(ActionEvent e)
         {
