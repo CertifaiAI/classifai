@@ -319,7 +319,6 @@ public class ConverterLauncher extends JPanel
             textField.setFont(font);
             textField.setBackground(Color.WHITE);
             textField.setEditable(false);
-            textField.setPreferredSize(new Dimension(TEXT_FIELD_LENGTH, 1));
         }
         else if(obj instanceof JButton)
         {
