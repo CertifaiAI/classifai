@@ -47,7 +47,6 @@ public class PdfHandler
         PDDocument document = null;
 
         String fileName = FileHandler.getFileName(pdfFileName.getAbsolutePath());
-
         try {
             document = PDDocument.load(pdfFileName);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
