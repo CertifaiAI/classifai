@@ -646,21 +646,27 @@ public class EndpointRouter extends AbstractVerticle
         {
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), BoundingBoxDbQuery.updateData());
 
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
-
-            vertx.eventBus().request(BoundingBoxDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
+            try
             {
-                if (fetch.succeeded()) {
-                    JsonObject response = (JsonObject) fetch.result().body();
 
-                    HTTPResponseHandler.configureOK(context, response);
+                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
 
-                }
-                else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project: " + projectName));
-                }
-            });
+                vertx.eventBus().request(BoundingBoxDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
+                {
+                    if (fetch.succeeded()) {
+                        JsonObject response = (JsonObject) fetch.result().body();
+
+                        HTTPResponseHandler.configureOK(context, response);
+
+                    } else {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project: " + projectName));
+                    }
+                });
+            } catch( Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
+            }
         });
     }
 
@@ -683,21 +689,26 @@ public class EndpointRouter extends AbstractVerticle
         {
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), SegDbQuery.updateData());
 
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+            try {
 
-            vertx.eventBus().request(SegDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
+                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+
+                vertx.eventBus().request(SegDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
+                {
+                    if (fetch.succeeded()) {
+                        JsonObject response = (JsonObject) fetch.result().body();
+
+                        HTTPResponseHandler.configureOK(context, response);
+
+                    } else {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project: " + projectName));
+                    }
+                });
+            }catch(Exception e)
             {
-                if (fetch.succeeded()) {
-                    JsonObject response = (JsonObject) fetch.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-
-                }
-                else {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project: " + projectName));
-                }
-            });
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
+            }
         });
     }
 
@@ -744,21 +755,26 @@ public class EndpointRouter extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+            try {
+                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+                jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateLabelList());
+                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateLabelList());
 
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
+                vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
                 {
-                    JsonObject response = (JsonObject) reply.result().body();
+                    if (reply.succeeded()) {
+                        JsonObject response = (JsonObject) reply.result().body();
 
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                });
+            }catch(Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
+
+            }
         });
     }
 
