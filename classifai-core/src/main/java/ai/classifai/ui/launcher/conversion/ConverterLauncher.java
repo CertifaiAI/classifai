@@ -71,7 +71,7 @@ public class ConverterLauncher extends JPanel
     private static JComboBox outputFormatCombo;
 
     private JLabel maxPage = new JLabel("Maximum Page: ");
-    private JTextField maxPageTextField = new JTextField("   " + MAX_PAGE);
+    private JTextField maxPageTextField = new JTextField();
 
     @Getter private static JTextArea taskOutput;
     private JScrollPane progressPane;
@@ -255,11 +255,11 @@ public class ConverterLauncher extends JPanel
         inputFolderField.setEditable(false);
         inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath() + File.separator + "Desktop");
 
-        Dimension folderDimension = new Dimension(100, ELEMENT_HEIGHT - 10);
-        inputFolderField.setPreferredSize(folderDimension);
+        Dimension folderDimension = new Dimension(250, ELEMENT_HEIGHT - 10);
+        inputFolderField.setMinimumSize(folderDimension);
 
         design(outputFolderField);
-        outputFolderField.setPreferredSize(folderDimension);
+        outputFolderField.setMinimumSize(folderDimension);
 
         design(inputBrowserButton);
         inputBrowserButton.addActionListener(new InputFolderListener());
@@ -272,9 +272,10 @@ public class ConverterLauncher extends JPanel
 
         design(maxPage);
         design(maxPageTextField);
-        maxPageTextField.setPreferredSize(new Dimension(50, ELEMENT_HEIGHT - 10));
+        maxPageTextField.setText("  " + Integer.toString(MAX_PAGE));
+        maxPageTextField.setMinimumSize(new Dimension(60, ELEMENT_HEIGHT - 10));
 
-        taskOutput = new JTextArea(5, 20);
+        taskOutput = new JTextArea(105, 20);
         taskOutput.setMargin(new Insets(5,5,5,5));
         taskOutput.setEditable(false);
 
@@ -320,6 +321,7 @@ public class ConverterLauncher extends JPanel
             textField.setFont(font);
             textField.setBackground(Color.WHITE);
             textField.setEditable(false);
+
         }
         else if(obj instanceof JButton)
         {
@@ -368,7 +370,7 @@ public class ConverterLauncher extends JPanel
 
             JComponent scrollPane = (JComponent) obj;
             scrollPane.setFont(font);
-            scrollPane.setPreferredSize(dimension);
+            scrollPane.setMinimumSize(dimension);
 
         }
 
