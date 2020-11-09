@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 
 
@@ -58,6 +57,7 @@ public class Task extends SwingWorker<Void, Void> {
         int progress = 0;
         //Initialize progress property.
         setProgress(0);
+
         if(inputFormat.equals(FileFormat.PDF.getText()))
         {
             int fileProcessed = 0;
@@ -67,9 +67,9 @@ public class Task extends SwingWorker<Void, Void> {
 
                 String outputFileName = pdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
 
-                progress = (int) (++fileProcessed / inputFiles.size() * 100);
+                progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
 
-                setProgress(progress);
+                setProgress(Math.min(progress, 100));
 
                 ConverterLauncher.appendTaskOutput(outputFileName);
             }
