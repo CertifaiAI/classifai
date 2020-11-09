@@ -299,7 +299,7 @@ public class WelcomeLauncher extends JFrame
         }
         catch(Exception e) {
 
-            e.printStackTrace();
+            log.info("Exception when setting WelcomeLauncher background: ", e);
         }
     }
 

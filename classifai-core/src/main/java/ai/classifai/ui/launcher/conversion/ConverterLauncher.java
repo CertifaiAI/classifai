@@ -379,8 +379,10 @@ public class ConverterLauncher extends JPanel
     {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            log.info("Exception when setting look for ConverterLauncher: ", e);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
