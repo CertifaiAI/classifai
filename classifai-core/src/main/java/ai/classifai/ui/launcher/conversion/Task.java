@@ -45,6 +45,7 @@ public class Task extends SwingWorker<Void, Void> {
         if(inputFiles.isEmpty())
         {
             ConverterLauncher.appendTaskOutput("Input file lists empty. Task completed!");
+            setProgress(100);
         }
         else
         {
