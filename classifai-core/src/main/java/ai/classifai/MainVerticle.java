@@ -23,10 +23,12 @@ import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
 import java.io.File;
 
 /**

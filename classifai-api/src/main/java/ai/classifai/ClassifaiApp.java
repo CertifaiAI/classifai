@@ -18,6 +18,9 @@ package ai.classifai;
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
 import ai.classifai.util.ParamConfig;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -60,6 +63,8 @@ public class ClassifaiApp
 
     static boolean configure(String[] args)
     {
+        FlatLightLaf.install();
+
         boolean removeDbLock = false;
 
         for(int i = 0; i < args.length; ++i)
@@ -81,7 +86,7 @@ public class ClassifaiApp
         if(DbConfig.checkDatabase(removeDbLock) == false) return false;
 
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(new FlatDarkLaf());
         }
         catch (Exception e)
         {
