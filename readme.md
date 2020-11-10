@@ -100,10 +100,10 @@ The installation packages and formats are listed below.
 
 | Operating System | Installation package format |
 |:-------------:|:-------------:|
-| [Windows](https://classifai.ai/) | .msi|
-| [Mac](https://classifai.ai/) | .dmg |
-| [Ubuntu](https://classifai.ai/) | TBD |
-| [Centos](https://classifai.ai/) | TBD |
+| [Windows](https://classifai.ai/) | msi|
+| [Mac](https://classifai.ai/) | pkg |
+| [Ubuntu](https://classifai.ai/) | deb |
+| [Centos](https://classifai.ai/) | rpm |
 
 ## Learn More 
 

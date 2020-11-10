@@ -15,7 +15,8 @@
  */
 package ai.classifai.ui.button;
 
-import lombok.Getter;
+import ai.classifai.util.type.OS;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import java.util.Map;
 @Slf4j
 public class LogHandler
 {
-    @Getter private static Map<String, List<String>> textEditorKey;
+    private static Map<OS, List<String>> textEditorKey;
 
     static
     {
@@ -42,8 +43,22 @@ public class LogHandler
         winEditorPath.add("C:\\Windows\\System32\\notepad.exe");
         winEditorPath.add("C:\\Windows\\notepad.exe");
 
-        textEditorKey.put(OS.MAC.name(), null);
-        textEditorKey.put(OS.WINDOWS.name(), winEditorPath);
-        textEditorKey.put(OS.LINUX.name(), null);
+        List linuxEditorPath = new ArrayList<String>();
+
+        linuxEditorPath.add("default");
+
+        List macEditorPath = new ArrayList<String>();
+        macEditorPath.add("default");
+
+        textEditorKey.put(OS.MAC, macEditorPath);
+        textEditorKey.put(OS.WINDOWS, winEditorPath);
+        textEditorKey.put(OS.LINUX, linuxEditorPath);
+    }
+
+    public static List getOSEditor(@NonNull OS os)
+    {
+        if(!textEditorKey.containsKey(os)) return null;
+
+        return textEditorKey.get(os);
     }
 }

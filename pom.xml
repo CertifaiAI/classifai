@@ -53,6 +53,14 @@
             <id>BobbyLCW</id>
             <name>Bobby Lee Chun Wei</name>
         </developer>
+        <developer>
+            <id>Toh</id>
+            <name>Toh Sie Hung</name>
+        </developer>
+        <developer>
+            <id>Daniel</id>
+            <name>Daniel Lim Heng Jie</name>
+        </developer>
     </developers>
 
     <properties>

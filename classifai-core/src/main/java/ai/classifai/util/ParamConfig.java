@@ -15,6 +15,9 @@
  */
 package ai.classifai.util;
 
+import ai.classifai.ui.button.OSManager;
+import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.OS;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,15 +30,30 @@ import java.io.File;
  */
 public class ParamConfig
 {
+
     @Getter @Setter private static Integer hostingPort;
+
+    private static final String FILE_SEPARATOR;
+    private final static OSManager OS_MANAGER;
 
     static
     {
+        OS_MANAGER = new OSManager();
+
         hostingPort = 9999;
+
+        if(OS_MANAGER.getCurrentOS().equals(OS.WINDOWS))
+        {
+            FILE_SEPARATOR = "\\\\";
+        }
+        else
+        {
+            FILE_SEPARATOR = File.separator;
+        }
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
+    private static final String LOG_FILE_PATH = System.getProperty("user.home") +  File.separator + "logs" + File.separator + "classifai.log";
 
     private final static String PROJECT_NAME_PARAM = "project_name";
     private final static String PROJECT_ID_PARAM = "project_id";
@@ -77,6 +95,10 @@ public class ParamConfig
     private final static String ACTION_KEYWORD = "action";
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
+
+    public static OSManager getOSManager() { return OS_MANAGER; }
+
+    public static String getFileSeparator(){ return FILE_SEPARATOR; }
 
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }

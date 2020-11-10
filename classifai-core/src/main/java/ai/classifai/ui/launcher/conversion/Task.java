@@ -1,20 +1,53 @@
+/*
+ * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.ui.launcher.conversion;
 
-import ai.classifai.util.FileFormat;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.PdfHandler;
+import ai.classifai.util.data.TifHandler;
+import ai.classifai.util.type.FileFormat;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 
-
+/**
+ * Task running in background to do the conversion
+ *
+ * @author codenamewei
+ */
 @Slf4j
-class Task extends SwingWorker<Void, Void> {
+public class Task extends SwingWorker<Void, Void> {
     /*
      * Main task. Executed in background thread.
      */
+    @Getter
+    private static boolean isStop = false;
+
+    public static void stop()
+    {
+        isStop = true;
+    }
+
+    public Task()
+    {
+        isStop = false;
+    }
+
     @Override
     public Void doInBackground()
     {
@@ -30,78 +63,70 @@ class Task extends SwingWorker<Void, Void> {
 
         if(inputFiles.isEmpty())
         {
-            ConverterLauncher.appendTaskOutput("Done!");
-            return null;
-        }
-
-        String inputFormat = ConverterLauncher.getInputFormat();
-
-        String outputFolderPath = ConverterLauncher.getOutputFolderPath();
-
-        String outputFormat = ConverterLauncher.getOutputFormat();
-
-        int progress = 0;
-        //Initialize progress property.
-        setProgress(0);
-
-        if(inputFormat.equals(FileFormat.PDF.getText()))
-        {
-            /*
-            int fileProcessed = 0;
-            for(File file: inputFiles)
-            {
-                String outputFileName = PdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
-
-                progress = (int) (++fileProcessed / file.length() * 100);
-
-                setProgress(progress);
-                ConverterLauncher.appendTaskOutput(outputFileName + " completed.");
-
-            }
-            */
-        }
-        else if(inputFormat.equals(FileFormat.TIF.getText()))
-        {
-            log.info("TIF Conversion");
+            ConverterLauncher.appendTaskOutput("Input file lists empty. Task completed!");
+            setProgress(100);
         }
         else
         {
-            log.info("Input file format not supported: " + inputFormat);
+            String inputFormat = ConverterLauncher.getInputFormat();
 
-        }
+            String outputFolderPath = ConverterLauncher.getOutputFolderPath();
 
-        done();
-
-        /*
-        if(false)
-        {
-            Random random = new Random();
-
+            String outputFormat = ConverterLauncher.getOutputFormat();
 
             int progress = 0;
             //Initialize progress property.
-            setProgress(0);
-            //Sleep for at least one second to simulate "startup".
+            setProgress(progress);
 
-            try {
-                Thread.sleep(1000 + random.nextInt(2000));
-            } catch (InterruptedException ignore) {}
+            int fileProcessed = 0;
 
-            while (progress < 100)
+            if(inputFormat.equals(FileFormat.PDF.getText()))
             {
-                //Sleep for up to one second.
-                try {
-                    Thread.sleep(random.nextInt(1000));
-                } catch (InterruptedException ignore) {}
-                //Make random progress.
-                progress += random.nextInt(10);
+                PdfHandler pdfHandler = new PdfHandler();
 
-                setProgress(Math.min(progress, 100));
+                for(File file: inputFiles)
+                {
+                    if(isStop) break;
+
+                    ConverterLauncher.appendTaskOutput(file.getName());
+
+                    String message = pdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
+
+                    if(message != null) ConverterLauncher.appendTaskOutput(message);
+
+                    progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
+
+                    setProgress(Math.min(progress, 100));
+
+                }
             }
+            else if(inputFormat.equals(FileFormat.TIF.getText()))
+            {
+                TifHandler tifHandler = new TifHandler();
 
+                for(File file: inputFiles)
+                {
+                    if(isStop) break;
+
+                    ConverterLauncher.appendTaskOutput(file.getName());
+
+                    String message = tifHandler.saveTif2Image(file, outputFolderPath, outputFormat);
+
+                    if(message != null) ConverterLauncher.appendTaskOutput(message);
+
+                    progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
+
+                    setProgress(Math.min(progress, 100));
+
+                }
+            }
+            else
+            {
+                log.info("Input file format not supported: " + inputFormat);
+
+            }
+            done();
         }
-
-        */
 
         return null;
     }
@@ -110,11 +135,7 @@ class Task extends SwingWorker<Void, Void> {
      */
     public void done()
     {
-        JButton convertButton = ConverterLauncher.getConvertButton();
-
-        convertButton.setForeground(Color.BLACK);
-        convertButton.setEnabled(true);
-
-        ConverterLauncher.getTaskOutput().append("Done!\n");
+        ConverterLauncher.enableConvertButton();
+       //ConverterLauncher.getTaskOutput().append("Completed!\n");
     }
 }

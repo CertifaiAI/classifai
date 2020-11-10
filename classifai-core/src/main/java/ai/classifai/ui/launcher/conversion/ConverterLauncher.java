@@ -17,11 +17,10 @@ package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoHandler;
-import ai.classifai.util.FileFormat;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -33,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 
 /**
@@ -43,8 +41,6 @@ import java.io.File;
  */
 @Slf4j
 public class ConverterLauncher extends JPanel
-        implements ActionListener,
-        PropertyChangeListener
 {
     private ConverterFolderSelector inputFolderSelector;
     private ConverterFolderSelector outputFolderSelector;
@@ -75,17 +71,18 @@ public class ConverterLauncher extends JPanel
     private static JComboBox outputFormatCombo;
 
     private JLabel maxPage = new JLabel("Maximum Page: ");
-    private JTextField maxPageTextField = new JTextField("   " + MAX_PAGE);
+    private JTextField maxPageTextField = new JTextField();
 
     @Getter private static JTextArea taskOutput;
     private JScrollPane progressPane;
 
     private JProgressBar progressBar = new JProgressBar(0, 100);
-    @Getter private static JButton convertButton = new JButton("Convert");
+    private static JButton convertButton = new JButton("Convert");
+
+    private static boolean isConvertButtonClicked = false;
 
     private Task task;
     private JFrame frame;
-
 
     static {
 
@@ -151,7 +148,6 @@ public class ConverterLauncher extends JPanel
         return outputFormat.trim().toLowerCase();
     }
 
-
     public void start()
     {
         frame = new JFrame("Files Format Converter");
@@ -170,6 +166,11 @@ public class ConverterLauncher extends JPanel
             public void windowClosing(WindowEvent e)
             {
                 isOpened = false;
+                if(task != null)
+                {
+                    Task.stop();
+                    task.cancel(true);
+                }
             }
         });
 
@@ -236,7 +237,6 @@ public class ConverterLauncher extends JPanel
         frame.setResizable(false);
         frame.pack();
         frame.setLocationRelativeTo(null);
-
     }
 
     private void configure()
@@ -244,7 +244,7 @@ public class ConverterLauncher extends JPanel
         outputFolderField.setText(DEFAULT_OUTPUT_PATH);
 
         inputFormatCombo.setSelectedIndex(0);
-        outputFormatCombo.setSelectedIndex(0);
+        outputFormatCombo.setSelectedIndex(1);
 
         convertButton.setOpaque(true);
 
@@ -255,11 +255,11 @@ public class ConverterLauncher extends JPanel
         inputFolderField.setEditable(false);
         inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath() + File.separator + "Desktop");
 
-        Dimension folderDimension = new Dimension(100, ELEMENT_HEIGHT - 10);
-        inputFolderField.setPreferredSize(folderDimension);
+        Dimension folderDimension = new Dimension(250, ELEMENT_HEIGHT - 10);
+        inputFolderField.setMinimumSize(folderDimension);
 
         design(outputFolderField);
-        outputFolderField.setPreferredSize(folderDimension);
+        outputFolderField.setMinimumSize(folderDimension);
 
         design(inputBrowserButton);
         inputBrowserButton.addActionListener(new InputFolderListener());
@@ -272,9 +272,10 @@ public class ConverterLauncher extends JPanel
 
         design(maxPage);
         design(maxPageTextField);
-        maxPageTextField.setPreferredSize(new Dimension(50, ELEMENT_HEIGHT - 10));
+        maxPageTextField.setText("  " + Integer.toString(MAX_PAGE));
+        maxPageTextField.setMinimumSize(new Dimension(60, ELEMENT_HEIGHT - 10));
 
-        taskOutput = new JTextArea(5, 20);
+        taskOutput = new JTextArea(105, 20);
         taskOutput.setMargin(new Insets(5,5,5,5));
         taskOutput.setEditable(false);
 
@@ -287,6 +288,7 @@ public class ConverterLauncher extends JPanel
             protected Color getSelectionForeground() { return Color.BLACK; }
         });
 
+
         //Call setStringPainted now so that the progress bar height
         //stays the same whether or not the string is shown.
         progressBar.setStringPainted(true);
@@ -294,7 +296,8 @@ public class ConverterLauncher extends JPanel
         design(progressBar);
         design(convertButton);
 
-        //convertButton.addActionListener(this);
+        convertButton.addActionListener(new ConvertButtonListener());
+
     }
 
     private void design(Object obj)
@@ -318,6 +321,7 @@ public class ConverterLauncher extends JPanel
             textField.setFont(font);
             textField.setBackground(Color.WHITE);
             textField.setEditable(false);
+
         }
         else if(obj instanceof JButton)
         {
@@ -355,7 +359,7 @@ public class ConverterLauncher extends JPanel
 
             progressBar.setBorderPainted(true);
 
-                Border border = BorderFactory.createEtchedBorder(0);
+            Border border = BorderFactory.createEtchedBorder(0);
             progressBar.setBorder(border);
         }
         else if(obj instanceof JComponent)
@@ -366,7 +370,7 @@ public class ConverterLauncher extends JPanel
 
             JComponent scrollPane = (JComponent) obj;
             scrollPane.setFont(font);
-            scrollPane.setPreferredSize(dimension);
+            scrollPane.setMinimumSize(dimension);
 
         }
 
@@ -381,8 +385,10 @@ public class ConverterLauncher extends JPanel
     {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        }
+        catch (Exception e)
+        {
+            log.info("Exception when setting look for ConverterLauncher: ", e);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -398,44 +404,45 @@ public class ConverterLauncher extends JPanel
         });
     }
 
-    /**
-     * Invoked when the user presses the start button.
-     */
-    public void actionPerformed(ActionEvent evt)
-    {
-
-        convertButton.setEnabled(false);
-        convertButton.setForeground(Color.LIGHT_GRAY);
-        progressBar.setIndeterminate(true);
-
-
-        task = new Task();
-        task.addPropertyChangeListener(this::propertyChange);
-        task.execute();
-    }
-
-
-    /**
-     * Invoked when task's progress property changes.
-     */
-    public void propertyChange(PropertyChangeEvent evt)
-    {
-        if ("progress" == evt.getPropertyName())
-        {
-            int progress = (Integer) evt.getNewValue();
-            progressBar.setIndeterminate(false);
-            progressBar.setValue(progress);
-
-            //taskOutput.append(String.format("Completed %d%% of task.\n", progress));
-        }
-    }
-
     public static void appendTaskOutput(@NonNull String message)
     {
         taskOutput.append(message + "\n");
         log.debug(message);
     }
 
+    class ConvertButtonListener implements ActionListener
+    {
+        public void actionPerformed(ActionEvent e)
+        {
+            if(!isConvertButtonClicked) //prevent multiple clicks
+            {
+                task = new Task();
+                task.addPropertyChangeListener(this::propertyChange);
+                task.execute();
+
+                convertButton.setEnabled(false);
+                convertButton.setForeground(Color.LIGHT_GRAY);
+                progressBar.setIndeterminate(true);
+
+                isConvertButtonClicked = true;
+            }
+        }
+
+        /**
+         * Invoked when task's progress property changes.
+         */
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if ("progress" == evt.getPropertyName())
+            {
+                int progress = (Integer) evt.getNewValue();
+                progressBar.setIndeterminate(false);
+                progressBar.setValue(progress);
+
+                //taskOutput.append(String.format("Completed %d%% of task.\n", progress));
+            }
+        }
+    }
     class InputFolderListener implements ActionListener {
         public void actionPerformed(ActionEvent e)
         {
@@ -455,6 +462,7 @@ public class ConverterLauncher extends JPanel
     {
 
         String extensionRepresentative = ((String) inputFormatCombo.getSelectedItem()).trim();
+
         if(extensionRepresentative.equals(FileFormat.PDF.getUpperCase()))
         {
             return new String[]{"pdf"};
@@ -474,13 +482,21 @@ public class ConverterLauncher extends JPanel
 
     public static String getOutputFolderPath()
     {
-        String buffer = (String) outputFolderField.getText();
+        String buffer = outputFolderField.getText();
 
         if(buffer.equals(DEFAULT_OUTPUT_PATH))
         {
-            buffer = inputFolderField.getText();
+            return null; // for same path
         }
 
         return buffer;
+    }
+
+    public static void enableConvertButton()
+    {
+        convertButton.setForeground(Color.BLACK);
+        convertButton.setEnabled(true);
+
+        isConvertButtonClicked = false;
     }
 }

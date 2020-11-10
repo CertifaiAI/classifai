@@ -23,9 +23,9 @@ import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.AnnotationType;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.type.AnnotationType;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 

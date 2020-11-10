@@ -21,13 +21,15 @@ import ai.classifai.ui.launcher.conversion.Task;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * PDF Handler
@@ -36,22 +38,31 @@ import java.io.File;
  */
 @Slf4j
 @NoArgsConstructor
-public class PdfHandler
+public class TifHandler
 {
-    private final Integer DOTS_PER_INCH = 300; //standard dots per inch is 300
-
-    public String savePdf2Image(@NonNull File pdfFullPath, String outputPath, @NonNull String extensionFormat)
+    public String saveTif2Image(@NonNull File tifFullPath, String outputPath, @NonNull String extensionFormat)
     {
         String message = null;
+        String fileName = FileHandler.getFileName(tifFullPath.getAbsolutePath());
 
-        PDDocument document = null;
-
-        String fileName = FileHandler.getFileName(pdfFullPath.getAbsolutePath());
         try {
-            document = PDDocument.load(pdfFullPath);
-            PDFRenderer pdfRenderer = new PDFRenderer(document);
+            List<File> tif2Images = new ArrayList<>();
 
-            int maxPages = document.getNumberOfPages();
+            ImageInputStream is = ImageIO.createImageInputStream(tifFullPath);
+            if (is == null || is.length() == 0){
+                return message;
+            }
+
+            Iterator<ImageReader> iterator = ImageIO.getImageReaders(is);
+            if (iterator == null || !iterator.hasNext()) {
+                return message;
+            }
+
+            ImageReader reader = iterator.next();
+            reader.setInput(is);
+
+            int maxPages = reader.getNumImages(true);
+
             if(maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
 
             for (int page = 0; page < maxPages; ++page)
@@ -59,10 +70,9 @@ public class PdfHandler
                 if(Task.isStop()) break;
 
                 String savedPath;
-
                 if(outputPath == null)
                 {
-                    savedPath = FileHandler.getAbsolutePath(pdfFullPath);
+                    savedPath = FileHandler.getAbsolutePath(tifFullPath);
                 }
                 else
                 {
@@ -75,45 +85,35 @@ public class PdfHandler
 
                 if(fImageSavedFullPath.exists() == false)
                 {
-                    BufferedImage bim = pdfRenderer.renderImageWithDPI(page, DOTS_PER_INCH, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
+                    BufferedImage bim = reader.read(page);
 
                     if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {
-                        document.close();
                         log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
                     }
 
                     // suffix in filename will be used as the file format
-                    ImageIOUtil.writeImage(bim, imageSavedFullPath, DOTS_PER_INCH);
+                    boolean bSavedSuccess = ImageIO.write(bim, extensionFormat, new File(imageSavedFullPath));
+
+                    if(!bSavedSuccess)
+                    {
+                        String messageHeader = "Save TIF image failed: ";
+                        message = messageHeader + tifFullPath.getName();
+                        log.info(messageHeader + fImageSavedFullPath);
+                        throw new Exception(messageHeader + fImageSavedFullPath);
+                    }
+                    else
+                    {
+                        tif2Images.add(fImageSavedFullPath);
+                    }
                 }
             }
-
-            document.close();
 
         }
         catch(Exception e)
         {
-            String messageHeader = "PDF Skipped. Failed in reading pdf of file: ";
-
-            message = messageHeader + pdfFullPath.getName();
-
-            log.info(messageHeader + pdfFullPath, e);
+            log.info("Tif Skipped. Failed in reading tif of file: " + tifFullPath, e);
         }
-        finally
-        {
-            try
-            {
-                if(document != null)
-                {
-                    document.close();
-                }
-            }
-            catch(Exception e)
-            {
-                log.info("Error when closing pdf. ", e);
-            }
-        }
-
         return message;
     }
 }
