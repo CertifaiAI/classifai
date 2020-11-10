@@ -247,6 +247,8 @@ public class ConverterLauncher extends JPanel
         inputFormatCombo.setSelectedIndex(0);
         outputFormatCombo.setSelectedIndex(1);
 
+        convertButton.setOpaque(true);
+
         design(inputFolderLabel);
         design(outputFolderLabel);
 
@@ -271,23 +273,22 @@ public class ConverterLauncher extends JPanel
 
         design(maxPage);
         design(maxPageTextField);
-        maxPageTextField.setText("  " + MAX_PAGE);
+        maxPageTextField.setText("  " + Integer.toString(MAX_PAGE));
         maxPageTextField.setMinimumSize(new Dimension(60, ELEMENT_HEIGHT - 10));
 
         taskOutput = new JTextArea(105, 20);
         taskOutput.setMargin(new Insets(5,5,5,5));
         taskOutput.setEditable(false);
-        taskOutput.setForeground(Color.WHITE);
-        taskOutput.setBackground(Color.DARK_GRAY);
 
         progressPane = new JScrollPane(taskOutput);
         design(progressPane);
 
         progressBar.setValue(0);
         progressBar.setUI(new BasicProgressBarUI() {
-            protected Color getSelectionBackground() { return Color.WHITE; }
+            protected Color getSelectionBackground() { return Color.DARK_GRAY; }
             protected Color getSelectionForeground() { return Color.BLACK; }
         });
+
 
         //Call setStringPainted now so that the progress bar height
         //stays the same whether or not the string is shown.
@@ -312,8 +313,6 @@ public class ConverterLauncher extends JPanel
             JLabel label = (JLabel) obj;
             label.setFont(font);
             label.setPreferredSize(dimension);
-
-            label.setForeground(Color.WHITE);
         }
         else if(obj instanceof JTextField)
         {
@@ -321,8 +320,7 @@ public class ConverterLauncher extends JPanel
 
             JTextField textField = (JTextField) obj;
             textField.setFont(font);
-            textField.setForeground(Color.BLACK);
-            textField.setBackground(Color.LIGHT_GRAY);
+            textField.setBackground(Color.WHITE);
             textField.setEditable(false);
 
         }
@@ -335,10 +333,6 @@ public class ConverterLauncher extends JPanel
             JButton button = (JButton) obj;
             button.setFont(font);
             button.setPreferredSize(dimension);
-            button.setOpaque(true);
-            button.setBackground(Color.LIGHT_GRAY);
-            button.setForeground(Color.BLACK);
-
         }
         else if(obj instanceof JComboBox)
         {
@@ -348,9 +342,6 @@ public class ConverterLauncher extends JPanel
             comboBox.setFont(font);
 
             Dimension dimension = new Dimension(80, ELEMENT_HEIGHT);
-
-            comboBox.setBackground(Color.LIGHT_GRAY);
-            comboBox.setForeground(Color.BLACK);
 
             comboBox.setMaximumSize(dimension);
         }
@@ -363,8 +354,9 @@ public class ConverterLauncher extends JPanel
             JProgressBar progressBar = (JProgressBar) obj;
             progressBar.setFont(font);
 
-            progressBar.setForeground(Color.YELLOW);
+            progressBar.setForeground(Color.GREEN);
             progressBar.setPreferredSize(dimension);
+
 
             progressBar.setBorderPainted(true);
 
@@ -380,6 +372,7 @@ public class ConverterLauncher extends JPanel
             JComponent scrollPane = (JComponent) obj;
             scrollPane.setFont(font);
             scrollPane.setMinimumSize(dimension);
+
         }
 
         if(obj == null)
@@ -391,7 +384,7 @@ public class ConverterLauncher extends JPanel
 
     public void launch()
     {
-        LookFeelSetter.setDarkMode();
+        LookFeelSetter.setLightMode();
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -418,7 +411,6 @@ public class ConverterLauncher extends JPanel
         {
             if(!isConvertButtonClicked) //prevent multiple clicks
             {
-
                 task = new Task();
                 task.addPropertyChangeListener(this::propertyChange);
                 task.execute();

@@ -18,6 +18,7 @@ package ai.classifai.ui.launcher;
 import ai.classifai.MainVerticle;
 import ai.classifai.ui.component.BrowserHandler;
 import ai.classifai.ui.component.LogHandler;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.component.ProgramOpener;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
@@ -93,13 +94,7 @@ public class WelcomeLauncher extends JFrame
 
     private static void configure()
     {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch (Exception e)
-        {
-            log.error("Error in setting UIManager: ", e);
-        }
+        LookFeelSetter.setLightMode();
 
         setUpFrame();
         setRunningStatus(RunningStatus.STARTING);
