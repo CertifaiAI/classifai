@@ -18,6 +18,7 @@ package ai.classifai.selector.annotation;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -42,6 +43,8 @@ public class ToolFolderSelector {
 
     public void run(@NonNull Integer projectID)
     {
+        LookFeelSetter.setDarkMode();
+
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
