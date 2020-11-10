@@ -87,6 +87,8 @@ then proceed to open a browser and put in url _http://localhost:9999/_
 
 ## Installation
 
+The installation packages of Classifai can be found in [here](https://classifai.ai/).  
+
 Classifai supports the following Operating Systems.  
 
 <p align="center">
@@ -98,10 +100,10 @@ The installation packages and formats are listed below.
 
 | Operating System | Installation package format |
 |:-------------:|:-------------:|
-| [Windows](https://classifai.ai/) | .msi|
-| [Mac](https://classifai.ai/) | .dmg |
-| [Ubuntu](https://classifai.ai/) | TBD |
-| [Centos](https://classifai.ai/) | TBD |
+| [Windows](https://classifai.ai/) | msi|
+| [Mac](https://classifai.ai/) | pkg |
+| [Ubuntu](https://classifai.ai/) | deb |
+| [Centos](https://classifai.ai/) | rpm |
 
 ## Learn More 
 
@@ -112,6 +114,7 @@ The installation packages and formats are listed below.
 | [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
 | [Blogs]() | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
+| [Training](https://classifai.ai/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
 ## Contact us  
 

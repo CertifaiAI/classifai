@@ -16,11 +16,12 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.segdb.SegVerticle;
-import ai.classifai.server.ServerVerticle;
-import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.database.annotation.seg.SegVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.router.EndpointRouter;
+import ai.classifai.ui.launcher.LogoHandler;
+import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -31,11 +32,23 @@ import java.io.File;
 /**
  * Main verticle to create multiple verticles
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
+    private static BoundingBoxVerticle boundingBoxVerticle;
+    private static SegVerticle segVerticle;
+    private static EndpointRouter endpointRouter;
+
+
+    static
+    {
+        boundingBoxVerticle = new BoundingBoxVerticle();
+        segVerticle = new SegVerticle();
+        endpointRouter = new EndpointRouter();
+    }
+
     public void configureDatabase()
     {
         File dataRootPath = new File(DatabaseConfig.getDbRootPath());
@@ -60,6 +73,8 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise) {
 
+        WelcomeLauncher.start();
+
         configureDatabase();
 
         Promise<String> portfolioDeployment = Promise.promise();
@@ -68,32 +83,38 @@ public class MainVerticle extends AbstractVerticle
         portfolioDeployment.future().compose(id_ -> {
 
             Promise<String> bndBoxDeployment = Promise.promise();
-            vertx.deployVerticle(new BoundingBoxVerticle(), bndBoxDeployment);
+            vertx.deployVerticle(boundingBoxVerticle, bndBoxDeployment);
             return bndBoxDeployment.future();
 
         }).compose(id_ -> {
 
             Promise<String> segDeployment = Promise.promise();
-            vertx.deployVerticle(new SegVerticle(), segDeployment);
+            vertx.deployVerticle(segVerticle, segDeployment);
 
             return segDeployment.future();
 
         }).compose(id_ -> {
 
             Promise<String> serverDeployment = Promise.promise();
-            vertx.deployVerticle(new ServerVerticle(), serverDeployment);
+            vertx.deployVerticle(endpointRouter, serverDeployment);
             return serverDeployment.future();
 
         }).onComplete(ar ->
         {
             if (ar.succeeded()) {
 
-                LogoLauncher.print();
-                
-                WelcomeLauncher.start();
+                LogoHandler.print();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
+
+                try {
+                    WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
+                }
+                catch(Exception e)
+                {
+                    log.info("Welcome Launcher failed to launch: ", e);
+                }
 
                 promise.complete();
 
@@ -101,6 +122,21 @@ public class MainVerticle extends AbstractVerticle
                 promise.fail(ar.cause());
             }
         });
+    }
+
+    public static void closeVerticles()
+    {
+        try {
+
+            boundingBoxVerticle.stop(Promise.promise());
+            segVerticle.stop(Promise.promise());
+            endpointRouter.stop(Promise.promise());
+        }
+        catch(Exception e)
+        {
+            log.info("Error when stopping verticles: ", e);
+        }
+
     }
 
     @Override

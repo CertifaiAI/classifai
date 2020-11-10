@@ -17,7 +17,7 @@ package ai.classifai;
 
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 /***
  * Main program to start Classifai
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ClassifaiApp
