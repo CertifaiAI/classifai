@@ -76,6 +76,8 @@ public class WelcomeLauncher extends JFrame
 
     private static ImageIcon browserNotFoundIcon;
 
+    private static ConverterLauncher converterLauncher;
+
     static
     {
         browserFailedMessage = "Initialization of url failed.\n" +
@@ -84,6 +86,7 @@ public class WelcomeLauncher extends JFrame
         logFailedMessage = "Log file failed to open in editor.\n" +
             "Find the log file in " + ParamConfig.getLogFilePath();
 
+        converterLauncher = new ConverterLauncher();
         configure();
     }
 
@@ -228,7 +231,7 @@ public class WelcomeLauncher extends JFrame
             {
                 if(!ConverterLauncher.isOpened())
                 {
-                    new ConverterLauncher().launch();
+                    converterLauncher.launch();
                 }
             }
         });

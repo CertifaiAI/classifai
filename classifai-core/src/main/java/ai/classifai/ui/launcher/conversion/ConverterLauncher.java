@@ -357,7 +357,6 @@ public class ConverterLauncher extends JPanel
             progressBar.setForeground(Color.GREEN);
             progressBar.setPreferredSize(dimension);
 
-
             progressBar.setBorderPainted(true);
 
             Border border = BorderFactory.createEtchedBorder(0);
