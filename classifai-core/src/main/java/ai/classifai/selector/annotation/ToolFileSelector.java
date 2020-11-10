@@ -79,11 +79,13 @@ public class ToolFileSelector
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);
                     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
 
                     //prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
