@@ -19,6 +19,7 @@ import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.component.LookFeelSetter;
+import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
 import ai.classifai.util.ParamConfig;
@@ -57,6 +58,8 @@ public class ToolFolderSelector {
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
+
+                    frame.setIconImage(LogoHandler.getClassifaiIcon());
                     frame.setAlwaysOnTop(true);
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.setLocation(pt);
@@ -79,7 +82,7 @@ public class ToolFolderSelector {
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-                    //prevent Welcome Console from popping out
+                    //Important: prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
 
                     int res = chooser.showOpenDialog(frame);
