@@ -73,7 +73,6 @@ public class ConverterFolderSelector {
 
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-
                             if(selection.equals(ConversionSelection.INPUT))
                             {
                                 ConverterLauncher.setInputFolderPath(rootFolder.getAbsolutePath());
