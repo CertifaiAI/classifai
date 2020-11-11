@@ -18,7 +18,9 @@ package ai.classifai.selector.annotation;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.WelcomeLauncher;
+import ai.classifai.ui.launcher.conversion.Task;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -28,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
 /**
@@ -42,6 +46,8 @@ public class ToolFolderSelector {
 
     public void run(@NonNull Integer projectID)
     {
+        LookFeelSetter.setDarkMode();
+
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -72,11 +78,14 @@ public class ToolFolderSelector {
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
 
                     //prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+
+                    frame.dispose();
+
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {

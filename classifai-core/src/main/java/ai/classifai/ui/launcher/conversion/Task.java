@@ -51,6 +51,8 @@ public class Task extends SwingWorker<Void, Void> {
     @Override
     public Void doInBackground()
     {
+        setProgress(0);
+
         //iterate to get number of files
 
         String[] inputExtension = ConverterLauncher.getInputExtension();

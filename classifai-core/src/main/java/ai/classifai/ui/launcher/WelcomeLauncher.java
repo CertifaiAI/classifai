@@ -16,9 +16,10 @@
 package ai.classifai.ui.launcher;
 
 import ai.classifai.MainVerticle;
-import ai.classifai.ui.button.BrowserHandler;
-import ai.classifai.ui.button.LogHandler;
-import ai.classifai.ui.button.ProgramOpener;
+import ai.classifai.ui.component.BrowserHandler;
+import ai.classifai.ui.component.LogHandler;
+import ai.classifai.ui.component.LookFeelSetter;
+import ai.classifai.ui.component.ProgramOpener;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.OS;
@@ -75,6 +76,8 @@ public class WelcomeLauncher extends JFrame
 
     private static ImageIcon browserNotFoundIcon;
 
+    private static ConverterLauncher converterLauncher;
+
     static
     {
         browserFailedMessage = "Initialization of url failed.\n" +
@@ -83,6 +86,7 @@ public class WelcomeLauncher extends JFrame
         logFailedMessage = "Log file failed to open in editor.\n" +
             "Find the log file in " + ParamConfig.getLogFilePath();
 
+        converterLauncher = new ConverterLauncher();
         configure();
     }
 
@@ -93,6 +97,8 @@ public class WelcomeLauncher extends JFrame
 
     private static void configure()
     {
+        LookFeelSetter.setLightMode();
+
         setUpFrame();
         setRunningStatus(RunningStatus.STARTING);
         setUpOpenButton();
@@ -225,7 +231,7 @@ public class WelcomeLauncher extends JFrame
             {
                 if(!ConverterLauncher.isOpened())
                 {
-                    new ConverterLauncher().launch();
+                    converterLauncher.launch();
                 }
             }
         });

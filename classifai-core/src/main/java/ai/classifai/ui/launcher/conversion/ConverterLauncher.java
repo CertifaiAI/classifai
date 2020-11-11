@@ -16,6 +16,7 @@
 package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.selector.conversion.ConverterFolderSelector;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.FileFormat;
@@ -356,7 +357,6 @@ public class ConverterLauncher extends JPanel
             progressBar.setForeground(Color.GREEN);
             progressBar.setPreferredSize(dimension);
 
-
             progressBar.setBorderPainted(true);
 
             Border border = BorderFactory.createEtchedBorder(0);
@@ -383,13 +383,7 @@ public class ConverterLauncher extends JPanel
 
     public void launch()
     {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch (Exception e)
-        {
-            log.info("Exception when setting look for ConverterLauncher: ", e);
-        }
+        LookFeelSetter.setLightMode();
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override

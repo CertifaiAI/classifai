@@ -101,7 +101,7 @@ The installation packages and formats are listed below.
 | Operating System | Installation package format |
 |:-------------:|:-------------:|
 | [Windows](https://classifai.ai/) | msi|
-| [Mac](https://classifai.ai/) | pkg |
+| [Mac](https://classifai.ai/) | dmg |
 | [Ubuntu](https://classifai.ai/) | deb |
 | [Centos](https://classifai.ai/) | rpm |
 

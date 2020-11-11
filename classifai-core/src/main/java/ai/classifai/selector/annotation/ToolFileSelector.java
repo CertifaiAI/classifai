@@ -19,6 +19,7 @@ package ai.classifai.selector.annotation;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -44,6 +45,8 @@ public class ToolFileSelector
 
     public void run(@NonNull Integer projectID)
     {
+        LookFeelSetter.setDarkMode();
+
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -76,11 +79,13 @@ public class ToolFileSelector
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);
                     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
 
                     //prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {

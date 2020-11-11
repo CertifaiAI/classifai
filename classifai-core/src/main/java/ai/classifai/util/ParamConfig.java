@@ -15,7 +15,7 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.ui.button.OSManager;
+import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.OS;
 import lombok.Getter;
