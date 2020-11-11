@@ -21,7 +21,6 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import ai.classifai.ui.launcher.conversion.Task;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -31,8 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 
 /**
