@@ -16,7 +16,6 @@
 package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.selector.conversion.ConverterFolderSelector;
-import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.FileFormat;
@@ -99,6 +98,8 @@ public class ConverterLauncher extends JPanel
 
         inputFormatCombo = new JComboBox(inputFormat);
         outputFormatCombo = new JComboBox(outputFormat);
+
+        taskOutput = new JTextArea(105, 20);
 
         isOpened = false;
     }
@@ -226,7 +227,6 @@ public class ConverterLauncher extends JPanel
         constraints.gridx = 0; constraints.gridy = 4;
         panel.add(progressBar, constraints);
 
-
         constraints.gridwidth = 1;
         constraints.gridx = 3; constraints.gridy = 4;
         panel.add(convertButton, constraints);
@@ -272,22 +272,13 @@ public class ConverterLauncher extends JPanel
 
         design(maxPage);
         design(maxPageTextField);
-        maxPageTextField.setText("  " + Integer.toString(MAX_PAGE));
+        maxPageTextField.setText("  " + MAX_PAGE);
         maxPageTextField.setMinimumSize(new Dimension(60, ELEMENT_HEIGHT - 10));
 
-        taskOutput = new JTextArea(105, 20);
-        taskOutput.setMargin(new Insets(5,5,5,5));
-        taskOutput.setEditable(false);
+        design(taskOutput);
 
         progressPane = new JScrollPane(taskOutput);
         design(progressPane);
-
-        progressBar.setValue(0);
-        progressBar.setUI(new BasicProgressBarUI() {
-            protected Color getSelectionBackground() { return Color.LIGHT_GRAY; }
-            protected Color getSelectionForeground() { return Color.BLACK; }
-        });
-
 
         //Call setStringPainted now so that the progress bar height
         //stays the same whether or not the string is shown.
@@ -320,9 +311,7 @@ public class ConverterLauncher extends JPanel
             JTextField textField = (JTextField) obj;
             textField.setFont(font);
             textField.setBackground(Color.DARK_GRAY);
-            textField.setForeground(Color.LIGHT_GRAY);
             textField.setEditable(false);
-
         }
         else if(obj instanceof JButton)
         {
@@ -359,8 +348,24 @@ public class ConverterLauncher extends JPanel
 
             progressBar.setBorderPainted(true);
 
+            progressBar.setValue(0);
+            progressBar.setUI(new BasicProgressBarUI() {
+                protected Color getSelectionBackground() { return Color.LIGHT_GRAY; }
+                protected Color getSelectionForeground() { return Color.BLACK; }
+            });
+
             Border border = BorderFactory.createEtchedBorder(0);
             progressBar.setBorder(border);
+
+        }
+        else if(obj instanceof JTextArea)
+        {
+            JTextArea textArea = (JTextArea) obj;
+
+            textArea.setMargin(new Insets(5,5,5,5));
+            textArea.setEditable(false);
+
+            textArea.setForeground(Color.WHITE);
         }
         else if(obj instanceof JComponent)
         {
@@ -371,8 +376,8 @@ public class ConverterLauncher extends JPanel
             JComponent scrollPane = (JComponent) obj;
             scrollPane.setFont(font);
             scrollPane.setMinimumSize(dimension);
-
         }
+
 
         if(obj == null)
         {
