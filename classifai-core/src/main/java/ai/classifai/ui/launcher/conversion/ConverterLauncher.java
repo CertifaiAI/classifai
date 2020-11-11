@@ -246,7 +246,7 @@ public class ConverterLauncher extends JPanel
         inputFormatCombo.setSelectedIndex(0);
         outputFormatCombo.setSelectedIndex(1);
 
-        convertButton.setOpaque(true);
+        //convertButton.setOpaque(true);
 
         design(inputFolderLabel);
         design(outputFolderLabel);
@@ -285,7 +285,7 @@ public class ConverterLauncher extends JPanel
         progressBar.setValue(0);
         progressBar.setUI(new BasicProgressBarUI() {
             protected Color getSelectionBackground() { return Color.LIGHT_GRAY; }
-            protected Color getSelectionForeground() { return Color.WHITE; }
+            protected Color getSelectionForeground() { return Color.BLACK; }
         });
 
 
@@ -319,7 +319,8 @@ public class ConverterLauncher extends JPanel
 
             JTextField textField = (JTextField) obj;
             textField.setFont(font);
-            textField.setBackground(Color.WHITE);
+            textField.setBackground(Color.DARK_GRAY);
+            textField.setForeground(Color.LIGHT_GRAY);
             textField.setEditable(false);
 
         }
@@ -389,7 +390,6 @@ public class ConverterLauncher extends JPanel
                 configure();
                 start();
 
-
                 frame.setVisible(true);
             }
         });
@@ -412,7 +412,7 @@ public class ConverterLauncher extends JPanel
                 task.execute();
 
                 convertButton.setEnabled(false);
-                convertButton.setForeground(Color.LIGHT_GRAY);
+                convertButton.setForeground(Color.DARK_GRAY);
                 progressBar.setIndeterminate(true);
 
                 isConvertButtonClicked = true;
@@ -485,7 +485,7 @@ public class ConverterLauncher extends JPanel
 
     public static void enableConvertButton()
     {
-        convertButton.setForeground(Color.BLACK);
+        convertButton.setForeground(Color.LIGHT_GRAY);
         convertButton.setEnabled(true);
 
         isConvertButtonClicked = false;
