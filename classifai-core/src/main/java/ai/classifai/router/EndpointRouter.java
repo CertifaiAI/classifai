@@ -442,6 +442,7 @@ public class EndpointRouter extends AbstractVerticle
         }
     }
 
+
     /**
      * Get file system (file/folder) status for a specific boundingbox project
      *

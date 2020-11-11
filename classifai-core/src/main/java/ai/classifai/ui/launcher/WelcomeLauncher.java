@@ -76,7 +76,7 @@ public class WelcomeLauncher extends JFrame
 
     private static ImageIcon browserNotFoundIcon;
 
-    private static ConverterLauncher converterLauncher;
+    private static ConverterLauncher converterLauncher = null;
 
     static
     {
@@ -119,8 +119,6 @@ public class WelcomeLauncher extends JFrame
 
 
     }
-
-
 
     private static void setUpFrame()
     {
@@ -176,9 +174,12 @@ public class WelcomeLauncher extends JFrame
 
     private static void configureConverterLauncher()
     {
-        LookFeelSetter.setDarkMode();
+        if(converterLauncher == null)
+        {
+            LookFeelSetter.setDarkMode();
 
-        converterLauncher = new ConverterLauncher();
+            converterLauncher = new ConverterLauncher();
+        }
     }
 
     private static void setUpOpenButton()

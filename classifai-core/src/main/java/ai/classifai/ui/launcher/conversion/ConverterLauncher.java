@@ -20,6 +20,7 @@ import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,10 +41,10 @@ import java.io.File;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor
 public class ConverterLauncher extends JPanel
 {
-    private ConverterFolderSelector inputFolderSelector;
-    private ConverterFolderSelector outputFolderSelector;
+    private static ConverterFolderSelector folderSelector;
 
     @Getter private static boolean isOpened;
 
@@ -63,11 +64,14 @@ public class ConverterLauncher extends JPanel
     private JLabel inputFolderLabel =  new JLabel("Input Folder     : ");
     private JLabel outputFolderLabel = new JLabel("Output Folder  : ");
 
-    private JButton inputBrowserButton = new JButton("Browse");
-    private JButton outputBrowserButton = new JButton("Browse");
+    private static JButton inputBrowserButton;
+    private static JButton outputBrowserButton;
 
     private static JComboBox inputFormatCombo;
     private static JComboBox outputFormatCombo;
+
+    private static InputFolderListener inputFolderListener;
+    private static OutputFolderListener outputFolderListener;
 
     private JLabel maxPage = new JLabel("Maximum Page: ");
     private JTextField maxPageTextField = new JTextField();
@@ -99,18 +103,15 @@ public class ConverterLauncher extends JPanel
         inputFormatCombo = new JComboBox(inputFormat);
         outputFormatCombo = new JComboBox(outputFormat);
 
+        inputBrowserButton = new JButton("Browse");
+        outputBrowserButton = new JButton("Browse");
+
         taskOutput = new JTextArea(105, 20);
 
         isOpened = false;
-    }
 
-    public ConverterLauncher()
-    {
-        Thread inputFolderThread = new Thread(() -> inputFolderSelector = new ConverterFolderSelector());
+        Thread inputFolderThread = new Thread(() -> folderSelector = new ConverterFolderSelector());
         inputFolderThread.start();
-
-        Thread outputFolderThread = new Thread(() -> outputFolderSelector = new ConverterFolderSelector());
-        outputFolderThread.start();
     }
 
     public static void setInputFolderPath(String inputPath)
@@ -128,7 +129,6 @@ public class ConverterLauncher extends JPanel
         return DEFAULT_OUTPUT_PATH;
     }
 
-
     public static int getMaxPage()
     {
         return MAX_PAGE;
@@ -140,7 +140,6 @@ public class ConverterLauncher extends JPanel
 
         return inputFormat.trim().toLowerCase();
     }
-
 
     public static String getOutputFormat()
     {
@@ -241,12 +240,8 @@ public class ConverterLauncher extends JPanel
 
     private void configure()
     {
-        outputFolderField.setText(DEFAULT_OUTPUT_PATH);
-
         inputFormatCombo.setSelectedIndex(0);
         outputFormatCombo.setSelectedIndex(1);
-
-        //convertButton.setOpaque(true);
 
         design(inputFolderLabel);
         design(outputFolderLabel);
@@ -259,13 +254,22 @@ public class ConverterLauncher extends JPanel
         inputFolderField.setMinimumSize(folderDimension);
 
         design(outputFolderField);
+        outputFolderField.setText(getDefaultOutputPath());
         outputFolderField.setMinimumSize(folderDimension);
 
         design(inputBrowserButton);
-        inputBrowserButton.addActionListener(new InputFolderListener());
+        if(inputFolderListener == null)
+        {
+            inputFolderListener = new InputFolderListener();
+            inputBrowserButton.addActionListener(inputFolderListener);
+        }
 
         design(outputBrowserButton);
-        outputBrowserButton.addActionListener(new OutputFolderListener());
+        if(outputFolderListener == null)
+        {
+            outputFolderListener = new OutputFolderListener();
+            outputBrowserButton.addActionListener(outputFolderListener);
+        }
 
         design(inputFormatCombo);
         design(outputFormatCombo);
@@ -288,7 +292,6 @@ public class ConverterLauncher extends JPanel
         design(convertButton);
 
         convertButton.addActionListener(new ConvertButtonListener());
-
     }
 
     private void design(Object obj)
@@ -439,17 +442,19 @@ public class ConverterLauncher extends JPanel
             }
         }
     }
-    class InputFolderListener implements ActionListener {
+    class InputFolderListener implements ActionListener
+    {
         public void actionPerformed(ActionEvent e)
         {
-            inputFolderSelector.run(ConversionSelection.INPUT);
+            folderSelector.run(ConversionSelection.INPUT);
         }
     }
 
-    class OutputFolderListener implements ActionListener {
+    class OutputFolderListener implements ActionListener
+    {
         public void actionPerformed(ActionEvent e)
         {
-            outputFolderSelector.run(ConversionSelection.OUTPUT);
+            folderSelector.run(ConversionSelection.OUTPUT);
         }
 
     }
