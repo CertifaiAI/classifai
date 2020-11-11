@@ -78,6 +78,7 @@ public class ToolFolderSelector {
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    chooser.setAcceptAllFileFilterUsed(false);
 
                     //Important: prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();

@@ -82,6 +82,7 @@ public class ToolFileSelector
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);
                     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    chooser.setAcceptAllFileFilterUsed(false);
 
                     //Important: prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
