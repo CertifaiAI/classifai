@@ -96,10 +96,6 @@ public class WelcomeLauncher extends JFrame
 
     private static void configure()
     {
-        LookFeelSetter.setDarkMode();
-
-        converterLauncher = new ConverterLauncher();
-
         LookFeelSetter.setLightMode(); //light mode for welcome launcher to prevent around buttons
 
         setUpFrame();
@@ -120,6 +116,8 @@ public class WelcomeLauncher extends JFrame
         {
             log.info("Classifai icon for program path not found", e);
         }
+
+
     }
 
 
@@ -171,6 +169,16 @@ public class WelcomeLauncher extends JFrame
         mainFrame.setResizable(false);
 
         mainFrame.setVisible(true);
+
+        //sequence is important to prevent dark mode of converter launcher interfere with welcome launcher
+        configureConverterLauncher();
+    }
+
+    private static void configureConverterLauncher()
+    {
+        LookFeelSetter.setDarkMode();
+
+        converterLauncher = new ConverterLauncher();
     }
 
     private static void setUpOpenButton()

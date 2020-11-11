@@ -50,7 +50,6 @@ public class ConverterLauncher extends JPanel
 
     private static final int MAX_PAGE = 20;
 
-
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
 
     private static final int ELEMENT_HEIGHT = 40;
@@ -232,7 +231,7 @@ public class ConverterLauncher extends JPanel
         constraints.gridx = 3; constraints.gridy = 4;
         panel.add(convertButton, constraints);
 
-        frame.add(panel);//, BorderLayout.PAGE_START);
+        frame.add(panel);
 
         frame.setIconImage(LogoHandler.getClassifaiIcon());
         frame.setResizable(false);
@@ -285,8 +284,8 @@ public class ConverterLauncher extends JPanel
 
         progressBar.setValue(0);
         progressBar.setUI(new BasicProgressBarUI() {
-            protected Color getSelectionBackground() { return Color.DARK_GRAY; }
-            protected Color getSelectionForeground() { return Color.BLACK; }
+            protected Color getSelectionBackground() { return Color.LIGHT_GRAY; }
+            protected Color getSelectionForeground() { return Color.WHITE; }
         });
 
 
@@ -354,7 +353,7 @@ public class ConverterLauncher extends JPanel
             JProgressBar progressBar = (JProgressBar) obj;
             progressBar.setFont(font);
 
-            progressBar.setForeground(Color.GREEN);
+            progressBar.setForeground(Color.YELLOW);
             progressBar.setPreferredSize(dimension);
 
             progressBar.setBorderPainted(true);
@@ -383,8 +382,6 @@ public class ConverterLauncher extends JPanel
 
     public void launch()
     {
-        LookFeelSetter.setLightMode();
-
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
