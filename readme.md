@@ -83,8 +83,6 @@ then proceed to open a browser and put in url _http://localhost:9999/_
   <img align="middle" width="650" height="390" src="metadata/browser_0.gif"/>
 </p>
 
-
-
 ## Installation
 
 The installation packages of Classifai can be found in [here](https://classifai.ai/).  
@@ -112,10 +110,11 @@ The installation packages and formats are listed below.
 |:-------------:|:-------------:|
 | [Website](https://classifai.ai/) | Official Website|
 | [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
-| [Blogs]() | Technical Posts |
+| [Blogs](https://medium.com/@codenamewei) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 | [Training](https://classifai.ai/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
-## Contact us  
+## Contact us to kickstart your enterprise need for creating quality labelled data
 
-Contact us at _hello@classifai.ai_ for any collaborations or feedbacks! :smiley:
+For custom functionality development support, enterprise support and other related questions, \
+contact the team at _hello@classifai.ai_ or talk to the core backend developer [Chia Wei Lim](codenamewei@gmail.com):smiley:
