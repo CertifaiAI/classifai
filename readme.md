@@ -117,4 +117,4 @@ The installation packages and formats are listed below.
 ## Contact us to kickstart your enterprise need for creating quality labelled data
 
 For custom functionality development support, enterprise support and other related questions, \
-contact the team at _hello@classifai.ai_ or talk to the core backend developer [Chia Wei Lim](mailto:codenamewei@gmail.com):smiley:
+contact the team at _hello@classifai.ai_ or email the core backend developer [Chia Wei Lim](mailto:codenamewei@gmail.com):smiley:
