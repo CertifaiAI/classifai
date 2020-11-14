@@ -7,7 +7,7 @@
 Data Annotation Platform for AI Training
 </h3>
 
-**Classifai** is the more comprehensive open-source data annotation platform.  
+**Classifai** is one of the most comprehensive open-source data annotation platform.  
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
 
 Figure below show how Classifai fits in the machine learning workflow by enabling the labelling of raw data imported from data source. The labelled data can then channel into training environments for AI model training.   
