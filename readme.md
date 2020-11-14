@@ -2,6 +2,21 @@
 <img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="450" height="110" style="float:left"/>
 </p>                                                                                   
 
+<p>
+  <p align="center">
+    <a href="https://github.com/CertifaiAI/classifai/blob/main/LICENSE">
+        <img alt="GitHub" src="https://img.shields.io/github/license/CertifaiAI/classifai.svg">
+    </a>
+    <a href="Discord">
+        <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
+    </a>
+    <a href="https://classifai.ai">
+        <img alt="Documentation" src="https://img.shields.io/website/http/certifai.ai.svg?color=blueviolet">
+    </a>
+    <a href="https://github.com/CertifaiAI/classifai/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=green">
+    </a>
+</p>
 
 <h3 align="center">
 Data Annotation Platform for AI Training
