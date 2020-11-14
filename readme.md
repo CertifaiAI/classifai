@@ -50,7 +50,7 @@ We aim to solve these in **Classifai** by providing significant value to the dat
 </center>
 
 - [Stay tune with these features coming up below]   
-  - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks. \
+  - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.  
   - Support labelling of more data types in demand - video, tabular and voice data
   - Data management
 
@@ -78,7 +78,7 @@ Click on the sub-category accordingly for the desired operation.
 
 **Classifai** is a web-based application which can opens in either **Chrome, Firefox** browser \
 or any Chromium-based browser such as **Opera** and **Vivaldi**. \
-(Note: Internet Explorer is not supported)  
+(Note: Internet Explorer & Microsoft Edge is not supported)  
 
 There are two ways to open classifai in the browser
 1. Click on the first button of **Welcome Launcher**
@@ -124,12 +124,12 @@ The installation packages and formats are listed below.
 
 | Operating System | Supported Version | Installation package format |
 |:-------------:|:-------------:|:-------------:|
-| [Windows](https://classifai.ai/) | 7, 8, 10 | msi|
-| [Mac](https://classifai.ai/) | 10 | dmg |
-| [Ubuntu](https://classifai.ai/) | 18 LTS, 20 LTS | deb |
-| [Centos](https://classifai.ai/) | 7, 8 | rpm |
+| [Windows](https://s3.eu-central-1.wasabisys.com/classifai/window_distribution/classifai-win-1.0.0.msi) | 7, 8, 10 | msi|
+| [Mac](https://s3.eu-central-1.wasabisys.com/classifai/mac_distribution/classifai-1.0.0.dmg) | 10 | dmg |
+| Ubuntu | [18 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu18-1.0.0.deb), [20 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu20-1.0.0.deb) | deb |
+| Centos | [7](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos7-1.0.0.rpm), [8](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos8-1.0.0.rpm) | rpm |
 
-Alternatively, download the [uber jar file](https://classifai.ai/) and run with Java JDK/JRE 14.  
+Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.com/classifai/uber_jar/classifai-uberjar-1.0.0.jar) and run with Java JDK/JRE 14.  
 ```
 java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
 ```
