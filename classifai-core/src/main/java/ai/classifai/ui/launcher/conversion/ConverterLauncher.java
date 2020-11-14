@@ -367,7 +367,7 @@ public class ConverterLauncher extends JPanel
 
             textArea.setMargin(new Insets(5,5,5,5));
             textArea.setEditable(false);
-
+            textArea.setText(null);
             textArea.setForeground(Color.WHITE);
         }
         else if(obj instanceof JComponent)

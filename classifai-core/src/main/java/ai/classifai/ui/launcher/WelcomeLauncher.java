@@ -243,6 +243,7 @@ public class WelcomeLauncher extends JFrame
             {
                 if(!ConverterLauncher.isOpened())
                 {
+                    converterLauncher = new ConverterLauncher();//to prevent any lingering tasks
                     converterLauncher.launch();
                 }
             }
