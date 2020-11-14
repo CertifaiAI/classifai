@@ -144,7 +144,7 @@ java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 | Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
-## Contact us to kickstart your enterprise need for creating quality labelled data
+## Contact us
 
 For custom functionality development support, enterprise support and other related questions, \
 contact the team at _hello@classifai.ai_:smiley:
