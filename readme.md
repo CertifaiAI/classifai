@@ -25,6 +25,11 @@ Data labelling tasks are challenging due to a few factors:
 
 We aim to solve these in **Classifai** by providing significant value to the data science workflow.
 
+<p align="center">
+  <img align="middle" width="800" height="500" src="metadata/classifai_overview.png"/>
+</p>
+
+
 ## Features
 - Platform-agnostic
   -  Classifai is build with Java backend. \
@@ -62,12 +67,12 @@ Click on the sub-category accordingly for the desired operation.
 
 **Bounding Box Annotation**
 <p align="center">
-  <img align="middle" width="650" height="390" src="metadata/bounding_box_0.gif"/>
+  <img align="middle" width="650" height="360" src="metadata/bounding_box_0.gif"/>
 </p>
 
 **Segmentation Annotation**
 <p align="center">
-  <img align="middle" width="650" height="390" src="metadata/segmentation_0.gif"/>
+  <img align="middle" width="650" height="360" src="metadata/segmentation_0.gif"/>
 </p>
 
 **Classifai** is a web-based application which can opens in either **Chrome, Firefox** browser \
@@ -99,6 +104,9 @@ Let alone data labellers were facing a hard time trying to convert these files i
 **Classifai** comes with a Conversion Launcher.  
 Currently supporting the conversion of format of **pdf/tif** to **png/jpg**.  
 
+<p align="center">
+  <img align="middle" width="650" height="390" src="metadata/converterlauncher.gif"/>
+</p>
 
 ## Installation
 
@@ -119,6 +127,11 @@ The installation packages and formats are listed below.
 | [Mac](https://classifai.ai/) | 10 | dmg |
 | [Ubuntu](https://classifai.ai/) | 18 LTS, 20 LTS | deb |
 | [Centos](https://classifai.ai/) | 7, 8 | rpm |
+
+Alternatively, download the [uber jar file](https://classifai.ai/) and run with Java JDK/JRE 14.  
+```
+java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
+```
 
 ## Learn More 
 
