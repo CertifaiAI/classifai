@@ -12,7 +12,7 @@ It supports the labelling of various data types with multi labelled outputs form
 
 Figure below show how Classifai fits in the machine learning workflow. \
 It enables the labelling of raw data imported from data source. \
-The labelled data can then channel into training environments for AI model training.
+The labelled data can then channel into training environments for supervised / semi-supervised learning.
 
 <p align="center">
   <img align="middle" src="metadata/classifai_workflow_0_0.gif"/>
@@ -50,7 +50,8 @@ We aim to solve these in **Classifai** by providing significant value to the dat
 </center>
 
 - [Stay tune with these features coming up below]   
-  - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.  
+  - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks. \
+  - Support labelling of more data types in demand - video, tabular and voice data
   - Data management
 
 
