@@ -10,7 +10,9 @@ Data Annotation Platform for AI Training
 **Classifai** is one of the most comprehensive open-source data annotation platform.  
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
 
-Figure below show how Classifai fits in the machine learning workflow by enabling the labelling of raw data imported from data source. The labelled data can then channel into training environments for AI model training.   
+Figure below show how Classifai fits in the machine learning workflow. \
+It enables the labelling of raw data imported from data source. \
+The labelled data can then channel into training environments for AI model training.
 
 <p align="center">
   <img align="middle" src="metadata/classifai_workflow_0_0.gif"/>
@@ -21,14 +23,16 @@ Data labelling tasks are challenging due to a few factors:
 - off-the-shelves toolkit which cannot fulfill the use cases needs.
 - frustration processes to convert data to supported format types for labelling work
 
-We aim to solve these in classifai to provide significant value to the data science workflow.
+We aim to solve these in **Classifai** by providing significant value to the data science workflow.
 
 ## Features
 - Platform-agnostic
+  -  Classifai is build with Java backend. \
+     As Java is platform-neutral, it is as simple as download the classifai uber jar file and run it with Java runtime.
 - Asynchronous API - Fast and speedy response
 - In-memory Java-based database
-- Conversion of conventional data types to preferred formats
-- Current supported data type formats  
+- Conversion of conventional data types to preferred formats (For example: .pdf format to .png format)
+- Multi data types supported
 <center>
   
 | Images        | Documents|Video|Tabular|Voice|
@@ -40,7 +44,7 @@ We aim to solve these in classifai to provide significant value to the data scie
 
 </center>
 
-- [Still WIP. Stay tune with these features coming up below]   
+- [Stay tune with these features coming up below]   
   - **AI in the Loop** - Deep Learning assistant for labelling task to reclaim valuable time for meaningful ML/DL tasks.  
   - Data management
 
@@ -66,7 +70,8 @@ Click on the sub-category accordingly for the desired operation.
   <img align="middle" width="650" height="390" src="metadata/segmentation_0.gif"/>
 </p>
 
-**Classifai** is a web-based application which can opens in either **Chrome / Firefox** browser.  
+**Classifai** is a web-based application which can opens in either **Chrome, Firefox** browser \
+or any Chromium-based browser such as **Opera** and **Vivaldi**. \
 (Note: Internet Explorer is not supported)  
 
 There are two ways to open classifai in the browser
@@ -83,6 +88,18 @@ then proceed to open a browser and put in url _http://localhost:9999/_
   <img align="middle" width="650" height="390" src="metadata/browser_0.gif"/>
 </p>
 
+**Conversion of files** \
+We put into great thought into how data scientists build modelling with data.  
+
+When building use cases such as Optical Character Recognition (OCR) or medical related use cases,  
+often the raw data formats such as pdf/tif were not commonly used in the modelling.  
+
+Let alone data labellers were facing a hard time trying to convert these files into supported formats.  
+
+**Classifai** comes with a Conversion Launcher.  
+Currently supporting the conversion of format of **pdf/tif** to **png/jpg**.  
+
+
 ## Installation
 
 The installation packages of Classifai can be found in [here](https://classifai.ai/).  
@@ -96,12 +113,12 @@ Classifai supports the following Operating Systems.
 Installation comes in distribution built with Java for each operating system.  
 The installation packages and formats are listed below.
 
-| Operating System | Installation package format |
-|:-------------:|:-------------:|
-| [Windows](https://classifai.ai/) | msi|
-| [Mac](https://classifai.ai/) | dmg |
-| [Ubuntu](https://classifai.ai/) | deb |
-| [Centos](https://classifai.ai/) | rpm |
+| Operating System | Supported Version | Installation package format |
+|:-------------:|:-------------:|:-------------:|
+| [Windows](https://classifai.ai/) | 7, 8, 10 | msi|
+| [Mac](https://classifai.ai/) | 10 | dmg |
+| [Ubuntu](https://classifai.ai/) | 18 LTS, 20 LTS | deb |
+| [Centos](https://classifai.ai/) | 7, 8 | rpm |
 
 ## Learn More 
 
@@ -112,9 +129,9 @@ The installation packages and formats are listed below.
 | [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
 | [Blogs](https://medium.com/@codenamewei) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
-| [Training](https://classifai.ai/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
+| Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
 ## Contact us to kickstart your enterprise need for creating quality labelled data
 
 For custom functionality development support, enterprise support and other related questions, \
-contact the team at _hello@classifai.ai_ or email the core backend developer [Chia Wei Lim](mailto:codenamewei@gmail.com):smiley:
+contact the team at _hello@classifai.ai_:smiley:
