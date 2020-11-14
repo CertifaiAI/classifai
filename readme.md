@@ -128,8 +128,6 @@ Currently supporting the conversion of format of **pdf/tif** to **png/jpg**.
 
 ## Installation
 
-The installation packages of Classifai can be found in [here](https://classifai.ai/).  
-
 Classifai supports the following Operating Systems.  
 
 <p align="center">
