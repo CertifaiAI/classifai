@@ -16,7 +16,7 @@ these are few common and useful shortcut keys have been created.
 | 4  | Ctrl + c     | Copy a selected bounding box|
 | 5  | Ctrl + v     | Paste a selected bounding box |
 | 6  | Delete/Backspace | Delete a selected bounding box |
-| 7  | Double click on a selected polygon in the UI | Choose label for the selected bounding box |
+| 7  | Double click on a selected bounding box in the UI | Choose label for the selected bounding box |
 
 ## 2.0 Segmentation
 ![Segmentation-keyboard](/metadata/segmentation-keyboard.png)
