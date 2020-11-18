@@ -11,7 +11,7 @@ these are few common and useful shortcut keys have been created.
 | Shortcut Key | Functionality | 
 | -------------|-------------|
 | ctrl + shift | toggle between draw boundingbox & move image| 
-| ctrl + alt   | toggle green light on/off <ul><li>on: move single boundingbox by using arrow key</li> <li>off: left/right key to next/previous images</li></ui> |
+| ctrl + alt   | toggle green light on/off <ul><li>on: move single boundingbox by using arrow key</li> <li>off: left/right key to change to next/previous images</li></ui> |
 | ctrl + c     | copy a single boundingbox|
 | ctrl + v     | paste a single boundingbox |
 | ctrl + z     | undo stages |
@@ -24,10 +24,10 @@ these are few common and useful shortcut keys have been created.
 | Shortcut Key | Functionality |
 | -------------|-------------|
 | ctrl + shift | toggle between draw Polygon & move image | 
-| ctrl + alt   | toggle green light on/off <ul><li>on: move single polygon by using arrow key</li> <li>off: left/right key to next/previous images</li></ul> |
+| ctrl + alt   | toggle green light on/off <ul><li>on: move single polygon by using arrow key</li> <li>off: left/right key to change to next/previous images</li></ul> |
 | ctrl + c     | copy a single polygon |
 | ctrl + v     | paste a single polygon |
 | ctrl + z     | undo stages |
-| delete/backspace | <ul><li>delete a selected polygon</li> <li>delete last drawing dot</li></ul> |
+| delete/backspace | <ul><li>delete a selected polygon</li> <li>delete last drawing dot (during drawing new polygon)</li></ul> |
 | double click on selected polygon (when click drawing tool) | label selection list appear |
 | Esc          | reset/clear an halfway draw polygon (during draw new polygon) |
