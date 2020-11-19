@@ -23,6 +23,7 @@ import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -93,11 +94,23 @@ public class ToolFolderSelector {
                     {
                         File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
 
+                        String[] fileExtension = ImageFileType.getImageFileTypes();
+
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            java.util.List<File> checkFileFormat = FileHandler.processFolder(rootFolder, fileExtension);
 
-                            ImageHandler.processFolder(projectID, rootFolder);
+                            if(checkFileFormat.isEmpty() != true)
+                            {
+                                loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
+                                ImageHandler.processFolder(projectID, rootFolder);
+                            }
+                            else
+                            {
+                                loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            }
+
                         }
                         else
                         {

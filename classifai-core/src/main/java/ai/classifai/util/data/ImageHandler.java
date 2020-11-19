@@ -228,7 +228,9 @@ public class ImageHandler {
             }
 
             /*if(PdfHandler.isPdf(currentFileFullPath)) {
+
                 java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
+
                 if(pdf2ImagePaths != null)
                 {
                     verifiedFilesList.addAll(pdf2ImagePaths);
@@ -317,6 +319,11 @@ public class ImageHandler {
                     List<File> files = checkFile(file);
                     totalFilelist.addAll(files);
                 }
+            }
+
+            for(File f2 : totalFilelist)
+            {
+                System.out.println(f2);
             }
         }
 
