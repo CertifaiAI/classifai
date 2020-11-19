@@ -31,6 +31,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
