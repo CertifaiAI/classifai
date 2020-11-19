@@ -92,7 +92,7 @@
         <dependencies>
             <dependency>
                 <groupId>ai.classifai</groupId>
-                <artifactId>classifai-exe</artifactId>
+                <artifactId>classifai-uberjar</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
