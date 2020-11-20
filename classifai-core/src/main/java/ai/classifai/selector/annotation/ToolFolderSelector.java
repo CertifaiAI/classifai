@@ -94,12 +94,8 @@ public class ToolFolderSelector {
                     {
                         File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
 
-                        String[] fileExtension = ImageFileType.getImageFileTypes();
-
                         if((rootFolder != null) && (rootFolder.exists()))
                         {
-                            java.util.List<File> checkFileFormat = FileHandler.processFolder(rootFolder, fileExtension);
-
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
