@@ -297,10 +297,18 @@ public class ImageHandler {
     public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
-
         Stack<File> folderStack = new Stack<>();
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+        java.util.List<File> checkFileFormat = FileHandler.processFolder(rootPath, fileExtension);
 
         folderStack.push(rootPath);
+
+        if(checkFileFormat.isEmpty())
+        {
+            loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            return;
+        }
 
         while(folderStack.isEmpty() != true)
         {
@@ -321,10 +329,6 @@ public class ImageHandler {
                 }
             }
 
-            for(File f2 : totalFilelist)
-            {
-                System.out.println(f2);
-            }
         }
 
         saveToDatabase(projectID, totalFilelist);

@@ -100,16 +100,9 @@ public class ToolFolderSelector {
                         {
                             java.util.List<File> checkFileFormat = FileHandler.processFolder(rootFolder, fileExtension);
 
-                            if(checkFileFormat.isEmpty() != true)
-                            {
-                                loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-                                ImageHandler.processFolder(projectID, rootFolder);
-                            }
-                            else
-                            {
-                                loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            }
+                            ImageHandler.processFolder(projectID, rootFolder);
 
                         }
                         else
