@@ -1,3 +1,5 @@
+# Copyright (c) 2020 CertifAI Sdn. Bhd.
+
 # Compiled class file
 *.class
 
@@ -32,3 +34,23 @@ target/
 
 #log file
 classifai.log
+
+#classifai-distro
+output/*
+input/*
+
+#windows-distro
+*.msi
+*.exe
+chrome-win/*
+*.dll
+
+#mac-distro
+*.pkg
+*.dmg
+chrome-mac/*
+Chromium.app
+
+#linux
+*.deb
+*.rpm

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~  Copyright (c) 2020 CertifAI
+  ~  Copyright (c) 2020 CertifAI Sdn. Bhd.
   ~
   ~  This program and the accompanying materials are made available under the
   ~  terms of the Apache License, Version 2.0 which is available at
@@ -17,7 +17,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>ai.certifai.classifai</groupId>
+        <groupId>ai.classifai</groupId>
         <artifactId>classifai</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -28,9 +28,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>ai.certifai.classifai</groupId>
+            <groupId>ai.classifai</groupId>
             <artifactId>classifai-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
