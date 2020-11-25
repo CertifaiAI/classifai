@@ -22,7 +22,7 @@ import lombok.NonNull;
 /**
  * Configure response to send back to client in a more systematic manner
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public class HTTPResponseHandler
 {

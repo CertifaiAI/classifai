@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 /***
  * Loader status for project loading
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public enum LoaderStatus

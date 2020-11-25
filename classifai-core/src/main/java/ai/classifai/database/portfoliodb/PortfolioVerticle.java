@@ -21,6 +21,7 @@ import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.server.ParamConfig;
+import ai.classifai.database.VerticleServiceable;
 import ai.classifai.util.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.message.ErrorCodes;
@@ -42,15 +43,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Portfolio is a collection of projects
- * Each projects contains respective UUIDs
+ * General database processing to get high level infos of each created project
  *
- * @author Chiawei Lim
+ * @author codenamewwei
  */
 @Slf4j
-public class PortfolioVerticle extends AbstractVerticle implements PortfolioServiceable
+public class PortfolioVerticle extends AbstractVerticle implements VerticleServiceable, PortfolioServiceable
 {
-    //connection to database
     private static JDBCClient portfolioDbClient;
 
     public void onMessage(Message<JsonObject> message)
@@ -117,7 +116,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
             Integer projectID = ProjectHandler.generateProjectID();
 
-            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.getEmptyArray()).add(0).add(ParamConfig.getEmptyArray());
+            JsonArray params = new JsonArray()
+                    .add(projectID)                    //project_id
+                    .add(projectName)                  //project_name
+                    .add(annotationType)               //annotation_type
+                    .add(ParamConfig.getEmptyArray())  //label_list
+                    .add(0)                            //uuid_generator_seed
+                    .add(ParamConfig.getEmptyArray()); //uuid_list
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
@@ -140,20 +145,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     }
 
-    public static void updateUUIDGeneratorSeed(@NonNull Integer projectID, @NonNull Integer seedNumber)
-    {
-        ProjectHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
-
-        JsonArray params = new JsonArray().add(seedNumber).add(projectID);
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateUUIDGeneratorSeed(), params, fetch -> {
-
-            if(!fetch.succeeded()) {
-                log.error("Update seed number in Portfolio failed. Project expected to hit error: ", fetch.cause().getMessage());
-            }
-        });
-    }
-
     public void updateLabelList(Message<JsonObject> message)
     {
         Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
@@ -173,6 +164,40 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 message.reply(ReplyHandler.getOkReply());
             }
             else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void getLabelList(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectLabelList(), params, fetch -> {
+
+            if (fetch.succeeded()) {
+                ResultSet resultSet = fetch.result();
+                JsonArray row = resultSet.getResults().get(0);
+
+                List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
+
+                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+                if(loader != null)
+                {
+                    loader.setLabelList(labelList);
+                }
+                else if(loader == null)
+                {
+                    log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
+                }
+
+                message.reply(ReplyHandler.getOkReply());
+
+            } else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -214,40 +239,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public void getLabelList(Message<JsonObject> message)
-    {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
-
-        JsonArray params = new JsonArray().add(projectID);
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectLabelList(), params, fetch -> {
-
-            if (fetch.succeeded()) {
-                ResultSet resultSet = fetch.result();
-                JsonArray row = resultSet.getResults().get(0);
-
-                List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
-
-                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
-                if(loader != null)
-                {
-                    loader.setLabelList(labelList);
-                }
-                else if(loader == null)
-                {
-                    log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
-                }
-
-                message.reply(ReplyHandler.getOkReply());
-
-            } else
-            {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
-    }
-
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
@@ -269,6 +260,20 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             }
             else {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public static void updateUUIDGeneratorSeed(@NonNull Integer projectID, @NonNull Integer seedNumber)
+    {
+        ProjectHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
+
+        JsonArray params = new JsonArray().add(seedNumber).add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateUUIDGeneratorSeed(), params, fetch -> {
+
+            if(!fetch.succeeded()) {
+                log.error("Update seed number in Portfolio failed. Project expected to hit error: ", fetch.cause().getMessage());
             }
         });
     }
@@ -345,7 +350,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     }
 
     @Override
-    public void stop(Promise<Void> promise) throws Exception
+    public void stop(Promise<Void> promise)
     {
         log.info("Portfolio Verticle stopping...");
 
@@ -354,11 +359,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         if(lockFile.exists()) lockFile.delete();
     }
 
-
     //obtain a JDBC client connection,
     //Performs a SQL query to create the portfolio table unless existed
     @Override
-    public void start(Promise<Void> promise) throws Exception
+    public void start(Promise<Void> promise)
     {
 
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()

@@ -17,6 +17,8 @@ package ai.classifai.selector;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.ui.button.LookFeelSetter;
+import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -33,7 +35,7 @@ import java.io.File;
 /**
  * Open browser to select folder with importing list of data points in the folder
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class FolderSelector{
@@ -42,6 +44,8 @@ public class FolderSelector{
 
     public void run(@NonNull Integer projectID)
     {
+        LookFeelSetter.setDarkMode();
+
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -51,6 +55,8 @@ public class FolderSelector{
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
+
+                    frame.setIconImage(LogoLauncher.getClassifaiIcon());
                     frame.setAlwaysOnTop(true);
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.setLocation(pt);
@@ -72,11 +78,15 @@ public class FolderSelector{
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    chooser.setAcceptAllFileFilterUsed(false);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
                     int res = chooser.showOpenDialog(frame);
+
                     frame.dispose();
 
-                    //prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -87,6 +97,7 @@ public class FolderSelector{
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
+
                         }
                         else
                         {

@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ConversionHandler
 {
-
     public static <T> List<T> set2List(Set<T> setList)
     {
         List<T> list = new ArrayList<T>();

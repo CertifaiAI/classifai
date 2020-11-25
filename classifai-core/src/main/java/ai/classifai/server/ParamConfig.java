@@ -15,6 +15,9 @@
  */
 package ai.classifai.server;
 
+import ai.classifai.util.type.OS;
+import ai.classifai.ui.button.OSManager;
+import ai.classifai.annotation.AnnotationType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,19 +26,35 @@ import java.io.File;
 /**
  * Parameter for server in general
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
+
 public class ParamConfig
 {
+
     @Getter @Setter private static Integer hostingPort;
+
+    private static final String FILE_SEPARATOR;
+    private final static OSManager OS_MANAGER;
 
     static
     {
+        OS_MANAGER = new OSManager();
+
         hostingPort = 9999;
+
+        if(OS_MANAGER.getCurrentOS().equals(OS.WINDOWS))
+        {
+            FILE_SEPARATOR = "\\\\";
+        }
+        else
+        {
+            FILE_SEPARATOR = File.separator;
+        }
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = System.getProperty("user.home") + "\\logs\\" + "classifai.log";
+    private static final String LOG_FILE_PATH = System.getProperty("user.home") + File.separator + "logs" + File.separator + "classifai.log";
 
     private final static String PROJECT_NAME_PARAM = "project_name";
     private final static String PROJECT_ID_PARAM = "project_id";
@@ -74,10 +93,13 @@ public class ParamConfig
     private static final String FILE_PARAM = "file";
     private static final String FOLDER_PARAM = "folder";
 
-
     private final static String ACTION_KEYWORD = "action";
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
+
+    public static OSManager getOsManager() {return OS_MANAGER;}
+
+    public static String getFileSeparator() {return FILE_SEPARATOR;}
 
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
@@ -125,5 +147,19 @@ public class ParamConfig
     public static String getContent() { return CONTENT; }
     public static String getProgressMetadata() { return PROGRESS_METADATA; }
 
+    public static String getAnnotationParam(AnnotationType type)
+    {
+        if(type.equals(AnnotationType.BOUNDINGBOX))
+        {
+            return ParamConfig.getBoundingBoxParam();
+        }
+        else if(type.equals(AnnotationType.SEGMENTATION))
+        {
+            return ParamConfig.getSegmentationParam();
+        }
+        //TODO: Add more annotation type here when added
+
+        return null;
+    }
 
 }

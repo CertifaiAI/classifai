@@ -17,13 +17,16 @@ package ai.classifai.util.image;
 
 import ai.classifai.annotation.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
 import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.database.segdb.SegDbQuery;
 import ai.classifai.database.segdb.SegVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Image Handler
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ImageHandler {
@@ -183,21 +186,6 @@ public class ImageHandler {
     }
 
 
-    private static boolean isfileSupported(String file)
-    {
-        for(String format : ImageFileType.getImageFileTypes())
-        {
-            Integer beginIndex = file.length() - format.length();
-            Integer endIndex = file.length();
-
-            if(file.substring(beginIndex, endIndex).equals(format))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static boolean isImageFileValid(String file)
     {
         try {
@@ -231,7 +219,7 @@ public class ImageHandler {
 
         String currentFileFullPath = file.getAbsolutePath();
 
-        if(isfileSupported(currentFileFullPath))
+        if(FileHandler.isfileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
         {
             if(isImageFileValid(currentFileFullPath))
             {
@@ -278,7 +266,7 @@ public class ImageHandler {
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
-                BoundingBoxVerticle.updateUUID(projectID, filesCollection.get(i), uuid, i + 1);
+                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -287,7 +275,7 @@ public class ImageHandler {
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
-                SegVerticle.updateUUID(projectID, filesCollection.get(i), uuid, i + 1);
+                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), SegDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
 
             }
         }
@@ -308,10 +296,17 @@ public class ImageHandler {
     public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
-
         Stack<File> folderStack = new Stack<>();
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+        java.util.List<File> checkFileFormat = FileHandler.processFolder(rootPath, fileExtension);
 
         folderStack.push(rootPath);
+
+        if(checkFileFormat.isEmpty())
+        {
+            loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+        }
 
         while(folderStack.isEmpty() != true)
         {
@@ -335,4 +330,5 @@ public class ImageHandler {
 
         saveToDatabase(projectID, totalFilelist);
     }
+
 }

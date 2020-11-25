@@ -18,7 +18,7 @@ package ai.classifai.annotation;
 /**
  * Types of Annotation
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 public enum AnnotationType
 {

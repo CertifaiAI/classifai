@@ -32,7 +32,7 @@
 
     <name>classifai</name>
     <description>
-        Deep learning powered data annotator toolkit
+        The most comprehensive open-source data annotation toolkit
     </description>
     <url>http://classifai.ai/</url>
 
@@ -53,17 +53,26 @@
             <id>BobbyLCW</id>
             <name>Bobby Lee Chun Wei</name>
         </developer>
+        <developer>
+            <id>Toh</id>
+            <name>Toh Sie Hung</name>
+        </developer>
+        <developer>
+            <id>Daniel</id>
+            <name>Daniel Lim Heng Jie</name>
+        </developer>
     </developers>
 
     <properties>
         <vertx.version>3.9.0</vertx.version>
-        <junit.version>4.13</junit.version>
+        <junit.version>4.13.1</junit.version>
         <lombok.version>1.18.12</lombok.version>
         <slf4j.version>1.7.30</slf4j.version>
         <hsqldb.version>2.5.1</hsqldb.version>
         <jbig.version>3.0.3</jbig.version>
         <fontbox.version>2.0.20</fontbox.version>
         <jai.imageio.version>1.3.0</jai.imageio.version>
+        <flatlaf.version>0.43</flatlaf.version>
         <commons.io.version>2.6</commons.io.version>
         <pdfbox.version>2.0.21</pdfbox.version>
         <logback.version>1.2.3</logback.version>
@@ -83,7 +92,7 @@
         <dependencies>
             <dependency>
                 <groupId>ai.classifai</groupId>
-                <artifactId>classifai-exe</artifactId>
+                <artifactId>classifai-uberjay</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
@@ -121,6 +130,11 @@
                 <artifactId>vertx-unit</artifactId>
                 <version>${vertx.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.formdev</groupId>
+                <artifactId>flatlaf</artifactId>
+                <version>${flatlaf.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>

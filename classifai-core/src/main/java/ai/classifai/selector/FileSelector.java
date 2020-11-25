@@ -19,6 +19,8 @@ package ai.classifai.selector;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.ui.button.LookFeelSetter;
+import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ProjectHandler;
@@ -35,7 +37,7 @@ import java.util.ArrayList;
 /**
  * Open browser to select files
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class FileSelector{
@@ -43,6 +45,8 @@ public class FileSelector{
 
     public void run(@NonNull Integer projectID)
     {
+        LookFeelSetter.setDarkMode();
+
         try {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -53,6 +57,8 @@ public class FileSelector{
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
+                    frame.setIconImage(LogoLauncher.getClassifaiIcon());
+
                     frame.setAlwaysOnTop(true);
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                     frame.setLocation(pt);
@@ -75,11 +81,14 @@ public class FileSelector{
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);
                     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    chooser.setAcceptAllFileFilterUsed(false);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
-                    //prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -113,5 +122,4 @@ public class FileSelector{
     }
 
 }
-
 

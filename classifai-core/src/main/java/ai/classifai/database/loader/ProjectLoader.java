@@ -26,7 +26,7 @@ import java.util.*;
 /**
  * Class per project for managing the loading of project
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class ProjectLoader

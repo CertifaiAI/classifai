@@ -19,13 +19,21 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 /***
- * @author Chiawei Lim
+ * common functionalities for Portfolio Vecticle
+ *
+ * @author codenamewei
  */
 public interface PortfolioServiceable
 {
     void createNewProject(Message<JsonObject> message);
 
+    void updateLabelList(Message<JsonObject> message);
+
+    void getLabelList(Message<JsonObject> message);
+
     void getProjectUUIDList(Message<JsonObject> message);
 
     void getAllProjectsForAnnotationType(Message<JsonObject> message);
+
+    void configurePortfolioVerticle();
 }

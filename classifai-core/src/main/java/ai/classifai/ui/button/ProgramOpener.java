@@ -16,18 +16,21 @@
 package ai.classifai.ui.button;
 
 import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.type.OS;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.util.List;
-import java.util.Map;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
+/**
+ * Browser Opening for Classifai
+ *
+ * @author codenamewei
+ */
 @Slf4j
+@NoArgsConstructor
 public class ProgramOpener
 {
     private static ImageIcon browserNotFoundIcon;
@@ -42,110 +45,44 @@ public class ProgramOpener
         }
         catch (Exception e)
         {
-            log.info("Classifai icon for Program Path Not Found is missing", e);
+            log.info("Classifai icon for Program Path Not Found", e);
         }
     }
 
-    public static void launch(OS currentOS, Map<String, List<String>> programKey, String param, boolean isCommandPrompt)
-    {
-        boolean programNotFound = true;//default as true
-
-        if(programKey.containsKey(currentOS.name()))
-        {
-            List<String> programList = programKey.get(currentOS.name());
-
-            if((programList == null) || (programList.isEmpty()))
-            {
-                failToOpenProgramPathMessage("Program for " + currentOS.name() + " cannot be found");
-                return;
-            }
-
-            for(String browser : programList)
-            {
-                if((programNotFound == true) && (isProgramPathExist(browser)))
-                {
-                    if(runProgramPath(currentOS, browser, param, isCommandPrompt))
-                    {
-                        programNotFound = false;
-                        break;
-                    }
-                }
-            }
-
-            if(programNotFound)
-            {
-                failToOpenProgramPathMessage("Initialization of program path failed in current OS: " + currentOS.name());
-                return;
-            }
-
-        }
-        else
-        {
-            String osNotSupportedMessage = "Current selected OS is not supported yet";
-            failToOpenProgramPathMessage(osNotSupportedMessage);
-            return;
-        }
-    }
-
-    public static boolean runProgramPath(OS os, String programPath, String param, boolean isOpenInPrompt)
+    public static boolean runProgramPath(OS os, String[] commandPath)
     {
         boolean isProgramAbleToRun = false;
-        String[] commandPath = null;
-
-        if(os.equals(OS.MAC))
-        {
-            commandPath = new String[]{"/usr/bin/open", "-a", programPath, param};
-        }
-        else if(os.equals(OS.WINDOWS))
-        {
-            if(isOpenInPrompt)
-            {
-                commandPath = new String[]{"cmd", "/c", "start \"" + programPath + "\" " + param};
-            }
-            else
-            {
-                commandPath = new String[]{programPath + " " + param};
-            }
-
-        }
 
         try
         {
-            if(isOpenInPrompt)
+            if(os.equals(OS.LINUX) || os.equals(OS.MAC))
             {
-                Runtime.getRuntime().exec(commandPath);
+                isProgramAbleToRun = isRunning(Runtime.getRuntime().exec(commandPath));
             }
             else
             {
-                Runtime.getRuntime().exec(ConversionHandler.arrayString2String(commandPath));
+                isProgramAbleToRun = isRunning(Runtime.getRuntime().exec(ConversionHandler.arrayString2String(commandPath)));
             }
 
-            isProgramAbleToRun =  true; // reach here means can run, else throw exception
         }
         catch(Exception e)
         {
-            log.debug("Failed to run " + programPath + " " + param + ": ", e);
+            log.info("Failed to run " + ConversionHandler.arrayString2String(commandPath) +  ": ", e);
         }
 
         return isProgramAbleToRun;
+
     }
 
-    public static boolean isProgramPathExist(String appPath)
+    public static boolean isRunning(Process process)
     {
-        if(new File(appPath).exists() == false)
-        {
-            log.debug("Program not found - " + appPath);
-
+        try {
+            process.exitValue();
             return false;
         }
-
-        return true;
+        catch (Exception e) {
+            return true;
+        }
     }
 
-    public static void failToOpenProgramPathMessage(String message)
-    {
-        log.info(message);
-        showMessageDialog(null, message,
-                "Oops!", JOptionPane.INFORMATION_MESSAGE, browserNotFoundIcon);
-    }
 }
