@@ -132,6 +132,26 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
+    public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
+    {
+        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(query, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                log.debug("Failure in deleting uuid list from Annotation Verticle");
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
     public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
         JsonArray params = new JsonArray()

@@ -62,6 +62,32 @@ public class ProjectHandler {
         projectNameSearch = new HashMap<Integer, Pair<String, Integer>>();
     }
 
+    public static void deleteProjectWithID(Integer projectID)
+    {
+        try
+        {
+            Pair projectPair = (Pair) projectNameSearch.remove(projectID);
+
+            if(projectPair == null)
+            {
+                throw new NullPointerException("Deletion of ProjectPair from Project Handler failed.");
+            }
+
+            if(projectIDLoaderDict.remove(projectID) == null)
+            {
+                throw new NullPointerException("Deletion of Project from ProjectIDLoader failed.");
+            }
+
+            if(projectIDSearch.remove(projectPair) == null)
+            {
+                throw new NullPointerException("Deletion of Project from ProjectIDSearch failed.");
+            }
+        }
+        catch(Exception e)
+        {
+            log.debug("Error: ", e);
+        }
+    }
 
     public static Integer generateProjectID()
     {
