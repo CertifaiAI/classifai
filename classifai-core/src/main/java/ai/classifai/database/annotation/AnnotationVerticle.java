@@ -60,7 +60,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 if (resultSet.getNumRows() == 0)
                 {
                     String projectName = message.body().getString(ParamConfig.getProjectNameParam());
-                    String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                    String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else
@@ -111,7 +111,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
-            JsonArray params = new JsonArray().add(UUID).add(projectID);
+            JsonArray params = new JsonArray().add(projectID).add(UUID);
 
             jdbcClient.queryWithParams(query, params, fetch -> {
 

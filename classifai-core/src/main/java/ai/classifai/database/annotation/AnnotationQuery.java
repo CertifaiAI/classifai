@@ -26,7 +26,7 @@ public abstract class AnnotationQuery
 
     protected final static String RETRIEVE_DATA_PATH = "select img_path from Project where uuid = ? and project_id = ?";
 
-    protected final static String LOAD_VALID_PROJECT_UUID = "load valid project uuid";
+    protected final static String LOAD_VALID_PROJECT_UUID = "select img_path from Project where project_id = ? and uuid = ?";
 
     protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ?";
 
