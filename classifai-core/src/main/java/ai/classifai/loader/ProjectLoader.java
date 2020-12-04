@@ -156,6 +156,23 @@ public class ProjectLoader
 
     }
 
+    /***
+     * Delete UUID from list
+     *
+     * @param uuid
+     * @return false if uuid in sanityUUIDLis not found
+     */
+    public boolean deleteUUID(Integer uuid)
+    {
+        if(sanityUUIDList.contains(uuid))
+        {
+            sanityUUIDList.remove(uuid);
+
+            return true;
+        }
+        return false;
+    }
+
     private void offloadFileSysNewList2List()
     {
         sanityUUIDList.addAll(fileSysNewUUIDList);

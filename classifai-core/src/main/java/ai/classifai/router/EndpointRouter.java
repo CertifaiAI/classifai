@@ -153,17 +153,13 @@ public class EndpointRouter extends AbstractVerticle
                 {
                     JsonObject response = (JsonObject) reply.result().body();
 
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
+                    if(ReplyHandler.isReplyOk(response) == false)
                     {
                         String projectName = request.getString(ParamConfig.getProjectNameParam());
 
                         log.info("Failure in creating new " + annotationType.name() +  " project of name: " + projectName);
-                        HTTPResponseHandler.configureOK(context, response);
                     }
+                    HTTPResponseHandler.configureOK(context, response);
                 }
             });
         });
@@ -204,11 +200,7 @@ public class EndpointRouter extends AbstractVerticle
 
         Integer projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
 
-        if(projectID == null)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project name: " + projectName + " for " + type.name() + " cannot be found"));
-            return;
-        }
+        if(checkIfProjectNull(context, projectID, projectName)) return;
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectIDParam(), projectID);
@@ -254,6 +246,78 @@ public class EndpointRouter extends AbstractVerticle
             }
         });
     }
+
+    /**
+     * Delete uuid of a specific bounding box project
+     *
+     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuid/123
+     *
+     */
+    private void deleteBndBoxProjectUUID(RoutingContext context)
+    {
+        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUID(), AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Delete uuid of a specific segmentation project
+     *
+     * DELETE http://localhost:{port}/seg/projects/:project_name/uuid/:uuid
+     *
+     * Example:
+     * DELETE http://localhost:{port}/seg/projects/helloworld/uuid/123
+     *
+     */
+    private void deleteSegProjectUUID(RoutingContext context)
+    {
+        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUID(), AnnotationType.SEGMENTATION);
+    }
+
+    private void deleteProjectUUID(RoutingContext context, String queue, String query, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
+
+        if(!ProjectHandler.deleteUUID(projectID, uuid))
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Deletion of uuid failed. UUID not exist: " + uuid + " from project name: " + projectName + " of " + annotationType.name()));
+            return;
+        }
+
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getProjectIDParam(), projectID)
+                .put(ParamConfig.getUUIDParam(), uuid);
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+        vertx.eventBus().request(queue, request, options, fetch -> {
+
+            if (fetch.succeeded()) {
+
+                JsonObject response = (JsonObject) fetch.result().body();
+
+                if(ReplyHandler.isReplyOk(response) == false)
+                {
+                    log.info("Failure to delete uuid " + uuid + " of project name: " + projectName + " of " + annotationType.name());
+                }
+
+
+                HTTPResponseHandler.configureOK(context, response);
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting response when deleting uuid from project name: " + projectName + " of " + annotationType.name()));
+            }
+        });
+    }
+
 
     /**
      * Load existing project from the bounding box database
@@ -899,6 +963,8 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
 
+        router.delete("/bndbox/projects/:project_name/uuid/:uuid").handler(this::deleteBndBoxProjectUUID);
+
         router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
         router.get("/bndbox/projects/:project_name/filesys/:file_sys").handler(this::selectBndBoxFileSystemType);
@@ -922,6 +988,8 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
         router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
+
+        router.delete("/seg/projects/:project_name/uuid/:uuid").handler(this::deleteSegProjectUUID);
 
         router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
 
@@ -947,7 +1015,7 @@ public class EndpointRouter extends AbstractVerticle
                         promise.complete();
                     }
                     else {
-                        log.debug("Failure in creating HTTPServer in ServerVerticle. ", r.cause().getMessage());
+                        log.debug("Failure in creating HTTPServer in EndpointRouter. ", r.cause().getMessage());
                         promise.fail(r.cause());
                     }
                 });

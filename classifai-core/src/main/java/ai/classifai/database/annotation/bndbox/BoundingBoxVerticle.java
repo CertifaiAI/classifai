@@ -70,6 +70,10 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDList());
         }
+        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUID()))
+        {
+            this.deleteProjectUUID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUID());
+        }
         else
         {
             log.error("Bounding Box Verticle query error. Action did not have an assigned function for handling.");

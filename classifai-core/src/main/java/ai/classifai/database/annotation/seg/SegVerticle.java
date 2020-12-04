@@ -70,6 +70,10 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
         }
+        else if(action.equals(SegDbQuery.deleteProjectUUID()))
+        {
+            this.deleteProjectUUID(message, jdbcClient, SegDbQuery.deleteProjectUUID());
+        }
         else
         {
             log.error("SegVerticle query error. Action did not have an assigned function for handling.");

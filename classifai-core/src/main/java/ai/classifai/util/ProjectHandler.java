@@ -89,6 +89,23 @@ public class ProjectHandler {
         }
     }
 
+    public static boolean deleteUUID(Integer projectID, Integer uuid)
+    {
+        try
+        {
+            ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
+
+            return loader.deleteUUID(uuid);
+
+        }
+        catch(Exception e)
+        {
+            log.debug("Error: ", e);
+        }
+
+        return true;
+    }
+
     public static Integer generateProjectID()
     {
         return projectIDGenerator.incrementAndGet();
