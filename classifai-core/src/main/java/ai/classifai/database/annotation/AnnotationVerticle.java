@@ -290,7 +290,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
                     response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
                     response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
                     response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
                     response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
                     response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
