@@ -64,7 +64,15 @@ public class SegVerticle extends AnnotationVerticle
         }
         else if (action.equals(SegDbQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.retrieveDataPath());
+            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
+        }
+        else if(action.equals(SegDbQuery.deleteProjectUUIDList()))
+        {
+            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
+        }
+        else if(action.equals(SegDbQuery.deleteProjectUUID()))
+        {
+            this.deleteProjectUUID(message, jdbcClient, SegDbQuery.deleteProjectUUID());
         }
         else
         {

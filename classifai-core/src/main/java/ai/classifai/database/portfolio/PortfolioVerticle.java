@@ -78,7 +78,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.updateLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.getProjectUUIDListt()))
+        else if(action.equals(PortfolioDbQuery.deleteProject()))
+        {
+            this.deleteProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getProjectUUIDList()))
         {
             this.getProjectUUIDList(message);
         }
@@ -169,6 +173,25 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
+    public void deleteProject(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.deleteProject(), params, fetch -> {
+
+            if (fetch.succeeded()) {
+
+                message.reply(ReplyHandler.getOkReply());
+
+            } else
+            {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
     public void getLabelList(Message<JsonObject> message)
     {
         Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
@@ -209,7 +232,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDListt(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), params, fetch -> {
 
             if(fetch.succeeded()) {
                 try {

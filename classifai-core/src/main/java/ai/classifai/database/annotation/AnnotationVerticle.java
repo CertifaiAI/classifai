@@ -60,7 +60,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 if (resultSet.getNumRows() == 0)
                 {
                     String projectName = message.body().getString(ParamConfig.getProjectNameParam());
-                    String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                    String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
                 else
@@ -111,7 +111,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
-            JsonArray params = new JsonArray().add(UUID).add(projectID);
+            JsonArray params = new JsonArray().add(projectID).add(UUID);
 
             jdbcClient.queryWithParams(query, params, fetch -> {
 
@@ -130,6 +130,48 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 loader.updateDBLoadingProgress(currentLength);
             });
         }
+    }
+
+    public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
+    {
+        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(query, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                log.debug("Failure in deleting uuid list from Annotation Verticle");
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void deleteProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
+    {
+        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        Integer UUID =  message.body().getInteger(ParamConfig.getUUIDParam());
+
+        JsonArray params = new JsonArray().add(projectID).add(UUID);
+
+        jdbcClient.queryWithParams(query, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                log.debug("Failure in deleting uuid from Annotation Verticle");
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
     }
 
     public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
@@ -248,7 +290,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
                     response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
                     response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
                     response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
                     response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
                     response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
