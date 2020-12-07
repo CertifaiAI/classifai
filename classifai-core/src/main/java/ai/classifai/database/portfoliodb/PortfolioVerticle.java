@@ -78,6 +78,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.updateLabelList(message);
         }
+        else if(action.equals(PortfolioDbQuery.deleteProject()))
+        {
+            this.deleteProject(message);
+        }
         else if(action.equals(PortfolioDbQuery.getProjectUUIDListt()))
         {
             this.getProjectUUIDList(message);
@@ -164,6 +168,25 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 message.reply(ReplyHandler.getOkReply());
             }
             else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void deleteProject(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.deleteProject(), params, fetch -> {
+
+            if (fetch.succeeded()) {
+
+                message.reply(ReplyHandler.getOkReply());
+
+            } else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });

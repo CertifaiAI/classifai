@@ -34,6 +34,8 @@ public class PortfolioDbQuery
 
     private final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_id = ?";
 
+    private final static String DELETE_PROJECT = "delete from Portfolio where project_id = ?";
+
     private final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_id = ?";
 
     private final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
@@ -57,6 +59,8 @@ public class PortfolioDbQuery
     public static String updateUUIDGeneratorSeed() { return UPDATE_UUID_GENERATOR_SEED; }
 
     public static String updateLabelList() { return UPDATE_LABEL_LIST; }
+
+    public static String deleteProject() { return DELETE_PROJECT; }
 
     public static String getProjectLabelList() { return GET_PROJECT_LABEL_LIST; }
 

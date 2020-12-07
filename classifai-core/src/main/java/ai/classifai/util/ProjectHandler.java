@@ -217,4 +217,48 @@ public class ProjectHandler {
 
         return isProjectNameUnique;
     }
+
+    public static void deleteProjectWithID(Integer projectID)
+    {
+        try
+        {
+            Pair projectPair = (Pair) projectNameSearch.remove(projectID);
+
+            if(projectPair == null)
+            {
+                throw new NullPointerException("Deletion of ProjectPair from Project Handler failed.");
+            }
+
+            if(projectIDLoaderDict.remove(projectID) == null)
+            {
+                throw new NullPointerException("Deletion of Project from ProjectIDLoader failed.");
+            }
+
+            if(projectIDSearch.remove(projectPair) == null)
+            {
+                throw new NullPointerException("Deletion of Project from ProjectIDSearch failed.");
+            }
+        }
+        catch(Exception e)
+        {
+            log.debug("Error: ", e);
+        }
+    }
+
+    public static boolean deleteUUID(Integer projectID, Integer uuid)
+    {
+        try
+        {
+            ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
+
+            return loader.deleteUUID(uuid);
+
+        }
+        catch(Exception e)
+        {
+            log.debug("Error: ", e);
+        }
+
+        return true;
+    }
 }

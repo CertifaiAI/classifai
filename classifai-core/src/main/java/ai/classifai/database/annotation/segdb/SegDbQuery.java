@@ -13,9 +13,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.segdb;
+package ai.classifai.database.annotation.segdb;
 
-import ai.classifai.database.annotationdb.AnnotationQuery;
+import ai.classifai.database.annotation.AnnotationQuery;
 /***
  * Segmentation database query
  *

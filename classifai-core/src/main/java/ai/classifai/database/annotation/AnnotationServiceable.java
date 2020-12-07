@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.annotationdb;
+package ai.classifai.database.annotation;
 
 import ai.classifai.annotation.AnnotationType;
 import io.vertx.core.eventbus.Message;

@@ -13,9 +13,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.boundingboxdb;
+package ai.classifai.database.annotation.boundingboxdb;
 
-import ai.classifai.database.annotationdb.AnnotationQuery;
+import ai.classifai.database.annotation.AnnotationQuery;
 
 /***
  * Bounding box database query
