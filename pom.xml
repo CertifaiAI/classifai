@@ -22,7 +22,7 @@
     <groupId>ai.classifai</groupId>
     <artifactId>classifai</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 
     <modules>
         <module>classifai-core</module>
@@ -85,7 +85,7 @@
         <apache.commons.version>3.8.1</apache.commons.version>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
-        <classifai.release.version>1.0.0</classifai.release.version>
+        <classifai.release.version>2.0.0</classifai.release.version>
         <classifai.release.name>dev</classifai.release.name>
     </properties>
 
