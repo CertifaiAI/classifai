@@ -21,6 +21,7 @@ package ai.classifai.database.annotation;
  * @author codenamewei
  */
 public abstract class AnnotationQuery
+
 {
     protected final static String CREATE_DATA = "insert into Project values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
