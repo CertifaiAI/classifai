@@ -17,7 +17,7 @@ package ai.classifai.selector.conversion;
 
 import ai.classifai.ui.launcher.conversion.ConversionSelection;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;

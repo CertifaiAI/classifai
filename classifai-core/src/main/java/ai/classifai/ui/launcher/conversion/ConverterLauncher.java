@@ -17,7 +17,7 @@ package ai.classifai.ui.launcher.conversion;
 
 import ai.classifai.selector.conversion.ConverterFolderSelector;
 import ai.classifai.ui.launcher.LogoLauncher;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

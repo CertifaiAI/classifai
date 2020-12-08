@@ -15,14 +15,14 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.server.ParamConfig;
-import ai.classifai.util.ConversionHandler;
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.image.ImageHandler;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.annotation.AnnotationType;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -60,7 +60,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     if (resultSet.getNumRows() == 0)
                     {
                         String projectName = message.body().getString(ParamConfig.getProjectNameParam());
-                        String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                        String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
                         message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                     }
                     else
@@ -102,7 +102,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
-            JsonArray params = new JsonArray().add(UUID).add(projectID);
+            JsonArray params = new JsonArray().add(projectID).add(UUID);
 
             jdbcClient.queryWithParams(query, params, fetch -> {
 
@@ -234,7 +234,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
                     response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
                     response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
                     response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
                     response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
                     response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));

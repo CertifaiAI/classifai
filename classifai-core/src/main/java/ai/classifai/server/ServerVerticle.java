@@ -15,21 +15,21 @@
  */
 package ai.classifai.server;
 
-import ai.classifai.annotation.AnnotationType;
-import ai.classifai.database.boundingboxdb.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.boundingboxdb.BoundingBoxDbQuery;
+import ai.classifai.util.ParamConfig;
+import ai.classifai.database.annotation.segdb.SegDbQuery;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
 import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-import ai.classifai.database.segdb.SegDbQuery;
-import ai.classifai.selector.FileSelector;
-import ai.classifai.selector.FolderSelector;
+import ai.classifai.selector.annotation.FileSelector;
+import ai.classifai.selector.annotation.FolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
+import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -78,10 +78,7 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void getAllBoundingBoxProjects(RoutingContext context)
     {
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
-
-        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
+        getAllProjects(context, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -91,14 +88,14 @@ public class ServerVerticle extends AbstractVerticle
      */
     private void getAllSegmentationProjects(RoutingContext context)
     {
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
-
-        getAllProjects(context, request, AnnotationType.SEGMENTATION);
+        getAllProjects(context, AnnotationType.SEGMENTATION);
     }
 
-    private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
+    private void getAllProjects(RoutingContext context, AnnotationType type)
     {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), type.ordinal());
+
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsForAnnotationType());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
@@ -164,17 +161,13 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     JsonObject response = (JsonObject) reply.result().body();
 
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
+                    if(ReplyHandler.isReplyOk(response) == false)
                     {
                         String projectName = request.getString(ParamConfig.getProjectNameParam());
 
                         log.info("Failure in creating new " + annotationType.name() +  " project of name: " + projectName);
-                        HTTPResponseHandler.configureOK(context, response);
                     }
+                    HTTPResponseHandler.configureOK(context, response);
                 }
             });
         });
@@ -239,7 +232,7 @@ public class ServerVerticle extends AbstractVerticle
                     if (ReplyHandler.isReplyOk(labelResponse))
                     {
                         //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDListt());
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
 
                         vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
                         {
@@ -547,9 +540,7 @@ public class ServerVerticle extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-        System.out.println(projectID);
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
-        System.out.println(uuid);
 
         JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
                 .put(ParamConfig.getProjectIDParam(), projectID)

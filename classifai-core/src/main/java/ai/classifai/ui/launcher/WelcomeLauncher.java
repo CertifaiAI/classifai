@@ -17,7 +17,7 @@ package ai.classifai.ui.launcher;
 
 
 import ai.classifai.MainVerticle;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.ui.button.BrowserHandler;
 import ai.classifai.ui.button.LogHandler;
 import ai.classifai.ui.button.LookFeelSetter;

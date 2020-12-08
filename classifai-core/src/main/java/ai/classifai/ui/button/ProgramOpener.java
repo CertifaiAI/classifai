@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui.button;
 
-import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.type.OS;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

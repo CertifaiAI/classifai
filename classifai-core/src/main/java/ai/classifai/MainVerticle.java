@@ -16,9 +16,9 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.boundingboxdb.BoundingBoxVerticle;
+import ai.classifai.database.annotation.boundingboxdb.BoundingBoxVerticle;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.segdb.SegVerticle;
+import ai.classifai.database.annotation.segdb.SegVerticle;
 import ai.classifai.server.ServerVerticle;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;

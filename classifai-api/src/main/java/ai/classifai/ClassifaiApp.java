@@ -17,7 +17,7 @@ package ai.classifai;
 
 import ai.classifai.config.DbConfig;
 import ai.classifai.config.PortSelector;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import com.formdev.flatlaf.FlatLightLaf;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -52,6 +52,7 @@ public class ClassifaiApp
 
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
+
         opt.setConfig(new JsonObject().put("http.port", ParamConfig.getHostingPort()));
 
         Vertx vertx = Vertx.vertx(vertxOptions);

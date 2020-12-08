@@ -15,7 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.annotation.AnnotationType;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
@@ -36,4 +36,6 @@ public interface AnnotationServiceable
     void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
     void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType);
+
+    void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 }

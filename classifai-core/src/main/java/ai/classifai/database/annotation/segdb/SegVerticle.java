@@ -17,9 +17,9 @@ package ai.classifai.database.annotation.segdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.annotation.AnnotationType;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;

@@ -16,13 +16,13 @@
 
 package ai.classifai.database.portfoliodb;
 
-import ai.classifai.annotation.AnnotationType;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.LoaderStatus;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.database.VerticleServiceable;
-import ai.classifai.util.ConversionHandler;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -82,7 +82,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.deleteProject(message);
         }
-        else if(action.equals(PortfolioDbQuery.getProjectUUIDListt()))
+        else if(action.equals(PortfolioDbQuery.getProjectUUIDList()))
         {
             this.getProjectUUIDList(message);
         }
@@ -232,7 +232,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDListt(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), params, fetch -> {
 
             if(fetch.succeeded()) {
                 try {

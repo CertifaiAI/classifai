@@ -15,9 +15,9 @@
  */
 package ai.classifai.ui.launcher.conversion;
 
-import ai.classifai.util.image.FileHandler;
-import ai.classifai.util.image.PdfHandler;
-import ai.classifai.util.image.TifHandler;
+import ai.classifai.util.data.FileHandler;
+import ai.classifai.util.data.PdfHandler;
+import ai.classifai.util.data.TifHandler;
 import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

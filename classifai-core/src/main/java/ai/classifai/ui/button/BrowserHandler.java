@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui.button;
 
-import ai.classifai.server.ParamConfig;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.OS;
 import lombok.Getter;
 import lombok.NonNull;
