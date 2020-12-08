@@ -13,6 +13,12 @@
         "inputPlaceholder": "your new id ....",
         "subLabel": "Label List File (*.txt): ",
         "button": "Create"
+      },
+      "delete":{
+        "header": "Delete Project",
+        "label": "Project Name : ",
+        "button": "Delete",
+        "option": "none"
       }
     },
     "loading": "Powered by Skymind",
