@@ -156,22 +156,30 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
 
-        Integer UUID =  message.body().getInteger(ParamConfig.getUUIDParam());
+        JsonArray UUIDlist =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
+        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDlist);
 
-        JsonArray params = new JsonArray().add(projectID).add(UUID);
+        for(int i = 0; i < oriUUIDList.size(); ++i)
+        {
+            final Integer currentLength = i + 1;
+            final Integer UUID = oriUUIDList.get(i);
 
-        jdbcClient.queryWithParams(query, params, fetch -> {
+            JsonArray params = new JsonArray().add(projectID).add(UUID);
 
-            if(fetch.succeeded())
-            {
-                message.reply(ReplyHandler.getOkReply());
-            }
-            else
-            {
-                log.debug("Failure in deleting uuid from Annotation Verticle");
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+            jdbcClient.queryWithParams(query, params, fetch -> {
+
+                if (fetch.succeeded())
+                {
+                    log.debug("Successful delete uuid: "+UUID+" in project "+projectID);
+                    message.reply(ReplyHandler.getOkReply());
+                }
+                else
+                {
+                    log.debug("Failure in deleting uuid from Annotation Verticle");
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
+        }
     }
 
     public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)

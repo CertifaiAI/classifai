@@ -250,10 +250,10 @@ public class EndpointRouter extends AbstractVerticle
     /**
      * Delete uuid of a specific bounding box project
      *
-     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid
+     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuids
      *
      * Example:
-     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuid/123
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
      *
      */
     private void deleteBndBoxProjectUUID(RoutingContext context)
@@ -264,10 +264,10 @@ public class EndpointRouter extends AbstractVerticle
     /**
      * Delete uuid of a specific segmentation project
      *
-     * DELETE http://localhost:{port}/seg/projects/:project_name/uuid/:uuid
+     * DELETE http://localhost:{port}/seg/projects/:project_name/uuids
      *
      * Example:
-     * DELETE http://localhost:{port}/seg/projects/helloworld/uuid/123
+     * DELETE http://localhost:{port}/seg/projects/helloworld/uuids
      *
      */
     private void deleteSegProjectUUID(RoutingContext context)
@@ -283,18 +283,47 @@ public class EndpointRouter extends AbstractVerticle
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
-
-        if(!ProjectHandler.deleteUUID(projectID, uuid))
+        context.request().bodyHandler(h ->
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Deletion of uuid failed. UUID not exist: " + uuid + " from project name: " + projectName + " of " + annotationType.name()));
-            return;
-        }
+            try
+            {
+                io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
 
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIDParam(), projectID)
-                .put(ParamConfig.getUUIDParam(), uuid);
+                JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUUIDListParam());
 
+                request.put(ParamConfig.getProjectIDParam(), projectID);
+
+                List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
+
+                for(int i = 0; i < oriUUIDList.size(); ++i)
+                {
+                    final Integer currentLength = i + 1;
+                    final Integer UUID = oriUUIDList.get(i);
+
+                    if(!ProjectHandler.deleteUUID(projectID, UUID))
+                    {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Deletion of uuid failed. UUID not exist: " + UUID + " from project name: " + projectName + " of " + annotationType.name()));
+                        return;
+                    }
+
+                }
+
+                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+                vertx.eventBus().request(queue, request, options, reply ->
+                {
+                    if (reply.succeeded()) {
+                        JsonObject response = (JsonObject) reply.result().body();
+
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+        });
+            }catch (Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
+
+            }
+/*
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
         vertx.eventBus().request(queue, request, options, fetch -> {
@@ -315,6 +344,7 @@ public class EndpointRouter extends AbstractVerticle
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting response when deleting uuid from project name: " + projectName + " of " + annotationType.name()));
             }
+ */
         });
     }
 
@@ -964,7 +994,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
 
-        router.delete("/bndbox/projects/:project_name/uuid/:uuid").handler(this::deleteBndBoxProjectUUID);
+        router.delete("/bndbox/projects/:project_name/uuids").handler(this::deleteBndBoxProjectUUID);
 
         router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
@@ -990,7 +1020,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
 
-        router.delete("/seg/projects/:project_name/uuid/:uuid").handler(this::deleteSegProjectUUID);
+        router.delete("/seg/projects/:project_name/uuids").handler(this::deleteSegProjectUUID);
 
         router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
 
