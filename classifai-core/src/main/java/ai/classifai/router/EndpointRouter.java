@@ -13,16 +13,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.server;
+package ai.classifai.router;
 
-import ai.classifai.database.annotation.boundingboxdb.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.database.annotation.segdb.SegDbQuery;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioDbQuery;
-import ai.classifai.selector.annotation.FileSelector;
-import ai.classifai.selector.annotation.FolderSelector;
+import ai.classifai.database.annotation.seg.SegDbQuery;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.database.portfolio.PortfolioDbQuery;
+import ai.classifai.selector.annotation.ToolFileSelector;
+import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
@@ -49,23 +49,23 @@ import java.util.List;
  * @author codenamewei
  */
 @Slf4j
-public class ServerVerticle extends AbstractVerticle
+public class EndpointRouter extends AbstractVerticle
 {
-    private FileSelector fileSelector;
-    private FolderSelector folderSelector;
+    private ToolFileSelector fileSelector;
+    private ToolFolderSelector folderSelector;
 
-    public ServerVerticle()
+    public EndpointRouter()
     {
         Thread threadfile = new Thread(){
             public void run(){
-                fileSelector = new FileSelector();
+                fileSelector = new ToolFileSelector();
             }
         };
         threadfile.start();
 
         Thread threadfolder = new Thread(){
             public void run(){
-                folderSelector = new FolderSelector();
+                folderSelector = new ToolFolderSelector();
             }
         };
         threadfolder.start();
@@ -746,6 +746,7 @@ public class ServerVerticle extends AbstractVerticle
     private void updateLabels(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
         Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;

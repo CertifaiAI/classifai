@@ -17,9 +17,9 @@
 package ai.classifai.selector.annotation;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.ui.button.LookFeelSetter;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -40,7 +40,7 @@ import java.util.ArrayList;
  * @author codenamewei
  */
 @Slf4j
-public class FileSelector{
+public class ToolFileSelector{
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
     public void run(@NonNull Integer projectID)

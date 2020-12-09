@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.portfoliodb;
+package ai.classifai.database.portfolio;
 
 /***
  * Generic database query

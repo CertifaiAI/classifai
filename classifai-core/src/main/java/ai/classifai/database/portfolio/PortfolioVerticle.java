@@ -14,12 +14,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package ai.classifai.database.portfoliodb;
+package ai.classifai.database.portfolio;
 
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.util.collection.ConversionHandler;

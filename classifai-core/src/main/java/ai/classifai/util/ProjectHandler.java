@@ -16,9 +16,9 @@
 package ai.classifai.util;
 
 import ai.classifai.util.type.AnnotationType;
-import ai.classifai.database.loader.LoaderStatus;
-import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

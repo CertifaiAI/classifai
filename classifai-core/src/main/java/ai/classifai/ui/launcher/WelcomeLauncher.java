@@ -18,10 +18,10 @@ package ai.classifai.ui.launcher;
 
 import ai.classifai.MainVerticle;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.ui.button.BrowserHandler;
-import ai.classifai.ui.button.LogHandler;
-import ai.classifai.ui.button.LookFeelSetter;
-import ai.classifai.ui.button.ProgramOpener;
+import ai.classifai.ui.component.BrowserHandler;
+import ai.classifai.ui.component.LogHandler;
+import ai.classifai.ui.component.LookFeelSetter;
+import ai.classifai.ui.component.ProgramOpener;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.type.OS;
 import lombok.extern.slf4j.Slf4j;

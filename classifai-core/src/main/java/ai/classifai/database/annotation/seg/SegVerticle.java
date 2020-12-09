@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.annotation.segdb;
+package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;

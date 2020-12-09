@@ -17,12 +17,12 @@ package ai.classifai.util.data;
 
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.annotation.boundingboxdb.BoundingBoxDbQuery;
-import ai.classifai.database.annotation.boundingboxdb.BoundingBoxVerticle;
-import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.annotation.segdb.SegDbQuery;
-import ai.classifai.database.annotation.segdb.SegVerticle;
+import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.annotation.seg.SegDbQuery;
+import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;

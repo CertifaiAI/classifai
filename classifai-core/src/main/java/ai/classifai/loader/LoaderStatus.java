@@ -13,27 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database.portfoliodb;
+package ai.classifai.loader;
 
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
 /***
- * common functionalities for Portfolio Vecticle
+ * Loader status for project loading
  *
  * @author codenamewei
  */
-public interface PortfolioServiceable
+@Slf4j
+public enum LoaderStatus
 {
-    void createNewProject(Message<JsonObject> message);
-
-    void updateLabelList(Message<JsonObject> message);
-
-    void getLabelList(Message<JsonObject> message);
-
-    void getProjectUUIDList(Message<JsonObject> message);
-
-    void getAllProjectsForAnnotationType(Message<JsonObject> message);
-
-    void configurePortfolioVerticle();
+    ERROR,
+    LOADING,
+    LOADED, //projectloader will have this status once create new project
+    DID_NOT_INITIATED, //default value when ProjectLoader created from database
 }

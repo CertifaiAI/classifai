@@ -16,10 +16,10 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseConfig;
-import ai.classifai.database.annotation.boundingboxdb.BoundingBoxVerticle;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
-import ai.classifai.database.annotation.segdb.SegVerticle;
-import ai.classifai.server.ServerVerticle;
+import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.annotation.seg.SegVerticle;
+import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -39,13 +39,13 @@ public class MainVerticle extends AbstractVerticle
 {
     private static BoundingBoxVerticle boundingBoxVerticle;
     private static SegVerticle segVerticle;
-    private static ServerVerticle serverVerticle;
+    private static EndpointRouter serverVerticle;
 
     static
     {
         boundingBoxVerticle = new BoundingBoxVerticle();
         segVerticle = new SegVerticle();
-        serverVerticle = new ServerVerticle();
+        serverVerticle = new EndpointRouter();
     }
 
     public void configureDatabase()

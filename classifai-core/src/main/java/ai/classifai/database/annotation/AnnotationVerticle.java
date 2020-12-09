@@ -16,7 +16,7 @@
 package ai.classifai.database.annotation;
 
 import ai.classifai.database.VerticleServiceable;
-import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
