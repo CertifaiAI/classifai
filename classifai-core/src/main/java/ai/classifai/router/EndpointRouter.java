@@ -897,6 +897,7 @@ public class EndpointRouter extends AbstractVerticle
     private void updateLabels(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
         Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
