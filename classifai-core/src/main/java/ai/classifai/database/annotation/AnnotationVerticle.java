@@ -173,13 +173,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             {
                 JsonArray params = new JsonArray().add(projectID).add(UUID);
 
+                successUUIDList.add(UUID);
+
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
                     if(fetch.succeeded())
                     {
                         log.debug("Successful delete uuids in project " + projectID);
-
-                        successUUIDList.add(UUID);
                     }
                     else
                     {
@@ -195,11 +195,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
-        if(successUUIDList.isEmpty())
-        {
-            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
-        }
-        else if(validUUIDList.removeAll(successUUIDList))
+        if(validUUIDList.removeAll(successUUIDList))
         {
             loader.setSanityUUIDList(validUUIDList);
 
