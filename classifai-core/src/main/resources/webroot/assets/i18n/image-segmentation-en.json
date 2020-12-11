@@ -36,6 +36,9 @@
       "imgList": "Image List",
       "labelList": "Label List",
       "polygon": "Polygon"
+    },
+    "deleteswitch":{
+      "selectall" : "Select all"
     }
   }
   
