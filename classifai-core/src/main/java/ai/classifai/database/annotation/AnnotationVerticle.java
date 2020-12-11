@@ -16,6 +16,7 @@
 package ai.classifai.database.annotation;
 
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -33,6 +34,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +134,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
+    public void deleteProjectUUIDListwithProjectID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
 
@@ -152,34 +154,66 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         });
     }
 
-    public void deleteProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
+    public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+        JsonArray UUIDlistJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
 
-        JsonArray UUIDlist =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDlist);
+        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDlistJsonArray);
 
-        for(int i = 0; i < oriUUIDList.size(); ++i)
+        List<Integer> successUUIDList = new ArrayList<>();
+        List<Integer> failedUUIDList = new ArrayList<>();
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        List<Integer> validUUIDList = loader.getSanityUUIDList();
+
+        for(Integer UUID : oriUUIDList)
         {
-            final Integer currentLength = i + 1;
-            final Integer UUID = oriUUIDList.get(i);
+            if(validUUIDList.contains(UUID))
+            {
+                JsonArray params = new JsonArray().add(projectID).add(UUID);
 
-            JsonArray params = new JsonArray().add(projectID).add(UUID);
+                jdbcClient.queryWithParams(query, params, fetch -> {
 
-            jdbcClient.queryWithParams(query, params, fetch -> {
+                    if (fetch.succeeded())
+                    {
 
-                if (fetch.succeeded())
-                {
-                    log.debug("Successful delete uuid: "+UUID+" in project "+projectID);
-                    message.reply(ReplyHandler.getOkReply());
-                }
-                else
-                {
-                    log.debug("Failure in deleting uuid from Annotation Verticle");
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
+                        log.debug("Successful delete uuids in project "+projectID);
+
+                        successUUIDList.add(UUID);
+                    }
+                    else
+                    {
+                        log.debug("Failure in deleting uuid from Annotation Verticle");
+
+                        failedUUIDList.add(UUID);
+                    }
+                });
+            }
+            else
+            {
+                failedUUIDList.add(UUID);
+            }
         }
+
+        if(successUUIDList.isEmpty())
+        {
+            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
+        }
+        else if(validUUIDList.removeAll(successUUIDList))
+        {
+            loader.setSanityUUIDList(validUUIDList);
+
+            //update Portfolio Verticle
+            PortfolioVerticle.updateFileSystemUUIDList(projectID);
+
+            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
+        }
+        else
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
+        }
+
     }
 
     public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)

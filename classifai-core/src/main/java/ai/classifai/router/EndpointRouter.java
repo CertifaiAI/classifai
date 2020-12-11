@@ -42,6 +42,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Endpoint routing for different url requests
@@ -177,7 +178,7 @@ public class EndpointRouter extends AbstractVerticle
     private void deleteBndBoxProject(RoutingContext context)
     {
         //delete in Portfolio Table
-        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDList(), AnnotationType.BOUNDINGBOX);
+        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -191,7 +192,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProject(RoutingContext context)
     {
-        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDList(), AnnotationType.SEGMENTATION);
+        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProject(RoutingContext context, String queue, String query,  AnnotationType type)
@@ -258,7 +259,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteBndBoxProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUID(), AnnotationType.BOUNDINGBOX);
+        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDList(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -272,7 +273,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUID(), AnnotationType.SEGMENTATION);
+        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDList(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProjectUUID(RoutingContext context, String queue, String query, AnnotationType annotationType)
@@ -285,66 +286,23 @@ public class EndpointRouter extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            try
+            io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
+
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUUIDListParam());
+
+            request.put(ParamConfig.getProjectIDParam(), projectID).put(ParamConfig.getUUIDListParam(), uuidListArray);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+            vertx.eventBus().request(queue, request, options, reply ->
             {
-                io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
-
-                JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUUIDListParam());
-
-                request.put(ParamConfig.getProjectIDParam(), projectID);
-
-                List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
-
-                for(int i = 0; i < oriUUIDList.size(); ++i)
+                if (reply.succeeded())
                 {
-                    final Integer currentLength = i + 1;
-                    final Integer UUID = oriUUIDList.get(i);
+                    JsonObject response = (JsonObject) reply.result().body();
 
-                    if(!ProjectHandler.deleteUUID(projectID, UUID))
-                    {
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Deletion of uuid failed. UUID not exist: " + UUID + " from project name: " + projectName + " of " + annotationType.name()));
-                        return;
-                    }
-
+                    HTTPResponseHandler.configureOK(context, response);
                 }
-
-                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-                vertx.eventBus().request(queue, request, options, reply ->
-                {
-                    if (reply.succeeded()) {
-                        JsonObject response = (JsonObject) reply.result().body();
-
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-        });
-            }catch (Exception e)
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-
-            }
-/*
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-        vertx.eventBus().request(queue, request, options, fetch -> {
-
-            if (fetch.succeeded()) {
-
-                JsonObject response = (JsonObject) fetch.result().body();
-
-                if(ReplyHandler.isReplyOk(response) == false)
-                {
-                    log.info("Failure to delete uuid " + uuid + " of project name: " + projectName + " of " + annotationType.name());
-                }
-
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting response when deleting uuid from project name: " + projectName + " of " + annotationType.name()));
-            }
- */
+            });
         });
     }
 

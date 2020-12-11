@@ -29,9 +29,9 @@ public abstract class AnnotationQuery
 
     protected final static String LOAD_VALID_PROJECT_UUID = "select img_path from Project where project_id = ? and uuid = ?";
 
-    protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ?";
+    protected final static String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "delete from Project where project_id = ?";
 
-    protected final static String DELETE_PROJECT_UUID = "delete from Project where project_id = ? and uuid = ?";
+    protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ? and uuid = ?";
 
     public static String createData() { return CREATE_DATA; }
 
@@ -39,7 +39,7 @@ public abstract class AnnotationQuery
 
     public static String loadValidProjectUUID() { return LOAD_VALID_PROJECT_UUID; }
 
-    public static String deleteProjectUUIDList() { return DELETE_PROJECT_UUID_LIST; }
+    public static String deleteProjectUUIDListwithProjectID() { return DELETE_PROJECT_UUID_LIST_WITH_PROJECTID; }
 
-    public static String deleteProjectUUID(){ return DELETE_PROJECT_UUID; }
+    public static String deleteProjectUUIDList(){ return DELETE_PROJECT_UUID_LIST; }
 }
