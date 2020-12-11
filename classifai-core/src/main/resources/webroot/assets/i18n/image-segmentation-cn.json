@@ -19,6 +19,9 @@
         "label": "项目名称 : ",
         "button": "删除",
         "option": "没选项"
+      },
+      "delimg":{
+        "header": "删除图片（可多个）"
       }
     },
     "loading": "由Skymind提供支持",

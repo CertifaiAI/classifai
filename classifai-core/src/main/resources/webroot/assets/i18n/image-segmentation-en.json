@@ -19,6 +19,9 @@
         "label": "Project Name : ",
         "button": "Delete",
         "option": "none"
+      },
+      "delimg":{
+        "header": "Delete Images"
       }
     },
     "loading": "Powered by Skymind",
