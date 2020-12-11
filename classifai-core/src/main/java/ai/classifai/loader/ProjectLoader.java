@@ -49,7 +49,7 @@ public class ProjectLoader
     @Getter private List<Integer> fileSysNewUUIDList;
 
     //a list of unique uuid representing number of data points in one project
-    @Getter private List<Integer> sanityUUIDList;
+    @Setter @Getter private List<Integer> sanityUUIDList;
 
     @Getter private List<Integer> progressUpdate;
 

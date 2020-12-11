@@ -13,6 +13,12 @@
         "inputPlaceholder": "您的新编号 ....",
         "subLabel": "标签列表文件 (*.txt): ",
         "button": "创造"
+      },
+      "delete":{
+        "header": "删除现有项目",
+        "label": "项目名称 : ",
+        "button": "删除",
+        "option": "没选项"
       }
     },
     "loading": "由Skymind提供支持",
