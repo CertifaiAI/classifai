@@ -146,7 +146,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             message.reply(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
-
     }
 
     public void updateLabelList(Message<JsonObject> message)
@@ -313,7 +312,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             if(!reply.succeeded())
             {
-                log.error("Update list of uuids to Portfolio Database failed");
+                log.info("Update list of uuids to Portfolio Database failed");
             }
         });
     }

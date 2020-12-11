@@ -136,7 +136,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void deleteProjectUUIDListwithProjectID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -175,10 +175,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
-                    if (fetch.succeeded())
+                    if(fetch.succeeded())
                     {
-
-                        log.debug("Successful delete uuids in project "+projectID);
+                        log.debug("Successful delete uuids in project " + projectID);
 
                         successUUIDList.add(UUID);
                     }
@@ -213,7 +212,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
         }
-
     }
 
     public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
@@ -307,8 +305,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    log.info("Project id: " + params.getInteger(1));
-
                     String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
