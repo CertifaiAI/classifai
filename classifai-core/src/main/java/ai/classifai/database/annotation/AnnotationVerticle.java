@@ -157,9 +157,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
-        JsonArray UUIDlistJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
+        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
 
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDlistJsonArray);
+        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDListJsonArray);
 
         List<Integer> successUUIDList = new ArrayList<>();
         List<Integer> failedUUIDList = new ArrayList<>();
@@ -179,13 +179,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                     if(fetch.succeeded())
                     {
-                        log.debug("Successful delete uuids in project " + projectID);
+                        log.debug("Successful delete uuid " + UUID + " in project " + projectID);
                     }
                     else
                     {
-                        log.debug("Failure in deleting uuid from Annotation Verticle");
-
-                        failedUUIDList.add(UUID);
+                        log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
                     }
                 });
             }
