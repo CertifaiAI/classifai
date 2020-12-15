@@ -39,7 +39,7 @@ public class ClassifaiApp
     {
         boolean isConfigured = configure(args);
 
-        if (isConfigured == false)
+        if(isConfigured == false)
         {
             log.info("Classifai failed to configure. Abort.");
             return;
