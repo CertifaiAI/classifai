@@ -17,6 +17,7 @@ package ai.classifai.database.annotation;
 
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -158,8 +159,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
         JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
-
         List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDListJsonArray);
+        List<String> oriUUIDList2 = ConversionHandler.integerList2StringList(oriUUIDList);
+        String UUIDList = String.join(",", oriUUIDList2);
+
+        query = query + UUIDList + ")";
 
         List<Integer> successUUIDList = new ArrayList<>();
         List<Integer> failedUUIDList = new ArrayList<>();
@@ -171,27 +175,29 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             if(validUUIDList.contains(UUID))
             {
-                JsonArray params = new JsonArray().add(projectID).add(UUID);
-
                 successUUIDList.add(UUID);
-
-                jdbcClient.queryWithParams(query, params, fetch -> {
-
-                    if(fetch.succeeded())
-                    {
-                        log.debug("Successful delete uuid " + UUID + " in project " + projectID);
-                    }
-                    else
-                    {
-                        log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
-                    }
-                });
             }
             else
             {
                 failedUUIDList.add(UUID);
             }
         }
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(query, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                log.debug("Successful delete uuids in project " + projectID);
+                System.out.println("success");
+            }
+            else
+            {
+                log.debug("Failure in deleting uuids in project " + projectID);
+                System.out.println("failure");
+            }
+        });
 
         if(validUUIDList.removeAll(successUUIDList))
         {
