@@ -154,7 +154,7 @@ java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
 
 | Section | Description |
 |:-------------:|:-------------:|
-| [Website](https://classifai.ai/) | Official Website|
+| [Website](https://classifai.ai/) | Official Website|=
 | [Documentation](https://docs.classifai.ai/) | Full API documentation and tutorials |
 | [Blogs](https://medium.com/@codenamewei) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
