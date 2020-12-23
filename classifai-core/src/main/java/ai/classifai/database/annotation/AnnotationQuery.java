@@ -15,6 +15,10 @@
  */
 package ai.classifai.database.annotation;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Common SQL Query for Each Annotation Type
  *
@@ -30,7 +34,7 @@ public abstract class AnnotationQuery
 
     protected final static String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "delete from Project where project_id = ?";
 
-    protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ? and uuid = ?";
+    protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ? and uuid in (";
 
     public static String createData() { return CREATE_DATA; }
 
@@ -40,5 +44,5 @@ public abstract class AnnotationQuery
 
     public static String deleteProjectUUIDListwithProjectID() { return DELETE_PROJECT_UUID_LIST_WITH_PROJECTID; }
 
-    public static String deleteProjectUUIDList(){ return DELETE_PROJECT_UUID_LIST; }
+    public static String deleteProjectUUIDList() { return DELETE_PROJECT_UUID_LIST; }
 }
