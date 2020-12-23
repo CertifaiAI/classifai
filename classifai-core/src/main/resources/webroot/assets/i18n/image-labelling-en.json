@@ -1,6 +1,6 @@
 {
   "modal": {
-    "header": "Classifai Image labelling Tools",
+    "header": "Classifai Image labelling Tool",
     "existing": {
       "header": "From Existing Project",
       "label": "Project Name : ",
@@ -36,5 +36,8 @@
     "imgList": "Image List",
     "labelList": "Label List",
     "boundBox": "Bounding Box"
+  },
+  "deleteswitch":{
+    "selectall" : "Select all"
   }
 }
