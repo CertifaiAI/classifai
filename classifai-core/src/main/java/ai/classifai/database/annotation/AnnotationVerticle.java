@@ -193,6 +193,25 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
+        List<String> successUUIDListString = ConversionHandler.integerList2StringList(successUUIDList);
+        String UUIDList = String.join(",", successUUIDListString);
+
+        String deleteUUIDListquery = query + UUIDList + ")";
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(deleteUUIDListquery, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                log.debug("Successful delete uuids in project " + projectID);
+            }
+            else
+            {
+                log.debug("Failure in deleting uuids in project " + projectID);
+            }
+        });
+
         if(validUUIDList.removeAll(successUUIDList))
         {
             loader.setSanityUUIDList(validUUIDList);
