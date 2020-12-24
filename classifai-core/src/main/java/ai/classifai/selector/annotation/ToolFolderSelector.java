@@ -17,12 +17,11 @@ package ai.classifai.selector.annotation;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
-import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import ai.classifai.util.data.FileHandler;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.data.ImageHandler;
 import lombok.NonNull;
@@ -32,7 +31,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Open browser to select folder with importing list of data points in the folder

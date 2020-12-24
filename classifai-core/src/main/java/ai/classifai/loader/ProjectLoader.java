@@ -51,6 +51,8 @@ public class ProjectLoader
     //a list of unique uuid representing number of data points in one project
     @Setter @Getter private List<Integer> sanityUUIDList;
 
+    @Getter @Setter private Boolean isLoadedFrontEndToggle;
+
     @Getter private List<Integer> progressUpdate;
 
     //Set to push in unique uuid to prevent recurrence
@@ -75,6 +77,8 @@ public class ProjectLoader
         sanityUUIDList = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
+
+        isLoadedFrontEndToggle = Boolean.FALSE;
 
         reset(FileSystemStatus.DID_NOT_INITIATE);
     }

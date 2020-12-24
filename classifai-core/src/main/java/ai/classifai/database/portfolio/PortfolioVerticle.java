@@ -16,16 +16,16 @@
 
 package ai.classifai.database.portfolio;
 
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.database.VerticleServiceable;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -38,6 +38,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -15,9 +15,9 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.util.type.OS;
 import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.OS;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -63,6 +63,7 @@ public class ParamConfig
     private final static String UUID_GENERATOR_PARAM = "uuid_generator_seed";
     private final static String ANNOTATE_TYPE_PARAM = "annotation_type";
 
+    private final static String TOTAL_UUID_PARAM = "total_uuid";
     private final static String UUID_LIST_PARAM = "uuid_list";
     private final static String LABEL_LIST_PARAM = "label_list";
 
@@ -97,6 +98,16 @@ public class ParamConfig
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
 
+
+    //v2
+    private final static String IS_NEW = "is_new";
+    private final static String IS_STARRED = "is_starred";
+    private final static String IS_LOADED = "is_loaded";
+    private final static String CREATED_DATE = "created_date";
+
+    private final static String STATUS_PARAM = "status";
+
+
     public static OSManager getOsManager() {return OS_MANAGER;}
 
     public static String getFileSeparator() {return FILE_SEPARATOR;}
@@ -111,6 +122,7 @@ public class ParamConfig
     public static String getUuidGeneratorParam() { return UUID_GENERATOR_PARAM; }
     public static String getAnnotateTypeParam() { return ANNOTATE_TYPE_PARAM; }
 
+    public static String getTotalUUIDParam() { return TOTAL_UUID_PARAM; }
     public static String getUUIDListParam() { return UUID_LIST_PARAM; }
     public static String getLabelListParam() { return LABEL_LIST_PARAM;}
 
@@ -139,7 +151,6 @@ public class ParamConfig
     public static String getBase64Param() { return BASE64_PARAM; }
     public static String getFileSizeParam() { return FILE_SIZE_PARAM; }
 
-
     public static String getFileParam(){ return FILE_PARAM; }
     public static String getFolderParam(){ return FOLDER_PARAM; }
 
@@ -161,5 +172,16 @@ public class ParamConfig
 
         return null;
     }
+
+    //v2
+    public static String getIsStarredParam() { return IS_STARRED; }
+    public static String getIsLoadedParam() { return IS_LOADED; }
+    public static String getIsNewParam() { return IS_NEW; }
+
+    public static String getCreatedDateParam() { return CREATED_DATE; }
+
+    public static String getStatusParam() { return STATUS_PARAM; }
+
+
 
 }

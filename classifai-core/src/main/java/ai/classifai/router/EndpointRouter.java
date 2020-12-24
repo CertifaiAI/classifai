@@ -16,14 +16,14 @@
 package ai.classifai.router;
 
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.database.annotation.seg.SegDbQuery;
+import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -109,6 +109,75 @@ public class EndpointRouter extends AbstractVerticle
             else
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
+            }
+        });
+    }
+
+    /**
+     * Retrieve metadata of bounding box project
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/meta
+     *
+     */
+    public void getBndBoxProjectMeta(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        getProjectMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), projectName, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Retrieve metadata of segmentation project
+     *
+     * GET http://localhost:{port}/seg/projects/:project_name/meta
+     *
+     */
+    public void getSegProjectMeta(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        getProjectMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), projectName, AnnotationType.SEGMENTATION);
+    }
+
+    /**
+     * Retrieve metadata of project
+     */
+    private void getProjectMetadata(RoutingContext context, String queue, String query, String projectName, AnnotationType annotationType)
+    {
+        log.info("Get metadata of project: " + projectName + " of annotation type: " + annotationType.name());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
+
+        if(checkIfProjectNull(context, loader, projectName)) return;
+
+        if(loader == null)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving metadata of project: " + projectName));
+        }
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
+
+        //load label list
+        DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectMetadata());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, metadataOptions, metaReply ->
+        {
+            if (metaReply.succeeded()) {
+
+                JsonObject metaResponse = (JsonObject) metaReply.result().body();
+
+                if (ReplyHandler.isReplyOk(metaResponse))
+                {
+                    HTTPResponseHandler.configureOK(context, metaResponse);
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
+                }
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving project metadata " + projectName));
             }
         });
     }
@@ -996,9 +1065,9 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
 
-        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMeta); //new
+        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMeta);
 
-        //router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);//new
+        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);
 
         router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
 
