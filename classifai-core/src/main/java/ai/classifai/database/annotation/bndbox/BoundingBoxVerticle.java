@@ -66,13 +66,13 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.loadValidProjectUUID());
         }
+        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
+        {
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
+        }
         else if(action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
         {
             this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDList());
-        }
-        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUID()))
-        {
-            this.deleteProjectUUID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUID());
         }
         else
         {

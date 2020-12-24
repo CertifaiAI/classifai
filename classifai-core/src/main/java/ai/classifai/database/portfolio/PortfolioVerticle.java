@@ -90,6 +90,19 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.getLabelList(message);
         }
+        //v2
+        else if(action.equals(PortfolioDbQuery.getProjectMetadata()))
+        {
+            this.getProjectMetadata(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getAllProjectsMetadata()))
+        {
+            this.getAllProjectsMetadata(message);
+        }
+        else if(action.equals(PortfolioDbQuery.starProject()))
+        {
+            this.starProject(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -368,6 +381,156 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 }
 
+            }
+        });
+    }
+
+    //V2 API
+    public void getProjectMetadata(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectMetadata(), new JsonArray().add(projectID), fetch -> {
+            if (fetch.succeeded()) {
+
+                List<JsonObject> result = new ArrayList<>();
+
+                JsonArray row = fetch.result().getResults().get(0);
+
+                String projectName = row.getString(0);
+                List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
+
+                Boolean isNew = row.getBoolean(2);
+                Boolean isStarred = row.getBoolean(3);
+                Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
+                String dataTime = row.getString(4);
+
+                //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
+                result.add(new JsonObject()
+                        .put(ParamConfig.getProjectNameParam(), projectName)
+                        .put(ParamConfig.getIsNewParam(), isNew)
+                        .put(ParamConfig.getIsStarredParam(), isStarred)
+                        .put(ParamConfig.getIsLoadedParam(), isLoaded)
+                        .put(ParamConfig.getCreatedDateParam(), dataTime)
+                        .put(ParamConfig.getTotalUUIDParam(), uuidList.size()));
+
+                JsonObject response = ReplyHandler.getOkReply();
+                response.put(ParamConfig.getContent(), result);
+
+                message.reply(response);
+            }
+            else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    //V2 API
+    public void getAllProjectsMetadata(Message<JsonObject> message)
+    {
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsMetadata(), new JsonArray().add(annotationTypeIndex), fetch -> {
+            if (fetch.succeeded()) {
+
+                ResultSet resultSet = fetch.result();
+
+                List<String> projectNameList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getString(0))
+                        .collect(Collectors.toList());
+
+                List<String> uuidList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getString(1))
+                        .collect(Collectors.toList());
+
+                List<Boolean> isNewList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getBoolean(2))
+                        .collect(Collectors.toList());
+
+                List<Boolean> isStarredList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getBoolean(3))
+                        .collect(Collectors.toList());
+
+                List<String> dateTimeList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getString(4))
+                        .collect(Collectors.toList());
+
+                List<JsonObject> result = new ArrayList<>();
+
+                int maxIndex = projectNameList.size() - 1;
+                for(int i = maxIndex ; i > -1; --i)
+                {
+                    int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
+
+                    Integer projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
+                    Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
+
+                    result.add(new JsonObject()
+                            .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
+                            .put(ParamConfig.getIsNewParam(), isNewList.get(i))
+                            .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
+                            .put(ParamConfig.getIsLoadedParam(), isLoaded)
+                            .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i))
+                            .put(ParamConfig.getTotalUUIDParam(), total_uuid));
+                }
+
+                JsonObject response = ReplyHandler.getOkReply();
+                response.put(ParamConfig.getContent(), result);
+
+                message.reply(response);
+            }
+            else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    //V2 API
+    public void starProject(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        Object isStarObject = message.body().getString(ParamConfig.getStatusParam());
+
+        boolean isStarStatus;
+
+        try
+        {
+            if(isStarObject instanceof String)
+            {
+                String isStarStr = (String) isStarObject;
+
+                isStarStatus = ConversionHandler.String2boolean(isStarStr);
+            }
+            else
+            {
+                throw new Exception("Status != String. Could not convert to boolean for starring.");
+            }
+        }
+        catch(Exception e)
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Starring object value is not boolean. Failed to execute"));
+            return;
+        }
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.starProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
+
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }

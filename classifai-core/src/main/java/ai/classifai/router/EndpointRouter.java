@@ -76,7 +76,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/projects
      *
      */
-    private void getAllBoundingBoxProjects(RoutingContext context)
+    private void getAllBndBoxProjects(RoutingContext context)
     {
         getAllProjects(context, AnnotationType.BOUNDINGBOX);
     }
@@ -86,7 +86,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/projects
      *
      */
-    private void getAllSegmentationProjects(RoutingContext context)
+    private void getAllSegProjects(RoutingContext context)
     {
         getAllProjects(context, AnnotationType.SEGMENTATION);
     }
@@ -113,6 +113,53 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
+
+    /**
+     * Get metadata of all bounding box projects
+     * GET http://localhost:{port}/bndbox/projects/meta
+     *
+     */
+    private void getAllBndBoxProjectsMeta(RoutingContext context)
+    {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+
+        getAllProjectsMeta(context, request, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Get metadata of all segmentation projects
+     * GET http://localhost:{port}/seg/projects/meta
+     *
+     */
+    private void getAllSegProjectsMeta(RoutingContext context)
+    {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+
+        getAllProjectsMeta(context, request, AnnotationType.SEGMENTATION);
+    }
+
+    private void getAllProjectsMeta(RoutingContext context, JsonObject request, AnnotationType type)
+    {
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsMetadata());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
+
+            if(reply.succeeded())
+            {
+                JsonObject response = (JsonObject) reply.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
+            }
+        });
+    }
+
+
     /**
      * Create new project under the category of bounding box
      * PUT http://localhost:{port}/bndbox/newproject/:project_name
@@ -121,7 +168,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/newproject/helloworld
      *
      */
-    private void createBoundingBoxProject(RoutingContext context)
+    private void createBndBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -139,7 +186,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/newproject/helloworld
      *
      */
-    private void createSegmentationProject(RoutingContext context)
+    private void createSegProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -875,29 +922,29 @@ public class EndpointRouter extends AbstractVerticle
     /**
      * Delete uuid of a specific bounding box project
      *
-     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid
+     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuids
      *
      * Example:
-     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuid/123
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
      *
      */
     private void deleteBndBoxProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUID(), AnnotationType.BOUNDINGBOX);
+        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDList(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
      * Delete uuid of a specific segmentation project
      *
-     * DELETE http://localhost:{port}/seg/projects/:project_name/uuid/:uuid
+     * DELETE http://localhost:{port}/seg/projects/:project_name/uuids
      *
      * Example:
-     * DELETE http://localhost:{port}/seg/projects/helloworld/uuid/123
+     * DELETE http://localhost:{port}/seg/projects/helloworld/uuids
      *
      */
     private void deleteSegProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUID(), AnnotationType.SEGMENTATION);
+        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDList(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProjectUUID(RoutingContext context, String queue, String query, AnnotationType annotationType)
@@ -908,38 +955,25 @@ public class EndpointRouter extends AbstractVerticle
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
-
-        if(!ProjectHandler.deleteUUID(projectID, uuid))
+        context.request().bodyHandler(h ->
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Deletion of uuid failed. UUID not exist: " + uuid + " from project name: " + projectName + " of " + annotationType.name()));
-            return;
-        }
+            io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
 
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIDParam(), projectID)
-                .put(ParamConfig.getUUIDParam(), uuid);
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUUIDListParam());
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+            request.put(ParamConfig.getProjectIDParam(), projectID).put(ParamConfig.getUUIDListParam(), uuidListArray);
 
-        vertx.eventBus().request(queue, request, options, fetch -> {
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
-            if (fetch.succeeded()) {
-
-                JsonObject response = (JsonObject) fetch.result().body();
-
-                if(ReplyHandler.isReplyOk(response) == false)
-                {
-                    log.info("Failure to delete uuid " + uuid + " of project name: " + projectName + " of " + annotationType.name());
-                }
-
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
+            vertx.eventBus().request(queue, request, options, reply ->
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting response when deleting uuid from project name: " + projectName + " of " + annotationType.name()));
-            }
+                if (reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
         });
     }
 
@@ -960,15 +994,19 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
+        router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
 
-        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata); //new
+        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMeta); //new
 
-        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);//new
+        //router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);//new
 
-        router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
+        router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
+
+        router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
+
+        router.delete("/bndbox/projects/:project_name/uuids").handler(this::deleteBndBoxProjectUUID);
 
         router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
@@ -984,17 +1022,19 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
-        router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
-
-        router.delete("/bndbox/projects/:project_name/uuid/:uuid").handler(this::deleteBndBoxProjectUUID);
-
         //*******************************Segmentation*******************************
 
-        router.get("/seg/projects").handler(this::getAllSegmentationProjects);
+        router.get("/seg/projects").handler(this::getAllSegProjects);
 
-        router.put("/seg/newproject/:project_name").handler(this::createSegmentationProject);
+        router.get("/seg/projects/meta").handler(this::getAllSegProjectsMeta);
+
+        router.put("/seg/newproject/:project_name").handler(this::createSegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
+
+        router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
+
+        router.delete("/seg/projects/:project_name/uuids").handler(this::deleteSegProjectUUID);
 
         router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
 
@@ -1010,9 +1050,6 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
 
-        router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
-
-        router.delete("/seg/projects/:project_name/uuid/:uuid").handler(this::deleteSegProjectUUID);
 
         vertx.createHttpServer()
                 .requestHandler(router)
