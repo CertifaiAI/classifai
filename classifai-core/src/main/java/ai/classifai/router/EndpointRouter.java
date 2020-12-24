@@ -962,6 +962,10 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
 
+        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata); //new
+
+        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);//new
+
         router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
