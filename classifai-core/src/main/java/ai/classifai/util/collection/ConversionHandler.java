@@ -173,6 +173,16 @@ public class ConversionHandler
             return arrayList;
     }
 
+    public static List<String> integerList2StringList(List<Integer> oldList)
+    {
+        List<String> newList = new ArrayList<>();
+        for (Integer myInt : oldList) {
+            newList.add(String.valueOf(myInt));
+        }
+
+        return newList;
+
+    }
 
     public static List<Integer> jsonArray2IntegerList(JsonArray json)
     {
