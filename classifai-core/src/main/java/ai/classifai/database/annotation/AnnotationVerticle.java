@@ -212,7 +212,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
-        if(validUUIDList.removeAll(successUUIDList))
+
+        if((!successUUIDList.isEmpty()) && validUUIDList.removeAll(successUUIDList))
         {
             loader.setSanityUUIDList(validUUIDList);
 

@@ -20,6 +20,7 @@ import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
@@ -46,7 +47,7 @@ import java.util.stream.Collectors;
 /**
  * General database processing to get high level infos of each created project
  *
- * @author codenamewwei
+ * @author codenamewei
  */
 @Slf4j
 public class PortfolioVerticle extends AbstractVerticle implements VerticleServiceable, PortfolioServiceable
@@ -134,13 +135,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             Integer projectID = ProjectHandler.generateProjectID();
 
+
             JsonArray params = new JsonArray()
-                    .add(projectID)                    //project_id
-                    .add(projectName)                  //project_name
-                    .add(annotationType)               //annotation_type
-                    .add(ParamConfig.getEmptyArray())  //label_list
-                    .add(0)                            //uuid_generator_seed
-                    .add(ParamConfig.getEmptyArray()); //uuid_list
+                    .add(projectID)                   //project_id
+                    .add(projectName)                 //project_name
+                    .add(annotationType)              //annotation_type
+                    .add(ParamConfig.getEmptyArray()) //label_list
+                    .add(0)                           //uuid_generator_seed
+                    .add(ParamConfig.getEmptyArray()) //uuid_list
+                    .add(true)                        //is_new
+                    .add(false)                       //is_starred
+                    .add(DateTime.get());             //created_date
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 

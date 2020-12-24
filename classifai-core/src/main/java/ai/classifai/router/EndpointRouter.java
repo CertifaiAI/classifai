@@ -917,7 +917,7 @@ public class EndpointRouter extends AbstractVerticle
     private void deleteBndBoxProject(RoutingContext context)
     {
         //delete in Portfolio Table
-        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDList(), AnnotationType.BOUNDINGBOX);
+        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -931,7 +931,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProject(RoutingContext context)
     {
-        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDList(), AnnotationType.SEGMENTATION);
+        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProject(RoutingContext context, String queue, String query,  AnnotationType type)
@@ -952,7 +952,6 @@ public class EndpointRouter extends AbstractVerticle
             if(reply.succeeded())
             {
                 JsonObject response = (JsonObject) reply.result().body();
-
 
                 if(ReplyHandler.isReplyOk(response))
                 {
