@@ -68,7 +68,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/projects
      *
      */
-    private void getAllBoundingBoxProjects(RoutingContext context)
+    private void getAllBndBoxProjects(RoutingContext context)
     {
         getAllProjects(context, AnnotationType.BOUNDINGBOX);
     }
@@ -78,7 +78,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/projects
      *
      */
-    private void getAllSegmentationProjects(RoutingContext context)
+    private void getAllSegProjects(RoutingContext context)
     {
         getAllProjects(context, AnnotationType.SEGMENTATION);
     }
@@ -113,7 +113,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/newproject/helloworld
      *
      */
-    private void createBoundingBoxProject(RoutingContext context)
+    private void createBndBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -131,7 +131,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/newproject/helloworld
      *
      */
-    private void createSegmentationProject(RoutingContext context)
+    private void createSegProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -942,9 +942,9 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
+        router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
 
-        router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
+        router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
 
@@ -968,9 +968,9 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Segmentation*******************************
 
-        router.get("/seg/projects").handler(this::getAllSegmentationProjects);
+        router.get("/seg/projects").handler(this::getAllSegProjects);
 
-        router.put("/seg/newproject/:project_name").handler(this::createSegmentationProject);
+        router.put("/seg/newproject/:project_name").handler(this::createSegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
