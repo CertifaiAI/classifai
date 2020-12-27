@@ -157,9 +157,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
-        JsonArray UUIDlistJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
+        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
 
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDlistJsonArray);
+        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDListJsonArray);
 
         List<Integer> successUUIDList = new ArrayList<>();
         List<Integer> failedUUIDList = new ArrayList<>();
@@ -173,19 +173,17 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             {
                 JsonArray params = new JsonArray().add(projectID).add(UUID);
 
+                successUUIDList.add(UUID);
+
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
                     if(fetch.succeeded())
                     {
-                        log.debug("Successful delete uuids in project " + projectID);
-
-                        successUUIDList.add(UUID);
+                        log.debug("Successful delete uuid " + UUID + " in project " + projectID);
                     }
                     else
                     {
-                        log.debug("Failure in deleting uuid from Annotation Verticle");
-
-                        failedUUIDList.add(UUID);
+                        log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
                     }
                 });
             }
@@ -195,11 +193,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
-        if(successUUIDList.isEmpty())
-        {
-            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
-        }
-        else if(validUUIDList.removeAll(successUUIDList))
+        if(validUUIDList.removeAll(successUUIDList))
         {
             loader.setSanityUUIDList(validUUIDList);
 

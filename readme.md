@@ -155,7 +155,7 @@ java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
 | Section | Description |
 |:-------------:|:-------------:|
 | [Website](https://classifai.ai/) | Official Website|
-| [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
+| [Documentation](https://docs.classifai.ai/) | Full API documentation and tutorials |
 | [Blogs](https://medium.com/@codenamewei) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 | Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
