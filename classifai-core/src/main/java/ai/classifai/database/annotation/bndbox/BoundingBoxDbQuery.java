@@ -26,12 +26,12 @@ public class BoundingBoxDbQuery extends AnnotationQuery
 {
     private final static String QUEUE = "boundingbox.queue";
 
-    private final static String CREATE_PROJECT = "create table if not exists Project (uuid integer, project_id integer, img_path varchar(2000), bnd_box varchar(65535), img_depth integer, " +
-            "img_x integer, img_y integer, img_w double, img_h double, file_size integer, img_ori_w integer, img_ori_h integer, primary key(uuid, project_id))";
+    private final static String CREATE_PROJECT = "CREATE TABLE IF NOT EXISTS Project (uuid integer, project_id integer, img_path varchar(2000), bnd_box varchar(65535), img_depth integer, " +
+            "img_x integer, img_y integer, img_w double, img_h double, file_size integer, img_ori_w integer, img_ori_h integer, PRIMARY KEY(uuid, project_id))";
 
-    private final static String RETRIEVE_DATA = "select img_path, bnd_box, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project where uuid = ? and project_id = ?";
+    private final static String RETRIEVE_DATA = "SELECT img_path, bnd_box, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project WHERE uuid = ? AND project_id = ?";
 
-    private final static String UPDATE_DATA = "update Project set bnd_box = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? where uuid = ? and project_id = ?";
+    private final static String UPDATE_DATA = "UPDATE Project SET bnd_box = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
 
     public static String getQueue()
     {
