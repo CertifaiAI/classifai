@@ -252,7 +252,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 }
                 catch (Exception e) {
                     log.info("Failed in getting uuid list, ", e);
-                };
+                }
             }
             else {
                 //query database failed
@@ -390,6 +390,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
+                //.put("user", "admin")
                 .put("max_pool_size", 30));
 
         portfolioDbClient.getConnection(ar -> {

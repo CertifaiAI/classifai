@@ -190,11 +190,6 @@ public class ProjectLoader
         PortfolioVerticle.updateFileSystemUUIDList(projectID);
     }
 
-    public boolean isAllFileSysProcessed()
-    {
-        return currentUUIDMarker.equals(totalUUIDMaxLen);
-    }
-
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
 

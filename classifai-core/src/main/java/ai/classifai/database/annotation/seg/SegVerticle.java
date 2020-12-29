@@ -97,6 +97,7 @@ public class SegVerticle extends AnnotationVerticle
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
+                //.put("user", "admin")
                 .put("max_pool_size", 30));
 
 
