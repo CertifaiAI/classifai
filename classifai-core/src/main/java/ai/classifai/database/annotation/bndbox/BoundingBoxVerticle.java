@@ -94,7 +94,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     public void start(Promise<Void> promise) throws Exception
     {
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDb())
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDbPath())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));

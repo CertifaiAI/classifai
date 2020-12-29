@@ -181,7 +181,4 @@ public class ParamConfig
     public static String getCreatedDateParam() { return CREATED_DATE; }
 
     public static String getStatusParam() { return STATUS_PARAM; }
-
-
-
 }

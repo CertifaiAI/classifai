@@ -558,7 +558,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
 
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDb())
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDbPath())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));

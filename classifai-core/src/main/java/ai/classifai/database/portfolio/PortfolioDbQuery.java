@@ -24,36 +24,36 @@ public class PortfolioDbQuery
 {
     private final static String QUEUE = "portfolio.queue";
 
-    private final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(10000), uuid_generator_seed integer, uuid_list varchar(65535), is_new boolean, is_starred boolean, created_date varchar(255))";
+    private final static String CREATE_PORTFOLIO_TABLE = "CREATE TABLE IF NOT EXISTS Portfolio (project_id integer identity PRIMARY KEY, project_name varchar(255), annotation_type integer, label_list varchar(10000), uuid_generator_seed integer, uuid_list varchar(65535), is_new boolean, is_starred boolean, created_date varchar(255))";
 
-    private final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private final static String CREATE_NEW_PROJECT = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_id = ?";
+    private final static String UPDATE_PROJECT = "UPDATE Portfolio SET uuid_list = ? WHERE project_id = ?";
 
-    private final static String DELETE_PROJECT = "delete from Portfolio where project_id = ?";
+    private final static String DELETE_PROJECT = "DELETE FROM Portfolio WHERE project_id = ?";
 
-    private final static String UPDATE_UUID_GENERATOR_SEED = "update Portfolio set uuid_generator_seed = ? where project_id = ?";
+    private final static String UPDATE_UUID_GENERATOR_SEED = "UPDATE Portfolio SET uuid_generator_seed = ? WHERE project_id = ?";
 
-    private final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_id = ?";
+    private final static String UPDATE_LABEL_LIST = "UPDATE Portfolio set label_list = ? WHERE project_id = ?";
 
-    private final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_id = ?";
+    private final static String GET_PROJECT_LABEL_LIST = "SELECT label_list FROM Portfolio WHERE project_id = ?";
 
-    private final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
+    private final static String GET_PROJECT_ID_LIST = "SELECT project_id FROM Portfolio";
 
-    private final static String GET_PROJECT_NAME = "select project_name, annotation_type from Portfolio where project_id = ?";
+    private final static String GET_PROJECT_NAME = "SELECT project_name, annotation_type FROM Portfolio WHERE project_id = ?";
 
-    private final static String GET_PROJECT_UUID_LIST = "select uuid_list, uuid_generator_seed from Portfolio where project_id = ?";
+    private final static String GET_PROJECT_UUID_LIST = "SELECT uuid_list, uuid_generator_seed FROM Portfolio WHERE project_id = ?";
 
-    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
+    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "SELECT project_name FROM Portfolio WHERE annotation_type = ?";
 
     //V2
-    private final static String GET_PROJECT_METADATA = "select project_name, uuid_list, is_new, is_starred, created_date from Portfolio where project_id = ?";
+    private final static String GET_PROJECT_METADATA = "SELECT project_name, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE project_id = ?";
 
-    private final static String GET_ALL_PROJECTS_METADATA = "select project_name, uuid_list, is_new, is_starred, created_date from Portfolio where annotation_type = ?";
+    private final static String GET_ALL_PROJECTS_METADATA = "SELECT project_name, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE annotation_type = ?";
 
-    private final static String UPDATE_IS_NEW_PARAM = "update Portfolio set is_new = ? where project_id = ?";
+    private final static String UPDATE_IS_NEW_PARAM = "UPDATE Portfolio SET is_new = ? WHERE project_id = ?";
 
-    private final static String STAR_PROJECT = "update Portfolio set is_starred = ? where project_id = ?";
+    private final static String STAR_PROJECT = "UPDATE Portfolio SET is_starred = ? WHERE project_id = ?";
 
     public static String getQueue(){ return QUEUE; }
 

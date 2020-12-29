@@ -84,7 +84,7 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
-        log.info("SegVerticle stopping...");
+        log.info("Seg Verticle stopping...");
 
         //add action before stopped if necessary
     }
@@ -95,7 +95,7 @@ public class SegVerticle extends AnnotationVerticle
     public void start(Promise<Void> promise) throws Exception
     {
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDb())
+                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDbPath())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));
