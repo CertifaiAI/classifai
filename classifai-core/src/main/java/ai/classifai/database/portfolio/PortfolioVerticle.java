@@ -231,7 +231,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 {
                     loader.setLabelList(labelList);
                 }
-                else if(loader == null)
+                else
                 {
                     log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
                 }
@@ -272,7 +272,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 }
                 catch (Exception e) {
                     log.info("Failed in getting uuid list, ", e);
-                };
+                }
             }
             else {
                 //query database failed

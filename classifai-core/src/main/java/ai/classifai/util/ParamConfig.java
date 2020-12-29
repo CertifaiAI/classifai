@@ -107,7 +107,6 @@ public class ParamConfig
 
     private final static String STATUS_PARAM = "status";
 
-
     public static OSManager getOsManager() {return OS_MANAGER;}
 
     public static String getFileSeparator() {return FILE_SEPARATOR;}

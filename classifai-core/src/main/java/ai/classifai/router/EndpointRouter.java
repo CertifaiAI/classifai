@@ -893,6 +893,53 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
+    /***
+     * Star a bounding box project
+     *
+     * PUT http://localhost:{port}/bndbox/projects/:projectname/star
+     */
+    private void starBndBoxProject(RoutingContext context)
+    {
+        starProject(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    /***
+     * Star a segmentation project
+     *
+     * PUT http://localhost:{port}/seg/projects/:projectname/star
+     */
+    private void starSegProject(RoutingContext context)
+    {
+        starProject(context, AnnotationType.SEGMENTATION);
+    }
+
+    private void starProject(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.starProject());
+
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+            {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+    }
+
     private boolean checkIfProjectNull(RoutingContext context, Object project, @NonNull String projectName)
     {
         if(project == null)
@@ -1090,6 +1137,10 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
+        //v2
+        router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
+
+
         //*******************************Segmentation*******************************
 
         router.get("/seg/projects").handler(this::getAllSegProjects);
@@ -1117,6 +1168,9 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
+
+        //v2
+        router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
 
 
         vertx.createHttpServer()
