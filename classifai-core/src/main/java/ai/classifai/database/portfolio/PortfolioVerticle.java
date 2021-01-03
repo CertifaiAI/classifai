@@ -524,7 +524,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         catch(Exception e)
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Starring object value is not boolean. Failed to execute"));
+            message.reply(ReplyHandler.reportBadParamError("Starring object value is not boolean. Failed to execute"));
             return;
         }
 
