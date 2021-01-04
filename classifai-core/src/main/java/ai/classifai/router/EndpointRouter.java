@@ -327,6 +327,8 @@ public class EndpointRouter extends AbstractVerticle
 
         if(checkIfProjectNull(context, loader, projectName)) return;
 
+        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
+
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
         //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
@@ -373,6 +375,7 @@ public class EndpointRouter extends AbstractVerticle
 
                                         if (ReplyHandler.isReplyOk(removalResponse))
                                         {
+                                            loader.setLoaderStatus(LoaderStatus.LOADED);
                                             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
                                         } else
@@ -1171,7 +1174,6 @@ public class EndpointRouter extends AbstractVerticle
 
         //v2
         router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
-
 
         vertx.createHttpServer()
                 .requestHandler(router)

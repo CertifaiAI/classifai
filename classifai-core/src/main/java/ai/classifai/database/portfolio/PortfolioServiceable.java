@@ -17,6 +17,7 @@ package ai.classifai.database.portfolio;
 
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import lombok.NonNull;
 
 /***
  * common functionalities for Portfolio Vecticle

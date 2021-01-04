@@ -17,6 +17,7 @@ package ai.classifai.loader;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.ProjectHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +52,8 @@ public class ProjectLoader
     //a list of unique uuid representing number of data points in one project
     @Setter @Getter private List<Integer> sanityUUIDList;
 
-    @Getter @Setter private Boolean isLoadedFrontEndToggle;
+    @Getter private Boolean isLoadedFrontEndToggle;
+    @Setter private Boolean isProjectNewlyCreated;
 
     @Getter private List<Integer> progressUpdate;
 
@@ -65,7 +67,7 @@ public class ProjectLoader
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus, Boolean isNewlyCreated)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
@@ -79,6 +81,7 @@ public class ProjectLoader
         uuidGeneratorSeed = 0;
 
         isLoadedFrontEndToggle = Boolean.FALSE;
+        isProjectNewlyCreated = isNewlyCreated;
 
         reset(FileSystemStatus.DID_NOT_INITIATE);
     }
@@ -94,6 +97,17 @@ public class ProjectLoader
         progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
         fileSystemStatus = currentFileSystemStatus;
+    }
+
+    public void toggleFrontEndLoaderParam()
+    {
+        if (isProjectNewlyCreated)
+        {
+            //update database to be old project
+            PortfolioVerticle.updateIsNewParam(projectID);
+        }
+
+        isLoadedFrontEndToggle = Boolean.TRUE;
     }
 
     //loading project from database
@@ -177,10 +191,6 @@ public class ProjectLoader
         PortfolioVerticle.updateFileSystemUUIDList(projectID);
     }
 
-    public boolean isAllFileSysProcessed()
-    {
-        return currentUUIDMarker.equals(totalUUIDMaxLen);
-    }
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
