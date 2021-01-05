@@ -17,7 +17,6 @@ package ai.classifai.loader;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.ProjectHandler;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
