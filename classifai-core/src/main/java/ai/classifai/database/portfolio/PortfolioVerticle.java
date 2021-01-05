@@ -78,7 +78,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.updateLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.getProjectUUIDListt()))
+        else if(action.equals(PortfolioDbQuery.deleteProject()))
+        {
+            this.deleteProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getProjectUUIDList()))
         {
             this.getProjectUUIDList(message);
         }
@@ -142,7 +146,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             message.reply(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
-
     }
 
     public void updateLabelList(Message<JsonObject> message)
@@ -164,6 +167,25 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 message.reply(ReplyHandler.getOkReply());
             }
             else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void deleteProject(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.deleteProject(), params, fetch -> {
+
+            if (fetch.succeeded()) {
+
+                message.reply(ReplyHandler.getOkReply());
+
+            } else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -209,7 +231,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDListt(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), params, fetch -> {
 
             if(fetch.succeeded()) {
                 try {
@@ -230,7 +252,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 }
                 catch (Exception e) {
                     log.info("Failed in getting uuid list, ", e);
-                };
+                }
             }
             else {
                 //query database failed
@@ -290,7 +312,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             if(!reply.succeeded())
             {
-                log.error("Update list of uuids to Portfolio Database failed");
+                log.info("Update list of uuids to Portfolio Database failed");
             }
         });
     }
@@ -368,6 +390,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
+                //.put("user", "admin")
                 .put("max_pool_size", 30));
 
         portfolioDbClient.getConnection(ar -> {

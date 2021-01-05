@@ -1,6 +1,6 @@
 {
     "modal": {
-      "header": "Classifai Image labelling Tools",
+      "header": "Classifai Image labelling Tool",
       "existing": {
         "header": "From Existing Project",
         "label": "Project Name : ",
@@ -13,6 +13,15 @@
         "inputPlaceholder": "your new id ....",
         "subLabel": "Label List File (*.txt): ",
         "button": "Create"
+      },
+      "delete":{
+        "header": "Delete Project",
+        "label": "Project Name : ",
+        "button": "Delete",
+        "option": "none"
+      },
+      "delimg":{
+        "header": "Delete Images"
       }
     },
     "loading": "Powered by Skymind",
@@ -27,6 +36,12 @@
       "imgList": "Image List",
       "labelList": "Label List",
       "polygon": "Polygon"
+    },
+    "deleteswitch":{
+      "selectall" : "Select all"
+    },
+    "deletebtn":{
+      "delete" : "Delete"
     }
   }
   

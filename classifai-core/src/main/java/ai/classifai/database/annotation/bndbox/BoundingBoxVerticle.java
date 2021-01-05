@@ -64,7 +64,15 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         }
         else if (action.equals(BoundingBoxDbQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.retrieveDataPath());
+            this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.loadValidProjectUUID());
+        }
+        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
+        {
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
+        }
+        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
+        {
+            this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDList());
         }
         else
         {
@@ -89,6 +97,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
+                //.put("user", "admin")
                 .put("max_pool_size", 30));
 
 

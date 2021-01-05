@@ -4,7 +4,7 @@
     "existing": {
       "header": "来自现有项目",
       "label": "项目名称 : ",
-      "option" : "没有",
+      "option" : "没选项",
       "button": "提交"
     },
     "create": {
@@ -13,6 +13,15 @@
       "inputPlaceholder": "您的新编号 ....",
       "subLabel": "标签列表文件 (*.txt): ",
       "button": "创造"
+    },
+    "delete":{
+      "header": "删除现有项目",
+      "label": "项目名称 : ",
+      "button": "删除",
+      "option": "没选项"
+    },
+    "delimg":{
+      "header": "删除图片（可多个）"
     }
   },
   "loading": "由Skymind提供支持",
@@ -27,5 +36,11 @@
     "imgList": "图片清单",
     "labelList": "标签清单",
     "boundBox": "边界框"
+  },
+  "deleteswitch":{
+    "selectall" : "全选"
+  },
+  "deletebtn":{
+    "delete" : "删除"
   }
 }

@@ -64,7 +64,15 @@ public class SegVerticle extends AnnotationVerticle
         }
         else if (action.equals(SegDbQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.retrieveDataPath());
+            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
+        }
+        else if(action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
+        {
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.deleteProjectUUIDListwithProjectID());
+        }
+        else if(action.equals(SegDbQuery.deleteProjectUUIDList()))
+        {
+            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
         }
         else
         {
@@ -89,6 +97,7 @@ public class SegVerticle extends AnnotationVerticle
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")
+                //.put("user", "admin")
                 .put("max_pool_size", 30));
 
 

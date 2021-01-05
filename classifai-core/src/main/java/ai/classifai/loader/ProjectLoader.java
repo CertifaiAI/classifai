@@ -49,7 +49,7 @@ public class ProjectLoader
     @Getter private List<Integer> fileSysNewUUIDList;
 
     //a list of unique uuid representing number of data points in one project
-    @Getter private List<Integer> sanityUUIDList;
+    @Setter @Getter private List<Integer> sanityUUIDList;
 
     @Getter private List<Integer> progressUpdate;
 
@@ -156,6 +156,23 @@ public class ProjectLoader
 
     }
 
+    /***
+     * Delete UUID from list
+     *
+     * @param uuid
+     * @return false if uuid in sanityUUIDLis not found
+     */
+    public boolean deleteUUID(Integer uuid)
+    {
+        if(sanityUUIDList.contains(uuid))
+        {
+            sanityUUIDList.remove(uuid);
+
+            return true;
+        }
+        return false;
+    }
+
     private void offloadFileSysNewList2List()
     {
         sanityUUIDList.addAll(fileSysNewUUIDList);
@@ -171,11 +188,6 @@ public class ProjectLoader
         }
 
         PortfolioVerticle.updateFileSystemUUIDList(projectID);
-    }
-
-    public boolean isAllFileSysProcessed()
-    {
-        return currentUUIDMarker.equals(totalUUIDMaxLen);
     }
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)

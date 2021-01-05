@@ -98,16 +98,6 @@ public class ImageHandler {
 
         return true;
 
-        /*try
-        {
-            ImageIO.read(file);
-        }
-        catch(Exception e)
-        {
-            log.debug("Image is not readable: ", e);
-            return false;
-        }*/
-
     }
 
 
@@ -226,21 +216,6 @@ public class ImageHandler {
             {
                 verifiedFilesList.add(file);
             }
-
-            /*if(PdfHandler.isPdf(currentFileFullPath)) {
-
-                java.util.List<File> pdf2ImagePaths = PdfHandler.savePdf2Image(currentFileFullPath);
-
-                if(pdf2ImagePaths != null)
-                {
-                    verifiedFilesList.addAll(pdf2ImagePaths);
-                }
-            }
-            else if(isImageFileValid(currentFileFullPath))
-            {
-                verifiedFilesList.add(file);
-            }
-            */
         }
 
         return verifiedFilesList;
@@ -297,10 +272,18 @@ public class ImageHandler {
     public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
-
         Stack<File> folderStack = new Stack<>();
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+        java.util.List<File> checkFileFormat = FileHandler.processFolder(rootPath, fileExtension);
 
         folderStack.push(rootPath);
+
+        if(checkFileFormat.isEmpty())
+        {
+            loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            return;
+        }
 
         while(folderStack.isEmpty() != true)
         {
@@ -320,6 +303,7 @@ public class ImageHandler {
                     totalFilelist.addAll(files);
                 }
             }
+
         }
 
         saveToDatabase(projectID, totalFilelist);

@@ -97,6 +97,7 @@ public class ToolFolderSelector {
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
                             ImageHandler.processFolder(projectID, rootFolder);
+
                         }
                         else
                         {

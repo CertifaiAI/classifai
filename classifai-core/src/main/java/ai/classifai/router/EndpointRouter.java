@@ -68,12 +68,9 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/projects
      *
      */
-    private void getAllBoundingBoxProjects(RoutingContext context)
+    private void getAllBndBoxProjects(RoutingContext context)
     {
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
-
-        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
+        getAllProjects(context, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -81,16 +78,16 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/projects
      *
      */
-    private void getAllSegmentationProjects(RoutingContext context)
+    private void getAllSegProjects(RoutingContext context)
     {
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
-
-        getAllProjects(context, request, AnnotationType.SEGMENTATION);
+        getAllProjects(context, AnnotationType.SEGMENTATION);
     }
 
-    private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
+    private void getAllProjects(RoutingContext context, AnnotationType type)
     {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), type.ordinal());
+
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsForAnnotationType());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
@@ -116,7 +113,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/newproject/helloworld
      *
      */
-    private void createBoundingBoxProject(RoutingContext context)
+    private void createBndBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -134,7 +131,7 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/newproject/helloworld
      *
      */
-    private void createSegmentationProject(RoutingContext context)
+    private void createSegProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -156,17 +153,153 @@ public class EndpointRouter extends AbstractVerticle
                 {
                     JsonObject response = (JsonObject) reply.result().body();
 
-                    if(ReplyHandler.isReplyOk(response))
-                    {
-                        HTTPResponseHandler.configureOK(context, response);
-                    }
-                    else
+                    if(ReplyHandler.isReplyOk(response) == false)
                     {
                         String projectName = request.getString(ParamConfig.getProjectNameParam());
 
                         log.info("Failure in creating new " + annotationType.name() +  " project of name: " + projectName);
-                        HTTPResponseHandler.configureOK(context, response);
                     }
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+    }
+
+    /**
+     * Delete bounding box project
+     *
+     * DELETE http://localhost:{port}/bndbox/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    private void deleteBndBoxProject(RoutingContext context)
+    {
+        //delete in Portfolio Table
+        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Delete Segmentation project
+     *
+     * DELETE http://localhost:{port}/seg/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/seg/projects/helloworld
+     *
+     */
+    private void deleteSegProject(RoutingContext context)
+    {
+        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.SEGMENTATION);
+    }
+
+    private void deleteProject(RoutingContext context, String queue, String query,  AnnotationType type)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        Integer projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getProjectIDParam(), projectID);
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.deleteProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
+
+            if(reply.succeeded())
+            {
+                JsonObject response = (JsonObject) reply.result().body();
+
+                if(ReplyHandler.isReplyOk(response))
+                {
+                    //delete in respective Table
+                    DeliveryOptions deleteListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+                    vertx.eventBus().request(queue, request, deleteListOptions, fetch -> {
+
+                        if (fetch.succeeded())
+                        {
+                            JsonObject replyResponse = (JsonObject) fetch.result().body();
+
+                            //delete in Project Handler
+                            ProjectHandler.deleteProjectWithID(projectID);
+                            HTTPResponseHandler.configureOK(context, replyResponse);
+                        }
+                        else
+                        {
+                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in delete project name: " + projectName + " for " + type.name()));
+                        }
+                    });
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in delete project name: " + projectName + " for " + type.name() + " from " + type.name() + " Database"));
+                }
+
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in delete project name: " + projectName + " for " + type.name()  + " from Portfolio Database"));
+            }
+        });
+    }
+
+    /**
+     * Delete uuid of a specific bounding box project
+     *
+     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuids
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
+     *
+     */
+    private void deleteBndBoxProjectUUID(RoutingContext context)
+    {
+        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDList(), AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Delete uuid of a specific segmentation project
+     *
+     * DELETE http://localhost:{port}/seg/projects/:project_name/uuids
+     *
+     * Example:
+     * DELETE http://localhost:{port}/seg/projects/helloworld/uuids
+     *
+     */
+    private void deleteSegProjectUUID(RoutingContext context)
+    {
+        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDList(), AnnotationType.SEGMENTATION);
+    }
+
+    private void deleteProjectUUID(RoutingContext context, String queue, String query, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
+
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUUIDListParam());
+
+            request.put(ParamConfig.getProjectIDParam(), projectID).put(ParamConfig.getUUIDListParam(), uuidListArray);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+            vertx.eventBus().request(queue, request, options, reply ->
+            {
+                if (reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
                 }
             });
         });
@@ -231,7 +364,7 @@ public class EndpointRouter extends AbstractVerticle
                     if (ReplyHandler.isReplyOk(labelResponse))
                     {
                         //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDListt());
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
 
                         vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
                         {
@@ -750,6 +883,7 @@ public class EndpointRouter extends AbstractVerticle
     private void updateLabels(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
         Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
@@ -808,11 +942,15 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
+        router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
 
-        router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
+        router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
+
+        router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
+
+        router.delete("/bndbox/projects/:project_name/uuids").handler(this::deleteBndBoxProjectUUID);
 
         router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
@@ -830,11 +968,15 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Segmentation*******************************
 
-        router.get("/seg/projects").handler(this::getAllSegmentationProjects);
+        router.get("/seg/projects").handler(this::getAllSegProjects);
 
-        router.put("/seg/newproject/:project_name").handler(this::createSegmentationProject);
+        router.put("/seg/newproject/:project_name").handler(this::createSegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
+
+        router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
+
+        router.delete("/seg/projects/:project_name/uuids").handler(this::deleteSegProjectUUID);
 
         router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
 
@@ -860,7 +1002,7 @@ public class EndpointRouter extends AbstractVerticle
                         promise.complete();
                     }
                     else {
-                        log.debug("Failure in creating HTTPServer in ServerVerticle. ", r.cause().getMessage());
+                        log.debug("Failure in creating HTTPServer in EndpointRouter. ", r.cause().getMessage());
                         promise.fail(r.cause());
                     }
                 });

@@ -40,4 +40,5 @@ public class BoundingBoxDbQuery extends AnnotationQuery
     public static String retrieveData() { return RETRIEVE_DATA; }
 
     public static String updateData() { return UPDATE_DATA; }
+
 }
