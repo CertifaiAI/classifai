@@ -52,7 +52,7 @@ public class ProjectLoader
     //a list of unique uuid representing number of data points in one project
     @Setter @Getter private List<Integer> sanityUUIDList;
 
-    @Getter private Boolean isLoadedFrontEndToggle;
+    @Setter @Getter private Boolean isLoadedFrontEndToggle;
     @Setter private Boolean isProjectNewlyCreated;
 
     @Getter private List<Integer> progressUpdate;
