@@ -327,6 +327,8 @@ public class EndpointRouter extends AbstractVerticle
 
         if(checkIfProjectNull(context, loader, projectName)) return;
 
+        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
+
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
         //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
@@ -373,6 +375,7 @@ public class EndpointRouter extends AbstractVerticle
 
                                         if (ReplyHandler.isReplyOk(removalResponse))
                                         {
+                                            loader.setLoaderStatus(LoaderStatus.LOADED);
                                             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
                                         } else
@@ -894,6 +897,59 @@ public class EndpointRouter extends AbstractVerticle
     }
 
     /***
+     * change is_load state of a bounding box project to false
+     *
+     * PUT http://localhost:{port}/bndbox/projects/:project_name
+     */
+    private void closeBndBoxProjectState(RoutingContext context)
+    {
+        closeProjectState(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    /***
+     * change is_load state of a segmentation project to false
+     *
+     * PUT http://localhost:{port}/seg/projects/:project_name
+     */
+    private void closeSegProjectState(RoutingContext context)
+    {
+        closeProjectState(context, AnnotationType.SEGMENTATION);
+    }
+
+    private void closeProjectState(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            try
+            {
+                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+                if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
+                {
+                    ProjectHandler.getProjectLoader(projectID).setIsLoadedFrontEndToggle(Boolean.FALSE);
+                }
+                else
+                {
+                    throw new Exception("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
+                }
+
+                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
+            }
+            catch (Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(e.getMessage()));
+
+            }
+        });
+    }
+
+    /***
      * Star a bounding box project
      *
      * PUT http://localhost:{port}/bndbox/projects/:projectname/star
@@ -1138,6 +1194,9 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
         //v2
+
+        router.put("/bndbox/projects/:project_name").handler(this::closeBndBoxProjectState);
+
         router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
 
 
@@ -1170,8 +1229,10 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
 
         //v2
-        router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
 
+        router.put("/seg/projects/:project_name").handler(this::closeSegProjectState);
+
+        router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
 
         vertx.createHttpServer()
                 .requestHandler(router)

@@ -151,7 +151,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED);
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
                     message.reply(ReplyHandler.getOkReply());
                 }
                 else
@@ -365,7 +365,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
 
-                        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectName(), projectIDJson, projectNameFetch -> {
+                        portfolioDbClient.queryWithParams(PortfolioDbQuery.loadDbProject(), projectIDJson, projectNameFetch -> {
 
                             if (projectNameFetch.succeeded()) {
                                 ResultSet resultSet = projectNameFetch.result();
@@ -377,8 +377,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     String projectName = row.getString(0);
                                     Integer annotationType = row.getInteger(1);
                                     Integer thisProjectID = projectIDJson.getInteger(0);
+                                    boolean isNew = row.getBoolean(2);
 
-                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED);
+                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED, isNew);
                                 }
                             } else {
                                 log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
@@ -501,6 +502,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
+    public static void updateIsNewParam(@NonNull Integer projectID)
+    {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateIsNewParam(), new JsonArray().add(Boolean.FALSE).add(projectID), fetch ->{
+
+            if(fetch.succeeded())
+            {
+                ProjectHandler.getProjectLoader(projectID).setIsProjectNewlyCreated(Boolean.FALSE);
+            }
+            else
+            {
+                log.info("Update is_new param for project of projectid: " + projectID + " failed");
+            }
+        });
+    }
+
     //V2 API
     public void starProject(Message<JsonObject> message)
     {
@@ -524,7 +540,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         catch(Exception e)
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Starring object value is not boolean. Failed to execute"));
+            message.reply(ReplyHandler.reportBadParamError("Starring object value is not boolean. Failed to execute"));
             return;
         }
 

@@ -125,7 +125,7 @@ public class ProjectHandler {
     }
 
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus)
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
     {
         if(!checkAnnotationSanity(annotationType))
         {
@@ -138,7 +138,7 @@ public class ProjectHandler {
         projectIDSearch.put(projectNameWithType, projectID);
         projectNameSearch.put(projectID, projectNameWithType);
 
-        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus));
+        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus, isNew));
     }
 
     private static boolean checkAnnotationSanity(Integer annotationTypeInt)
