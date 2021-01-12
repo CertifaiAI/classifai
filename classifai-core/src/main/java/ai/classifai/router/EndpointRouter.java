@@ -515,9 +515,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void selectBndBoxFileSystemType(RoutingContext context)
     {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        selectFileSystemType(context, projectName, AnnotationType.BOUNDINGBOX);
+        selectFileSystemType(context, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -531,13 +529,19 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void selectSegFileSystemType(RoutingContext context)
     {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        selectFileSystemType(context, projectName, AnnotationType.SEGMENTATION);
+        selectFileSystemType(context, AnnotationType.SEGMENTATION);
     }
 
-    private void selectFileSystemType(RoutingContext context, String projectName, AnnotationType annotationType)
+    private void selectFileSystemType(RoutingContext context, AnnotationType annotationType)
     {
+        if(ParamConfig.isDockerEnv())
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            return;
+        }
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
 
         if(checkIfProjectNull(context, loader, projectName)) return;

@@ -60,9 +60,8 @@ public class ClassifaiApp
 
     static boolean configure(String[] args)
     {
-        FlatLightLaf.install();
-
         boolean removeDbLock = false;
+        boolean isDockerEnv = false;
 
         for(int i = 0; i < args.length; ++i)
         {
@@ -72,17 +71,20 @@ public class ClassifaiApp
                 String[] buffer = args[i].split("=");
                 PortSelector.configurePort(buffer[1]);
             }
-            else if(arg.contains("--unlockdb="))
+            else if(arg.contains("--unlockdb"))
             {
-                String[] buffer = args[i].split("=");
+                removeDbLock = true;
+            }
+            else if(arg.contains("--docker"))
+            {
+                isDockerEnv = true;
 
-                removeDbLock = buffer[1].equals("true") ? true : false;
+                ParamConfig.setIsDockerEnv(true);
             }
         }
 
-        if(DbConfig.checkDatabase(removeDbLock) == false) return false;
+        if(!isDockerEnv) FlatLightLaf.install();
 
-
-        return true;
+        return DbConfig.isDatabaseSetup(removeDbLock);
     }
 }

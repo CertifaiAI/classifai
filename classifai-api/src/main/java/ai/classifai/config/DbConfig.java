@@ -28,9 +28,8 @@ import java.io.File;
 @Slf4j
 public class DbConfig
 {
-    public static boolean checkDatabase(boolean unlockDatabase)
+    public static boolean isDatabaseSetup(boolean unlockDatabase)
     {
-
         File portfolioLockPath = new File(DatabaseConfig.getPortfolioLockFile());
         File boundingBoxLockPath = new File(DatabaseConfig.getBBLockFile());
         File segmentationLockPath = new File(DatabaseConfig.getSegLockFile());
@@ -42,7 +41,6 @@ public class DbConfig
             if(boundingBoxLockPath.exists()) boundingBoxLockPath.delete();
 
             if(segmentationLockPath.exists()) segmentationLockPath.delete();
-
         }
         else
         {
