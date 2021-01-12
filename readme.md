@@ -34,10 +34,10 @@ The labelled data can then channel into training environments for supervised / s
 
 <p align="center">
   <img align="middle" src="metadata/classifai_workflow_0_0.gif"/>
-</p> 
+</p>
 
 Data labelling tasks are challenging due to a few factors:
-- long hours of human workforce to label the data manually, 
+- long hours of human workforce to label the data manually,
 - off-the-shelves toolkit which cannot fulfill the use cases needs.
 - frustration processes to convert data to supported format types for labelling work
 
@@ -81,7 +81,7 @@ We aim to solve these in **Classifai** by providing significant value to the dat
 ## Quick Tour  
 
 **Classifai** support **bounding box** and **segmentation** annotation for now.  
-Click on the sub-category accordingly for the desired operation. 
+Click on the sub-category accordingly for the desired operation.
 
 **Bounding Box Annotation**
 <p align="center">
@@ -146,17 +146,17 @@ The installation packages and formats are listed below.
 
 Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.com/classifai/uber_jar/classifai-uberjar-1.0.0.jar) and run with Java JDK/JRE 14.  
 ```
-java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999 
+java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
 ```
 
-## Learn More 
+## Learn More
 
 
 | Section | Description |
 |:-------------:|:-------------:|
 | [Website](https://classifai.ai/) | Official Website|
 | [Documentation](https://skymind.gitbook.io/classifai/) | Full API documentation and tutorials |
-| [Blogs](https://medium.com/@codenamewei) | Technical Posts |
+| [Blogs](https://medium.com/classifai-ai) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 | Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
