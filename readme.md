@@ -146,7 +146,7 @@ The installation packages and formats are listed below.
 
 Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.com/classifai/uber_jar/classifai-uberjar-1.0.0.jar) and run with Java JDK/JRE 14.  
 ```
-java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
+java -jar classifai-uberjar-dev.jar --unlockdb=true --port=9999
 ```
 
 ## Learn More
