@@ -50,6 +50,7 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>${classifai.release.name}</shadedClassifierName>
                             <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <finalName>classifai-uberjar-dev</finalName>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
