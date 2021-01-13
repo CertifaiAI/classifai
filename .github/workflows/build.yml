@@ -2,7 +2,11 @@
 name: Build and Run
 
 on:
-  push
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ assigned, edited, synchronize, reopened, review_requested]
 
 jobs:
   basic_check:
