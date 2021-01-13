@@ -9,15 +9,19 @@
     <a href="https://github.com/CertifaiAI/classifai/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/CertifaiAI/classifai?color=brightgreen">
     </a>
-    <a href="Discord">
-        <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
+    <a href="https://github.com/CertifaiAI/classifai/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=yellow">
+    </a>
+    <a href="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
+        <img alt="Sonar Cloud Quality Gate" src="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
     </a>
     <a href="https://classifai.ai">
         <img alt="Documentation" src="https://img.shields.io/website/http/certifai.ai.svg?color=orange">
     </a>
-    <a href="https://github.com/CertifaiAI/classifai/releases">
-        <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=yellow">
+    <a href="Discord">
+        <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
     </a>
+</p>
 
 <h3 align="center">
 Data Annotation Platform for AI Training
