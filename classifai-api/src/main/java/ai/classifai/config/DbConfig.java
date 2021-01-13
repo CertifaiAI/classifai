@@ -28,7 +28,7 @@ import java.io.File;
 @Slf4j
 public class DbConfig
 {
-    public static boolean checkDatabase(boolean unlockDatabase)
+    public static boolean isDatabaseSetup(boolean unlockDatabase)
     {
 
         File portfolioLockPath = new File(DatabaseConfig.getPortfolioLockFile());
@@ -48,7 +48,7 @@ public class DbConfig
         {
             if(portfolioLockPath.exists() || boundingBoxLockPath.exists() || segmentationLockPath.exists())
             {
-                log.info("Database is locked. Try with --unlockdb=true. \n" +
+                log.info("Database is locked. Try with --unlockdb. \n" +
                         "WARNING: This might be hazardous by allowing multiple access to the database.");
 
                 return false;
