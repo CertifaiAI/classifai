@@ -15,10 +15,8 @@
  */
 package ai.classifai;
 
-import ai.classifai.config.DbConfig;
-import ai.classifai.config.PortSelector;
+import ai.classifai.config.CLIArgument;
 import ai.classifai.util.ParamConfig;
-import com.formdev.flatlaf.FlatLightLaf;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -35,13 +33,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    private static boolean isCIBuild = false;
-
     public static void main(String[] args) throws Exception
     {
-        boolean isConfigured = configure(args);
+        CLIArgument argumentSelector = new CLIArgument(args);
 
-        if(isConfigured == false)
+        //If database is locked, classifai would not start
+        if(!argumentSelector.isDbSetup())
         {
             log.info("Classifai failed to configure. Abort.");
             return;
@@ -60,47 +57,17 @@ public class ClassifaiApp
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
 
-        if(isCIBuild)
-        {
-            Thread.sleep(10000);
-            System.exit(0);
-        }
-    }
-
-    static boolean configure(String[] args)
-    {
-        boolean removeDbLock = false;
-        boolean isDockerEnv = false;
-
-
-        for(int i = 0; i < args.length; ++i)
-        {
-            String arg = args[i];
-            if(arg.contains("--port="))
+        try {
+            //ci build to terminate app after a fixed amount ot time to proceed
+            if(argumentSelector.isCIBuild())
             {
-                String[] buffer = args[i].split("=");
-                PortSelector.configurePort(buffer[1]);
-            }
-            else if(arg.contains("--unlockdb"))
-            {
-                removeDbLock = true;
-            }
-            else if(arg.contains("--docker"))
-            {
-                isDockerEnv = true;
-
-                ParamConfig.setIsDockerEnv(true);
-            }
-            else if(arg.contains("--cibuild"))
-            {
-                isCIBuild = true;
-                isDockerEnv = true;
-                ParamConfig.setIsDockerEnv(true);
+                Thread.sleep(10000);
+                System.exit(0);
             }
         }
-
-        if(!isDockerEnv) FlatLightLaf.install();
-
-        return DbConfig.isDatabaseSetup(removeDbLock);
+        catch(Exception e)
+        {
+            log.info("Thread sleep error: ", e);
+        }
     }
 }
