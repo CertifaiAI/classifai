@@ -16,10 +16,14 @@
 package ai.classifai.util;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,9 +53,10 @@ public class ProjectHandler {
     private static Map projectIDSearch;
 
     //key: projectID
-    //value: Pair<String projectName, Integer annotationType>
+    //value: Pair<String projectName, Integer v annotationType>
     private static Map projectNameSearch;
 
+    @Getter @Setter private static CLIProjectInitiator cliProjectInitiator;
 
     static {
 
@@ -60,7 +65,11 @@ public class ProjectHandler {
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
         projectIDSearch = new HashMap<Pair<String, Integer>, Integer>();
         projectNameSearch = new HashMap<Integer, Pair<String, Integer>>();
+
+        cliProjectInitiator = null;
     }
+
+
 
 
     public static Integer generateProjectID()
@@ -127,7 +136,7 @@ public class ProjectHandler {
 
     public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
     {
-        if(!checkAnnotationSanity(annotationType))
+        if(!AnnotationHandler.checkSanity(annotationType))
         {
             log.info("Saving new project of name: " + projectName + " failed.");
             return;
@@ -141,35 +150,17 @@ public class ProjectHandler {
         projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus, isNew));
     }
 
-    private static boolean checkAnnotationSanity(Integer annotationTypeInt)
-    {
-        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
-        {
-            return true;
-        }
-        else if(annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
-        {
-            return true;
-        }
-        //TODO: ADD WHEN HAVE NEW ANNOTATION TYPE
-        else
-        {
-            log.debug("Annotation integer unmatched in AnnotationType: " + annotationTypeInt);
-            return false;
-        }
-    }
-
     public static void checkUUIDGeneratorSeedSanity(@NonNull Integer projectID, @NonNull Integer listUUIDSeed, @NonNull Integer dbUUIDSeed)
     {
         Integer validUUIDGeneratorSeed = null;
         if(listUUIDSeed > dbUUIDSeed)
         {
-            validUUIDGeneratorSeed = new Integer(listUUIDSeed);
+            validUUIDGeneratorSeed = Integer.valueOf(listUUIDSeed);
             PortfolioVerticle.updateUUIDGeneratorSeed(projectID, listUUIDSeed);
         }
         else
         {
-            validUUIDGeneratorSeed = new Integer(dbUUIDSeed);
+            validUUIDGeneratorSeed = Integer.valueOf(dbUUIDSeed);
         }
 
         ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
@@ -192,7 +183,7 @@ public class ProjectHandler {
 
     public static Boolean isProjectNameUnique(String projectName, Integer annotationType)
     {
-        if(!checkAnnotationSanity(annotationType))
+        if(!AnnotationHandler.checkSanity(annotationType))
         {
             log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
             return false;
@@ -244,20 +235,5 @@ public class ProjectHandler {
         }
     }
 
-    public static boolean deleteUUID(Integer projectID, Integer uuid)
-    {
-        try
-        {
-            ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
 
-            return loader.deleteUUID(uuid);
-
-        }
-        catch(Exception e)
-        {
-            log.debug("Error: ", e);
-        }
-
-        return true;
-    }
 }

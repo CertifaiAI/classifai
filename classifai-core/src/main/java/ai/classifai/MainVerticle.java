@@ -24,6 +24,7 @@ import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.ProjectHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -103,11 +104,14 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
+                ProjectHandler.checkCLIProjectInitiator();
+
                 LogoLauncher.print();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
+                //docker environment not enabling welcome launcher
                 if(!ParamConfig.isDockerEnv()) {
 
                     try

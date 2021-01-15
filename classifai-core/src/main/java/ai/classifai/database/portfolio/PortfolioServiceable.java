@@ -34,6 +34,4 @@ public interface PortfolioServiceable
     void getProjectUUIDList(Message<JsonObject> message);
 
     void getAllProjectsForAnnotationType(Message<JsonObject> message);
-
-    void configurePortfolioVerticle();
 }
