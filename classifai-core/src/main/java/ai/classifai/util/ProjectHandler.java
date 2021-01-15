@@ -70,8 +70,6 @@ public class ProjectHandler {
     }
 
 
-
-
     public static Integer generateProjectID()
     {
         return projectIDGenerator.incrementAndGet();

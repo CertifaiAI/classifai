@@ -17,10 +17,12 @@ package ai.classifai.util.type;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Locale;
+
 /**
  * Check for annotation type
  *
- * @codenamewei
+ * @author codenamewei
  */
 @Slf4j
 public class AnnotationHandler
@@ -64,6 +66,8 @@ public class AnnotationHandler
 
     public static AnnotationType getType(String type)
     {
+        type = type.toUpperCase(Locale.ROOT);
+
         if(type.equals(AnnotationType.BOUNDINGBOX.name()))
         {
             return AnnotationType.BOUNDINGBOX;

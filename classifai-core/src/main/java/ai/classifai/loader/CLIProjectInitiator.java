@@ -30,9 +30,9 @@ import java.io.File;
 @Slf4j
 public class CLIProjectInitiator
 {
-    @Getter private String projectName;
-    @Getter private AnnotationType projectType;
-    private String rootDataPath;
+    @Getter private final String projectName;
+    @Getter private final AnnotationType projectType;
+    @Getter private final File rootDataPath;
     @Getter private boolean isParamSet;
 
     public CLIProjectInitiator(String type, String dataPath)
@@ -42,18 +42,13 @@ public class CLIProjectInitiator
 
     public CLIProjectInitiator(String name, String type, String dataPath)
     {
-
         projectType = AnnotationHandler.getType(type);
         projectName = name;
+        rootDataPath = new File(dataPath);
 
-        if(new File(dataPath).exists())
+        if(!rootDataPath.exists())
         {
-            rootDataPath = dataPath;
-        }
-        else
-        {
-            log.info("Data path do not exist in the system: ", dataPath);
-            rootDataPath = null;
+            log.info("Classifai might not works well in the docker mode. Data path do not exist in the system: ", dataPath);
         }
 
         printMessageIfFail();
@@ -61,7 +56,7 @@ public class CLIProjectInitiator
 
     private void printMessageIfFail()
     {
-        if((projectType == null) || (rootDataPath == null))
+        if(projectType == null)
         {
             isParamSet = false;
             //TODO

@@ -25,6 +25,7 @@ import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
@@ -126,17 +127,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
 
             Integer projectID = ProjectHandler.generateProjectID();
-
-            JsonArray params = new JsonArray()
-                    .add(projectID)                   //project_id
-                    .add(projectName)                 //project_name
-                    .add(annotationType)              //annotation_type
-                    .add(ParamConfig.getEmptyArray()) //label_list
-                    .add(0)                           //uuid_generator_seed
-                    .add(ParamConfig.getEmptyArray()) //uuid_list
-                    .add(true)                        //is_new
-                    .add(false)                       //is_starred
-                    .add(DateTime.get());             //created_date
+            JsonArray params = buildNewProject(projectName, annotationType, projectID);
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
@@ -379,21 +370,54 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 }
 
-                //from cli argument
-                CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
-
-
-                if((initiator == null) || !initiator.isParamSet()) return;
-
-                String projectName = initiator.getProjectName();
-                Integer annotationType = initiator.getProjectType().ordinal();
-
-
-
-                //check if project name exist
-                //check if data point
+                configProjectFromCLI();
             }
         });
+    }
+
+    private void configProjectFromCLI()
+    {
+        //from cli argument
+        CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
+
+        if((initiator == null) || !initiator.isParamSet()) return;
+
+        String projectName = initiator.getProjectName();
+        Integer annotationType = initiator.getProjectType().ordinal();
+        File dataPath = initiator.getRootDataPath();
+
+        if(ProjectHandler.isProjectNameUnique(projectName, annotationType))
+        {
+
+            System.out.println("Debugging 2");
+            Integer projectID = ProjectHandler.generateProjectID();
+            JsonArray params = buildNewProject(projectName, annotationType, projectID);
+
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
+
+                if (fetch.succeeded())
+                {
+
+                    System.out.println("Debugging 3");
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
+
+                    ImageHandler.processFolder(projectID, dataPath);
+
+                }
+                else
+                {
+
+                    System.out.println("Debugging 4");
+                    log.info("Create project failed. Classifai expect not to work fine in docker mode");
+                }
+            });
+
+        }
+        else
+        {
+            Integer projectID = ProjectHandler.getProjectID(projectName, annotationType);
+            ImageHandler.processFolder(projectID, dataPath);
+        }
     }
 
     //V2 API
@@ -559,6 +583,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    private JsonArray buildNewProject(String projectName, Integer annotationType, Integer projectID)
+    {
+
+        return new JsonArray()
+                .add(projectID)                   //project_id
+                .add(projectName)                 //project_name
+                .add(annotationType)              //annotation_type
+                .add(ParamConfig.getEmptyArray()) //label_list
+                .add(0)                           //uuid_generator_seed
+                .add(ParamConfig.getEmptyArray()) //uuid_list
+                .add(true)                        //is_new
+                .add(false)                       //is_starred
+                .add(DateTime.get());             //created_date
     }
 
     @Override

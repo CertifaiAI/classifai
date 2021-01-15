@@ -104,8 +104,6 @@ public class MainVerticle extends AbstractVerticle
         {
             if (ar.succeeded()) {
 
-                ProjectHandler.checkCLIProjectInitiator();
-
                 LogoLauncher.print();
 
                 log.info("Classifai started successfully");

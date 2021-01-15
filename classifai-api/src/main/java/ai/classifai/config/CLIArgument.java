@@ -79,51 +79,52 @@ public class CLIArgument
         String dataPath = null;
 
 
-        for(int i = 0; i < args.length; ++i)
+        for (String arg : args)
         {
-            String arg = args[i];
-            if(arg.contains("--port="))
+            if (arg.contains("--port="))
             {
-                String[] buffer = args[i].split("=");
+                String[] buffer = arg.split("=");
                 PortSelector.configurePort(buffer[1]);
             }
-            else if(arg.contains("--unlockdb"))
+            else if (arg.contains("--unlockdb"))
             {
                 removeDbLock = true;
             }
-            else if(arg.contains("--docker"))
+            else if (arg.contains("--docker"))
             {
                 isDockerEnv = true;
                 ParamConfig.setIsDockerEnv(true);
             }
-            else if(arg.contains("--cibuild"))
+            else if (arg.contains("--cibuild"))
             {
                 isCIBuild = true;
                 isDockerEnv = true;
                 ParamConfig.setIsDockerEnv(true);
             }
-            else if(arg.contains("--projectname"))
+            else if (arg.contains("--projectname"))
             {
-                String[] buffer = args[i].split("=");
+                String[] buffer = arg.split("=");
                 projectName = buffer[1];
             }
-            else if(arg.contains("--projecttype"))
+            else if (arg.contains("--projecttype"))
             {
-                String[] buffer = args[i].split("=");
+                String[] buffer = arg.split("=");
                 projectType = buffer[1];
             }
-            else if(arg.contains("--datapath"))
+            else if (arg.contains("--datapath"))
             {
-                String[] buffer = args[i].split("=");
+                String[] buffer = arg.split("=");
                 dataPath = buffer[1];
             }
         }
 
         if(!isDockerEnv) FlatLightLaf.install();
 
-        if((projectType != null) && (dataPath != null))
+        if(projectType != null)
         {
             CLIProjectInitiator initiator;
+
+            if(dataPath == null) dataPath = "";
 
             if(projectName != null)
             {
