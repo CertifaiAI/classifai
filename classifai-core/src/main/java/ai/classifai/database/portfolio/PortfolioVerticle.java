@@ -388,8 +388,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         if(ProjectHandler.isProjectNameUnique(projectName, annotationType))
         {
-
-            System.out.println("Debugging 2");
             Integer projectID = ProjectHandler.generateProjectID();
             JsonArray params = buildNewProject(projectName, annotationType, projectID);
 
@@ -397,8 +395,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-
-                    System.out.println("Debugging 3");
                     ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
 
                     ImageHandler.processFolder(projectID, dataPath);
@@ -406,8 +402,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 }
                 else
                 {
-
-                    System.out.println("Debugging 4");
                     log.info("Create project failed. Classifai expect not to work fine in docker mode");
                 }
             });

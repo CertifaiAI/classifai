@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author codenamewei
  */
 @Slf4j
-public class ImageHandler {
+public class ImageHandler1 {
 
     private static String getImageHeader(String input)
     {
