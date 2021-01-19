@@ -35,8 +35,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    private static boolean isCIBuild = false;
-
     public static void main(String[] args) throws Exception
     {
         boolean isConfigured = configure(args);
@@ -59,16 +57,10 @@ public class ClassifaiApp
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
 
-        if(isCIBuild)
-        {
-            Thread.sleep(10000);
-            System.exit(0);
-        }
     }
 
     static boolean configure(String[] args)
     {
-
         boolean removeDbLock = false;
         boolean isDockerEnv = false;
 
@@ -80,26 +72,17 @@ public class ClassifaiApp
                 String[] buffer = args[i].split("=");
                 PortSelector.configurePort(buffer[1]);
             }
-            else if(arg.contains("--unlockdb="))
+            else if(arg.contains("--unlockdb"))
             {
-                String[] buffer = args[i].split("=");
-
-                removeDbLock = buffer[1].equals("true") ? true : false;
+                removeDbLock = true;
             }
             else if(arg.contains("--docker"))
             {
                 isDockerEnv = true;
-
-                ParamConfig.setIsDockerEnv(true);
-            }
-            else if(arg.contains("--cibuild"))
-            {
-                isCIBuild = true;
-                isDockerEnv = true;
                 ParamConfig.setIsDockerEnv(true);
             }
         }
-
+      
         if(!isDockerEnv) FlatLightLaf.install();
 
         return DbConfig.isDatabaseSetup(removeDbLock);
