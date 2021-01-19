@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
     {
         CLIArgument argumentSelector = new CLIArgument(args);
 
