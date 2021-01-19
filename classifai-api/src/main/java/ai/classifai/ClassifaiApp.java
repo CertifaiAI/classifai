@@ -56,6 +56,7 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
+
     }
 
     static boolean configure(String[] args)
@@ -71,20 +72,17 @@ public class ClassifaiApp
                 String[] buffer = args[i].split("=");
                 PortSelector.configurePort(buffer[1]);
             }
-            else if(arg.contains("--unlockdb="))
+            else if(arg.contains("--unlockdb"))
             {
-                String[] buffer = args[i].split("=");
-
-                removeDbLock = buffer[1].equals("true") ? true : false;
+                removeDbLock = true;
             }
             else if(arg.contains("--docker"))
             {
                 isDockerEnv = true;
-
                 ParamConfig.setIsDockerEnv(true);
             }
         }
-
+      
         if(!isDockerEnv) FlatLightLaf.install();
 
         return DbConfig.isDatabaseSetup(removeDbLock);
