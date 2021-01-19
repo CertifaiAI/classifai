@@ -56,18 +56,5 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
-
-        try {
-            //ci build to terminate app after a fixed amount ot time to proceed
-            if(argumentSelector.isCIBuild())
-            {
-                Thread.sleep(10000);
-                System.exit(0);
-            }
-        }
-        catch(Exception e)
-        {
-            log.info("Thread sleep error: ", e);
-        }
     }
 }

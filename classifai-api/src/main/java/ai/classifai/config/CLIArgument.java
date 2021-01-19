@@ -35,24 +35,21 @@ import lombok.extern.slf4j.Slf4j;
  * 2. --unlockdb
  *    To use database even the lck file exist
  *
- * 3. --cibuild
- *    Configuration for cd build
- *
- * 4. --docker
+ * 3. --docker
  *    Docker build. WelcomeLauncher, FolderSelector & FileSelector will not initiate.
  *
- * 5. --projectname=<projectname>
+ * 4. --projectname=<projectname>
  *    Create new project from cli / Use existing project if exist
  *    if not defined, default project name will be "default"
  *
  *    --projectname=helloworld
  *
- * 6. --projecttype=boundingbox/segmentation
+ * 5. --projecttype=boundingbox/segmentation
  *    Project Type
  *
  *    --projecttype=boundingbox
  *
- * 7. --datapath=<datapath>
+ * 6. --datapath=<datapath>
  *
  *    Source of data file
  *
@@ -61,8 +58,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CLIArgument
 {
-    @Getter private boolean isCIBuild = false;
-
     private boolean removeDbLock = false;
 
     public boolean isDbSetup()
@@ -91,12 +86,6 @@ public class CLIArgument
             }
             else if (arg.contains("--docker"))
             {
-                isDockerEnv = true;
-                ParamConfig.setIsDockerEnv(true);
-            }
-            else if (arg.contains("--cibuild"))
-            {
-                isCIBuild = true;
                 isDockerEnv = true;
                 ParamConfig.setIsDockerEnv(true);
             }
