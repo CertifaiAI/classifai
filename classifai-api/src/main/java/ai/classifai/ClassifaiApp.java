@@ -83,11 +83,6 @@ public class ClassifaiApp
 
                 ParamConfig.setIsDockerEnv(true);
             }
-            else if(arg.contains("--cibuild"))
-            {
-                isDockerEnv = true;
-                ParamConfig.setIsDockerEnv(true);
-            }
         }
 
         if(!isDockerEnv) FlatLightLaf.install();
