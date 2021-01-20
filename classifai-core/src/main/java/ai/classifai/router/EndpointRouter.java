@@ -259,8 +259,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+                .put(ParamConfig.getProjectNameParam(), projectName);
 
         createProject(context, request, AnnotationType.SEGMENTATION);
     }
@@ -571,7 +570,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
      *
      */
-    public void getBndBoxFileSystemStatus(RoutingContext context)
+    private void getBndBoxFileSystemStatus(RoutingContext context)
     {
         getFileSystemStatus(context, AnnotationType.BOUNDINGBOX);
     }
@@ -585,7 +584,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/helloworld/filesysstatus
      *
      */
-    public void getSegFileSystemStatus(RoutingContext context)
+    private void getSegFileSystemStatus(RoutingContext context)
     {
         getFileSystemStatus(context, AnnotationType.SEGMENTATION);
     }
@@ -599,7 +598,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
      *
      */
-    public void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
+    private void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -636,7 +635,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
-    public void getBndBoxThumbnail(RoutingContext context)
+    private void getBndBoxThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
@@ -655,7 +654,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
-    public void getSegThumbnail(RoutingContext context)
+    private void getSegThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
@@ -668,7 +667,7 @@ public class EndpointRouter extends AbstractVerticle
         getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.retrieveData(), request);
     }
 
-    public void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
+    private void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
     {
         DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
@@ -695,7 +694,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/imgsrc
      *
      */
-    public void getBndBoxImageSource(RoutingContext context) {
+    private void getBndBoxImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
@@ -715,7 +714,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/imgsrc
      *
      */
-    public void getSegImageSource(RoutingContext context) {
+    private void getSegImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
@@ -726,7 +725,7 @@ public class EndpointRouter extends AbstractVerticle
         getImageSource(context, SegDbQuery.getQueue(), SegDbQuery.retrieveDataPath(), request);
     }
 
-    public void getImageSource(RoutingContext context, String queue, String query, JsonObject request)
+    private void getImageSource(RoutingContext context, String queue, String query, JsonObject request)
     {
         DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 

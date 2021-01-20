@@ -18,15 +18,17 @@ package ai.classifai.database.portfolio;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.AnnotationHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -120,32 +122,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         if(ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
 
-            String annotationName = "";
-
-            if(annotationType.equals(AnnotationType.BOUNDINGBOX.ordinal()))
-            {
-                annotationName = AnnotationType.BOUNDINGBOX.name();
-            }
-            else if(annotationType.equals(AnnotationType.SEGMENTATION.ordinal()))
-            {
-                annotationName = AnnotationType.SEGMENTATION.name();
-            }
+            String annotationName = AnnotationHandler.getType(annotationType).name();
 
             log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
 
             Integer projectID = ProjectHandler.generateProjectID();
 
-
-            JsonArray params = new JsonArray()
-                    .add(projectID)                   //project_id
-                    .add(projectName)                 //project_name
-                    .add(annotationType)              //annotation_type
-                    .add(ParamConfig.getEmptyArray()) //label_list
-                    .add(0)                           //uuid_generator_seed
-                    .add(ParamConfig.getEmptyArray()) //uuid_list
-                    .add(true)                        //is_new
-                    .add(false)                       //is_starred
-                    .add(DateTime.get());             //created_date
+            JsonArray params = buildNewProject(projectName, annotationType, projectID);
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
@@ -337,7 +320,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    public void configurePortfolioVerticle()
+    public void configureProjectLoader()
     {
         portfolioDbClient.query(PortfolioDbQuery.getProjectIDList(), fetch -> {
             if (fetch.succeeded()) {
@@ -387,9 +370,48 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         });
                     }
                 }
-
+                configProjectFromCLI();
             }
         });
+    }
+
+    private void configProjectFromCLI()
+    {
+        //from cli argument
+        CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
+
+        if((initiator == null) || !initiator.isParamSet()) return;
+
+        String projectName = initiator.getProjectName();
+        Integer annotationType = initiator.getProjectType().ordinal();
+        File dataPath = initiator.getRootDataPath();
+
+        if(ProjectHandler.isProjectNameUnique(projectName, annotationType))
+        {
+            Integer projectID = ProjectHandler.generateProjectID();
+            JsonArray params = buildNewProject(projectName, annotationType, projectID);
+
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
+
+                if (fetch.succeeded())
+                {
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
+
+                    ImageHandler.processFolder(projectID, dataPath);
+
+                }
+                else
+                {
+                    log.info("Create project failed. Classifai expect not to work fine in docker mode");
+                }
+            });
+
+        }
+        else
+        {
+            Integer projectID = ProjectHandler.getProjectID(projectName, annotationType);
+            ImageHandler.processFolder(projectID, dataPath);
+        }
     }
 
     //V2 API
@@ -557,6 +579,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
+    private JsonArray buildNewProject(String projectName, Integer annotationType, Integer projectID)
+    {
+
+        return new JsonArray()
+                .add(projectID)                   //project_id
+                .add(projectName)                 //project_name
+                .add(annotationType)              //annotation_type
+                .add(ParamConfig.getEmptyArray()) //label_list
+                .add(0)                           //uuid_generator_seed
+                .add(ParamConfig.getEmptyArray()) //uuid_list
+                .add(true)                        //is_new
+                .add(false)                       //is_starred
+                .add(DateTime.get());             //created_date
+    }
+
     @Override
     public void stop(Promise<Void> promise)
     {
@@ -591,7 +628,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             //the consumer methods registers an event bus destination handler
                             vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
-                            configurePortfolioVerticle();
+                            configureProjectLoader();
 
                             promise.complete();
 

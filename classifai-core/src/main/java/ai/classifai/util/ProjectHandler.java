@@ -16,10 +16,14 @@
 package ai.classifai.util;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -52,6 +56,10 @@ public class ProjectHandler {
     //value: Pair<String projectName, Integer annotationType>
     private static Map projectNameSearch;
 
+    @Getter
+    @Setter
+    private static CLIProjectInitiator cliProjectInitiator;
+
 
     static {
 
@@ -63,27 +71,22 @@ public class ProjectHandler {
     }
 
 
-    public static Integer generateProjectID()
-    {
+    public static Integer generateProjectID() {
         return projectIDGenerator.incrementAndGet();
     }
 
-    public static void setProjectIDGenerator(Integer seedNumber)
-    {
+    public static void setProjectIDGenerator(Integer seedNumber) {
         projectIDGenerator = new AtomicInteger(seedNumber);
     }
 
-    public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
-    {
+    public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType) {
         return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
     }
 
-    private static ProjectLoader getProjectLoader(Pair project)
-    {
+    private static ProjectLoader getProjectLoader(Pair project) {
         Integer projectIDKey = getProjectID(project);
 
-        if(projectIDKey == null)
-        {
+        if (projectIDKey == null) {
             log.info("Null projectLoader due to projectID cannot be identified for the project: " + project.getLeft());
             return null;
         }
@@ -91,44 +94,33 @@ public class ProjectHandler {
         return getProjectLoader(projectIDKey);
     }
 
-    public static ProjectLoader getProjectLoader(Integer projectID)
-    {
-        try
-        {
+    public static ProjectLoader getProjectLoader(Integer projectID) {
+        try {
             return (ProjectLoader) projectIDLoaderDict.get(projectID);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.info("Error when retriveing ProjectLoader in ProjectHandler, ", e);
         }
         return null;
     }
 
-    public static Integer getProjectID(Pair projectNameTypeKey)
-    {
-        if(projectIDSearch.containsKey(projectNameTypeKey))
-        {
+    public static Integer getProjectID(Pair projectNameTypeKey) {
+        if (projectIDSearch.containsKey(projectNameTypeKey)) {
             return (Integer) projectIDSearch.get(projectNameTypeKey);
-        }
-        else
-        {
+        } else {
             log.info("Project ID not found for project: " + projectNameTypeKey.getLeft() + " with annotation type: " + projectNameTypeKey.getRight());
             return null;
         }
     }
 
-    public static Integer getProjectID(String projectName, Integer annotationType)
-    {
+    public static Integer getProjectID(String projectName, Integer annotationType) {
         Pair key = new ImmutablePair(projectName, annotationType);
 
         return getProjectID(key);
     }
 
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
-    {
-        if(!checkAnnotationSanity(annotationType))
-        {
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew) {
+        if (!AnnotationHandler.checkSanity(annotationType)) {
             log.info("Saving new project of name: " + projectName + " failed.");
             return;
         }
@@ -141,35 +133,13 @@ public class ProjectHandler {
         projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus, isNew));
     }
 
-    private static boolean checkAnnotationSanity(Integer annotationTypeInt)
-    {
-        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
-        {
-            return true;
-        }
-        else if(annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
-        {
-            return true;
-        }
-        //TODO: ADD WHEN HAVE NEW ANNOTATION TYPE
-        else
-        {
-            log.debug("Annotation integer unmatched in AnnotationType: " + annotationTypeInt);
-            return false;
-        }
-    }
-
-    public static void checkUUIDGeneratorSeedSanity(@NonNull Integer projectID, @NonNull Integer listUUIDSeed, @NonNull Integer dbUUIDSeed)
-    {
+    public static void checkUUIDGeneratorSeedSanity(@NonNull Integer projectID, @NonNull Integer listUUIDSeed, @NonNull Integer dbUUIDSeed) {
         Integer validUUIDGeneratorSeed = null;
-        if(listUUIDSeed > dbUUIDSeed)
-        {
-            validUUIDGeneratorSeed = new Integer(listUUIDSeed);
+        if (listUUIDSeed > dbUUIDSeed) {
+            validUUIDGeneratorSeed = Integer.valueOf(listUUIDSeed);
             PortfolioVerticle.updateUUIDGeneratorSeed(projectID, listUUIDSeed);
-        }
-        else
-        {
-            validUUIDGeneratorSeed = new Integer(dbUUIDSeed);
+        } else {
+            validUUIDGeneratorSeed = Integer.valueOf(dbUUIDSeed);
         }
 
         ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
@@ -177,23 +147,17 @@ public class ProjectHandler {
         loader.setUuidGeneratorSeed(validUUIDGeneratorSeed);
     }
 
-    public static boolean initSelector(String selection)
-    {
-        if((selection.equals(ParamConfig.getFileParam())) || selection.equals(ParamConfig.getFolderParam()))
-        {
+    public static boolean initSelector(String selection) {
+        if ((selection.equals(ParamConfig.getFileParam())) || selection.equals(ParamConfig.getFolderParam())) {
             return true;
-        }
-        else
-        {
+        } else {
             log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
             return false;
         }
     }
 
-    public static Boolean isProjectNameUnique(String projectName, Integer annotationType)
-    {
-        if(!checkAnnotationSanity(annotationType))
-        {
+    public static Boolean isProjectNameUnique(String projectName, Integer annotationType) {
+        if (!AnnotationHandler.checkSanity(annotationType)) {
             log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
             return false;
         }
@@ -202,12 +166,10 @@ public class ProjectHandler {
 
         Boolean isProjectNameUnique = true;
 
-        for(Object key : projectIDDictKeys)
-        {
+        for (Object key : projectIDDictKeys) {
             Pair projectNameType = (Pair) key;
 
-            if(projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType))
-            {
+            if (projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType)) {
                 log.info("Project name: " + projectName + " exist. Proceed with choosing another project name");
                 isProjectNameUnique = false;
                 break;
@@ -217,47 +179,23 @@ public class ProjectHandler {
         return isProjectNameUnique;
     }
 
-    public static void deleteProjectWithID(Integer projectID)
-    {
-        try
-        {
+    public static void deleteProjectWithID(Integer projectID) {
+        try {
             Pair projectPair = (Pair) projectNameSearch.remove(projectID);
 
-            if(projectPair == null)
-            {
+            if (projectPair == null) {
                 throw new NullPointerException("Deletion of ProjectPair from Project Handler failed.");
             }
 
-            if(projectIDLoaderDict.remove(projectID) == null)
-            {
+            if (projectIDLoaderDict.remove(projectID) == null) {
                 throw new NullPointerException("Deletion of Project from ProjectIDLoader failed.");
             }
 
-            if(projectIDSearch.remove(projectPair) == null)
-            {
+            if (projectIDSearch.remove(projectPair) == null) {
                 throw new NullPointerException("Deletion of Project from ProjectIDSearch failed.");
             }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             log.debug("Error: ", e);
         }
-    }
-
-    public static boolean deleteUUID(Integer projectID, Integer uuid)
-    {
-        try
-        {
-            ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
-
-            return loader.deleteUUID(uuid);
-
-        }
-        catch(Exception e)
-        {
-            log.debug("Error: ", e);
-        }
-
-        return true;
     }
 }

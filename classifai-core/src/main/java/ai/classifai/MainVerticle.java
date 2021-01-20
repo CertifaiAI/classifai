@@ -108,6 +108,7 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
+                //docker environment not enabling welcome launcher
                 if(!ParamConfig.isDockerEnv()) {
 
                     try
