@@ -1,4 +1,4 @@
-@REM Copyright (c) 2020 CertifAI Sdn. Bhd.
+@REM Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
 
 @echo on
 SET JAR="%userprofile%\.m2\repository\ai\classifai\classifai-uberjar\2.0.0\classifai-uberjar-2.0.0-dev.jar"
