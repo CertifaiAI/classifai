@@ -241,8 +241,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.getProjectNameParam(), projectName);
 
         createProject(context, request, AnnotationType.BOUNDINGBOX);
     }

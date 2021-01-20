@@ -29,11 +29,7 @@ public class AnnotationHandler
 {
     public static boolean checkSanity(Integer annotationTypeInt)
     {
-        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
-        {
-            return true;
-        }
-        else if(annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
+        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
             return true;
         }
