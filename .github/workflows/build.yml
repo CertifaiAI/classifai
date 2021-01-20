@@ -33,4 +33,4 @@ jobs:
       - name: Build and run the Docker image with jar
         run: docker build -t classifai .
       - name: Run the docker image
-        run: docker run -p 9999:9999 classifai
+        run: docker run -dp 9999:9999 classifai
