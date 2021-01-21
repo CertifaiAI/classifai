@@ -81,7 +81,7 @@ public class ProjectHandler {
         return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
     }
 
-    private static ProjectLoader getProjectLoader(Pair project) {
+    private static ProjectLoader getProjectLoader(Pair<String, Integer> project) {
         Integer projectIDKey = getProjectID(project);
 
         if (projectIDKey == null) {
@@ -101,7 +101,7 @@ public class ProjectHandler {
         return null;
     }
 
-    public static Integer getProjectID(Pair projectNameTypeKey) {
+    public static Integer getProjectID(Pair<String, Integer> projectNameTypeKey) {
         if (projectIDSearch.containsKey(projectNameTypeKey)) {
             return (Integer) projectIDSearch.get(projectNameTypeKey);
         } else {

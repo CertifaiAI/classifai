@@ -8,4 +8,4 @@ WORKDIR /
 ADD $JAR $JAR
 
 EXPOSE $PORT
-CMD ["java","-jar","classifai-uberjar-dev.jar","--unlockdb", "--docker", "--port=$PORT", "--projecttype=boundingbox"]
+CMD ["java","-jar","classifai-uberjar-dev.jar","--unlockdb", "--port=$PORT"]

@@ -24,6 +24,6 @@ public enum AnnotationType
 {
     BOUNDINGBOX,
     SEGMENTATION
-    //TODO: Add on more techniques of annotation
+    //ADD WHEN HAVE NEW ANNOTATION TYPE
 }
 

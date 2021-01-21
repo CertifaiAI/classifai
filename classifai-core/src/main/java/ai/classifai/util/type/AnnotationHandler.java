@@ -15,6 +15,8 @@
  */
 package ai.classifai.util.type;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Locale;
@@ -25,6 +27,7 @@ import java.util.Locale;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationHandler
 {
     public static boolean checkSanity(Integer annotationTypeInt)
@@ -33,7 +36,7 @@ public class AnnotationHandler
         {
             return true;
         }
-        //TODO: ADD WHEN HAVE NEW ANNOTATION TYPE
+        //ADD WHEN HAVE NEW ANNOTATION TYPE
         else
         {
             printFailedMessage();
@@ -52,7 +55,7 @@ public class AnnotationHandler
         {
             return true;
         }
-        //TODO: ADD WHEN HAVE NEW ANNOTATION TYPE
+        //ADD WHEN HAVE NEW ANNOTATION TYPE
         else
         {
             printFailedMessage();

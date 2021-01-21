@@ -172,7 +172,7 @@ public class ParamConfig
         {
             return ParamConfig.getSegmentationParam();
         }
-        //TODO: Add more annotation type here when added
+        //ADD WHEN HAVE NEW ANNOTATION TYPE
 
         return null;
     }
