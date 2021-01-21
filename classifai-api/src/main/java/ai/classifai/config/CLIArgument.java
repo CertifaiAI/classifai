@@ -150,10 +150,7 @@ public class CLIArgument
 
         if(dataPath.equals("") || !(new File(dataPath).exists()))
         {
-            if(isDockerEnv)
-            {
-                log.info("Classifai might not works well in the docker mode. Data path do not exist in the system: ", dataPath);
-            }
+            log.info("Classifai might not works well in the docker mode. Data path do not exist in the system: ", dataPath);
         }
 
         if(projectName != null)

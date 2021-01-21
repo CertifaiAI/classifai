@@ -154,7 +154,7 @@ public class ProjectHandler {
         }
     }
 
-    public static Boolean isProjectNameUnique(String projectName, Integer annotationType) {
+    public static boolean isProjectNameUnique(String projectName, Integer annotationType) {
         if (!AnnotationHandler.checkSanity(annotationType)) {
             log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
             return false;
@@ -162,7 +162,7 @@ public class ProjectHandler {
 
         Set projectIDDictKeys = projectIDSearch.keySet();
 
-        Boolean isProjectNameUnique = true;
+        boolean isProjectNameUnique = true;
 
         for (Object key : projectIDDictKeys) {
             Pair projectNameType = (Pair) key;

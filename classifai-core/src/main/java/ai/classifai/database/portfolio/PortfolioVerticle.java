@@ -320,7 +320,41 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    public void configureProjectLoader()
+    private void loadProjectLoader(List<Integer> projectIDList)
+    {
+        //set the seed generator when creating new project
+        Integer maxProjectID = Collections.max(projectIDList);
+        ProjectHandler.setProjectIDGenerator(maxProjectID);
+
+        //set projectIDLoaderDict and projectIDSearch in ProjectHandler
+        for (Integer projectID : projectIDList)
+        {
+            JsonArray projectIDJson = new JsonArray().add(projectID);
+
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.loadDbProject(), projectIDJson, projectNameFetch -> {
+
+                if (projectNameFetch.succeeded()) {
+                    ResultSet resultSet = projectNameFetch.result();
+
+                    if (resultSet.getNumRows() != 0) {
+
+                        JsonArray row = resultSet.getResults().get(0);
+
+                        String projectName = row.getString(0);
+                        Integer annotationType = row.getInteger(1);
+                        Integer thisProjectID = projectIDJson.getInteger(0);
+                        boolean isNew = row.getBoolean(2);
+
+                        ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED, isNew);
+                    }
+                } else {
+                    log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
+                }
+            });
+        }
+    }
+
+    private void configurePortfolioVerticle()
     {
         portfolioDbClient.query(PortfolioDbQuery.getProjectIDList(), fetch -> {
             if (fetch.succeeded()) {
@@ -339,37 +373,12 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 }
                 else
                 {
-                    //set the seed generator when creating new project
-                    Integer maxProjectID = Collections.max(projectIDList);
-                    ProjectHandler.setProjectIDGenerator(maxProjectID);
 
-                    //set projectIDLoaderDict and projectIDSearch in ProjectHandler
-                    for (Integer projectID : projectIDList)
-                    {
-                        JsonArray projectIDJson = new JsonArray().add(projectID);
+                    loadProjectLoader(projectIDList);
 
-                        portfolioDbClient.queryWithParams(PortfolioDbQuery.loadDbProject(), projectIDJson, projectNameFetch -> {
-
-                            if (projectNameFetch.succeeded()) {
-                                ResultSet resultSet = projectNameFetch.result();
-
-                                if (resultSet.getNumRows() != 0) {
-
-                                    JsonArray row = resultSet.getResults().get(0);
-
-                                    String projectName = row.getString(0);
-                                    Integer annotationType = row.getInteger(1);
-                                    Integer thisProjectID = projectIDJson.getInteger(0);
-                                    boolean isNew = row.getBoolean(2);
-
-                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED, isNew);
-                                }
-                            } else {
-                                log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
-                            }
-                        });
-                    }
                 }
+
+                ////create new project from cli if any after load from memory
                 configProjectFromCLI();
             }
         });
@@ -630,7 +639,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             //the consumer methods registers an event bus destination handler
                             vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
-                            configureProjectLoader();
+                            configurePortfolioVerticle();
 
                             promise.complete();
 
