@@ -31,7 +31,7 @@ import java.io.File;
  *
  * @author codenamewei
  *
- * Sample: java -jar classifai --unlockdb --docker --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
+ * Sample: java -jar classifai-uberjar-dev.jar --unlockdb --docker --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
  *
  * Argument:
  * 1. --port=1234
