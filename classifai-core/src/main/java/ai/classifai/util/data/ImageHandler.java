@@ -123,15 +123,21 @@ public class ImageHandler {
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
 
-        int w = image.getWidth(), h = image.getHeight();
+        int w = image.getWidth();
+        int h = image.getHeight();
+
         int newW = (int) Math.floor(w * cos + h * sin);
         int newH = (int) Math.floor(h * cos + w * sin);
+
         int type = image.getType();
         BufferedImage result = new BufferedImage(newW, newH, type);
+
         Graphics2D g = result.createGraphics();
+
         g.translate((newW - w) / 2, (newH - h) / 2);
-        g.rotate(angle, w / 2, h / 2);
+        g.rotate(angle,((double)w) / 2, ((double)h) / 2);
         g.drawRenderedImage(image, null);
+
         return result;
     }
 
