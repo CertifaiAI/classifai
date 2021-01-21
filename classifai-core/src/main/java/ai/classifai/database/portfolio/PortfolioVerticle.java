@@ -427,19 +427,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), projectID);
 
-            String loadListQuery = "";
-            String loadListQueue = "";
-
-            if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
-            {
-                loadListQuery = BoundingBoxDbQuery.loadValidProjectUUID();
-                loadListQueue = BoundingBoxDbQuery.getQueue();
-            }
-            else if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
-            {
-                loadListQuery = SegDbQuery.loadValidProjectUUID();
-                loadListQueue = SegDbQuery.getQueue();
-            }
 
             //load label list
             DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectLabelList());
@@ -469,6 +456,20 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                     JsonObject uuidListObject = jsonObject.put(ParamConfig.getUUIDListParam(), uuidListArray).put(ParamConfig.getProjectIDParam(), projectID).put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
 
+                                    String loadListQuery = "";
+                                    String loadListQueue = "";
+
+                                    if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
+                                    {
+                                        loadListQuery = BoundingBoxDbQuery.loadValidProjectUUID();
+                                        loadListQueue = BoundingBoxDbQuery.getQueue();
+                                    }
+                                    else if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
+                                    {
+                                        loadListQuery = SegDbQuery.loadValidProjectUUID();
+                                        loadListQueue = SegDbQuery.getQueue();
+                                    }
+
                                     DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), loadListQuery);
 
                                     //start checking uuid if it's path is still exist
@@ -478,11 +479,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                         if (ReplyHandler.isReplyOk(removalResponse))
                                         {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                                            if(dataPath != null)
+                                            {
+                                                ImageHandler.processFolder(projectID, dataPath);
+                                            }
 
                                         } else
                                         {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
+                                            log.info("Failed to load project " + projectName + ". Check validity of data points failed.");
                                         }
                                     });
                                 }
@@ -493,10 +497,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 }
             });
 
-            if(dataPath != null)
-            {
-                ImageHandler.processFolder(projectID, dataPath);
-            }
+
         }
     }
 
