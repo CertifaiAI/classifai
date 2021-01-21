@@ -45,6 +45,7 @@ public class CLIProjectInitiator
         projectName = name;
 
         rootDataPath = new File(dataPath);
+
         if(!rootDataPath.exists())
         {
             rootDataPath = null;

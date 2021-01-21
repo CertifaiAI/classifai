@@ -120,6 +120,7 @@ public class CLIArgument
 
     private void checkToInitiateCLIProject()
     {
+
         if((projectType == null) && (projectName == null) && (dataPath.equals(""))) return;
 
         /*
@@ -131,16 +132,16 @@ public class CLIArgument
          *
          */
         //Scenario 1
-        if(projectType == null && (dataPath.equals("")))
+        if(projectType == null && (!dataPath.equals("") || (projectName != null)))
         {
             printMessageForCLIProjectFailed();
             return;
         }
 
-        AnnotationType type;
+        AnnotationType type = AnnotationHandler.getType(projectType);
 
         //scenario 2
-        if((type = AnnotationHandler.getType(projectType)) == null)
+        if(type == null)
         {
             printMessageForCLIProjectFailed();
             return;

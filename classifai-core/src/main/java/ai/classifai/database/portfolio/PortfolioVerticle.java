@@ -320,71 +320,67 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    private void loadProjectLoader(List<Integer> projectIDList)
+    private void loadProjectLoader()
     {
-        //set the seed generator when creating new project
-        Integer maxProjectID = Collections.max(projectIDList);
-        ProjectHandler.setProjectIDGenerator(maxProjectID);
 
-        //set projectIDLoaderDict and projectIDSearch in ProjectHandler
-        for (Integer projectID : projectIDList)
-        {
-            JsonArray projectIDJson = new JsonArray().add(projectID);
+        portfolioDbClient.query(PortfolioDbQuery.loadDbProject(), projectNameFetch -> {
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.loadDbProject(), projectIDJson, projectNameFetch -> {
+            if (projectNameFetch.succeeded()) {
 
-                if (projectNameFetch.succeeded()) {
-                    ResultSet resultSet = projectNameFetch.result();
+                ResultSet resultSet = projectNameFetch.result();
 
-                    if (resultSet.getNumRows() != 0) {
-
-                        JsonArray row = resultSet.getResults().get(0);
-
-                        String projectName = row.getString(0);
-                        Integer annotationType = row.getInteger(1);
-                        Integer thisProjectID = projectIDJson.getInteger(0);
-                        boolean isNew = row.getBoolean(2);
-
-                        ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED, isNew);
-                    }
-                } else {
-                    log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
-                }
-            });
-        }
-    }
-
-    private void configurePortfolioVerticle()
-    {
-        portfolioDbClient.query(PortfolioDbQuery.getProjectIDList(), fetch -> {
-            if (fetch.succeeded()) {
-
-                List<Integer> projectIDList = fetch.result()
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getInteger(0))
-                        .sorted()
-                        .collect(Collectors.toList());
-
-                if(projectIDList.isEmpty())
+                if (resultSet.getNumRows() == 0)
                 {
                     log.debug("Project ID List is empty. Initiate generator id from 0");
                     ProjectHandler.setProjectIDGenerator(0);
                 }
                 else
                 {
+                    List<Integer> projectIDList = resultSet
+                            .getResults()
+                            .stream()
+                            .map(json -> json.getInteger(0))
+                            .collect(Collectors.toList());
 
-                    loadProjectLoader(projectIDList);
+                    List<String> projectNameList = resultSet
+                            .getResults()
+                            .stream()
+                            .map(json -> json.getString(1))
+                            .collect(Collectors.toList());
 
+
+                    List<Integer> annotationTypeList = resultSet
+                            .getResults()
+                            .stream()
+                            .map(json -> json.getInteger(2))
+                            .collect(Collectors.toList());
+
+                    List<Boolean> isNewList = resultSet
+                            .getResults()
+                            .stream()
+                            .map(json -> json.getBoolean(3))
+                            .collect(Collectors.toList());
+
+                    ProjectHandler.setProjectIDGenerator(Collections.max(projectIDList) + 1);
+
+                    for(int i = 0; i < projectIDList.size(); ++i)
+                    {
+                        ProjectHandler.buildProjectLoader(projectNameList.get(i), projectIDList.get(i), annotationTypeList.get(i), LoaderStatus.DID_NOT_INITIATED, isNewList.get(i));
+                    }
                 }
 
-                ////create new project from cli if any after load from memory
-                configProjectFromCLI();
+                //create/load new project from cli if any, after load from database
+                buildProjectFromCLI();
+
+            }
+            else
+            {
+                log.info("Retrieving from portfolio database to project loader failed");
             }
         });
     }
 
-    private void configProjectFromCLI()
+    private void buildProjectFromCLI()
     {
         //from cli argument
         CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
@@ -420,8 +416,15 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else
         {
-            Integer projectID = ProjectHandler.getProjectID(projectName, annotationType);
-            ImageHandler.processFolder(projectID, dataPath);
+
+
+            log.info("Project with name: " + projectName + " for " + AnnotationHandler.getType(annotationType).name() + " exists. Loading project...");
+
+            if(dataPath != null)
+            {
+                Integer projectID = ProjectHandler.getProjectID(projectName, annotationType);
+                ImageHandler.processFolder(projectID, dataPath);
+            }
         }
     }
 
@@ -639,7 +642,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             //the consumer methods registers an event bus destination handler
                             vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
-                            configurePortfolioVerticle();
+                            loadProjectLoader();
 
                             promise.complete();
 

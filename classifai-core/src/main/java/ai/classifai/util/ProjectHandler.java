@@ -167,8 +167,9 @@ public class ProjectHandler {
         for (Object key : projectIDDictKeys) {
             Pair projectNameType = (Pair) key;
 
-            if (projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType)) {
-                log.info("Project name: " + projectName + " exist. Proceed with choosing another project name");
+            if (projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType))
+            {
+                log.debug("Project name: " + projectName + " exist. Proceed with choosing another project name");
                 isProjectNameUnique = false;
                 break;
             }
