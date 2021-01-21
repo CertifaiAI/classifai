@@ -317,7 +317,7 @@ public class EndpointRouter extends AbstractVerticle
         loadProject(context, SegDbQuery.getQueue(), SegDbQuery.loadValidProjectUUID(), AnnotationType.SEGMENTATION);
     }
 
-    private void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
+    public void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 

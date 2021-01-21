@@ -18,19 +18,25 @@ package ai.classifai.database.portfolio;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.router.EndpointRouter;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -405,7 +411,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
 
                     if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
-
                 }
                 else
                 {
@@ -416,13 +421,80 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else
         {
-
-
             log.info("Project with name: " + projectName + " for " + AnnotationHandler.getType(annotationType).name() + " exists. Loading project...");
+
+            Integer projectID = ProjectHandler.getProjectID(projectName, annotationType);
+
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), projectID);
+
+            String loadListQuery = "";
+            String loadListQueue = "";
+
+            if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
+            {
+                loadListQuery = BoundingBoxDbQuery.loadValidProjectUUID();
+                loadListQueue = BoundingBoxDbQuery.getQueue();
+            }
+            else if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
+            {
+                loadListQuery = SegDbQuery.loadValidProjectUUID();
+                loadListQueue = SegDbQuery.getQueue();
+            }
+
+            //load label list
+            DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectLabelList());
+
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, labelOptions, labelReply ->
+            {
+                if (labelReply.succeeded())
+                {
+                    JsonObject labelResponse = (JsonObject) labelReply.result().body();
+
+                    if (ReplyHandler.isReplyOk(labelResponse))
+                    {
+                        //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
+
+                        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+                        {
+                            if (reply.succeeded())
+                            {
+                                JsonObject uuidResponse = (JsonObject) reply.result().body();
+
+                                if (ReplyHandler.isReplyOk(uuidResponse))
+                                {
+                                    JsonArray uuidListArray = uuidResponse.getJsonArray(ParamConfig.getUUIDListParam());
+
+                                    Integer uuidGeneratorSeed = uuidResponse.getInteger(ParamConfig.getUuidGeneratorParam());
+
+                                    JsonObject uuidListObject = jsonObject.put(ParamConfig.getUUIDListParam(), uuidListArray).put(ParamConfig.getProjectIDParam(), projectID).put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
+
+                                    DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), loadListQuery);
+
+                                    //start checking uuid if it's path is still exist
+                                    vertx.eventBus().request(loadListQueue, uuidListObject, uuidListOptions, fetch ->
+                                    {
+                                        JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                                        if (ReplyHandler.isReplyOk(removalResponse))
+                                        {
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
+                                        } else
+                                        {
+                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
+                                        }
+                                    });
+                                }
+                            }
+
+                        });
+                    }
+                }
+            });
 
             if(dataPath != null)
             {
-                Integer projectID = ProjectHandler.getProjectID(projectName, annotationType);
                 ImageHandler.processFolder(projectID, dataPath);
             }
         }
