@@ -56,9 +56,7 @@ public class ProjectHandler {
     //value: Pair<String projectName, Integer annotationType>
     private static Map projectNameSearch;
 
-    @Getter
-    @Setter
-    private static CLIProjectInitiator cliProjectInitiator;
+    @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
 
 
     static {
@@ -136,10 +134,10 @@ public class ProjectHandler {
     public static void checkUUIDGeneratorSeedSanity(@NonNull Integer projectID, @NonNull Integer listUUIDSeed, @NonNull Integer dbUUIDSeed) {
         Integer validUUIDGeneratorSeed = null;
         if (listUUIDSeed > dbUUIDSeed) {
-            validUUIDGeneratorSeed = Integer.valueOf(listUUIDSeed);
+            validUUIDGeneratorSeed = listUUIDSeed;
             PortfolioVerticle.updateUUIDGeneratorSeed(projectID, listUUIDSeed);
         } else {
-            validUUIDGeneratorSeed = Integer.valueOf(dbUUIDSeed);
+            validUUIDGeneratorSeed = dbUUIDSeed;
         }
 
         ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);

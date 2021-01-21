@@ -15,7 +15,6 @@
  */
 package ai.classifai.loader;
 
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,39 +31,22 @@ public class CLIProjectInitiator
 {
     @Getter private final String projectName;
     @Getter private final AnnotationType projectType;
-    @Getter private final File rootDataPath;
-    @Getter private boolean isParamSet;
 
-    public CLIProjectInitiator(String type, String dataPath)
+    @Getter private File rootDataPath;
+
+    public CLIProjectInitiator(AnnotationType type, String dataPath)
     {
-        this("default", type, dataPath);
+        this(new NameGenerator().getNewProjectName(), type, dataPath);
     }
 
-    public CLIProjectInitiator(String name, String type, String dataPath)
+    public CLIProjectInitiator(String name, AnnotationType type, String dataPath)
     {
-        projectType = AnnotationHandler.getType(type);
+        projectType = type;
         projectName = name;
-        rootDataPath = new File(dataPath);
 
-        if(!rootDataPath.exists())
+        if(!(rootDataPath = new File(dataPath)).exists())
         {
-            log.info("Classifai might not works well in the docker mode. Data path do not exist in the system: ", dataPath);
-        }
-
-        printMessageIfFail();
-    }
-
-    private void printMessageIfFail()
-    {
-        if(projectType == null)
-        {
-            isParamSet = false;
-            //TODO
-            log.info("TODO");
-        }
-        else
-        {
-            isParamSet = true;
+            rootDataPath = null;
         }
     }
 }

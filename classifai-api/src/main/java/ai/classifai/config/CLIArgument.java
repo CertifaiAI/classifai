@@ -18,14 +18,20 @@ package ai.classifai.config;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import com.formdev.flatlaf.FlatLightLaf;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
 
 
 /**
  * Command Line Argument Configuration
  *
  * @author codenamewei
+ *
+ * Sample: java -jar classifai --unlockdb --docker --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
  *
  * Argument:
  * 1. --port=1234
@@ -39,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * 4. --projectname=<projectname>
  *    Create new project from cli / Use existing project if exist
- *    if not defined, default project name will be "default"
+ *    if not defined, default project name will be randomly generated
  *
  *    --projectname=helloworld
  *
@@ -53,11 +59,18 @@ import lombok.extern.slf4j.Slf4j;
  *    Source of data file
  *
  *    --datapath=/image-folder
+ *    --datapath="/Users/john/Desktop/sample-image"
  */
 @Slf4j
 public class CLIArgument
 {
     private boolean removeDbLock = false;
+    private boolean isDockerEnv = false;
+
+    private String projectName = null;
+    private String projectType = null;
+
+    private String dataPath = "";
 
     public boolean isDbSetup()
     {
@@ -66,20 +79,9 @@ public class CLIArgument
 
     public CLIArgument(String[] args)
     {
-        boolean isDockerEnv = false;
-        String projectName = null;
-        String projectType = null;
-        String dataPath = null;
-
-
         for (String arg : args)
         {
-            if (arg.contains("--port="))
-            {
-                String[] buffer = arg.split("=");
-                PortSelector.configurePort(buffer[1]);
-            }
-            else if (arg.contains("--unlockdb"))
+            if (arg.contains("--unlockdb"))
             {
                 removeDbLock = true;
             }
@@ -88,17 +90,22 @@ public class CLIArgument
                 isDockerEnv = true;
                 ParamConfig.setIsDockerEnv(true);
             }
-            else if (arg.contains("--projectname"))
+            else if (arg.contains("--port="))
+            {
+                String[] buffer = arg.split("=");
+                PortSelector.configurePort(buffer[1]);
+            }
+            else if (arg.contains("--projectname="))
             {
                 String[] buffer = arg.split("=");
                 projectName = buffer[1];
             }
-            else if (arg.contains("--projecttype"))
+            else if (arg.contains("--projecttype="))
             {
                 String[] buffer = arg.split("=");
                 projectType = buffer[1];
             }
-            else if (arg.contains("--datapath"))
+            else if (arg.contains("--datapath="))
             {
                 String[] buffer = arg.split("=");
                 dataPath = buffer[1];
@@ -107,22 +114,71 @@ public class CLIArgument
 
         if(!isDockerEnv) FlatLightLaf.install();
 
-        if(projectType != null)
+        checkToInitiateCLIProject();
+
+    }
+
+    private void checkToInitiateCLIProject()
+    {
+        if((projectType == null) && (projectName == null) && (dataPath.equals(""))) return;
+
+        /*
+         * failed scenario:
+         *
+         *   1. projecttype not set, but projectname and/or datapath set
+         *
+         *   2. projecttype set - undefined project type (not boundingbox / segmentation) (type == null)
+         *
+         */
+        //Scenario 1
+        if(projectType == null && (dataPath.equals("")))
         {
-            CLIProjectInitiator initiator;
-
-            if(dataPath == null) dataPath = "";
-
-            if(projectName != null)
-            {
-                initiator = new CLIProjectInitiator(projectName, projectType, dataPath);
-            }
-            else
-            {
-                initiator = new CLIProjectInitiator(projectType, dataPath);
-            }
-
-            ProjectHandler.setCliProjectInitiator(initiator);
+            printMessageForCLIProjectFailed();
+            return;
         }
+
+        AnnotationType type;
+
+        //scenario 2
+        if((type = AnnotationHandler.getType(projectType)) == null)
+        {
+            printMessageForCLIProjectFailed();
+            return;
+        }
+
+        CLIProjectInitiator initiator;
+
+        if(dataPath.equals("") || !(new File(dataPath).exists()))
+        {
+            if(isDockerEnv)
+            {
+                log.info("Classifai might not works well in the docker mode. Data path do not exist in the system: ", dataPath);
+            }
+        }
+
+        if(projectName != null)
+        {
+            initiator = new CLIProjectInitiator(projectName, type, dataPath);
+        }
+        else
+        {
+            initiator = new CLIProjectInitiator(type, dataPath);
+        }
+
+        ProjectHandler.setCliProjectInitiator(initiator);
+    }
+
+    private void printMessageForCLIProjectFailed()
+    {
+        log.info("\n" +
+                "Usage:  java -jar classifai-uberjar-dev.jar [OPTIONS]\n" +
+                "\n" +
+                "Options\n" +
+                "      --unlockdb              Unlock database to start if lck file exist\n" +
+                "      --port=integer          Run in a designated port. Example: --port=1234\n\n" +
+                "      --docker                Run in docker mode. Not showing Welcome Launcher and File/Folder Selector.\n" +
+                "      --projectname=string    Assign a project name when starting classifai. Project created when not exist. Example: --projectname=demo\n" +
+                "      --projecttype=string    Assign the type of project. Only accepts [boundingbox/segmentation] argument. Example: --projecttype=segmentation\n" +
+                "      --datapath=string       Folder path to import data points to a project. Example: --datapath=/image-folder\n");
     }
 }

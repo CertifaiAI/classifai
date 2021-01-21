@@ -380,7 +380,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         //from cli argument
         CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
 
-        if((initiator == null) || !initiator.isParamSet()) return;
+        if(initiator == null) return;
 
         String projectName = initiator.getProjectName();
         Integer annotationType = initiator.getProjectType().ordinal();
@@ -388,6 +388,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         if(ProjectHandler.isProjectNameUnique(projectName, annotationType))
         {
+            log.info("Create project with name: " + projectName + " for " + AnnotationHandler.getType(annotationType).name() + " project.");
+
             Integer projectID = ProjectHandler.generateProjectID();
             JsonArray params = buildNewProject(projectName, annotationType, projectID);
 
@@ -397,7 +399,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 {
                     ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
 
-                    ImageHandler.processFolder(projectID, dataPath);
+                    if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
 
                 }
                 else

@@ -1,0 +1,31 @@
+{
+  "left" : [
+    "amazing",
+    "interesting",
+    "remarkable",
+    "awesome",
+    "adorable",
+    "goofy",
+    "happy",
+    "romantic",
+    "loving",
+    "naughty",
+    "compassionate",
+    "cute"
+  ],
+
+  "right" : [
+    "superman",
+    "spiderman",
+    "deadpool",
+    "captain america",
+    "black panther",
+    "wonder woman",
+    "hulk",
+    "green lantern",
+    "catwoman",
+    "black widow",
+    "ironman",
+    "thor"
+  ]
+}
