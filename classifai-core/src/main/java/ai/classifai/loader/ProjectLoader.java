@@ -59,7 +59,7 @@ public class ProjectLoader
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
     private Set<Integer> validUUIDSet;
-    @Getter @Setter private List<Integer> UUIDListFromDatabase;
+    @Getter @Setter private List<Integer> uuidListFromDatabase;
 
     //used when checking for progress in
     //(1) validity of database data point

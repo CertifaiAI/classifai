@@ -116,7 +116,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             String annotationName = AnnotationHandler.getType(annotationType).name();
 
-            log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
+            log.info("Create " + annotationName + " project with name: " + projectName);
 
             Integer projectID = ProjectHandler.generateProjectID();
 
@@ -328,7 +328,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         ProjectLoader loader = ProjectHandler.buildProjectLoader(projectNameList.get(i), projectIDList.get(i), annotationTypeList.get(i), LoaderStatus.DID_NOT_INITIATED, isNewList.get(i));
 
                         loader.setUuidGeneratorSeed(uuidGeneratorList.get(i));
-                        loader.setUUIDListFromDatabase(ConversionHandler.string2IntegerList(uuidsFromDatabaseList.get(i)));
+                        loader.setUuidListFromDatabase(ConversionHandler.string2IntegerList(uuidsFromDatabaseList.get(i)));
                         loader.setLabelList(ConversionHandler.string2StringList(labelList.get(i)));
                     }
                 }
@@ -357,7 +357,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         if(ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
-            log.info("Create project (from cli) with name: " + projectName + " for " + AnnotationHandler.getType(annotationInt).name() + " project.");
+            log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
             Integer projectID = ProjectHandler.generateProjectID();
             JsonArray params = buildNewProject(projectName, annotationInt, projectID);
@@ -379,7 +379,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else
         {
-            log.info("Project with name: " + projectName + " for " + AnnotationHandler.getType(annotationInt).name() + " exists. Loading project from cli...");
+            log.info(AnnotationHandler.getType(annotationInt).name() + "Project with name: " + projectName + " exists. Loading project from cli...");
 
             Integer projectID = ProjectHandler.getProjectID(projectName, annotationInt);
 
