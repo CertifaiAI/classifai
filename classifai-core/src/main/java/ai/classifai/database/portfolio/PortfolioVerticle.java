@@ -23,13 +23,11 @@ import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.router.EndpointRouter;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.data.ImageHandler;
-import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
@@ -464,7 +462,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         loadListQuery = BoundingBoxDbQuery.loadValidProjectUUID();
                                         loadListQueue = BoundingBoxDbQuery.getQueue();
                                     }
-                                    else if(AnnotationHandler.getType(annotationType).equals(AnnotationType.BOUNDINGBOX))
+                                    else if(AnnotationHandler.getType(annotationType).equals(AnnotationType.SEGMENTATION))
                                     {
                                         loadListQuery = SegDbQuery.loadValidProjectUUID();
                                         loadListQueue = SegDbQuery.getQueue();
