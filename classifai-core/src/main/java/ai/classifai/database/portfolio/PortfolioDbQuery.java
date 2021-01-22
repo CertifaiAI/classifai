@@ -36,13 +36,9 @@ public class PortfolioDbQuery
 
     private final static String UPDATE_LABEL_LIST = "UPDATE Portfolio set label_list = ? WHERE project_id = ?";
 
-    private final static String GET_PROJECT_LABEL_LIST = "SELECT label_list FROM Portfolio WHERE project_id = ?";
+    private final static String LOAD_DB_PROJECT = "SELECT project_id, project_name, annotation_type, label_list, uuid_generator_seed, uuid_list, is_new FROM Portfolio";
 
-    private final static String GET_PROJECT_ID_LIST = "SELECT project_id FROM Portfolio";
-
-    private final static String LOAD_DB_PROJECT = "SELECT project_id, project_name, annotation_type, is_new FROM Portfolio";
-
-    private final static String GET_PROJECT_UUID_LIST = "SELECT uuid_list, uuid_generator_seed FROM Portfolio WHERE project_id = ?";
+    private final static String GET_PROJECT_UUID_LIST = "SELECT uuid_list FROM Portfolio WHERE project_id = ?";
 
     private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "SELECT project_name FROM Portfolio WHERE annotation_type = ?";
 
@@ -69,11 +65,7 @@ public class PortfolioDbQuery
 
     public static String updateLabelList() { return UPDATE_LABEL_LIST; }
 
-    public static String getProjectLabelList() { return GET_PROJECT_LABEL_LIST; }
-
     public static String loadDbProject() { return LOAD_DB_PROJECT; }
-
-    public static String getProjectIDList() { return GET_PROJECT_ID_LIST; }
 
     public static String getProjectUUIDList() { return GET_PROJECT_UUID_LIST; }
 

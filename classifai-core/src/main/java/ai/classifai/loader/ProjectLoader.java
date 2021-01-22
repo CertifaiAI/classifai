@@ -58,7 +58,8 @@ public class ProjectLoader
 
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
-    private Set<Integer> uuidUniqueSet;
+    private Set<Integer> validUUIDSet;
+    @Getter @Setter private List<Integer> UUIDListFromDatabase;
 
     //used when checking for progress in
     //(1) validity of database data point
@@ -87,7 +88,7 @@ public class ProjectLoader
 
     public void reset(FileSystemStatus currentFileSystemStatus)
     {
-        uuidUniqueSet = new HashSet<>();
+        validUUIDSet = new HashSet<>();
         fileSysNewUUIDList = new ArrayList<>();
 
         currentUUIDMarker = 0;
@@ -133,7 +134,6 @@ public class ProjectLoader
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
         }
-
     }
 
     public void updateDBLoadingProgress(Integer currentSize)
@@ -143,7 +143,7 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
-            sanityUUIDList = new ArrayList<>(uuidUniqueSet);
+            sanityUUIDList.addAll(new ArrayList<>(validUUIDSet));
 
             loaderStatus = LoaderStatus.LOADED;
         }
@@ -151,7 +151,7 @@ public class ProjectLoader
 
     public void pushDBValidUUID(Integer uuid)
     {
-        uuidUniqueSet.add(uuid);
+        validUUIDSet.add(uuid);
     }
 
     public void pushFileSysNewUUIDList(Integer uuid)
@@ -202,23 +202,6 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
-    }
-
-    /***
-     * Delete UUID from list
-     *
-     * @param uuid
-     * @return false if uuid in sanityUUIDLis not found
-     */
-    public boolean deleteUUID(Integer uuid)
-    {
-        if(sanityUUIDList.contains(uuid))
-        {
-            sanityUUIDList.remove(uuid);
-
-            return true;
-        }
-        return false;
     }
 
 }

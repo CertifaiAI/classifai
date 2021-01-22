@@ -76,6 +76,9 @@ public class AnnotationHandler
             return AnnotationType.SEGMENTATION;
         }
 
+        log.debug("Annotation type from string resulted in failure: " + type);
+
+
         return null;
     }
 
@@ -89,6 +92,8 @@ public class AnnotationHandler
         {
             return AnnotationType.SEGMENTATION;
         }
+
+        log.debug("Annotation type from integer resulted in failure: " + type);
 
         return null;
     }

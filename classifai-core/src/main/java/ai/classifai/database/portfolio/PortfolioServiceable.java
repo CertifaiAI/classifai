@@ -29,9 +29,5 @@ public interface PortfolioServiceable
 
     void updateLabelList(Message<JsonObject> message);
 
-    void getLabelList(Message<JsonObject> message);
-
-    void getProjectUUIDList(Message<JsonObject> message);
-
     void getAllProjectsForAnnotationType(Message<JsonObject> message);
 }

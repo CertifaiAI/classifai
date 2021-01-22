@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -83,11 +82,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID  = message.body().getInteger(ParamConfig.getProjectIDParam());
-        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.getUUIDListParam());
-
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        List<Integer> oriUUIDList = loader.getUUIDListFromDatabase();
 
         message.reply(ReplyHandler.getOkReply());
 
@@ -97,13 +95,12 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             return;
         }
         loader.setDbOriUUIDSize(oriUUIDList.size());
-        //sanity check on seed and write on database if needed
-        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.getUuidGeneratorParam()));
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
+
             JsonArray params = new JsonArray().add(projectID).add(UUID);
 
             jdbcClient.queryWithParams(query, params, fetch -> {
@@ -114,6 +111,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         JsonArray row = resultSet.getResults().get(0);
                         String dataPath = row.getString(0);
                         if (ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
+                    }
+                    else
+                    {
+                        log.debug("loadValidProjectUUID failed");
                     }
                 }
                 loader.updateDBLoadingProgress(currentLength);

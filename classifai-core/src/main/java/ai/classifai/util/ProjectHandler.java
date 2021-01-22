@@ -15,7 +15,6 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -117,10 +116,11 @@ public class ProjectHandler {
     }
 
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew) {
-        if (!AnnotationHandler.checkSanity(annotationType)) {
-            log.info("Saving new project of name: " + projectName + " failed.");
-            return;
+    public static ProjectLoader buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
+    {
+        if (!AnnotationHandler.checkSanity(annotationType))
+        {
+            log.debug("Saving new project of name: " + projectName + " failed.");
         }
 
         Pair projectNameWithType = new ImmutablePair(projectName, annotationType);
@@ -128,21 +128,11 @@ public class ProjectHandler {
         projectIDSearch.put(projectNameWithType, projectID);
         projectNameSearch.put(projectID, projectNameWithType);
 
-        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus, isNew));
-    }
+        ProjectLoader loader = new ProjectLoader(projectID, projectName, annotationType, loaderStatus, isNew);
 
-    public static void checkUUIDGeneratorSeedSanity(@NonNull Integer projectID, @NonNull Integer listUUIDSeed, @NonNull Integer dbUUIDSeed) {
-        Integer validUUIDGeneratorSeed = null;
-        if (listUUIDSeed > dbUUIDSeed) {
-            validUUIDGeneratorSeed = listUUIDSeed;
-            PortfolioVerticle.updateUUIDGeneratorSeed(projectID, listUUIDSeed);
-        } else {
-            validUUIDGeneratorSeed = dbUUIDSeed;
-        }
+        projectIDLoaderDict.put(projectID, loader);
 
-        ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
-
-        loader.setUuidGeneratorSeed(validUUIDGeneratorSeed);
+        return loader;
     }
 
     public static boolean initSelector(String selection) {
