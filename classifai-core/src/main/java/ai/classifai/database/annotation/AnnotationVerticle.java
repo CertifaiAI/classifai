@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -192,6 +192,24 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 failedUUIDList.add(UUID);
             }
         }
+
+        List<String> successUUIDListString = ConversionHandler.integerList2StringList(successUUIDList);
+
+        String deleteUUIDListQuery = query + "(" + String.join(",", successUUIDListString) + ")";
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(deleteUUIDListQuery, params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                log.debug("Successful delete uuids in project " + projectID);
+            }
+            else
+            {
+                log.debug("Failure in deleting uuids in project " + projectID);
+            }
+        });
 
         if(validUUIDList.removeAll(successUUIDList))
         {

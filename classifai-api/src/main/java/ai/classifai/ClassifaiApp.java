@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
         boolean isConfigured = configure(args);
 
@@ -56,13 +56,13 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
+
     }
 
     static boolean configure(String[] args)
     {
-        FlatLightLaf.install();
-
         boolean removeDbLock = false;
+        boolean isDockerEnv = false;
 
         for(int i = 0; i < args.length; ++i)
         {
@@ -72,17 +72,19 @@ public class ClassifaiApp
                 String[] buffer = args[i].split("=");
                 PortSelector.configurePort(buffer[1]);
             }
-            else if(arg.contains("--unlockdb="))
+            else if(arg.contains("--unlockdb"))
             {
-                String[] buffer = args[i].split("=");
-
-                removeDbLock = buffer[1].equals("true") ? true : false;
+                removeDbLock = true;
+            }
+            else if(arg.contains("--docker"))
+            {
+                isDockerEnv = true;
+                ParamConfig.setIsDockerEnv(true);
             }
         }
+      
+        if(!isDockerEnv) FlatLightLaf.install();
 
-        if(DbConfig.checkDatabase(removeDbLock) == false) return false;
-
-
-        return true;
+        return DbConfig.isDatabaseSetup(removeDbLock);
     }
 }

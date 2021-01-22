@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -87,23 +87,6 @@ public class ProjectHandler {
         {
             log.debug("Error: ", e);
         }
-    }
-
-    public static boolean deleteUUID(Integer projectID, Integer uuid)
-    {
-        try
-        {
-            ProjectLoader loader = (ProjectLoader) projectIDLoaderDict.get(projectID);
-
-            return loader.deleteUUID(uuid);
-
-        }
-        catch(Exception e)
-        {
-            log.debug("Error: ", e);
-        }
-
-        return true;
     }
 
     public static Integer generateProjectID()

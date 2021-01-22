@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -30,7 +30,7 @@ public abstract class AnnotationQuery
 
     protected final static String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "delete from Project where project_id = ?";
 
-    protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ? and uuid = ?";
+    protected final static String DELETE_PROJECT_UUID_LIST = "delete from Project where project_id = ? and uuid in ";
 
     public static String createData() { return CREATE_DATA; }
 

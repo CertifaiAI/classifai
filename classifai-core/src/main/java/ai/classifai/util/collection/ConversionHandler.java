@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -173,6 +173,16 @@ public class ConversionHandler
             return arrayList;
     }
 
+    public static List<String> integerList2StringList(List<Integer> oldList)
+    {
+        List<String> newList = new ArrayList<>();
+        for (Integer myInt : oldList) {
+            newList.add(String.valueOf(myInt));
+        }
+
+        return newList;
+
+    }
 
     public static List<Integer> jsonArray2IntegerList(JsonArray json)
     {
