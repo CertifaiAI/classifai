@@ -85,7 +85,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        List<Integer> oriUUIDList = loader.getUUIDListFromDatabase();
+        List<Integer> oriUUIDList = loader.getUuidListFromDatabase();
 
         message.reply(ReplyHandler.getOkReply());
 
