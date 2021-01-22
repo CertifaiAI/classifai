@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~  Copyright (c) 2020 CertifAI Sdn. Bhd.
+  ~  Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
   ~
   ~  This program and the accompanying materials are made available under the
   ~  terms of the Apache License, Version 2.0 which is available at
@@ -19,7 +19,7 @@
     <parent>
         <groupId>ai.classifai</groupId>
         <artifactId>classifai</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

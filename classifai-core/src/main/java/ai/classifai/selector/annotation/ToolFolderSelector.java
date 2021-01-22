@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -23,7 +23,6 @@ import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Open browser to select folder with importing list of data points in the folder

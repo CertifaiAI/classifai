@@ -1,22 +1,26 @@
 <p align="center">
 <img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="450" height="110" style="float:left"/>
-</p>                                                                                   
+</p>    
 
 <p>
   <p align="center">
     <a href="https://github.com/CertifaiAI/classifai/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/CertifaiAI/classifai?color=brightgreen">
     </a>
-    <a href="Discord">
-        <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
+    <a href="https://github.com/CertifaiAI/classifai/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=yellow">
+    </a>
+    <a href="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
+        <img alt="Sonar Cloud Quality Gate" src="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
     </a>
     <a href="https://classifai.ai">
         <img alt="Documentation" src="https://img.shields.io/website/http/certifai.ai.svg?color=orange">
     </a>
-    <a href="https://github.com/CertifaiAI/classifai/releases">
-        <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=yellow">
+    <a href="Discord">
+        <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
     </a>
 </p>
+
 
 <h3 align="center">
 Data Annotation Platform for AI Training
@@ -139,14 +143,14 @@ The installation packages and formats are listed below.
 
 | Operating System | Supported Version | Installation package format |
 |:-------------:|:-------------:|:-------------:|
-| [Windows](https://s3.eu-central-1.wasabisys.com/classifai/window_distribution/classifai-win-1.0.0.msi) | 7, 8, 10 | msi|
-| [Mac](https://s3.eu-central-1.wasabisys.com/classifai/mac_distribution/classifai-1.0.0.pkg) | 10 | pkg |
-| Ubuntu | [18 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu18-1.0.0.deb), [20 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu20-1.0.0.deb) | deb |
-| Centos | [7](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos7-1.0.0.rpm), [8](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos8-1.0.0.rpm) | rpm |
+| [Windows](https://s3.eu-central-1.wasabisys.com/classifai/window_distribution/classifai-win-1.1.0.msi) | 7, 8, 10 | msi|
+| [Mac](https://s3.eu-central-1.wasabisys.com/classifai/mac_distribution/classifai-1.1.0.pkg) | 10 | pkg |
+| Ubuntu | [18 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu18-1.1.0.deb), [20 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu20-1.1.0.deb) | deb |
+| Centos | [7](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos7-1.1.0.rpm), [8](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos8-1.1.0.rpm) | rpm |
 
-Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.com/classifai/uber_jar/classifai-uberjar-1.0.0.jar) and run with Java JDK/JRE 14.  
+Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.com/classifai/uber_jar/classifai-uberjar-1.1.0.jar) and run with Java JDK/JRE 14.  
 ```
-java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
+java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 ```
 
 ## Learn More 
@@ -156,7 +160,7 @@ java -jar classifai-uberjar-1.0.0.jar --unlockdb=true --port=9999
 |:-------------:|:-------------:|
 | [Website](https://classifai.ai/) | Official Website|
 | [Documentation](https://docs.classifai.ai/) | Full API documentation and tutorials |
-| [Blogs](https://medium.com/@codenamewei) | Technical Posts |
+| [Blogs](https://medium.com/classifai-ai) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
 | Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
