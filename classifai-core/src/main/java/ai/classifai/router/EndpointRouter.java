@@ -348,7 +348,7 @@ public class EndpointRouter extends AbstractVerticle
                 if (ReplyHandler.isReplyOk(removalResponse))
                 {
                     loader.setLoaderStatus(LoaderStatus.LOADED);
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                    HTTPResponseHandler.configureOK(context);;
 
                 } else
                 {
@@ -361,11 +361,11 @@ public class EndpointRouter extends AbstractVerticle
         else if(loaderStatus.equals(LoaderStatus.LOADED))
         {
             loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
         }
         else if(loaderStatus.equals(LoaderStatus.LOADING))
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
         }
         else if(loaderStatus.equals(LoaderStatus.ERROR))
         {
@@ -481,6 +481,10 @@ public class EndpointRouter extends AbstractVerticle
 
     private void selectFileSystemType(RoutingContext context, String projectName, AnnotationType annotationType)
     {
+        if(ParamConfig.isDockerEnv()) log.info("Docker Mode. Choosing file/folder not supported. Use --volume to attach data folder.");
+        checkIfDockerEnv(context);
+
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
 
         if(checkIfProjectNull(context, loader, projectName)) return;
@@ -493,7 +497,7 @@ public class EndpointRouter extends AbstractVerticle
         }
         else
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
 
             String fileType = context.request().getParam(ParamConfig.getFileSysParam());
 
@@ -514,7 +518,7 @@ public class EndpointRouter extends AbstractVerticle
             {
                 folderSelector.run(currentProjectID);
             }
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
         }
     }
 
@@ -557,6 +561,8 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
 
+        checkIfDockerEnv(context);
+
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
@@ -584,6 +590,15 @@ public class EndpointRouter extends AbstractVerticle
         }
 
                     HTTPResponseHandler.configureOK(context, res);
+    }
+
+    private void checkIfDockerEnv(RoutingContext context)
+    {
+        if(ParamConfig.isDockerEnv())
+        {
+            HTTPResponseHandler.configureOK(context);
+            return;
+        }
     }
 
     /**
@@ -894,7 +909,7 @@ public class EndpointRouter extends AbstractVerticle
                     throw new Exception("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
                 }
 
-                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                HTTPResponseHandler.configureOK(context);
 
             }
             catch (Exception e)

@@ -44,7 +44,7 @@ public class ToolFolderSelector{
 
     public void run(@NonNull Integer projectID)
     {
-        if(ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode();
+        LookFeelSetter.setDarkMode();
 
         try {
             EventQueue.invokeLater(new Runnable() {

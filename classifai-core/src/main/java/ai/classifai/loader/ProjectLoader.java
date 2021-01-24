@@ -77,6 +77,7 @@ public class ProjectLoader
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
+        uuidListFromDatabase = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
 
