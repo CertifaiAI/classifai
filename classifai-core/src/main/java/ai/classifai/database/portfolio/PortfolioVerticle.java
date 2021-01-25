@@ -232,7 +232,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<Integer> fileSysNewUUIDList = loader.getFileSysNewUUIDList();
 
-
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), new JsonArray().add(projectID), fetch -> {
 
             if(fetch.succeeded())
@@ -244,6 +243,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(0));
 
                 uuidList.addAll(fileSysNewUUIDList);
+
+                //update project loader
+                loader.getUuidListFromDatabase().addAll(fileSysNewUUIDList);
 
                 JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
@@ -366,7 +368,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.DID_NOT_INITIATED, Boolean.TRUE);
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.LOADED, Boolean.TRUE);
 
                     if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
                 }
@@ -379,8 +381,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else
         {
-            log.info(AnnotationHandler.getType(annotationInt).name() + "Project with name: " + projectName + " exists. Loading project from cli...");
-
             Integer projectID = ProjectHandler.getProjectID(projectName, annotationInt);
 
             if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);

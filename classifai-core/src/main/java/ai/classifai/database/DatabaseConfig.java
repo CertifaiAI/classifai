@@ -27,7 +27,7 @@ import java.io.File;
 @Slf4j
 public class DatabaseConfig
 {
-    private final static String DB_ROOT_PATH;
+    private final static String ROOT_PATH;
 
     private final static String LCK_FILE_EXTENSION;
 
@@ -47,7 +47,7 @@ public class DatabaseConfig
     {
         LCK_FILE_EXTENSION = ".lck";
 
-        DB_ROOT_PATH = System.getProperty("user.home") + File.separator + ".classifai";
+        ROOT_PATH = System.getProperty("user.home") + File.separator + ".classifai";
 
         PORTFOLIO_DB_NAME = "portfolio";
         BNDBOX_DB_NAME = "bbproject";
@@ -64,10 +64,10 @@ public class DatabaseConfig
 
     private static String defineDbPath(String database)
     {
-        return DB_ROOT_PATH + File.separator + database + File.separator + database + "db";
+        return ROOT_PATH + File.separator + database + File.separator + database + "db";
     }
 
-    public static String getDbRootPath() { return DB_ROOT_PATH; }
+    public static String getRootPath() { return ROOT_PATH; }
 
     public static String getPortfolioDbPath() { return PORTFOLIO_DB_PATH; }
 
@@ -80,4 +80,34 @@ public class DatabaseConfig
     public static String getBBLockFile() { return BNDBOX_DB_LCKFILE; }
 
     public static String getSegLockFile() { return SEG_DB_LCKFILE; }
+
+    public static boolean isDatabaseSetup(boolean unlockDatabase)
+    {
+
+        File portfolioLockPath = new File(DatabaseConfig.getPortfolioLockFile());
+        File boundingBoxLockPath = new File(DatabaseConfig.getBBLockFile());
+        File segmentationLockPath = new File(DatabaseConfig.getSegLockFile());
+
+        if(unlockDatabase)
+        {
+            if(portfolioLockPath.exists()) portfolioLockPath.delete();
+
+            if(boundingBoxLockPath.exists()) boundingBoxLockPath.delete();
+
+            if(segmentationLockPath.exists()) segmentationLockPath.delete();
+
+        }
+        else
+        {
+            if(portfolioLockPath.exists() || boundingBoxLockPath.exists() || segmentationLockPath.exists())
+            {
+                log.info("Database is locked. Try with --unlockdb. \n" +
+                        "WARNING: This might be hazardous by allowing multiple access to the database.");
+
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

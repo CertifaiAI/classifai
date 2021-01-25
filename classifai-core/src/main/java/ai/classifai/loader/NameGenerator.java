@@ -67,7 +67,7 @@ public class NameGenerator
             return "default";
         }
 
-        return randomPick("left") + " " + randomPick("right");
+        return randomPick("left") + "_" + randomPick("right");
     }
 
 

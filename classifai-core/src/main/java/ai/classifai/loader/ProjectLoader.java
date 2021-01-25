@@ -77,6 +77,7 @@ public class ProjectLoader
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
+        uuidListFromDatabase = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
 
@@ -121,7 +122,7 @@ public class ProjectLoader
         return progressBar;
     }
 
-    public void setDbOriUUIDSize(Integer totalUUIDSizeBuffer)
+    public void setDbOriUUIDSize(int totalUUIDSizeBuffer)
     {
         totalUUIDMaxLen = totalUUIDSizeBuffer;
 
@@ -136,16 +137,18 @@ public class ProjectLoader
         }
     }
 
-    public void updateDBLoadingProgress(Integer currentSize)
+    public void updateDBLoadingProgress(int currentSize)
     {
         currentUUIDMarker = currentSize;
 
         //if done, offload set to list
-        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        if (currentUUIDMarker == totalUUIDMaxLen)
         {
-            sanityUUIDList.addAll(new ArrayList<>(validUUIDSet));
+            sanityUUIDList = new ArrayList<>(validUUIDSet);
 
             loaderStatus = LoaderStatus.LOADED;
+
+            validUUIDSet.clear();
         }
     }
 

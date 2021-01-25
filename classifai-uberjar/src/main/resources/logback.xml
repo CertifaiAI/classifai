@@ -17,7 +17,7 @@
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-        <file>${user.home}/logs/classifai.log</file>
+        <file>${user.home}/.classifai/logs/classifai.log</file>
         <append>true</append>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">

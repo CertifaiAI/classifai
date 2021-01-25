@@ -120,7 +120,7 @@ public class ProjectHandler {
     {
         if (!AnnotationHandler.checkSanity(annotationType))
         {
-            log.debug("Saving new project of name: " + projectName + " failed.");
+            log.debug("Saving new project of name: " + projectName + " failed with invalid annotation type.");
         }
 
         Pair projectNameWithType = new ImmutablePair(projectName, annotationType);
