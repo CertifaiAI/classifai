@@ -41,6 +41,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -572,9 +573,20 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         log.info("Portfolio Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.getPortfolioLockFile());
+        File lockFile = DatabaseConfig.getPortfolioLockPath();
 
-        if(lockFile.exists()) lockFile.delete();
+        try
+        {
+            if(Files.deleteIfExists(lockFile.toPath()))
+            {
+                log.debug("Portfolio DB Lockfile deleted");
+            }
+        }
+        catch(Exception e)
+        {
+            log.debug("Exception: ", e);
+        }
+
     }
 
     //obtain a JDBC client connection,

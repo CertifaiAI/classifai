@@ -138,7 +138,7 @@ public class CLIArgument
     private void checkToInitiateCLIProject()
     {
 
-        if((projectType == null) && (projectName == null) && (dataPath == null)) return;
+        if((projectType == null)  && (dataPath == null)) return;
 
         /*
          * failed scenario:
@@ -149,7 +149,7 @@ public class CLIArgument
          *
          */
         //Scenario 1
-        if(projectType == null && (dataPath != null|| (projectName != null)))
+        if(projectType == null && dataPath != null)
         {
             log.info("--projecttype not defined while project intend to initiated through cli");
 
@@ -220,3 +220,4 @@ public class CLIArgument
                 "      --datapath=string       Folder path to import data points to a project. Example: --datapath=/image-folder\n");
     }
 }
+A

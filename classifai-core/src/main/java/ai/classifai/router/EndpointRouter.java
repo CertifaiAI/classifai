@@ -590,7 +590,6 @@ public class EndpointRouter extends AbstractVerticle
         if(ParamConfig.isDockerEnv())
         {
             HTTPResponseHandler.configureOK(context);
-            return;
         }
     }
 

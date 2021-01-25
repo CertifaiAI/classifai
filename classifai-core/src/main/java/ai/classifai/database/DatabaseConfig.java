@@ -18,6 +18,7 @@ package ai.classifai.database;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Files;
 
 /**
  * Configurations for files and paths of database
@@ -39,9 +40,9 @@ public class DatabaseConfig
     private final static String BNDBOX_DB_PATH;
     private final static String SEG_DB_PATH;
 
-    private final static String PORTFOLIO_DB_LCKFILE;
-    private final static String BNDBOX_DB_LCKFILE;
-    private final static String SEG_DB_LCKFILE;
+    private final static File PORTFOLIO_DB_LCKPATH;
+    private final static File BNDBOX_DB_LCKPATH;
+    private final static File SEG_DB_LCKPATH;
 
     static
     {
@@ -57,9 +58,9 @@ public class DatabaseConfig
         BNDBOX_DB_PATH = defineDbPath(BNDBOX_DB_NAME);
         SEG_DB_PATH = defineDbPath(SEG_DB_NAME);
 
-        PORTFOLIO_DB_LCKFILE = PORTFOLIO_DB_PATH + LCK_FILE_EXTENSION;
-        BNDBOX_DB_LCKFILE = BNDBOX_DB_PATH + LCK_FILE_EXTENSION;
-        SEG_DB_LCKFILE = SEG_DB_PATH + LCK_FILE_EXTENSION;
+        PORTFOLIO_DB_LCKPATH = new File(PORTFOLIO_DB_PATH + LCK_FILE_EXTENSION);
+        BNDBOX_DB_LCKPATH = new File(BNDBOX_DB_PATH + LCK_FILE_EXTENSION);
+        SEG_DB_LCKPATH = new File(SEG_DB_PATH + LCK_FILE_EXTENSION);
     }
 
     private static String defineDbPath(String database)
@@ -75,56 +76,60 @@ public class DatabaseConfig
 
     public static String getSegDbPath() { return SEG_DB_PATH; }
 
-    public static String getPortfolioLockFile() { return PORTFOLIO_DB_LCKFILE; }
+    public static File getPortfolioLockPath() { return PORTFOLIO_DB_LCKPATH; }
 
-    public static String getBBLockFile() { return BNDBOX_DB_LCKFILE; }
+    public static File getBndBoxLockPath() { return BNDBOX_DB_LCKPATH; }
 
-    public static String getSegLockFile() { return SEG_DB_LCKFILE; }
+    public static File getSegLockPath() { return SEG_DB_LCKPATH; }
 
     public static boolean isDatabaseSetup(boolean unlockDatabase)
     {
-
-        File portfolioLockPath = new File(DatabaseConfig.getPortfolioLockFile());
-        File boundingBoxLockPath = new File(DatabaseConfig.getBBLockFile());
-        File segmentationLockPath = new File(DatabaseConfig.getSegLockFile());
-
         if(unlockDatabase)
         {
-            if(portfolioLockPath.exists())
-            {
-                if(!portfolioLockPath.delete())
-                {
-                    log.debug("Delete portfolio lock file failed from path: " + portfolioLockPath.getAbsolutePath());
-                }
-            }
-
-            if(boundingBoxLockPath.exists())
-            {
-                if(!boundingBoxLockPath.delete())
-                {
-                    log.debug("Delete boundingbox lock file failed from path: " + boundingBoxLockPath.getAbsolutePath());
-                }
-            }
-
-            if(segmentationLockPath.exists()) {
-                if(!segmentationLockPath.delete())
-                {
-                    log.debug("Delete segmentation lock file failed from path: " + boundingBoxLockPath.getAbsolutePath());
-                }
-            }
-
+            deleteLckFile();
         }
         else
         {
-            if(portfolioLockPath.exists() || boundingBoxLockPath.exists() || segmentationLockPath.exists())
-            {
-                log.info("Database is locked. Try with --unlockdb. \n" +
-                        "WARNING: This might be hazardous by allowing multiple access to the database.");
-
-                return false;
-            }
+            return isDbReadyForAccess();
         }
 
         return true;
+    }
+
+    private static boolean isDbReadyForAccess()
+    {
+        if(PORTFOLIO_DB_LCKPATH.exists() || BNDBOX_DB_LCKPATH.exists() || SEG_DB_LCKPATH.exists())
+        {
+            log.info("Database is locked. Try with --unlockdb. \n" +
+                    "WARNING: This might be hazardous by allowing multiple access to the database.");
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void deleteLckFile()
+    {
+        try
+        {
+            if(!Files.deleteIfExists(PORTFOLIO_DB_LCKPATH.toPath()))
+            {
+                log.debug("Delete portfolio lock file failed from path: " + PORTFOLIO_DB_LCKPATH.getAbsolutePath());
+            }
+
+            if(!Files.deleteIfExists(BNDBOX_DB_LCKPATH.toPath()))
+            {
+                log.debug("Delete boundingbox lock file failed from path: " + BNDBOX_DB_LCKPATH.getAbsolutePath());
+            }
+
+            if(!Files.deleteIfExists(SEG_DB_LCKPATH.toPath()))
+            {
+                log.debug("Delete segmentation lock file failed from path: " + SEG_DB_LCKPATH.getAbsolutePath());
+            }
+        }
+        catch(Exception e) {
+            log.debug("Error when delete lock file: ", e);
+        }
     }
 }
