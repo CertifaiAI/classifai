@@ -346,83 +346,33 @@ public class EndpointRouter extends AbstractVerticle
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
         //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
+        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.LOADED))
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
 
-            //load label list
-            DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectLabelList());
+            DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, labelOptions, labelReply ->
+            //start checking uuid if it's path is still exist
+            vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
             {
-                if (labelReply.succeeded())
+                JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                if (ReplyHandler.isReplyOk(removalResponse))
                 {
-                    JsonObject labelResponse = (JsonObject) labelReply.result().body();
+                    HTTPResponseHandler.configureOK(context);
 
-                    if (ReplyHandler.isReplyOk(labelResponse))
-                    {
-                        //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
-
-                        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-                        {
-                            if (reply.succeeded())
-                            {
-                                JsonObject uuidResponse = (JsonObject) reply.result().body();
-
-                                if (ReplyHandler.isReplyOk(uuidResponse))
-                                {
-                                    JsonArray uuidListArray = uuidResponse.getJsonArray(ParamConfig.getUUIDListParam());
-
-                                    Integer uuidGeneratorSeed = uuidResponse.getInteger(ParamConfig.getUuidGeneratorParam());
-
-                                    JsonObject uuidListObject = jsonObject.put(ParamConfig.getUUIDListParam(), uuidListArray).put(ParamConfig.getProjectIDParam(), loader.getProjectID()).put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
-
-                                    DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-                                    //start checking uuid if it's path is still exist
-                                    vertx.eventBus().request(queue, uuidListObject, uuidListOptions, fetch ->
-                                    {
-                                        JsonObject removalResponse = (JsonObject) fetch.result().body();
-
-                                        if (ReplyHandler.isReplyOk(removalResponse))
-                                        {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-
-                                        } else
-                                        {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-                                        }
-                                    });
-                                }
-                                else
-                                {
-                                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Get project uuid list failed."));
-                                }
-                            }
-                            else
-                            {
-                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Query database to get project uuid list failed."));
-                            }
-                        });
-                    }
-                    else
-                    {
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving uuid list of project " + projectName + ". Loading project aborted."));
-                    }
+                } else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
                 }
             });
-        }
-        else if(loaderStatus.equals(LoaderStatus.LOADED))
-        {
-            loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
         }
         else if(loaderStatus.equals(LoaderStatus.LOADING))
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
         }
         else if(loaderStatus.equals(LoaderStatus.ERROR))
         {
@@ -534,11 +484,6 @@ public class EndpointRouter extends AbstractVerticle
 
     private void selectFileSystemType(RoutingContext context, AnnotationType annotationType)
     {
-        if(ParamConfig.isDockerEnv())
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-            return;
-        }
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -554,7 +499,7 @@ public class EndpointRouter extends AbstractVerticle
         }
         else
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
 
             String fileType = context.request().getParam(ParamConfig.getFileSysParam());
 
@@ -575,7 +520,7 @@ public class EndpointRouter extends AbstractVerticle
             {
                 folderSelector.run(currentProjectID);
             }
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
         }
     }
 
@@ -786,7 +731,6 @@ public class EndpointRouter extends AbstractVerticle
 
             try
             {
-
                 io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
                 jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
 

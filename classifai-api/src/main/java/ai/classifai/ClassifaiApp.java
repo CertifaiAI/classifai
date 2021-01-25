@@ -62,7 +62,6 @@ public class ClassifaiApp
     static boolean configure(String[] args)
     {
         boolean removeDbLock = false;
-        boolean isDockerEnv = false;
 
         for(int i = 0; i < args.length; ++i)
         {
@@ -76,14 +75,9 @@ public class ClassifaiApp
             {
                 removeDbLock = true;
             }
-            else if(arg.contains("--docker"))
-            {
-                isDockerEnv = true;
-                ParamConfig.setIsDockerEnv(true);
-            }
         }
       
-        if(!isDockerEnv) FlatLightLaf.install();
+        FlatLightLaf.install();
 
         return DbConfig.isDatabaseSetup(removeDbLock);
     }

@@ -151,12 +151,11 @@ public class ProjectHandler {
     }
 
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus)
+    public static ProjectLoader buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus)
     {
         if(!checkAnnotationSanity(annotationType))
         {
-            log.info("Saving new project of name: " + projectName + " failed.");
-            return;
+            log.debug("Saving new project of name: " + projectName + " failed with invalid annotation type.");
         }
 
         Pair projectNameWithType = new ImmutablePair(projectName, annotationType);
@@ -164,7 +163,10 @@ public class ProjectHandler {
         projectIDSearch.put(projectNameWithType, projectID);
         projectNameSearch.put(projectID, projectNameWithType);
 
-        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus));
+        ProjectLoader loader = new ProjectLoader(projectID, projectName, annotationType, loaderStatus);
+        projectIDLoaderDict.put(projectID, loader);
+
+        return loader;
     }
 
     private static boolean checkAnnotationSanity(Integer annotationTypeInt)

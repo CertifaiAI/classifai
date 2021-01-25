@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -90,11 +89,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID  = message.body().getInteger(ParamConfig.getProjectIDParam());
-        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.getUUIDListParam());
-
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        List<Integer> oriUUIDList = loader.getUuidListFromDatabase();
 
         message.reply(ReplyHandler.getOkReply());
 
@@ -105,9 +103,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
-
-        //sanity check on seed and write on database if needed
-        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.getUuidGeneratorParam()));
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
@@ -120,12 +115,24 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
 
-                    if (resultSet.getNumRows() != 0) {
+                    if (resultSet.getNumRows() != 0)
+                    {
                         JsonArray row = resultSet.getResults().get(0);
 
                         String dataPath = row.getString(0);
 
-                        if (ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
+                        if (ImageHandler.isImageReadable(dataPath))
+                        {
+                            loader.pushDBValidUUID(UUID);
+                        }
+                        else
+                        {
+                            log.info(dataPath + " not found. Check if the data is in the corresponding path. ");
+                        }
+                    }
+                    else
+                    {
+                        log.debug("loadValidProjectUUID failed");
                     }
                 }
 

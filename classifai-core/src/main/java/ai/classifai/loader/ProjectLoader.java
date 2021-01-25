@@ -56,6 +56,7 @@ public class ProjectLoader
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
     private Set<Integer> uuidUniqueSet;
+    @Getter @Setter private List<Integer> uuidListFromDatabase;
 
     //used when checking for progress in
     //(1) validity of database data point
@@ -73,6 +74,7 @@ public class ProjectLoader
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
+        uuidListFromDatabase = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
 
@@ -129,6 +131,8 @@ public class ProjectLoader
             sanityUUIDList = new ArrayList<>(uuidUniqueSet);
 
             loaderStatus = LoaderStatus.LOADED;
+
+            uuidUniqueSet.clear();
         }
     }
 
@@ -154,23 +158,6 @@ public class ProjectLoader
             offloadFileSysNewList2List();
         }
 
-    }
-
-    /***
-     * Delete UUID from list
-     *
-     * @param uuid
-     * @return false if uuid in sanityUUIDLis not found
-     */
-    public boolean deleteUUID(Integer uuid)
-    {
-        if(sanityUUIDList.contains(uuid))
-        {
-            sanityUUIDList.remove(uuid);
-
-            return true;
-        }
-        return false;
     }
 
     private void offloadFileSysNewList2List()
