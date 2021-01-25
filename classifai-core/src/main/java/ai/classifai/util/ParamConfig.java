@@ -15,6 +15,7 @@
  */
 package ai.classifai.util;
 
+import ai.classifai.database.DatabaseConfig;
 import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.OS;
@@ -54,7 +55,7 @@ public class ParamConfig
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = System.getProperty("user.home") + File.separator + "logs" + File.separator + "classifai.log";
+    private static final String LOG_FILE_PATH = DatabaseConfig.getRootPath() + File.separator + "logs" + File.separator + "classifai.log";
 
     private static boolean IS_DOCKER_ENV = false;
 

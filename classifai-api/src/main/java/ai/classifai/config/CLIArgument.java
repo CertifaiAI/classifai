@@ -15,6 +15,7 @@
  */
 package ai.classifai.config;
 
+import ai.classifai.database.DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -74,7 +75,7 @@ public class CLIArgument
 
     public boolean isDbSetup()
     {
-        return DbConfig.isDatabaseSetup(removeDbLock);
+        return DatabaseConfig.isDatabaseSetup(removeDbLock);
     }
 
     public CLIArgument(String[] args)
@@ -92,23 +93,28 @@ public class CLIArgument
             }
             else if (arg.contains("--port="))
             {
-                String[] buffer = arg.split("=");
-                PortSelector.configurePort(buffer[1]);
+                String port = getArg(arg);
+
+                if(port != null)
+                {
+                    PortSelector.configurePort(port);
+                }
+                else
+                {
+                    log.info("Port failed to configure through cli");
+                }
             }
             else if (arg.contains("--projectname="))
             {
-                String[] buffer = arg.split("=");
-                projectName = buffer[1];
+                projectName = getArg(arg);
             }
             else if (arg.contains("--projecttype="))
             {
-                String[] buffer = arg.split("=");
-                projectType = buffer[1];
+                projectType  = getArg(arg);
             }
             else if (arg.contains("--datapath="))
             {
-                String[] buffer = arg.split("=");
-                dataPath = buffer[1];
+                dataPath = getArg(arg);
             }
         }
 
@@ -116,6 +122,17 @@ public class CLIArgument
 
         checkToInitiateCLIProject();
 
+    }
+
+    private String getArg(String arg)
+    {
+        String[] buffer = arg.split("=");
+        if(buffer.length == 2)
+        {
+            return buffer[1];
+        }
+
+        return null;
     }
 
     private void checkToInitiateCLIProject()
@@ -159,10 +176,19 @@ public class CLIArgument
         boolean isDataPathValid = dataPath != null && !dataPath.equals("") && new File(dataPath).exists();
         boolean isProjectNameValid = (projectName != null) && (!projectName.equals(""));
 
-        if(isDataPathValid && isProjectNameValid)
+        if(isDataPathValid)
         {
             log.info("Data path imported through cli: " + dataPath);
-            initiator = new CLIProjectInitiator(type, projectName, dataPath);
+
+            if(isProjectNameValid)
+            {
+                initiator = new CLIProjectInitiator(type, projectName, new File(dataPath));
+            }
+            else
+            {
+                initiator = new CLIProjectInitiator(type, new File(dataPath));
+            }
+
         }
         else
         {
