@@ -137,12 +137,12 @@ public class ProjectLoader
         }
     }
 
-    public void updateDBLoadingProgress(int currentSize)
+    public void updateDBLoadingProgress(Integer currentSize)
     {
         currentUUIDMarker = currentSize;
 
         //if done, offload set to list
-        if (currentUUIDMarker == totalUUIDMaxLen)
+        if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
             sanityUUIDList = new ArrayList<>(validUUIDSet);
 

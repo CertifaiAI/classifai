@@ -90,11 +90,28 @@ public class DatabaseConfig
 
         if(unlockDatabase)
         {
-            if(portfolioLockPath.exists()) portfolioLockPath.delete();
+            if(portfolioLockPath.exists())
+            {
+                if(!portfolioLockPath.delete())
+                {
+                    log.debug("Delete portfolio lock file failed from path: " + portfolioLockPath.getAbsolutePath());
+                }
+            }
 
-            if(boundingBoxLockPath.exists()) boundingBoxLockPath.delete();
+            if(boundingBoxLockPath.exists())
+            {
+                if(!boundingBoxLockPath.delete())
+                {
+                    log.debug("Delete boundingbox lock file failed from path: " + boundingBoxLockPath.getAbsolutePath());
+                }
+            }
 
-            if(segmentationLockPath.exists()) segmentationLockPath.delete();
+            if(segmentationLockPath.exists()) {
+                if(!segmentationLockPath.delete())
+                {
+                    log.debug("Delete segmentation lock file failed from path: " + boundingBoxLockPath.getAbsolutePath());
+                }
+            }
 
         }
         else
