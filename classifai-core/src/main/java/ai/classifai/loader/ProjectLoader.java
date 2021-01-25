@@ -144,9 +144,11 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
-            sanityUUIDList.addAll(new ArrayList<>(validUUIDSet));
+            sanityUUIDList = new ArrayList<>(validUUIDSet);
 
             loaderStatus = LoaderStatus.LOADED;
+
+            validUUIDSet.clear();
         }
     }
 
