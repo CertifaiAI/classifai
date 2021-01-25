@@ -110,7 +110,15 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     if (resultSet.getNumRows() != 0) {
                         JsonArray row = resultSet.getResults().get(0);
                         String dataPath = row.getString(0);
-                        if (ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
+
+                        if (ImageHandler.isImageReadable(dataPath))
+                        {
+                            loader.pushDBValidUUID(UUID);
+                        }
+                        else
+                        {
+                            log.info(dataPath + " not found. Check if the data is in the corresponding path. ");
+                        }
                     }
                     else
                     {

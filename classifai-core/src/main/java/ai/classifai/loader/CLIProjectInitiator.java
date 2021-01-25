@@ -36,13 +36,13 @@ public class CLIProjectInitiator
 
     public CLIProjectInitiator(AnnotationType type, String dataPath)
     {
-        this(new NameGenerator().getNewProjectName(), type, dataPath);
+        this("", type, dataPath);
     }
 
     public CLIProjectInitiator(String name, AnnotationType type, String dataPath)
     {
         projectType = type;
-        projectName = name;
+        projectName = name.equals("") ? new NameGenerator().getNewProjectName() : name;
 
         rootDataPath = new File(dataPath);
 
@@ -50,5 +50,10 @@ public class CLIProjectInitiator
         {
             rootDataPath = null;
         }
+
+
+        System.out.println("Project Type: " + projectType);
+        System.out.println("Project Name: " + projectName);
+        System.out.println("Data Path: " + rootDataPath);
     }
 }
