@@ -70,7 +70,7 @@ public class CLIArgument
     private String projectName = null;
     private String projectType = null;
 
-    private String dataPath = "";
+    private String dataPath = null;
 
     public boolean isDbSetup()
     {
@@ -121,7 +121,7 @@ public class CLIArgument
     private void checkToInitiateCLIProject()
     {
 
-        if((projectType == null) && (projectName == null) && (dataPath.equals(""))) return;
+        if((projectType == null) && (projectName == null) && (dataPath == null)) return;
 
         /*
          * failed scenario:
@@ -132,8 +132,14 @@ public class CLIArgument
          *
          */
         //Scenario 1
-        if(projectType == null && (!dataPath.equals("") || (projectName != null)))
+        if(projectType == null && (dataPath != null|| (projectName != null)))
         {
+            log.info("--projecttype not defined while project intend to initiated through cli");
+
+            if(dataPath != null) log.info("--datapath=" + dataPath);
+
+            if(projectName != null) log.info("--projectname=" + projectName);
+
             printMessageForCLIProjectFailed();
             return;
         }
@@ -143,24 +149,32 @@ public class CLIArgument
         //scenario 2
         if(type == null)
         {
+            log.info("--projecttype not valid with argument: " + projectType);
             printMessageForCLIProjectFailed();
             return;
         }
 
         CLIProjectInitiator initiator;
 
-        if(dataPath.equals("") || !(new File(dataPath).exists()))
-        {
-            log.info("Classifai might not works well in the docker mode. Data path do not exist in the system: ", dataPath);
-        }
+        boolean isDataPathValid = dataPath != null && !dataPath.equals("") && new File(dataPath).exists();
+        boolean isProjectNameValid = (projectName != null) && (!projectName.equals(""));
 
-        if(projectName != null)
+        if(isDataPathValid && isProjectNameValid)
         {
-            initiator = new CLIProjectInitiator(projectName, type, dataPath);
+            log.info("Data path imported through cli: " + dataPath);
+            initiator = new CLIProjectInitiator(type, projectName, dataPath);
         }
         else
         {
-            initiator = new CLIProjectInitiator(type, dataPath);
+            if(isProjectNameValid)
+            {
+                initiator = new CLIProjectInitiator(type, projectName);
+            }
+            else
+            {
+                initiator = new CLIProjectInitiator(type);
+            }
+
         }
 
         ProjectHandler.setCliProjectInitiator(initiator);

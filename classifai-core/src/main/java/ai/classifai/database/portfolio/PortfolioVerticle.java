@@ -353,7 +353,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         String projectName = initiator.getProjectName();
         Integer annotationInt = initiator.getProjectType().ordinal();
-        File dataPath = initiator.getRootDataPath();
+        File dataPath = new File(initiator.getRootDataPath());
 
         if(ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
@@ -368,7 +368,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 {
                     ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.DID_NOT_INITIATED, Boolean.TRUE);
 
-                    if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
+                    if(dataPath.exists()) ImageHandler.processFolder(projectID, dataPath);
                 }
                 else
                 {

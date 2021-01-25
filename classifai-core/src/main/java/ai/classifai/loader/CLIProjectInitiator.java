@@ -32,28 +32,23 @@ public class CLIProjectInitiator
     @Getter private final String projectName;
     @Getter private final AnnotationType projectType;
 
-    @Getter private File rootDataPath;
+    @Getter private String rootDataPath;
 
-    public CLIProjectInitiator(AnnotationType type, String dataPath)
+    public CLIProjectInitiator(AnnotationType type, String projectName)
     {
-        this("", type, dataPath);
+        this(type, projectName, "");
     }
 
-    public CLIProjectInitiator(String name, AnnotationType type, String dataPath)
+    public CLIProjectInitiator(AnnotationType type)
+    {
+        this(type, "", "");
+    }
+
+    public CLIProjectInitiator(AnnotationType type, String name, String dataPath)
     {
         projectType = type;
         projectName = name.equals("") ? new NameGenerator().getNewProjectName() : name;
 
-        rootDataPath = new File(dataPath);
-
-        if(!rootDataPath.exists())
-        {
-            rootDataPath = null;
-        }
-
-
-        System.out.println("Project Type: " + projectType);
-        System.out.println("Project Name: " + projectName);
-        System.out.println("Data Path: " + rootDataPath);
+        rootDataPath = dataPath;
     }
 }
