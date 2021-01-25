@@ -220,4 +220,3 @@ public class CLIArgument
                 "      --datapath=string       Folder path to import data points to a project. Example: --datapath=/image-folder\n");
     }
 }
-A
