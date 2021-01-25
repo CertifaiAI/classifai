@@ -97,6 +97,8 @@ public class ImageHandler {
 
         if((file.exists() == false) && (file.length() < 5)) //length() stands for file size
         {
+            log.info(imagePath + " not found. Check if the data is in the corresponding path. ");
+
             return false;
         }
 

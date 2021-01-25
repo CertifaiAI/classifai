@@ -55,8 +55,6 @@ public class ParamConfig
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
     private static final String LOG_FILE_PATH = System.getProperty("user.home") +  File.separator + "logs" + File.separator + "classifai.log";
 
-    private static boolean IS_DOCKER_ENV = false;
-
     private final static String PROJECT_NAME_PARAM = "project_name";
     private final static String PROJECT_ID_PARAM = "project_id";
     private final static String FILE_SYS_PARAM = "file_sys";
@@ -104,9 +102,6 @@ public class ParamConfig
 
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
-
-    public static void setIsDockerEnv(boolean state){ IS_DOCKER_ENV = state; }
-    public static boolean isDockerEnv(){ return IS_DOCKER_ENV; }
 
     public static String getProjectNameParam() { return PROJECT_NAME_PARAM; }
     public static String getProjectIDParam() { return PROJECT_ID_PARAM; }

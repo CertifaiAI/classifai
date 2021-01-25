@@ -23,7 +23,6 @@ import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.launcher.LogoHandler;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +73,7 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise) {
 
-        if(!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
+        WelcomeLauncher.start();
 
         configureDatabase();
 
@@ -109,15 +108,13 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
-                if(!ParamConfig.isDockerEnv())
+
+                try {
+                    WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
+                }
+                catch(Exception e)
                 {
-                    try {
-                        WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
-                    }
-                    catch(Exception e)
-                    {
-                        log.info("Welcome Launcher failed to launch: ", e);
-                    }
+                    log.info("Welcome Launcher failed to launch: ", e);
                 }
 
                 promise.complete();

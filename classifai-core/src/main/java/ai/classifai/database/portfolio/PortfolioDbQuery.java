@@ -38,7 +38,7 @@ public class PortfolioDbQuery
 
     private final static String GET_PROJECT_LABEL_LIST = "select label_list from Portfolio where project_id = ?";
 
-    private final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
+    private final static String LOAD_DB_PROJECT = "select project_id, project_name, annotation_type, label_list, uuid_generator_seed, uuid_list from Portfolio";
 
     private final static String GET_PROJECT_NAME = "select project_name, annotation_type from Portfolio where project_id = ?";
 
@@ -64,7 +64,7 @@ public class PortfolioDbQuery
 
     public static String getProjectName() { return GET_PROJECT_NAME; }
 
-    public static String getProjectIDList() { return GET_PROJECT_ID_LIST; }
+    public static String loadDbProject() { return LOAD_DB_PROJECT; }
 
     public static String getProjectUUIDList() { return GET_PROJECT_UUID_LIST; }
 
