@@ -347,8 +347,7 @@ public class EndpointRouter extends AbstractVerticle
 
                 if (ReplyHandler.isReplyOk(removalResponse))
                 {
-                    //loader.setLoaderStatus(LoaderStatus.LOADED);
-                    HTTPResponseHandler.configureOK(context);;
+                    HTTPResponseHandler.configureOK(context);
 
                 } else
                 {
@@ -357,14 +356,6 @@ public class EndpointRouter extends AbstractVerticle
             });
 
         }
-        /*
-        else if(loaderStatus.equals(LoaderStatus.LOADED))
-        {
-            loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
-            HTTPResponseHandler.configureOK(context);
-        }
-
-        */
         else if(loaderStatus.equals(LoaderStatus.LOADING))
         {
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
