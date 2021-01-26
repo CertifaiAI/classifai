@@ -233,40 +233,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<Integer> uuidList = loader.getUuidListFromDatabase();
 
-<<<<<<< HEAD
         JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
 
             if(!reply.succeeded())
-=======
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), new JsonArray().add(projectID), fetch -> {
-
-            if(fetch.succeeded())
-            {
-                ResultSet resultSet = fetch.result();
-
-                JsonArray row = resultSet.getResults().get(0);
-
-                List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(0));
-
-                uuidList.addAll(fileSysNewUUIDList);
-
-                //update project loader
-                loader.getUuidListFromDatabase().addAll(fileSysNewUUIDList);
-
-                JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
-
-                portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
-
-                    if(!reply.succeeded())
-                    {
-                        log.error("Update list of uuids to Portfolio Database failed");
-                    }
-                });
-            }
-            else
->>>>>>> b9e4f9322411cc5e2496ab1bf3dd2c08b7a7801c
             {
                 log.info("Update list of uuids to Portfolio Database failed");
             }
