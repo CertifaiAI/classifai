@@ -56,6 +56,7 @@ public class ProjectLoader
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
     private Set<Integer> uuidUniqueSet;
+    @Getter @Setter private List<Integer> uuidListFromDatabase;
 
     //used when checking for progress in
     //(1) validity of database data point
@@ -73,6 +74,7 @@ public class ProjectLoader
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
+        uuidListFromDatabase = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
 
@@ -107,11 +109,11 @@ public class ProjectLoader
     {
         totalUUIDMaxLen = totalUUIDSizeBuffer;
 
-        if(totalUUIDMaxLen == 0)
+        if(totalUUIDMaxLen.equals(0))
         {
             loaderStatus = LoaderStatus.LOADED;
         }
-        else if(totalUUIDMaxLen < 0)
+        else if(totalUUIDMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
@@ -129,6 +131,8 @@ public class ProjectLoader
             sanityUUIDList = new ArrayList<>(uuidUniqueSet);
 
             loaderStatus = LoaderStatus.LOADED;
+
+            uuidUniqueSet.clear();
         }
     }
 
@@ -156,26 +160,9 @@ public class ProjectLoader
 
     }
 
-    /***
-     * Delete UUID from list
-     *
-     * @param uuid
-     * @return false if uuid in sanityUUIDLis not found
-     */
-    public boolean deleteUUID(Integer uuid)
-    {
-        if(sanityUUIDList.contains(uuid))
-        {
-            sanityUUIDList.remove(uuid);
-
-            return true;
-        }
-        return false;
-    }
-
     private void offloadFileSysNewList2List()
     {
-        sanityUUIDList.addAll(fileSysNewUUIDList);
+
 
         if(fileSysNewUUIDList.isEmpty())
         {
@@ -183,11 +170,13 @@ public class ProjectLoader
         }
         else
         {
-
+            sanityUUIDList.addAll(fileSysNewUUIDList);
+            uuidListFromDatabase.addAll(fileSysNewUUIDList);
+            PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
 
-        PortfolioVerticle.updateFileSystemUUIDList(projectID);
+
     }
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
