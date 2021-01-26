@@ -91,9 +91,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         if(oriUUIDList.isEmpty())
         {
-            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
-            return;
+            loader.updateDBLoadingProgress(0);
         }
+        else
+        {
+            loader.updateDBLoadingProgress(1);// in order for loading process not to be NAN
+        }
+
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
@@ -183,11 +187,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         List<Integer> failedUUIDList = new ArrayList<>();
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        List<Integer> validUUIDList = loader.getSanityUUIDList();
+        List<Integer> dbUUIDList = loader.getUuidListFromDatabase();
 
         for(Integer UUID : oriUUIDList)
         {
-            if(validUUIDList.contains(UUID))
+            if(dbUUIDList.contains(UUID))
             {
                 JsonArray params = new JsonArray().add(projectID).add(UUID);
 
@@ -195,11 +199,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
-                    if(fetch.succeeded())
-                    {
-                        log.debug("Successful delete uuid " + UUID + " in project " + projectID);
-                    }
-                    else
+                    if(!fetch.succeeded())
                     {
                         log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
                     }
@@ -211,10 +211,33 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
+        List<String> successUUIDListString = ConversionHandler.integerList2StringList(successUUIDList);
 
-        if((!successUUIDList.isEmpty()) && validUUIDList.removeAll(successUUIDList))
+        String deleteUUIDListQuery = query + "(" + String.join(",", successUUIDListString) + ")";
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(deleteUUIDListQuery, params, fetch -> {
+
+            if(!fetch.succeeded())
+            {
+                log.debug("Failure in deleting uuids in project " + projectID);
+            }
+        });
+
+        if(dbUUIDList.removeAll(successUUIDList))
         {
-            loader.setSanityUUIDList(validUUIDList);
+            loader.setUuidListFromDatabase(dbUUIDList);
+
+            List<Integer> sanityUUIDList = loader.getSanityUUIDList();
+            if(sanityUUIDList.removeAll(successUUIDList))
+            {
+                loader.setSanityUUIDList(sanityUUIDList);
+            }
+            else
+            {
+                log.info("Error in removing uuid list");
+            }
 
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUUIDList(projectID);

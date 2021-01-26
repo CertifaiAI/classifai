@@ -167,6 +167,18 @@ public class ConversionHandler
         return content;
     }
 
+    public static List<String> integerList2StringList(List<Integer> oldList)
+    {
+        List<String> newList = new ArrayList<>();
+        for (Integer myInt : oldList) {
+            newList.add(String.valueOf(myInt));
+        }
+
+        return newList;
+
+    }
+
+
     public static List<Integer> string2IntegerList(String input)
     {
             String content = preprocessStringToArray(input);
