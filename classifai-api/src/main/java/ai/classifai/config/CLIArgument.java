@@ -138,7 +138,7 @@ public class CLIArgument
     private void checkToInitiateCLIProject()
     {
 
-        if((projectType == null)  && (dataPath == null)) return;
+        if((projectType == null) && (dataPath == null)) return;
 
         /*
          * failed scenario:
@@ -149,13 +149,9 @@ public class CLIArgument
          *
          */
         //Scenario 1
-        if(projectType == null && dataPath != null)
+        if(projectType == null)
         {
             log.info("--projecttype not defined while project intend to initiated through cli");
-
-            if(dataPath != null) log.info("--datapath=" + dataPath);
-
-            if(projectName != null) log.info("--projectname=" + projectName);
 
             printMessageForCLIProjectFailed();
             return;
