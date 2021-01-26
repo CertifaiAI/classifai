@@ -28,21 +28,21 @@ import java.nio.file.Files;
 @Slf4j
 public class DatabaseConfig
 {
-    private final static String ROOT_PATH;
+    private static final String ROOT_PATH;
 
-    private final static String LCK_FILE_EXTENSION;
+    private static final String LCK_FILE_EXTENSION;
 
-    private final static String PORTFOLIO_DB_NAME;
-    private final static String BNDBOX_DB_NAME;
-    private final static String SEG_DB_NAME;
+    private static final String PORTFOLIO_DB_NAME;
+    private static final String BNDBOX_DB_NAME;
+    private static final String SEG_DB_NAME;
 
-    private final static String PORTFOLIO_DB_PATH;
-    private final static String BNDBOX_DB_PATH;
-    private final static String SEG_DB_PATH;
+    private static final String PORTFOLIO_DB_PATH;
+    private static final String BNDBOX_DB_PATH;
+    private static final String SEG_DB_PATH;
 
-    private final static File PORTFOLIO_DB_LCKPATH;
-    private final static File BNDBOX_DB_LCKPATH;
-    private final static File SEG_DB_LCKPATH;
+    private static final File PORTFOLIO_DB_LCKPATH;
+    private static final File BNDBOX_DB_LCKPATH;
+    private static final File SEG_DB_LCKPATH;
 
     static
     {
