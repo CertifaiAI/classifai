@@ -146,6 +146,8 @@ public class ProjectLoader
             sanityUUIDList.addAll(new ArrayList<>(validUUIDSet));
 
             loaderStatus = LoaderStatus.LOADED;
+
+            validUUIDSet.clear();
         }
     }
 
@@ -175,19 +177,19 @@ public class ProjectLoader
 
     private void offloadFileSysNewList2List()
     {
-        sanityUUIDList.addAll(fileSysNewUUIDList);
-
         if(fileSysNewUUIDList.isEmpty())
         {
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
         }
         else
         {
-
+            sanityUUIDList.addAll(fileSysNewUUIDList);
+            uuidListFromDatabase.addAll(fileSysNewUUIDList);
+            PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
 
-        PortfolioVerticle.updateFileSystemUUIDList(projectID);
+
     }
 
 
