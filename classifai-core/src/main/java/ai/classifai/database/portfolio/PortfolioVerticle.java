@@ -304,7 +304,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        List<Integer> uuidList = loader.getSanityUUIDList();
+        List<Integer> uuidList = loader.getUuidListFromDatabase();
 
         JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
