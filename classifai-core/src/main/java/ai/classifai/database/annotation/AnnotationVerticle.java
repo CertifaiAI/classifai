@@ -98,8 +98,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         if(oriUUIDList.isEmpty())
         {
-            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
-            return;
+            loader.updateDBLoadingProgress(0);
+        }
+        else
+        {
+            loader.updateDBLoadingProgress(1);// in order for loading process not to be NAN
         }
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
@@ -165,11 +168,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         List<Integer> failedUUIDList = new ArrayList<>();
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        List<Integer> validUUIDList = loader.getSanityUUIDList();
+        List<Integer> dbUUIDList = loader.getUuidListFromDatabase();
 
         for(Integer UUID : oriUUIDList)
         {
-            if(validUUIDList.contains(UUID))
+            if(dbUUIDList.contains(UUID))
             {
                 JsonArray params = new JsonArray().add(projectID).add(UUID);
 
@@ -211,9 +214,19 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         });
 
-        if(validUUIDList.removeAll(successUUIDList))
+        if(dbUUIDList.removeAll(successUUIDList))
         {
-            loader.setSanityUUIDList(validUUIDList);
+            loader.setUuidListFromDatabase(dbUUIDList);
+
+            List<Integer> sanityUUIDList = loader.getSanityUUIDList();
+            if(sanityUUIDList.removeAll(successUUIDList))
+            {
+                loader.setSanityUUIDList(sanityUUIDList);
+            }
+            else
+            {
+                log.info("Error in removing uuid list");
+            }
 
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUUIDList(projectID);
