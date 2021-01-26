@@ -41,6 +41,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -232,11 +233,40 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<Integer> uuidList = loader.getUuidListFromDatabase();
 
+<<<<<<< HEAD
         JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
 
             if(!reply.succeeded())
+=======
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), new JsonArray().add(projectID), fetch -> {
+
+            if(fetch.succeeded())
+            {
+                ResultSet resultSet = fetch.result();
+
+                JsonArray row = resultSet.getResults().get(0);
+
+                List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(0));
+
+                uuidList.addAll(fileSysNewUUIDList);
+
+                //update project loader
+                loader.getUuidListFromDatabase().addAll(fileSysNewUUIDList);
+
+                JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
+
+                portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
+
+                    if(!reply.succeeded())
+                    {
+                        log.error("Update list of uuids to Portfolio Database failed");
+                    }
+                });
+            }
+            else
+>>>>>>> b9e4f9322411cc5e2496ab1bf3dd2c08b7a7801c
             {
                 log.info("Update list of uuids to Portfolio Database failed");
             }
@@ -346,7 +376,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.DID_NOT_INITIATED, Boolean.TRUE);
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.LOADED, Boolean.TRUE);
 
                     if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
                 }
@@ -359,8 +389,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else
         {
-            log.info(AnnotationHandler.getType(annotationInt).name() + "Project with name: " + projectName + " exists. Loading project from cli...");
-
             Integer projectID = ProjectHandler.getProjectID(projectName, annotationInt);
 
             if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
@@ -552,9 +580,20 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         log.info("Portfolio Verticle stopping...");
 
-        File lockFile = new File(DatabaseConfig.getPortfolioLockFile());
+        File lockFile = DatabaseConfig.getPortfolioLockPath();
 
-        if(lockFile.exists()) lockFile.delete();
+        try
+        {
+            if(Files.deleteIfExists(lockFile.toPath()))
+            {
+                log.debug("Portfolio DB Lockfile deleted");
+            }
+        }
+        catch(Exception e)
+        {
+            log.debug("Exception: ", e);
+        }
+
     }
 
     //obtain a JDBC client connection,
