@@ -162,7 +162,7 @@ public class ProjectLoader
 
     private void offloadFileSysNewList2List()
     {
-        sanityUUIDList.addAll(fileSysNewUUIDList);
+
 
         if(fileSysNewUUIDList.isEmpty())
         {
@@ -170,11 +170,13 @@ public class ProjectLoader
         }
         else
         {
-
+            sanityUUIDList.addAll(fileSysNewUUIDList);
+            uuidListFromDatabase.addAll(fileSysNewUUIDList);
+            PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
 
-        PortfolioVerticle.updateFileSystemUUIDList(projectID);
+
     }
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
