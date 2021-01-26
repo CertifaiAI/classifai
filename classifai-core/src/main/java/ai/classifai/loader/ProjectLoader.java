@@ -109,11 +109,11 @@ public class ProjectLoader
     {
         totalUUIDMaxLen = totalUUIDSizeBuffer;
 
-        if(totalUUIDMaxLen == 0)
+        if(totalUUIDMaxLen.equals(0))
         {
             loaderStatus = LoaderStatus.LOADED;
         }
-        else if(totalUUIDMaxLen < 0)
+        else if(totalUUIDMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
