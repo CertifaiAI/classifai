@@ -180,11 +180,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
-                    if(fetch.succeeded())
-                    {
-                        log.debug("Successful delete uuid " + UUID + " in project " + projectID);
-                    }
-                    else
+                    if(!fetch.succeeded())
                     {
                         log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
                     }
@@ -204,11 +200,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcClient.queryWithParams(deleteUUIDListQuery, params, fetch -> {
 
-            if(fetch.succeeded())
-            {
-                log.debug("Successful delete uuids in project " + projectID);
-            }
-            else
+            if(!fetch.succeeded())
             {
                 log.debug("Failure in deleting uuids in project " + projectID);
             }
