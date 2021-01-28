@@ -38,12 +38,14 @@ import java.io.File;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
+    private static PortfolioVerticle portfolioVerticle;
     private static BoundingBoxVerticle boundingBoxVerticle;
     private static SegVerticle segVerticle;
     private static EndpointRouter serverVerticle;
 
     static
     {
+        portfolioVerticle = new PortfolioVerticle();
         boundingBoxVerticle = new BoundingBoxVerticle();
         segVerticle = new SegVerticle();
         serverVerticle = new EndpointRouter();
@@ -78,7 +80,7 @@ public class MainVerticle extends AbstractVerticle
         configureDatabase();
 
         Promise<String> portfolioDeployment = Promise.promise();
-        vertx.deployVerticle(new PortfolioVerticle(), portfolioDeployment);
+        vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
 
         portfolioDeployment.future().compose(id_ -> {
 
@@ -102,6 +104,7 @@ public class MainVerticle extends AbstractVerticle
         }).onComplete(ar ->
         {
             if (ar.succeeded()) {
+                portfolioVerticle.buildProjectFromCLI();
 
                 LogoLauncher.print();
 
