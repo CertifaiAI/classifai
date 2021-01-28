@@ -314,9 +314,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 }
 
-                //create/load new project from cli if any, after load from database
-//                buildProjectFromCLI();
-
             }
             else
             {
