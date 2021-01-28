@@ -314,9 +314,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 }
 
-                //create/load new project from cli if any, after load from database
-                buildProjectFromCLI();
-
             }
             else
             {
@@ -325,7 +322,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    private void buildProjectFromCLI()
+    public void buildProjectFromCLI()
     {
         //from cli argument
         CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
