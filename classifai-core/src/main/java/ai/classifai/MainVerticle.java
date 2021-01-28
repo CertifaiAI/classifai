@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -38,12 +38,14 @@ import java.io.File;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
+    private static PortfolioVerticle portfolioVerticle;
     private static BoundingBoxVerticle boundingBoxVerticle;
     private static SegVerticle segVerticle;
     private static EndpointRouter serverVerticle;
 
     static
     {
+        portfolioVerticle = new PortfolioVerticle();
         boundingBoxVerticle = new BoundingBoxVerticle();
         segVerticle = new SegVerticle();
         serverVerticle = new EndpointRouter();
@@ -51,7 +53,7 @@ public class MainVerticle extends AbstractVerticle
 
     public void configureDatabase()
     {
-        File dataRootPath = new File(DatabaseConfig.getDbRootPath());
+        File dataRootPath = new File(DatabaseConfig.getRootPath());
 
         if(dataRootPath.exists())
         {
@@ -78,7 +80,7 @@ public class MainVerticle extends AbstractVerticle
         configureDatabase();
 
         Promise<String> portfolioDeployment = Promise.promise();
-        vertx.deployVerticle(new PortfolioVerticle(), portfolioDeployment);
+        vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
 
         portfolioDeployment.future().compose(id_ -> {
 
@@ -102,12 +104,14 @@ public class MainVerticle extends AbstractVerticle
         }).onComplete(ar ->
         {
             if (ar.succeeded()) {
+                portfolioVerticle.buildProjectFromCLI();
 
                 LogoLauncher.print();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
+                //docker environment not enabling welcome launcher
                 if(!ParamConfig.isDockerEnv()) {
 
                     try

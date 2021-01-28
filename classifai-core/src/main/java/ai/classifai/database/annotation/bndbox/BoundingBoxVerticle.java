@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -27,6 +27,9 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
+import java.nio.file.Files;
 
 /**
  * Bounding Box Verticle
@@ -85,7 +88,19 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     {
         log.info("Bounding Box Verticle stopping...");
 
-        //add action before stopped if necessary
+        File lockFile = DatabaseConfig.getBndBoxLockPath();
+
+        try
+        {
+            if(Files.deleteIfExists(lockFile.toPath()))
+            {
+                log.debug("BoundingBox DB Lockfile deleted");
+            }
+        }
+        catch(Exception e)
+        {
+            log.debug("Exception: ", e);
+        }
     }
 
     //obtain a JDBC client connection,

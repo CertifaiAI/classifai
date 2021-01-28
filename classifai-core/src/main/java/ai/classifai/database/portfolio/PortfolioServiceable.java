@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -29,11 +29,5 @@ public interface PortfolioServiceable
 
     void updateLabelList(Message<JsonObject> message);
 
-    void getLabelList(Message<JsonObject> message);
-
-    void getProjectUUIDList(Message<JsonObject> message);
-
     void getAllProjectsForAnnotationType(Message<JsonObject> message);
-
-    void configurePortfolioVerticle();
 }

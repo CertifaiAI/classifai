@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -93,6 +93,7 @@ public class ImageHandler {
 
         if((file.exists() == false) && (file.length() < 5)) //length() stands for file size
         {
+            log.info(imagePath + " not found. Check if the data is in the corresponding path. ");
             return false;
         }
 
@@ -255,15 +256,15 @@ public class ImageHandler {
     }
     public static void processFile(@NonNull Integer projectID, @NonNull List<File> filesInput)
     {
-        List<File> validatedFilesList = new ArrayList<>();
+        List<File> totalFilelist = new ArrayList<>();
 
         for(File file : filesInput)
         {
             List<File> files = checkFile(file);
-            validatedFilesList.addAll(files);
+            totalFilelist.addAll(files);
         }
 
-        saveToDatabase(projectID, validatedFilesList);
+        saveToDatabase(projectID, totalFilelist);
     }
 
     public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)

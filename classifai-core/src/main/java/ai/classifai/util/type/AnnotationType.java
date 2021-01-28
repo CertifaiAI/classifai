@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -24,6 +24,6 @@ public enum AnnotationType
 {
     BOUNDINGBOX,
     SEGMENTATION
-    //TODO: Add on more techniques of annotation
+    //ADD WHEN HAVE NEW ANNOTATION TYPE
 }
 

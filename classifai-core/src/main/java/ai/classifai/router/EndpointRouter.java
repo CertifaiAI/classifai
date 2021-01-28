@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -317,7 +317,7 @@ public class EndpointRouter extends AbstractVerticle
         loadProject(context, SegDbQuery.getQueue(), SegDbQuery.loadValidProjectUUID(), AnnotationType.SEGMENTATION);
     }
 
-    private void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
+    public void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -332,84 +332,33 @@ public class EndpointRouter extends AbstractVerticle
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
         //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
+        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.LOADED))
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
 
-            //load label list
-            DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectLabelList());
+            DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, labelOptions, labelReply ->
+            //start checking uuid if it's path is still exist
+            vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
             {
-                if (labelReply.succeeded())
+                JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                if (ReplyHandler.isReplyOk(removalResponse))
                 {
-                    JsonObject labelResponse = (JsonObject) labelReply.result().body();
+                    HTTPResponseHandler.configureOK(context);
 
-                    if (ReplyHandler.isReplyOk(labelResponse))
-                    {
-                        //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
-
-                        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-                        {
-                            if (reply.succeeded())
-                            {
-                                JsonObject uuidResponse = (JsonObject) reply.result().body();
-
-                                if (ReplyHandler.isReplyOk(uuidResponse))
-                                {
-                                    JsonArray uuidListArray = uuidResponse.getJsonArray(ParamConfig.getUUIDListParam());
-
-                                    Integer uuidGeneratorSeed = uuidResponse.getInteger(ParamConfig.getUuidGeneratorParam());
-
-                                    JsonObject uuidListObject = jsonObject.put(ParamConfig.getUUIDListParam(), uuidListArray).put(ParamConfig.getProjectIDParam(), loader.getProjectID()).put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
-
-                                    DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-                                    //start checking uuid if it's path is still exist
-                                    vertx.eventBus().request(queue, uuidListObject, uuidListOptions, fetch ->
-                                    {
-                                        JsonObject removalResponse = (JsonObject) fetch.result().body();
-
-                                        if (ReplyHandler.isReplyOk(removalResponse))
-                                        {
-                                            loader.setLoaderStatus(LoaderStatus.LOADED);
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-
-                                        } else
-                                        {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-                                        }
-                                    });
-                                }
-                                else
-                                {
-                                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Get project uuid list failed."));
-                                }
-                            }
-                            else
-                            {
-                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Query database to get project uuid list failed."));
-                            }
-                        });
-                    }
-                    else
-                    {
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving uuid list of project " + projectName + ". Loading project aborted."));
-                    }
+                } else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
                 }
             });
-        }
-        else if(loaderStatus.equals(LoaderStatus.LOADED))
-        {
-            loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+
         }
         else if(loaderStatus.equals(LoaderStatus.LOADING))
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
         }
         else if(loaderStatus.equals(LoaderStatus.ERROR))
         {
@@ -525,6 +474,10 @@ public class EndpointRouter extends AbstractVerticle
 
     private void selectFileSystemType(RoutingContext context, String projectName, AnnotationType annotationType)
     {
+        if(ParamConfig.isDockerEnv()) log.info("Docker Mode. Choosing file/folder not supported. Use --volume to attach data folder.");
+        checkIfDockerEnv(context);
+
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
 
         if(checkIfProjectNull(context, loader, projectName)) return;
@@ -537,7 +490,7 @@ public class EndpointRouter extends AbstractVerticle
         }
         else
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
 
             String fileType = context.request().getParam(ParamConfig.getFileSysParam());
 
@@ -558,7 +511,7 @@ public class EndpointRouter extends AbstractVerticle
             {
                 folderSelector.run(currentProjectID);
             }
-            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+            HTTPResponseHandler.configureOK(context);
         }
     }
 
@@ -571,7 +524,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
      *
      */
-    public void getBndBoxFileSystemStatus(RoutingContext context)
+    private void getBndBoxFileSystemStatus(RoutingContext context)
     {
         getFileSystemStatus(context, AnnotationType.BOUNDINGBOX);
     }
@@ -585,7 +538,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/helloworld/filesysstatus
      *
      */
-    public void getSegFileSystemStatus(RoutingContext context)
+    private void getSegFileSystemStatus(RoutingContext context)
     {
         getFileSystemStatus(context, AnnotationType.SEGMENTATION);
     }
@@ -599,7 +552,9 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
      *
      */
-    public void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
+    private void getFileSystemStatus(RoutingContext context, AnnotationType annotationType) {
+
+        checkIfDockerEnv(context);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -630,13 +585,21 @@ public class EndpointRouter extends AbstractVerticle
                     HTTPResponseHandler.configureOK(context, res);
     }
 
+    private void checkIfDockerEnv(RoutingContext context)
+    {
+        if(ParamConfig.isDockerEnv())
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
+    }
+
     /**
      * Retrieve thumbnail with metadata
      *
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
-    public void getBndBoxThumbnail(RoutingContext context)
+    private void getBndBoxThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
@@ -655,7 +618,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
-    public void getSegThumbnail(RoutingContext context)
+    private void getSegThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
@@ -668,7 +631,7 @@ public class EndpointRouter extends AbstractVerticle
         getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.retrieveData(), request);
     }
 
-    public void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
+    private void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
     {
         DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
@@ -695,7 +658,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/imgsrc
      *
      */
-    public void getBndBoxImageSource(RoutingContext context) {
+    private void getBndBoxImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
@@ -715,7 +678,7 @@ public class EndpointRouter extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/imgsrc
      *
      */
-    public void getSegImageSource(RoutingContext context) {
+    private void getSegImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
         Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
@@ -726,7 +689,7 @@ public class EndpointRouter extends AbstractVerticle
         getImageSource(context, SegDbQuery.getQueue(), SegDbQuery.retrieveDataPath(), request);
     }
 
-    public void getImageSource(RoutingContext context, String queue, String query, JsonObject request)
+    private void getImageSource(RoutingContext context, String queue, String query, JsonObject request)
     {
         DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
@@ -938,7 +901,7 @@ public class EndpointRouter extends AbstractVerticle
                     throw new Exception("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
                 }
 
-                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                HTTPResponseHandler.configureOK(context);
 
             }
             catch (Exception e)

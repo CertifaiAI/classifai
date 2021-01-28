@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -58,7 +58,8 @@ public class ProjectLoader
 
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
-    private Set<Integer> uuidUniqueSet;
+    private Set<Integer> validUUIDSet;
+    @Getter @Setter private List<Integer> uuidListFromDatabase;
 
     //used when checking for progress in
     //(1) validity of database data point
@@ -76,6 +77,7 @@ public class ProjectLoader
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
+        uuidListFromDatabase = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
 
@@ -87,7 +89,7 @@ public class ProjectLoader
 
     public void reset(FileSystemStatus currentFileSystemStatus)
     {
-        uuidUniqueSet = new HashSet<>();
+        validUUIDSet = new HashSet<>();
         fileSysNewUUIDList = new ArrayList<>();
 
         currentUUIDMarker = 0;
@@ -124,16 +126,15 @@ public class ProjectLoader
     {
         totalUUIDMaxLen = totalUUIDSizeBuffer;
 
-        if(totalUUIDMaxLen == 0)
+        if(totalUUIDMaxLen.equals(0))
         {
             loaderStatus = LoaderStatus.LOADED;
         }
-        else if(totalUUIDMaxLen < 0)
+        else if(totalUUIDMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
         }
-
     }
 
     public void updateDBLoadingProgress(Integer currentSize)
@@ -143,15 +144,17 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
-            sanityUUIDList = new ArrayList<>(uuidUniqueSet);
+            sanityUUIDList = new ArrayList<>(validUUIDSet);
 
             loaderStatus = LoaderStatus.LOADED;
+
+            validUUIDSet.clear();
         }
     }
 
     public void pushDBValidUUID(Integer uuid)
     {
-        uuidUniqueSet.add(uuid);
+        validUUIDSet.add(uuid);
     }
 
     public void pushFileSysNewUUIDList(Integer uuid)
@@ -175,19 +178,19 @@ public class ProjectLoader
 
     private void offloadFileSysNewList2List()
     {
-        sanityUUIDList.addAll(fileSysNewUUIDList);
-
         if(fileSysNewUUIDList.isEmpty())
         {
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
         }
         else
         {
-
+            sanityUUIDList.addAll(fileSysNewUUIDList);
+            uuidListFromDatabase.addAll(fileSysNewUUIDList);
+            PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
 
-        PortfolioVerticle.updateFileSystemUUIDList(projectID);
+
     }
 
 
@@ -202,23 +205,6 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
-    }
-
-    /***
-     * Delete UUID from list
-     *
-     * @param uuid
-     * @return false if uuid in sanityUUIDLis not found
-     */
-    public boolean deleteUUID(Integer uuid)
-    {
-        if(sanityUUIDList.contains(uuid))
-        {
-            sanityUUIDList.remove(uuid);
-
-            return true;
-        }
-        return false;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -83,37 +82,41 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         Integer projectID  = message.body().getInteger(ParamConfig.getProjectIDParam());
-        JsonArray uuidListArray = message.body().getJsonArray(ParamConfig.getUUIDListParam());
-
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(uuidListArray);
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        List<Integer> oriUUIDList = loader.getUuidListFromDatabase();
 
         message.reply(ReplyHandler.getOkReply());
 
         if(oriUUIDList.isEmpty())
         {
-            loader.updateDBLoadingProgress(1);  // in order for loading process to be 100%
-            return;
+            loader.updateDBLoadingProgress(0);
         }
+        else
+        {
+            loader.updateDBLoadingProgress(1);// in order for loading process not to be NAN
+        }
+
         loader.setDbOriUUIDSize(oriUUIDList.size());
-        //sanity check on seed and write on database if needed
-        ProjectHandler.checkUUIDGeneratorSeedSanity(projectID, Collections.max(oriUUIDList), message.body().getInteger(ParamConfig.getUuidGeneratorParam()));
 
         for(int i = 0; i < oriUUIDList.size(); ++i)
         {
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
+
             JsonArray params = new JsonArray().add(projectID).add(UUID);
 
             jdbcClient.queryWithParams(query, params, fetch -> {
 
                 if (fetch.succeeded()) {
                     ResultSet resultSet = fetch.result();
-                    if (resultSet.getNumRows() != 0) {
-                        JsonArray row = resultSet.getResults().get(0);
-                        String dataPath = row.getString(0);
-                        if (ImageHandler.isImageReadable(dataPath)) loader.pushDBValidUUID(UUID);
+                    JsonArray row = resultSet.getResults().get(0);
+                    String dataPath = row.getString(0);
+
+                    if (ImageHandler.isImageReadable(dataPath))
+                    {
+                        loader.pushDBValidUUID(UUID);
                     }
                 }
                 loader.updateDBLoadingProgress(currentLength);
@@ -184,11 +187,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         List<Integer> failedUUIDList = new ArrayList<>();
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        List<Integer> validUUIDList = loader.getSanityUUIDList();
+        List<Integer> dbUUIDList = loader.getUuidListFromDatabase();
 
         for(Integer UUID : oriUUIDList)
         {
-            if(validUUIDList.contains(UUID))
+            if(dbUUIDList.contains(UUID))
             {
                 JsonArray params = new JsonArray().add(projectID).add(UUID);
 
@@ -196,11 +199,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
-                    if(fetch.succeeded())
-                    {
-                        log.debug("Successful delete uuid " + UUID + " in project " + projectID);
-                    }
-                    else
+                    if(!fetch.succeeded())
                     {
                         log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
                     }
@@ -212,10 +211,33 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
+        List<String> successUUIDListString = ConversionHandler.integerList2StringList(successUUIDList);
 
-        if((!successUUIDList.isEmpty()) && validUUIDList.removeAll(successUUIDList))
+        String deleteUUIDListQuery = query + "(" + String.join(",", successUUIDListString) + ")";
+
+        JsonArray params = new JsonArray().add(projectID);
+
+        jdbcClient.queryWithParams(deleteUUIDListQuery, params, fetch -> {
+
+            if(!fetch.succeeded())
+            {
+                log.debug("Failure in deleting uuids in project " + projectID);
+            }
+        });
+
+        if(dbUUIDList.removeAll(successUUIDList))
         {
-            loader.setSanityUUIDList(validUUIDList);
+            loader.setUuidListFromDatabase(dbUUIDList);
+
+            List<Integer> sanityUUIDList = loader.getSanityUUIDList();
+            if(sanityUUIDList.removeAll(successUUIDList))
+            {
+                loader.setSanityUUIDList(sanityUUIDList);
+            }
+            else
+            {
+                log.info("Error in removing uuid list");
+            }
 
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUUIDList(projectID);

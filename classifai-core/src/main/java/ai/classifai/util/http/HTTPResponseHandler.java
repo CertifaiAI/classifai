@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -15,6 +15,7 @@
  */
 package ai.classifai.util.http;
 
+import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.NonNull;
@@ -31,6 +32,11 @@ public class HTTPResponseHandler
         context.response().setStatusCode(HTTPResponseCode.ok());
         context.response().putHeader("Content-Type", "application/json");
         context.response().end(jsonObject.encodePrettily());
+    }
+
+    public static void configureOK(@NonNull RoutingContext context)
+    {
+        configureOK(context, ReplyHandler.getOkReply());
     }
 
 }
