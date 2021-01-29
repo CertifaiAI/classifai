@@ -141,7 +141,9 @@ public class DatabaseMigration {
                 if (file.getName().equals(dbPath)){
                     continue;
                 }
-                file.delete();
+                if(! file.delete()){
+                    log.debug("unable to delete" + file.getName());
+                }
             }
         }
         else{
@@ -161,6 +163,7 @@ public class DatabaseMigration {
             Statement st = con.createStatement();
             st.executeUpdate(query);
             st.close();
+            con.close();
         }
         catch(Exception e)
         {
@@ -211,12 +214,18 @@ public class DatabaseMigration {
 
             File file = new File(filename);
 
-            if (!file.exists()) file.createNewFile();
-            FileWriter fw = new FileWriter(file);
-            fw.write(arr.toString());
+            if (!file.exists())
+            {
+                if (! file.createNewFile())
+                {
+                    log.debug("unable to create file " + file.getName());
+                }
+            }
 
-            fw.close();
+
+
             st.close();
+            con.close();
 
         }catch(Exception e)
         {
@@ -225,14 +234,30 @@ public class DatabaseMigration {
         }
     }
 
+    private static void writeJsonToFile(File file, JSONArray arr){
+        FileWriter fw = null;
+        try
+        {
+            fw = new FileWriter(file);
+            fw.write(arr.toString());
+            fw.close();
+        }
+        catch (Exception e)
+        {
+            log.debug( "Unable to write JSON to file " + file.getName());
+        }
+    }
+
     private static void Json2H2(Connection con, String filename){
+        InputStream is = null;
+        PreparedStatement st = null;
         try
         {
             File file = new File(filename);
             String insert = filename.contains("portfolio")? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
-            PreparedStatement st = con.prepareStatement(insert);
+            st = con.prepareStatement(insert);
 
-            InputStream is = new FileInputStream(file);
+            is = new FileInputStream(file);
             JSONTokener tokener = new JSONTokener(is);
             JSONArray arr = new JSONArray(tokener);
 
