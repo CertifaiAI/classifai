@@ -145,6 +145,8 @@ public class DatabaseMigration {
                 }
             }
 
+            con.createStatement().executeQuery("SHUTDOWN");
+
             File file = new File(filename);
 
             if (!file.exists()) file.createNewFile();
@@ -209,8 +211,6 @@ public class DatabaseMigration {
                 st.executeUpdate();
                 st.clearParameters();
             }
-
-            con.createStatement().executeQuery("SHUTDOWN");
 
             is.close();
             st.close();
