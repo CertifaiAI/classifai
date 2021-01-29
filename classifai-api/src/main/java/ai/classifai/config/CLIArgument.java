@@ -15,7 +15,7 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;

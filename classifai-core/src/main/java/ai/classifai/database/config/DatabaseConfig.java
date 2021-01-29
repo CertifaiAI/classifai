@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.database;
+package ai.classifai.database.config;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ import java.nio.file.Files;
  * @author codenamewei
  */
 @Slf4j
-public class DatabaseConfig
+public abstract class DatabaseConfig
 {
     private static final String ROOT_PATH;
 

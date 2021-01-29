@@ -35,6 +35,8 @@ public class ClassifaiApp
 {
     public static void main(String[] args) throws Exception
     {
+
+
         CLIArgument argumentSelector = new CLIArgument(args);
 
         if(!argumentSelector.isDbSetup())

@@ -24,7 +24,8 @@ public class PortfolioDbQuery
 {
     private final static String QUEUE = "portfolio.queue";
 
-    private final static String CREATE_PORTFOLIO_TABLE = "CREATE TABLE IF NOT EXISTS Portfolio (project_id integer identity PRIMARY KEY, project_name varchar(255), annotation_type integer, label_list varchar(10000), uuid_generator_seed integer, uuid_list varchar(65535), is_new boolean, is_starred boolean, created_date varchar(255))";
+    private final static String CREATE_PORTFOLIO_TABLE = "CREATE TABLE IF NOT EXISTS Portfolio (project_id INT, project_name VARCHAR(255), annotation_type INT, " +
+            "label_list VARCHAR(10000), uuid_generator_seed INT, uuid_list CLOB, is_new BOOLEAN, is_starred BOOLEAN, created_date VARCHAR(255), PRIMARY KEY (project_id))";
 
     private final static String CREATE_NEW_PROJECT = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

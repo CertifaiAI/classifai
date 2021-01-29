@@ -15,7 +15,7 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.OS;

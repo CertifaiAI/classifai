@@ -16,7 +16,7 @@
 
 package ai.classifai.database.portfolio;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
@@ -571,8 +571,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
 
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDbPath())
-                .put("driver_class", "org.hsqldb.jdbcDriver")
+                .put("url", "jdbc:h2:file:" + DatabaseConfig.getPortfolioDbPath())
+                .put("driver_class", "org.h2.Driver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));
 
