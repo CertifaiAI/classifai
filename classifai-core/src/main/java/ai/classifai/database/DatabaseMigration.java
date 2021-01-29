@@ -37,7 +37,7 @@ import java.sql.*;
 
 /***
  * Program for database migration from HSQL -> H2
- * Require further generalization for general purpose
+ * Require further generalization for all databases
  *
  * @author YCCertifai
  */
@@ -80,7 +80,7 @@ public class DatabaseMigration {
         }
         catch(Exception e)
         {
-            log.info("Unable to migrate database.");
+            log.error("Unable to migrate database.");
         }
     }
 
@@ -101,7 +101,7 @@ public class DatabaseMigration {
         }
         catch(Exception e)
         {
-            log.info("Unable to connect org.h2.Driver\n" + e);
+            log.error("Unable to connect org.h2.Driver\n" + e);
         }
     }
 
@@ -158,7 +158,7 @@ public class DatabaseMigration {
             con.close();
         }catch(Exception e)
         {
-            log.info("Unable to connect org.hsqldb.jdbcDriver\n" + e);
+            log.error("Unable to connect org.hsqldb.jdbcDriver\n" + e);
         }
 
     }
@@ -218,7 +218,7 @@ public class DatabaseMigration {
         }
         catch(Exception e)
         {
-            log.info("Unable to connect org.h2.Driver\n" + e);
+            log.error("Unable to connect org.h2.Driver\n" + e);
         }
     }
 }

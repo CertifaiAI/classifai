@@ -54,7 +54,7 @@ public class ArchiveHandler {
             }
         }
         catch( Exception e){
-            log.debug("unable to move " + ARCHIVE_PATH + e);
+            log.error("unable to move " + ARCHIVE_PATH + "\n"+ e);
         }
     }
 
