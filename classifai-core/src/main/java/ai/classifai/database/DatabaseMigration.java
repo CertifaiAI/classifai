@@ -23,6 +23,7 @@ import ai.classifai.database.config.H2DatabaseConfig;
 import ai.classifai.database.config.HsqlDatabaseConfig;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.util.ArchiveHandler;
+import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -249,7 +250,7 @@ public class DatabaseMigration {
                     st.setString(6, obj.getString(ParamConfig.getUUIDListParam()));
                     st.setBoolean(7, false);
                     st.setBoolean(8, false);
-                    st.setString(9, "");
+                    st.setString(9, DateTime.get());
                 }
                 else
                 {
