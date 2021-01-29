@@ -26,6 +26,10 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.type.AnnotationType;
+import com.drew.imaging.jpeg.JpegMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -94,10 +98,72 @@ public class ImageHandler {
         if((file.exists() == false) && (file.length() < 5)) //length() stands for file size
         {
             log.info(imagePath + " not found. Check if the data is in the corresponding path. ");
+
             return false;
         }
 
         return true;
+
+    }
+
+    private static int getExifOrientation(File file){
+        try
+        {
+            Metadata metadata = JpegMetadataReader.readMetadata(file);
+            Directory dir= metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+
+            return dir.getInt(274);
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+    }
+
+    private static BufferedImage rotate(BufferedImage image, double angle){
+
+        double sin = Math.abs(Math.sin(angle));
+        double cos = Math.abs(Math.cos(angle));
+
+        int w = image.getWidth();
+        int h = image.getHeight();
+
+        int newW = (int) Math.floor(w * cos + h * sin);
+        int newH = (int) Math.floor(h * cos + w * sin);
+
+        int type = image.getType();
+        BufferedImage result = new BufferedImage(newW, newH, type);
+
+        Graphics2D g = result.createGraphics();
+
+        g.translate((newW - w) / 2, (newH - h) / 2);
+        g.rotate(angle,((double)w) / 2, ((double)h) / 2);
+        g.drawRenderedImage(image, null);
+
+        return result;
+    }
+
+    private static BufferedImage rotateWithOrientation(BufferedImage img, int orientation){
+        double angle = 0;
+        if (orientation == 8) angle = -Math.PI/2;
+        else if (orientation == 3) angle = Math.PI;
+        else if (orientation == 6) angle = Math.PI/2;
+
+        return rotate(img,angle);
+    }
+
+    private static int getHeight(BufferedImage img, int orientation){
+        if (orientation == 8 || orientation == 6){
+            return img.getWidth();
+        }
+        return img.getHeight();
+    }
+
+    private static int getWidth(BufferedImage img, int orientation){
+        if (orientation == 8 || orientation == 6){
+            return img.getHeight();
+        }
+        return img.getWidth();
     }
 
 
@@ -108,9 +174,13 @@ public class ImageHandler {
             File file = new File(imageAbsPath);
 
             BufferedImage img  = ImageIO.read(file);
+            int orientation = getExifOrientation(file);
 
-            Integer oriHeight = img.getHeight();
-            Integer oriWidth = img.getWidth();
+            Integer oriHeight = getHeight(img, orientation);
+            Integer oriWidth = getWidth(img, orientation);
+
+            //rotate for thumbnail generation
+            img = rotateWithOrientation(img, orientation);
 
             int type = img.getColorModel().getColorSpace().getType();
             boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
@@ -173,6 +243,8 @@ public class ImageHandler {
 
         return null;
     }
+
+
 
 
     private static boolean isImageFileValid(String file)
@@ -256,15 +328,15 @@ public class ImageHandler {
     }
     public static void processFile(@NonNull Integer projectID, @NonNull List<File> filesInput)
     {
-        List<File> totalFilelist = new ArrayList<>();
+        List<File> validatedFilesList = new ArrayList<>();
 
         for(File file : filesInput)
         {
             List<File> files = checkFile(file);
-            totalFilelist.addAll(files);
+            validatedFilesList.addAll(files);
         }
 
-        saveToDatabase(projectID, totalFilelist);
+        saveToDatabase(projectID, validatedFilesList);
     }
 
     public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)
@@ -301,6 +373,7 @@ public class ImageHandler {
                     totalFilelist.addAll(files);
                 }
             }
+
         }
 
         saveToDatabase(projectID, totalFilelist);

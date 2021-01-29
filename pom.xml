@@ -88,6 +88,7 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <apache.commons.version>3.8.1</apache.commons.version>
+        <metadata.extractor.version>2.15.0</metadata.extractor.version>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
         <classifai.release.version>2.0.0</classifai.release.version>
@@ -222,6 +223,11 @@
                 <groupId>com.github.jai-imageio</groupId>
                 <artifactId>jai-imageio-jpeg2000</artifactId>
                 <version>${jai.imageio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.drewnoakes</groupId>
+                <artifactId>metadata-extractor</artifactId>
+                <version>${metadata.extractor.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
