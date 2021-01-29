@@ -109,11 +109,13 @@ public class DatabaseMigration {
 
         try
         {
+            JSONArray arr = new JSONArray();
+            String read = databasePath.contains("portfolio")?"select * from portfolio":"select * from project";
+
             Connection con = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + databasePath, null,null);
             Statement st = con.createStatement();
-            String read = databasePath.contains("portfolio")?"select * from portfolio":"select * from project";
             ResultSet rs = st.executeQuery(read);
-            JSONArray arr = new JSONArray();
+
             while(rs.next()){
                 if( databasePath.equals(HsqlDatabaseConfig.getPortfolioDbPath()))
                 {
@@ -142,14 +144,16 @@ public class DatabaseMigration {
                             .put(ParamConfig.getImageORIHParam(), rs.getInt(12)));
                 }
             }
-            st.close();
-            con.close();
+
             File file = new File(filename);
+
             if (!file.exists()) file.createNewFile();
             FileWriter fw = new FileWriter(file);
             fw.write(arr.toString());
-            fw.close();
 
+            fw.close();
+            st.close();
+            con.close();
         }catch(Exception e)
         {
             log.info("Unable to connect org.hsqldb.jdbcDriver\n" + e);
@@ -160,15 +164,20 @@ public class DatabaseMigration {
     private static void Json2H2(String databasePath, String filename){
         try
         {
-            Connection con = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + databasePath, "admin", "");
-            String insert = databasePath.equals(H2DatabaseConfig.getPortfolioDbPath())? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
-            PreparedStatement st = con.prepareStatement(insert);
             File file = new File(filename);
+            String insert = databasePath.equals(H2DatabaseConfig.getPortfolioDbPath())? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
+
+            Connection con = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + databasePath, "admin", "");
+            PreparedStatement st = con.prepareStatement(insert);
+
             InputStream is = new FileInputStream(file);
             JSONTokener tokener = new JSONTokener(is);
             JSONArray arr = new JSONArray(tokener);
+
             for ( int i = 0; i < arr.length(); i++){
+
                 JSONObject obj = arr.getJSONObject(i);
+
                 if( databasePath.equals(H2DatabaseConfig.getPortfolioDbPath()))
                 {
                     st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
@@ -196,11 +205,14 @@ public class DatabaseMigration {
                     st.setInt(11, obj.getInt(ParamConfig.getImageORIWParam()));
                     st.setInt(12, obj.getInt(ParamConfig.getImageORIHParam()));
                 }
+
                 st.executeUpdate();
                 st.clearParameters();
             }
 
+            con.createStatement().executeQuery("SHUTDOWN");
 
+            is.close();
             st.close();
             con.close();
         }
