@@ -15,8 +15,8 @@
  */
 package ai.classifai.database.annotation.bndbox;
 
-import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;

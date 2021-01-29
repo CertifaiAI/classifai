@@ -16,8 +16,8 @@
 
 package ai.classifai.database.portfolio;
 
-import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.database.config.DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
