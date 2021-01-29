@@ -80,6 +80,8 @@ public class ParamConfig
 
     private final static String BOUNDING_BOX_PARAM = "bnd_box";
     private final static String SEGMENTATION_PARAM = "polygons";
+    //Common name when performing data migration
+    private final static String PROJECT_CONTENT_PARAM = "content";
 
     private final static String IMAGEX_PARAM = "img_x";
     private final static String IMAGEY_PARAM = "img_y";
@@ -141,6 +143,7 @@ public class ParamConfig
 
     public static String getBoundingBoxParam(){ return BOUNDING_BOX_PARAM; }
     public static String getSegmentationParam(){ return SEGMENTATION_PARAM; }
+    public static String getProjectContentParam(){ return PROJECT_CONTENT_PARAM; }
 
     public static String getImageXParam() { return IMAGEX_PARAM; }
     public static String getImageYParam() { return IMAGEY_PARAM; }

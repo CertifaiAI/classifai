@@ -16,6 +16,9 @@
 package ai.classifai;
 
 import ai.classifai.config.CLIArgument;
+import ai.classifai.database.DatabaseMigration;
+import ai.classifai.database.config.H2DatabaseConfig;
+import ai.classifai.database.config.HsqlDatabaseConfig;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -35,7 +38,10 @@ public class ClassifaiApp
 {
     public static void main(String[] args) throws Exception
     {
-
+        if( !H2DatabaseConfig.isDatabaseExist() && HsqlDatabaseConfig.isDatabaseExist()){
+            log.info("Database migration required. Executing database migration. ");
+            DatabaseMigration.migrate();
+        }
 
         CLIArgument argumentSelector = new CLIArgument(args);
 

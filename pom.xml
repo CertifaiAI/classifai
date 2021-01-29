@@ -62,6 +62,10 @@
             <id>Daniel</id>
             <name>Daniel Lim Heng Jie</name>
         </developer>
+        <developer>
+            <id>YCCertifai</id>
+            <name>Sum Yin Chuang</name>
+        </developer>
     </developers>
 
     <properties>

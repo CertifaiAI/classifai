@@ -16,6 +16,7 @@
 package ai.classifai.config;
 
 import ai.classifai.database.config.DatabaseConfig;
+import ai.classifai.database.config.H2DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -75,7 +76,7 @@ public class CLIArgument
 
     public boolean isDbSetup()
     {
-        return DatabaseConfig.isDatabaseSetup(removeDbLock);
+        return H2DatabaseConfig.isDatabaseSetup(removeDbLock);
     }
 
     public CLIArgument(String[] args)
