@@ -45,6 +45,7 @@ import java.sql.*;
 public class DatabaseMigration {
 
     public static boolean migrate(){
+
         //create temporary json file to store data
         String portfolioJson = DatabaseConfig.getRootPath() + File.separator + "portfoliodb.json";
         String bndBoxJson = DatabaseConfig.getRootPath() + File.separator + "bbprojectdb.json";
@@ -76,6 +77,9 @@ public class DatabaseMigration {
         catch(Exception e)
         {
             log.error("Unable to connect to database: " + e);
+            deleteExcept(DatabaseConfig.getPortfolioDirPath(), "");
+            deleteExcept(DatabaseConfig.getBndboxDirPath(), "");
+            deleteExcept(DatabaseConfig.getSegDirPath(), "");
             return false;
         }
 
