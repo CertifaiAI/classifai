@@ -45,39 +45,43 @@ import java.sql.*;
 public class DatabaseMigration {
 
     public static void migrate(){
+        try {
+            //create temporary json file to store data
+            String portfolioJson = DatabaseConfig.getRootPath() + File.separator + "portfoliodb.json";
+            String bndBoxJson = DatabaseConfig.getRootPath() + File.separator + "bbprojectdb.json";
+            String segJson = DatabaseConfig.getRootPath() + File.separator + "segprojectdb.json";
 
-        //create temporary json file to store data
-        String portfolioJson = DatabaseConfig.getRootPath() + File.separator + "portfoliodb.json";
-        String bndBoxJson = DatabaseConfig.getRootPath() + File.separator + "bbprojectdb.json";
-        String segJson = DatabaseConfig.getRootPath() + File.separator + "segprojectdb.json";
+            HsqlDatabaseConfig.deleteLckFile();
 
-        HsqlDatabaseConfig.deleteLckFile();
+            //generate Json file from HSQL
+            HSQL2Json(HsqlDatabaseConfig.getPortfolioDbPath(), portfolioJson);
+            HSQL2Json(HsqlDatabaseConfig.getBndboxDbPath(), bndBoxJson);
+            HSQL2Json(HsqlDatabaseConfig.getSegDbPath(), segJson);
 
-        //generate Json file from HSQL
-        HSQL2Json(HsqlDatabaseConfig.getPortfolioDbPath(),portfolioJson);
-        HSQL2Json(HsqlDatabaseConfig.getBndboxDbPath(),bndBoxJson);
-        HSQL2Json(HsqlDatabaseConfig.getSegDbPath(),segJson);
+            //Move HSQL to .archive folder
+            ArchiveHandler.moveToArchive(HsqlDatabaseConfig.getPortfolioDirPath());
+            ArchiveHandler.moveToArchive(HsqlDatabaseConfig.getBndboxDirPath());
+            ArchiveHandler.moveToArchive(HsqlDatabaseConfig.getSegDirPath());
 
-        //Move HSQL to .archive folder
-        ArchiveHandler.moveToArchive(HsqlDatabaseConfig.getPortfolioDirPath());
-        ArchiveHandler.moveToArchive(HsqlDatabaseConfig.getBndboxDirPath());
-        ArchiveHandler.moveToArchive(HsqlDatabaseConfig.getSegDirPath());
+            //Create H2db
+            createH2(H2DatabaseConfig.getPortfolioDbPath(), PortfolioDbQuery.createPortfolioTable());
+            createH2(H2DatabaseConfig.getBndboxDbPath(), BoundingBoxDbQuery.createProject());
+            createH2(H2DatabaseConfig.getSegDbPath(), SegDbQuery.createProject());
 
-        //Create H2db
-        createH2(H2DatabaseConfig.getPortfolioDbPath(), PortfolioDbQuery.createPortfolioTable());
-        createH2(H2DatabaseConfig.getBndboxDbPath(), BoundingBoxDbQuery.createProject());
-        createH2(H2DatabaseConfig.getSegDbPath(), SegDbQuery.createProject());
+            //read Json file to H2
+            Json2H2(H2DatabaseConfig.getPortfolioDbPath(), portfolioJson);
+            Json2H2(H2DatabaseConfig.getBndboxDbPath(), bndBoxJson);
+            Json2H2(H2DatabaseConfig.getSegDbPath(), segJson);
 
-        //read Json file to H2
-        Json2H2(H2DatabaseConfig.getPortfolioDbPath(), portfolioJson);
-        Json2H2(H2DatabaseConfig.getBndboxDbPath(), bndBoxJson);
-        Json2H2(H2DatabaseConfig.getSegDbPath(), segJson);
-
-        //Move JSON to .archive folder
-        ArchiveHandler.moveToArchive(portfolioJson);
-        ArchiveHandler.moveToArchive(bndBoxJson);
-        ArchiveHandler.moveToArchive(segJson);
-
+            //Move JSON to .archive folder
+            ArchiveHandler.moveToArchive(portfolioJson);
+            ArchiveHandler.moveToArchive(bndBoxJson);
+            ArchiveHandler.moveToArchive(segJson);
+        }
+        catch(Exception e)
+        {
+            log.info("Unable to migrate database.");
+        }
     }
 
     private static Connection connectDatabase(String driver, String url, String username, String password) throws Exception {
@@ -97,7 +101,7 @@ public class DatabaseMigration {
         }
         catch(Exception e)
         {
-            log.debug("Unable to connect org.h2.Driver\n" + e);
+            log.info("Unable to connect org.h2.Driver\n" + e);
         }
     }
 
@@ -148,7 +152,7 @@ public class DatabaseMigration {
 
         }catch(Exception e)
         {
-            log.debug("Unable to connect org.hsqldb.jdbcDriver\n" + e);
+            log.info("Unable to connect org.hsqldb.jdbcDriver\n" + e);
         }
 
     }
@@ -202,7 +206,7 @@ public class DatabaseMigration {
         }
         catch(Exception e)
         {
-            log.debug("Unable to connect org.h2.Driver\n" + e);
+            log.info("Unable to connect org.h2.Driver\n" + e);
         }
     }
 }
