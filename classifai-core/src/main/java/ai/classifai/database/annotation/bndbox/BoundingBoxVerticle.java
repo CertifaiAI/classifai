@@ -17,6 +17,7 @@ package ai.classifai.database.annotation.bndbox;
 
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.config.DatabaseConfig;
+import ai.classifai.database.config.H2DatabaseConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
@@ -88,7 +89,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     {
         log.info("Bounding Box Verticle stopping...");
 
-        File lockFile = DatabaseConfig.getBndBoxLockPath();
+        File lockFile = H2DatabaseConfig.getBndBoxLockPath();
 
         try
         {

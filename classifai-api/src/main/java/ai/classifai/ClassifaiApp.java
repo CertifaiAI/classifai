@@ -40,7 +40,9 @@ public class ClassifaiApp
     {
         if( !H2DatabaseConfig.isDatabaseExist() && HsqlDatabaseConfig.isDatabaseExist()){
             log.info("Database migration required. Executing database migration. ");
-            DatabaseMigration.migrate();
+            if (! DatabaseMigration.migrate()){
+                log.error("Database migration failed. Old data will not be migrated. You can choose to move on with empty database, or close Classifai now to prevent data lost.");
+            }
         }
 
         CLIArgument argumentSelector = new CLIArgument(args);

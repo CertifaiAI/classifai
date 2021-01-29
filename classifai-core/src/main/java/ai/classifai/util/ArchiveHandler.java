@@ -58,4 +58,20 @@ public class ArchiveHandler {
         }
     }
 
+    public static void copyToArchive(String path) {
+        try {
+            File source = new File(path);
+            File destination = new File(ARCHIVE_PATH,source.getName());
+            if( source.isDirectory()) {
+                FileUtils.copyDirectory(source, destination);
+            }
+            else{
+                FileUtils.copyFile(source, destination);
+            }
+        }
+        catch( Exception e){
+            log.error("unable to copy " + ARCHIVE_PATH + "\n"+ e);
+        }
+    }
+
 }

@@ -17,6 +17,7 @@ package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.config.DatabaseConfig;
+import ai.classifai.database.config.H2DatabaseConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
@@ -89,7 +90,7 @@ public class SegVerticle extends AnnotationVerticle
     {
         log.info("Seg Verticle stopping...");
 
-        File lockFile = DatabaseConfig.getSegLockPath();
+        File lockFile = H2DatabaseConfig.getSegLockPath();
 
         try
         {
