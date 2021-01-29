@@ -18,7 +18,6 @@ package ai.classifai.database.config;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.nio.file.Files;
 
 /**
  * Common configurations for files and paths of database
