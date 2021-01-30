@@ -172,6 +172,7 @@ public class DatabaseMigration {
         {
             try
             {
+                assert st != null;
                 st.close();
             }
             catch (Exception e)
@@ -234,6 +235,7 @@ public class DatabaseMigration {
             {
                 try
                 {
+                    assert shutdownSt != null;
                     shutdownSt.close();
                 }
                 catch(Exception e)
@@ -287,6 +289,7 @@ public class DatabaseMigration {
         {
             try
             {
+                assert fw != null;
                 fw.close();
             }
             catch (Exception e)
