@@ -163,21 +163,19 @@ public class DatabaseMigration {
         {
             st = con.createStatement();
             st.executeUpdate(query);
-        }
-        catch(Exception e)
-        {
-            log.debug("Unable to create table. Please check on query: " + query);
-        }
-        finally
-        {
+
             try
             {
                 st.close();
             }
             catch (Exception e)
             {
-                log.debug( "Unable to close statement " + st);
+                log.debug( "Statement is null");
             }
+        }
+        catch(Exception e)
+        {
+            log.debug("Unable to create table. Please check on query: " + query);
         }
     }
 
@@ -225,13 +223,7 @@ public class DatabaseMigration {
             {
                 shutdownSt = con.createStatement();
                 shutdownSt.executeQuery("SHUTDOWN");
-            }
-            catch (Exception e)
-            {
-                log.debug("Unable to execute query SHUTDOWN");
-            }
-            finally
-            {
+
                 try
                 {
                     shutdownSt.close();
@@ -240,6 +232,10 @@ public class DatabaseMigration {
                 {
                     log.debug("Unable to close shutdownSt");
                 }
+            }
+            catch (Exception e)
+            {
+                log.debug("Unable to execute query SHUTDOWN");
             }
 
             File file = new File(filename);
@@ -253,14 +249,6 @@ public class DatabaseMigration {
                 writeJsonToFile(file,arr);
             }
 
-        }
-        catch(Exception e)
-        {
-            log.debug("Fail to write to JSON" + e);
-
-        }
-        finally
-        {
             try
             {
                 st.close();
@@ -269,6 +257,12 @@ public class DatabaseMigration {
             {
                 log.debug( "Unable to close statement " + st);
             }
+
+        }
+        catch(Exception e)
+        {
+            log.debug("Fail to write to JSON" + e);
+
         }
     }
 
@@ -278,13 +272,7 @@ public class DatabaseMigration {
         {
             fw = new FileWriter(file);
             fw.write(arr.toString());
-        }
-        catch (Exception e)
-        {
-            log.debug( "Unable to write JSON to file " + file.getName());
-        }
-        finally
-        {
+
             try
             {
                 fw.close();
@@ -293,7 +281,10 @@ public class DatabaseMigration {
             {
                 log.debug("Unable to close file writer");
             }
-
+        }
+        catch (Exception e)
+        {
+            log.debug( "Unable to write JSON to file " + file.getName());
         }
     }
 
@@ -345,13 +336,7 @@ public class DatabaseMigration {
                 st.executeUpdate();
                 st.clearParameters();
             }
-        }
-        catch(Exception e)
-        {
-            log.debug("Fail to write to H2" + e);
-        }
-        finally
-        {
+
             try
             {
                 is.close();
@@ -368,6 +353,10 @@ public class DatabaseMigration {
             {
                 log.debug( "Unable to close statement");
             }
+        }
+        catch(Exception e)
+        {
+            log.debug("Fail to write to H2" + e);
         }
     }
 }
