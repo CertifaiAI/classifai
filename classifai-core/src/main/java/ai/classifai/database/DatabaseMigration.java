@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.sql.*;
 
 /***
@@ -73,12 +74,12 @@ public class DatabaseMigration {
 
         try
         {
-            h2PortfolioConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + DatabaseConfig.getPortfolioDbPath(), "admin", "");
-            h2BndboxConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + DatabaseConfig.getBndboxDbPath(), "admin", "");
-            h2SegConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + DatabaseConfig.getSegDbPath(), "admin", "");
-            hsqlPortfolioConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDbPath(), null,null);
-            hsqlBndboxConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDbPath(), null,null);
-            hsqlSegConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDbPath(), null,null);
+            h2PortfolioConnection = connectDatabase(Database.H2, DatabaseConfig.getPortfolioDbPath());
+            h2BndboxConnection = connectDatabase(Database.H2, DatabaseConfig.getBndboxDbPath());
+            h2SegConnection = connectDatabase(Database.H2, DatabaseConfig.getSegDbPath());
+            hsqlPortfolioConnection = connectDatabase(Database.HSQL, DatabaseConfig.getPortfolioDbPath());
+            hsqlBndboxConnection = connectDatabase(Database.HSQL, DatabaseConfig.getBndboxDbPath());
+            hsqlSegConnection = connectDatabase(Database.HSQL, DatabaseConfig.getSegDbPath());
         }
         catch(Exception e)
         {
@@ -90,9 +91,9 @@ public class DatabaseMigration {
         }
 
         //generate Json file from HSQL
-        HSQL2Json(hsqlPortfolioConnection, portfolioJson) ;
-        HSQL2Json(hsqlBndboxConnection, bndBoxJson) ;
-        HSQL2Json(hsqlSegConnection, segJson) ;
+        hsql2Json(hsqlPortfolioConnection, portfolioJson) ;
+        hsql2Json(hsqlBndboxConnection, bndBoxJson) ;
+        hsql2Json(hsqlSegConnection, segJson) ;
 
         deleteExcept(DatabaseConfig.getPortfolioDirPath(), h2.getPortfolioDbFileName());
         deleteExcept(DatabaseConfig.getBndboxDirPath(), h2.getBndboxDbFileName());
@@ -146,7 +147,12 @@ public class DatabaseMigration {
                 if (file.getName().equals(dbPath)){
                     continue;
                 }
-                if(! file.delete()){
+                try
+                {
+                    Files.delete(file.toPath());
+                }
+                catch (Exception e)
+                {
                     log.debug("unable to delete" + file.getName());
                 }
             }
@@ -156,10 +162,10 @@ public class DatabaseMigration {
         }
     }
 
-    private static Connection connectDatabase(String driver, String url, String username, String password) throws ClassNotFoundException, SQLException {
-        Class.forName(driver);
+    private static Connection connectDatabase(Database database, String path) throws ClassNotFoundException, SQLException {
+        Class.forName(database.getDRIVER());
 
-        return DriverManager.getConnection(url, username, password);
+        return DriverManager.getConnection(database.getURL_HEADER()+ path, database.getUSER(), database.getPASSWORD());
     }
 
     private static void createH2(Connection con, String query)  {
@@ -187,18 +193,22 @@ public class DatabaseMigration {
         }
     }
 
-    private static void HSQL2Json(Connection con, String filename){
+    private static boolean isPortfolio(String filename){
+        return filename.contains("portfolio");
+    }
+
+    private static void hsql2Json(Connection con, String filename){
         Statement st = null;
         try
         {
             JSONArray arr = new JSONArray();
-            String read = filename.contains("portfolio")?"select * from portfolio":"select * from project";
+            String read = isPortfolio(filename)?"select * from portfolio":"select * from project";
 
             st = con.createStatement();
             ResultSet rs = st.executeQuery(read);
 
             while(rs.next()){
-                if( filename.contains("portfolio"))
+                if( isPortfolio(filename))
                 {
                     arr.put(new JSONObject()
                             .put(ParamConfig.getProjectIDParam(), rs.getInt(1))
@@ -311,7 +321,7 @@ public class DatabaseMigration {
         try
         {
             File file = new File(filename);
-            String insert = filename.contains("portfolio")? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
+            String insert = isPortfolio(filename)? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
             st = con.prepareStatement(insert);
 
             is = new FileInputStream(file);
@@ -322,7 +332,7 @@ public class DatabaseMigration {
 
                 JSONObject obj = arr.getJSONObject(i);
 
-                if( filename.contains("portfolio"))
+                if( isPortfolio(filename))
                 {
                     st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
                     st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));

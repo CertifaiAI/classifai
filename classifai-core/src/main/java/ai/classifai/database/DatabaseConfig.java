@@ -4,6 +4,8 @@ import ai.classifai.util.type.Database;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Common configurations for files and paths of database
@@ -22,17 +24,17 @@ public class DatabaseConfig {
     private static final String BNDBOX_DB_PATH;
     private static final String SEG_DB_PATH;
 
-    private final static String PORTFOLIO_DIR_PATH;
-    private final static String BNDBOX_DIR_PATH;
-    private final static String SEG_DIR_PATH;
+    private static final String PORTFOLIO_DIR_PATH;
+    private static final String BNDBOX_DIR_PATH;
+    private static final String SEG_DIR_PATH;
 
-    private final File PORTFOLIO_DB_DBFILE;
-    private final File BNDBOX_DB_DBFILE;
-    private final File SEG_DB_DBFILE;
+    private final File portfolioDbFile;
+    private final File bndboxDbFile;
+    private final File segDbFile;
 
-    private final File PORTFOLIO_DB_LCKPATH;
-    private final File BNDBOX_DB_LCKPATH;
-    private final File SEG_DB_LCKPATH;
+    private final File portfolioDbLockPath;
+    private final File bndboxDbLockPath;
+    private final File segDbLockPath;
 
     static {
         ROOT_PATH = System.getProperty("user.home") + File.separator + ".classifai";
@@ -51,16 +53,16 @@ public class DatabaseConfig {
     }
 
     public DatabaseConfig(Database database){
-        String LCK_FILE_EXTENSION = database.getLCK_FILE_EXTENSION();
-        String DB_FILE_EXTENSION = database.getDB_FILE_EXTENSION();
+        String lckFileExtension = database.getLCK_FILE_EXTENSION();
+        String dbFileExtension = database.getDB_FILE_EXTENSION();
 
-        PORTFOLIO_DB_LCKPATH = new File(PORTFOLIO_DB_PATH + LCK_FILE_EXTENSION);
-        BNDBOX_DB_LCKPATH = new File(BNDBOX_DB_PATH + LCK_FILE_EXTENSION);
-        SEG_DB_LCKPATH = new File(SEG_DB_PATH + LCK_FILE_EXTENSION);
+        portfolioDbLockPath = new File(PORTFOLIO_DB_PATH + lckFileExtension);
+        bndboxDbLockPath = new File(BNDBOX_DB_PATH + lckFileExtension);
+        segDbLockPath = new File(SEG_DB_PATH + lckFileExtension);
 
-        PORTFOLIO_DB_DBFILE = new File(PORTFOLIO_DB_PATH + DB_FILE_EXTENSION);
-        BNDBOX_DB_DBFILE = new File(BNDBOX_DB_PATH + DB_FILE_EXTENSION);
-        SEG_DB_DBFILE = new File(SEG_DB_PATH + DB_FILE_EXTENSION);
+        portfolioDbFile = new File(PORTFOLIO_DB_PATH + dbFileExtension);
+        bndboxDbFile = new File(BNDBOX_DB_PATH + dbFileExtension);
+        segDbFile = new File(SEG_DB_PATH + dbFileExtension);
     }
 
     private static String defineDirPath(String database) {
@@ -99,35 +101,52 @@ public class DatabaseConfig {
         return SEG_DIR_PATH;
     }
 
-    public File getPortfolioLockPath() { return PORTFOLIO_DB_LCKPATH; }
+    public File getPortfolioLockPath() { return portfolioDbLockPath; }
 
-    public File getBndBoxLockPath() { return BNDBOX_DB_LCKPATH; }
+    public File getBndBoxLockPath() { return bndboxDbLockPath; }
 
-    public File getSegLockPath() { return SEG_DB_LCKPATH; }
+    public File getSegLockPath() { return segDbLockPath; }
 
-    public String getPortfolioDbFileName(){ return PORTFOLIO_DB_DBFILE.getName(); }
+    public String getPortfolioDbFileName(){ return portfolioDbFile.getName(); }
 
-    public String getBndboxDbFileName(){ return BNDBOX_DB_DBFILE.getName(); }
+    public String getBndboxDbFileName(){ return bndboxDbFile.getName(); }
 
-    public String getSegDbFileName(){ return SEG_DB_DBFILE.getName(); }
+    public String getSegDbFileName(){ return segDbFile.getName(); }
+
+    private boolean deleteIfExists(File file){
+        Path path = file.toPath();
+        if (file.exists()){
+            try
+            {
+                Files.delete(path);
+            }
+            catch(Exception e)
+            {
+                log.debug(String.valueOf(e));
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public void deleteLckFile()
     {
         try
         {
-            if( PORTFOLIO_DB_LCKPATH.exists() && ! PORTFOLIO_DB_LCKPATH.delete())
+            if( deleteIfExists(portfolioDbLockPath))
             {
-                log.debug("Delete portfolio lock file failed from path: " + PORTFOLIO_DB_LCKPATH.getAbsolutePath());
+                log.debug("Delete portfolio lock file failed from path: " + portfolioDbLockPath.getAbsolutePath());
             }
 
-            if( BNDBOX_DB_LCKPATH.exists() && ! BNDBOX_DB_LCKPATH.delete())
+            if( deleteIfExists(bndboxDbLockPath))
             {
-                log.debug("Delete boundingbox lock file failed from path: " + BNDBOX_DB_LCKPATH.getAbsolutePath());
+                log.debug("Delete boundingbox lock file failed from path: " + bndboxDbLockPath.getAbsolutePath());
             }
 
-            if( SEG_DB_LCKPATH.exists() && ! SEG_DB_LCKPATH.delete())
+            if( deleteIfExists(segDbLockPath))
             {
-                log.debug("Delete segmentation lock file failed from path: " + SEG_DB_LCKPATH.getAbsolutePath());
+                log.debug("Delete segmentation lock file failed from path: " + segDbLockPath.getAbsolutePath());
             }
         }
         catch(Exception e) {
@@ -137,7 +156,7 @@ public class DatabaseConfig {
 
     public boolean isDatabaseExist()
     {
-        return (PORTFOLIO_DB_DBFILE.exists() && BNDBOX_DB_DBFILE.exists() && SEG_DB_DBFILE.exists());
+        return (portfolioDbFile.exists() && bndboxDbFile.exists() && segDbFile.exists());
     }
 
     public boolean isDatabaseSetup(boolean unlockDatabase)
@@ -156,7 +175,7 @@ public class DatabaseConfig {
 
     private boolean isDbReadyForAccess()
     {
-        if(PORTFOLIO_DB_LCKPATH.exists() || BNDBOX_DB_LCKPATH.exists() || SEG_DB_LCKPATH.exists())
+        if(portfolioDbLockPath.exists() || bndboxDbLockPath.exists() || segDbLockPath.exists())
         {
             log.info("Database is locked. Try with --unlockdb. \n" +
                     "WARNING: This might be hazardous by allowing multiple access to the database.");
