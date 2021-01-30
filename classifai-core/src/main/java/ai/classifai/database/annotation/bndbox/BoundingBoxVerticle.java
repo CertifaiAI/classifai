@@ -15,12 +15,12 @@
  */
 package ai.classifai.database.annotation.bndbox;
 
+import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.database.config.DatabaseConfig;
-import ai.classifai.database.config.H2DatabaseConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.Database;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -89,7 +89,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     {
         log.info("Bounding Box Verticle stopping...");
 
-        File lockFile = H2DatabaseConfig.getBndBoxLockPath();
+        File lockFile = new DatabaseConfig(Database.H2).getBndBoxLockPath();
 
         try
         {

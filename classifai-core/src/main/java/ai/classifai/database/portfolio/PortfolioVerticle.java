@@ -16,9 +16,8 @@
 
 package ai.classifai.database.portfolio;
 
+import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.VerticleServiceable;
-import ai.classifai.database.config.DatabaseConfig;
-import ai.classifai.database.config.H2DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -30,6 +29,7 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.Database;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -549,7 +549,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         log.info("Portfolio Verticle stopping...");
 
-        File lockFile = H2DatabaseConfig.getPortfolioLockPath();
+        File lockFile = new DatabaseConfig(Database.H2).getPortfolioLockPath();
 
         try
         {

@@ -16,10 +16,10 @@
 package ai.classifai;
 
 import ai.classifai.config.CLIArgument;
+import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.DatabaseMigration;
-import ai.classifai.database.config.H2DatabaseConfig;
-import ai.classifai.database.config.HsqlDatabaseConfig;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.Database;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -38,7 +38,7 @@ public class ClassifaiApp
 {
     public static void main(String[] args) throws Exception
     {
-        if( !H2DatabaseConfig.isDatabaseExist() && HsqlDatabaseConfig.isDatabaseExist()){
+        if( ! new DatabaseConfig(Database.H2).isDatabaseExist() && new DatabaseConfig(Database.HSQL).isDatabaseExist()){
             log.info("Database migration required. Executing database migration. ");
             if (! DatabaseMigration.migrate()){
                 log.error("Database migration failed. Old data will not be migrated. You can choose to move on with empty database, or close Classifai now to prevent data lost.");

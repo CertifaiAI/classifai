@@ -15,12 +15,13 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.database.config.H2DatabaseConfig;
+import ai.classifai.database.DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.Database;
 import com.formdev.flatlaf.FlatLightLaf;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,7 +76,7 @@ public class CLIArgument
 
     public boolean isDbSetup()
     {
-        return H2DatabaseConfig.isDatabaseSetup(removeDbLock);
+        return new DatabaseConfig(Database.H2).isDatabaseSetup(removeDbLock);
     }
 
     public CLIArgument(String[] args)

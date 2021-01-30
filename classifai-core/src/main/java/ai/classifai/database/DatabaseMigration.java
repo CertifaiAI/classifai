@@ -18,13 +18,11 @@ package ai.classifai.database;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
-import ai.classifai.database.config.DatabaseConfig;
-import ai.classifai.database.config.H2DatabaseConfig;
-import ai.classifai.database.config.HsqlDatabaseConfig;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.util.ArchiveHandler;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.Database;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -45,6 +43,10 @@ import java.sql.*;
 @Slf4j
 public class DatabaseMigration {
 
+    private DatabaseMigration(){
+        throw new IllegalStateException("Utility class");
+    }
+
     public static boolean migrate(){
 
         //create temporary json file to store data
@@ -52,28 +54,31 @@ public class DatabaseMigration {
         String bndBoxJson = DatabaseConfig.getRootPath() + File.separator + "bbprojectdb.json";
         String segJson = DatabaseConfig.getRootPath() + File.separator + "segprojectdb.json";
 
-        HsqlDatabaseConfig.deleteLckFile();
+        DatabaseConfig h2 = new DatabaseConfig(Database.H2);
+        DatabaseConfig hsql = new DatabaseConfig(Database.HSQL);
 
-        Connection H2PortfolioConnection;
-        Connection H2BndboxConnection;
-        Connection H2SegConnection;
-        Connection HsqlPortfolioConnection;
-        Connection HsqlBndboxConnection;
-        Connection HsqlSegConnection;
+        hsql.deleteLckFile();
+
+        Connection h2PortfolioConnection;
+        Connection h2BndboxConnection;
+        Connection h2SegConnection;
+        Connection hsqlPortfolioConnection;
+        Connection hsqlBndboxConnection;
+        Connection hsqlSegConnection;
 
         //Copy HSQL to .archive folder
-        ArchiveHandler.copyToArchive(HsqlDatabaseConfig.getPortfolioDirPath());
-        ArchiveHandler.copyToArchive(HsqlDatabaseConfig.getBndboxDirPath());
-        ArchiveHandler.copyToArchive(HsqlDatabaseConfig.getSegDirPath());
+        ArchiveHandler.copyToArchive(DatabaseConfig.getPortfolioDirPath());
+        ArchiveHandler.copyToArchive(DatabaseConfig.getBndboxDirPath());
+        ArchiveHandler.copyToArchive(DatabaseConfig.getSegDirPath());
 
         try
         {
-            H2PortfolioConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + H2DatabaseConfig.getPortfolioDbPath(), "admin", "");
-            H2BndboxConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + H2DatabaseConfig.getBndboxDbPath(), "admin", "");
-            H2SegConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + H2DatabaseConfig.getSegDbPath(), "admin", "");
-            HsqlPortfolioConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + HsqlDatabaseConfig.getPortfolioDbPath(), null,null);
-            HsqlBndboxConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + HsqlDatabaseConfig.getBndboxDbPath(), null,null);
-            HsqlSegConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + HsqlDatabaseConfig.getSegDbPath(), null,null);
+            h2PortfolioConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + DatabaseConfig.getPortfolioDbPath(), "admin", "");
+            h2BndboxConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + DatabaseConfig.getBndboxDbPath(), "admin", "");
+            h2SegConnection = connectDatabase("org.h2.Driver", "jdbc:h2:file:" + DatabaseConfig.getSegDbPath(), "admin", "");
+            hsqlPortfolioConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDbPath(), null,null);
+            hsqlBndboxConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDbPath(), null,null);
+            hsqlSegConnection = connectDatabase("org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDbPath(), null,null);
         }
         catch(Exception e)
         {
@@ -85,19 +90,19 @@ public class DatabaseMigration {
         }
 
         //generate Json file from HSQL
-        HSQL2Json(HsqlPortfolioConnection, portfolioJson) ;
-        HSQL2Json(HsqlBndboxConnection, bndBoxJson) ;
-        HSQL2Json(HsqlSegConnection, segJson) ;
+        HSQL2Json(hsqlPortfolioConnection, portfolioJson) ;
+        HSQL2Json(hsqlBndboxConnection, bndBoxJson) ;
+        HSQL2Json(hsqlSegConnection, segJson) ;
 
-        deleteExcept(DatabaseConfig.getPortfolioDirPath(), H2DatabaseConfig.getPortfolioDbFileName());
-        deleteExcept(DatabaseConfig.getBndboxDirPath(), H2DatabaseConfig.getBndboxDbFileName());
-        deleteExcept(DatabaseConfig.getSegDirPath(), H2DatabaseConfig.getSegDbFileName());
+        deleteExcept(DatabaseConfig.getPortfolioDirPath(), h2.getPortfolioDbFileName());
+        deleteExcept(DatabaseConfig.getBndboxDirPath(), h2.getBndboxDbFileName());
+        deleteExcept(DatabaseConfig.getSegDirPath(), h2.getSegDbFileName());
 
         try
         {
-            HsqlPortfolioConnection.close();
-            HsqlBndboxConnection.close();
-            HsqlSegConnection.close();
+            hsqlPortfolioConnection.close();
+            hsqlBndboxConnection.close();
+            hsqlSegConnection.close();
         }
         catch(Exception e)
         {
@@ -105,20 +110,20 @@ public class DatabaseMigration {
         }
 
         //Create H2db tables
-        createH2(H2PortfolioConnection, PortfolioDbQuery.createPortfolioTable());
-        createH2(H2BndboxConnection, BoundingBoxDbQuery.createProject());
-        createH2(H2SegConnection, SegDbQuery.createProject());
+        createH2(h2PortfolioConnection, PortfolioDbQuery.createPortfolioTable());
+        createH2(h2BndboxConnection, BoundingBoxDbQuery.createProject());
+        createH2(h2SegConnection, SegDbQuery.createProject());
 
         //read Json file to H2
-        Json2H2(H2PortfolioConnection, portfolioJson);
-        Json2H2(H2BndboxConnection, bndBoxJson);
-        Json2H2(H2SegConnection, segJson);
+        Json2H2(h2PortfolioConnection, portfolioJson);
+        Json2H2(h2BndboxConnection, bndBoxJson);
+        Json2H2(h2SegConnection, segJson);
 
         try
         {
-            H2PortfolioConnection.close();
-            H2BndboxConnection.close();
-            H2SegConnection.close();
+            h2PortfolioConnection.close();
+            h2BndboxConnection.close();
+            h2SegConnection.close();
         }
         catch(Exception e)
         {
@@ -373,5 +378,6 @@ public class DatabaseMigration {
             }
         }
     }
+
 }
 
