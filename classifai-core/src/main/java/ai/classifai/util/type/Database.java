@@ -46,7 +46,7 @@ public enum Database {
         return dbFileExtension;
     }
 
-    public String getLCK_FILE_EXTENSION() {
+    public String getLckFileExtension() {
         return lckFileExtension;
     }
 

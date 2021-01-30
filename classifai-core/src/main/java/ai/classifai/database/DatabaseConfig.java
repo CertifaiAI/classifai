@@ -53,7 +53,7 @@ public class DatabaseConfig {
     }
 
     public DatabaseConfig(Database database){
-        String lckFileExtension = database.getLCK_FILE_EXTENSION();
+        String lckFileExtension = database.getLckFileExtension();
         String dbFileExtension = database.getDbFileExtension();
 
         portfolioDbLockPath = new File(PORTFOLIO_DB_PATH + lckFileExtension);
