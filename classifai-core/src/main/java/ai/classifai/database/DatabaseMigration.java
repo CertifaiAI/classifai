@@ -140,6 +140,10 @@ public class DatabaseMigration {
 
     }
 
+    private static boolean isPortfolio(String filename){
+        return filename.contains("portfolio");
+    }
+
     private static void deleteExcept(String folderName, String dbPath){
         File folder = new File(folderName);
         if( folder.isDirectory()){
@@ -180,8 +184,27 @@ public class DatabaseMigration {
         }
     }
 
-    private static boolean isPortfolio(String filename){
-        return filename.contains("portfolio");
+    private static void shutdownDatabase(Connection con){
+        try( Statement shutdownSt = con.createStatement();)
+        {
+
+            shutdownSt.executeQuery("SHUTDOWN");
+        }
+        catch (Exception e)
+        {
+            log.debug("Unable to execute query SHUTDOWN");
+        }
+    }
+
+    private static void writeJsonToFile(File file, JSONArray arr){
+        try(FileWriter fw = new FileWriter(file))
+        {
+            fw.write(arr.toString());
+        }
+        catch (Exception e)
+        {
+            log.debug( "Unable to write JSON to file " + file.getName());
+        }
     }
 
     private static void hsql2Json(Connection con, String filename){
@@ -239,29 +262,6 @@ public class DatabaseMigration {
         {
             log.debug("Fail to write to JSON" + e);
 
-        }
-    }
-
-    private static void shutdownDatabase(Connection con){
-        try( Statement shutdownSt = con.createStatement();)
-        {
-
-            shutdownSt.executeQuery("SHUTDOWN");
-        }
-        catch (Exception e)
-        {
-            log.debug("Unable to execute query SHUTDOWN");
-        }
-    }
-
-    private static void writeJsonToFile(File file, JSONArray arr){
-        try(FileWriter fw = new FileWriter(file))
-        {
-            fw.write(arr.toString());
-        }
-        catch (Exception e)
-        {
-            log.debug( "Unable to write JSON to file " + file.getName());
         }
     }
 
