@@ -43,6 +43,9 @@ public class ClassifaiApp
             if (! DatabaseMigration.migrate()){
                 log.error("Database migration failed. Old data will not be migrated. You can choose to move on with empty database, or close Classifai now to prevent data lost.");
             }
+            else{
+                log.info("Database migration is successful!");
+            }
         }
 
         CLIArgument argumentSelector = new CLIArgument(args);

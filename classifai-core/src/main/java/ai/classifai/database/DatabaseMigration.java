@@ -158,27 +158,37 @@ public class DatabaseMigration {
     }
 
     private static void createH2(Connection con, String query)  {
+        Statement st = null;
         try
         {
-            Statement st = con.createStatement();
+            st = con.createStatement();
             st.executeUpdate(query);
-            st.close();
-            con.close();
         }
         catch(Exception e)
         {
             log.debug("Unable to create table. Please check on query: " + query);
         }
+        finally
+        {
+            try
+            {
+                st.close();
+            }
+            catch (Exception e)
+            {
+                log.debug( "Unable to close statement " + st);
+            }
+        }
     }
 
     private static void HSQL2Json(Connection con, String filename){
-
+        Statement st = null;
         try
         {
             JSONArray arr = new JSONArray();
             String read = filename.contains("portfolio")?"select * from portfolio":"select * from project";
 
-            Statement st = con.createStatement();
+            st = con.createStatement();
             ResultSet rs = st.executeQuery(read);
 
             while(rs.next()){
@@ -210,7 +220,27 @@ public class DatabaseMigration {
                 }
             }
 
-            con.createStatement().executeQuery("SHUTDOWN");
+            Statement shutdownSt = null;
+            try
+            {
+                shutdownSt = con.createStatement();
+                shutdownSt.executeQuery("SHUTDOWN");
+            }
+            catch (Exception e)
+            {
+                log.debug("Unable to execute query SHUTDOWN");
+            }
+            finally
+            {
+                try
+                {
+                    shutdownSt.close();
+                }
+                catch(Exception e)
+                {
+                    log.debug("Unable to close shutdownSt");
+                }
+            }
 
             File file = new File(filename);
 
@@ -220,17 +250,25 @@ public class DatabaseMigration {
                 {
                     log.debug("unable to create file " + file.getName());
                 }
+                writeJsonToFile(file,arr);
             }
 
-
-
-            st.close();
-            con.close();
-
-        }catch(Exception e)
+        }
+        catch(Exception e)
         {
             log.debug("Fail to write to JSON" + e);
 
+        }
+        finally
+        {
+            try
+            {
+                st.close();
+            }
+            catch (Exception e)
+            {
+                log.debug( "Unable to close statement " + st);
+            }
         }
     }
 
@@ -240,11 +278,22 @@ public class DatabaseMigration {
         {
             fw = new FileWriter(file);
             fw.write(arr.toString());
-            fw.close();
         }
         catch (Exception e)
         {
             log.debug( "Unable to write JSON to file " + file.getName());
+        }
+        finally
+        {
+            try
+            {
+                fw.close();
+            }
+            catch (Exception e)
+            {
+                log.debug("Unable to close file writer");
+            }
+
         }
     }
 
@@ -296,13 +345,29 @@ public class DatabaseMigration {
                 st.executeUpdate();
                 st.clearParameters();
             }
-
-            is.close();
-            st.close();
         }
         catch(Exception e)
         {
             log.debug("Fail to write to H2" + e);
+        }
+        finally
+        {
+            try
+            {
+                is.close();
+            }
+            catch (Exception e)
+            {
+                log.debug( "Unable to close input stream");
+            }
+            try
+            {
+                st.close();
+            }
+            catch (Exception e)
+            {
+                log.debug( "Unable to close statement");
+            }
         }
     }
 }

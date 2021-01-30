@@ -18,7 +18,6 @@ package ai.classifai.database.config;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.nio.file.Files;
 
 /**
  *  Configurations for files and paths of database for H2 Database
@@ -74,17 +73,17 @@ public class H2DatabaseConfig extends DatabaseConfig{
     {
         try
         {
-            if(!Files.deleteIfExists(PORTFOLIO_DB_LCKPATH.toPath()))
+            if( PORTFOLIO_DB_LCKPATH.exists() && ! PORTFOLIO_DB_LCKPATH.delete())
             {
                 log.debug("Delete portfolio lock file failed from path: " + PORTFOLIO_DB_LCKPATH.getAbsolutePath());
             }
 
-            if(!Files.deleteIfExists(BNDBOX_DB_LCKPATH.toPath()))
+            if( BNDBOX_DB_LCKPATH.exists() && ! BNDBOX_DB_LCKPATH.delete())
             {
                 log.debug("Delete boundingbox lock file failed from path: " + BNDBOX_DB_LCKPATH.getAbsolutePath());
             }
 
-            if(!Files.deleteIfExists(SEG_DB_LCKPATH.toPath()))
+            if( SEG_DB_LCKPATH.exists() && ! SEG_DB_LCKPATH.delete())
             {
                 log.debug("Delete segmentation lock file failed from path: " + SEG_DB_LCKPATH.getAbsolutePath());
             }
