@@ -35,6 +35,10 @@ public class ArchiveHandler {
         createArchiveFolder();
     }
 
+    private ArchiveHandler(){
+        throw new IllegalStateException("Utility class");
+    }
+
     public static String getArchivePath(){ return ARCHIVE_PATH;}
 
     private static void createArchiveFolder(){

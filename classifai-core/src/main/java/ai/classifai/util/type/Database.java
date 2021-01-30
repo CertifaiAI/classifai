@@ -1,38 +1,60 @@
+/*
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.util.type;
 
+/**
+ * Database info
+ *
+ * @author YCCertifai
+ */
 public enum Database {
     HSQL(".lck", ".script","org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:",null,null),
     H2(".lock.db",".mv.db", "org.h2.Driver", "jdbc:h2:file:", "admin", "" );
 
-    private final String LCK_FILE_EXTENSION;
-    private final String DB_FILE_EXTENSION;
-    private final String DRIVER;
-    private final String URL_HEADER;
-    private final String USER;
-    private final String PASSWORD;
-    Database(final String LCK_FILE_EXTENSION, final String DB_FILE_EXTENSION, final String DRIVER, final String URL_HEADER, final String USER, final String PASSWORD ){
-        this.LCK_FILE_EXTENSION = LCK_FILE_EXTENSION;
-        this.DB_FILE_EXTENSION = DB_FILE_EXTENSION;
-        this.DRIVER = DRIVER;
-        this.URL_HEADER = URL_HEADER;
-        this.USER = USER;
-        this.PASSWORD = PASSWORD;
+    private final String lckFileExtension;
+    private final String dbFileExtension;
+    private final String driver;
+    private final String urlHeader;
+    private final String user;
+    private final String password;
+
+    Database(final String lckFileExtension, final String dbFileExtension, final String driver, final String urlHeader, final String user, final String password){
+
+        this.lckFileExtension = lckFileExtension;
+        this.dbFileExtension = dbFileExtension;
+        this.driver = driver;
+        this.urlHeader = urlHeader;
+        this.user = user;
+        this.password = password;
 
     }
 
-    public String getDB_FILE_EXTENSION() {
-        return DB_FILE_EXTENSION;
+    public String getDbFileExtension() {
+        return dbFileExtension;
     }
 
     public String getLCK_FILE_EXTENSION() {
-        return LCK_FILE_EXTENSION;
+        return lckFileExtension;
     }
 
-    public String getDRIVER() { return DRIVER; }
+    public String getDriver() { return driver; }
 
-    public String getURL_HEADER() { return URL_HEADER; }
+    public String getUrlHeader() { return urlHeader; }
 
-    public String getUSER() { return USER; }
+    public String getUser() { return user; }
 
-    public String getPASSWORD() { return PASSWORD; }
+    public String getPassword() { return password; }
 }

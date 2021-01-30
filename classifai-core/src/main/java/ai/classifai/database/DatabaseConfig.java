@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Common configurations for files and paths of database
+ * configurations for files and paths of database
  *
  * @author codenamewei
  */
@@ -54,7 +54,7 @@ public class DatabaseConfig {
 
     public DatabaseConfig(Database database){
         String lckFileExtension = database.getLCK_FILE_EXTENSION();
-        String dbFileExtension = database.getDB_FILE_EXTENSION();
+        String dbFileExtension = database.getDbFileExtension();
 
         portfolioDbLockPath = new File(PORTFOLIO_DB_PATH + lckFileExtension);
         bndboxDbLockPath = new File(BNDBOX_DB_PATH + lckFileExtension);
@@ -134,17 +134,17 @@ public class DatabaseConfig {
     {
         try
         {
-            if( deleteIfExists(portfolioDbLockPath))
+            if(! deleteIfExists(portfolioDbLockPath))
             {
                 log.debug("Delete portfolio lock file failed from path: " + portfolioDbLockPath.getAbsolutePath());
             }
 
-            if( deleteIfExists(bndboxDbLockPath))
+            if(! deleteIfExists(bndboxDbLockPath))
             {
                 log.debug("Delete boundingbox lock file failed from path: " + bndboxDbLockPath.getAbsolutePath());
             }
 
-            if( deleteIfExists(segDbLockPath))
+            if(! deleteIfExists(segDbLockPath))
             {
                 log.debug("Delete segmentation lock file failed from path: " + segDbLockPath.getAbsolutePath());
             }

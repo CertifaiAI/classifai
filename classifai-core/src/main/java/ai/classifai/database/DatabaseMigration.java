@@ -163,33 +163,20 @@ public class DatabaseMigration {
     }
 
     private static Connection connectDatabase(Database database, String path) throws ClassNotFoundException, SQLException {
-        Class.forName(database.getDRIVER());
+        Class.forName(database.getDriver());
 
-        return DriverManager.getConnection(database.getURL_HEADER()+ path, database.getUSER(), database.getPASSWORD());
+        return DriverManager.getConnection(database.getUrlHeader()+ path, database.getUser(), database.getPassword());
     }
 
     private static void createH2(Connection con, String query)  {
-        Statement st = null;
-        try
+
+        try(Statement st = con.createStatement();)
         {
-            st = con.createStatement();
             st.executeUpdate(query);
         }
         catch(Exception e)
         {
             log.debug("Unable to create table. Please check on query: " + query);
-        }
-        finally
-        {
-            try
-            {
-                assert st != null;
-                st.close();
-            }
-            catch (Exception e)
-            {
-                log.debug( "Statement is null");
-            }
         }
     }
 
@@ -198,13 +185,12 @@ public class DatabaseMigration {
     }
 
     private static void hsql2Json(Connection con, String filename){
-        Statement st = null;
-        try
+
+        try (Statement st = con.createStatement();)
         {
             JSONArray arr = new JSONArray();
             String read = isPortfolio(filename)?"select * from portfolio":"select * from project";
 
-            st = con.createStatement();
             ResultSet rs = st.executeQuery(read);
 
             while(rs.next()){
@@ -254,41 +240,17 @@ public class DatabaseMigration {
             log.debug("Fail to write to JSON" + e);
 
         }
-        finally
-        {
-            try
-            {
-                st.close();
-            }
-            catch (Exception e)
-            {
-                log.debug( "Unable to close statement " + st);
-            }
-        }
     }
 
     private static void shutdownDatabase(Connection con){
-        Statement shutdownSt = null;
-        try
+        try( Statement shutdownSt = con.createStatement();)
         {
-            shutdownSt = con.createStatement();
+
             shutdownSt.executeQuery("SHUTDOWN");
         }
         catch (Exception e)
         {
             log.debug("Unable to execute query SHUTDOWN");
-        }
-        finally
-        {
-            try
-            {
-                assert shutdownSt != null;
-                shutdownSt.close();
-            }
-            catch(Exception e)
-            {
-                log.debug("Unable to close shutdownSt");
-            }
         }
     }
 
@@ -308,7 +270,7 @@ public class DatabaseMigration {
         String insert = isPortfolio(filename)? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
         try(
                 InputStream is = new FileInputStream(file);
-                PreparedStatement st = con.prepareStatement(insert);
+                PreparedStatement st = con.prepareStatement(insert)
         )
         {
             JSONTokener tokener = new JSONTokener(is);
