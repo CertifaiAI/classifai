@@ -116,9 +116,9 @@ public class DatabaseMigration {
         createH2(h2SegConnection, SegDbQuery.createProject());
 
         //read Json file to H2
-        Json2H2(h2PortfolioConnection, portfolioJson);
-        Json2H2(h2BndboxConnection, bndBoxJson);
-        Json2H2(h2SegConnection, segJson);
+        json2H2(h2PortfolioConnection, portfolioJson);
+        json2H2(h2BndboxConnection, bndBoxJson);
+        json2H2(h2SegConnection, segJson);
 
         try
         {
@@ -293,42 +293,26 @@ public class DatabaseMigration {
     }
 
     private static void writeJsonToFile(File file, JSONArray arr){
-        FileWriter fw = null;
-        try
+        try(FileWriter fw = new FileWriter(file))
         {
-            fw = new FileWriter(file);
             fw.write(arr.toString());
         }
         catch (Exception e)
         {
             log.debug( "Unable to write JSON to file " + file.getName());
         }
-        finally
-        {
-            try
-            {
-                assert fw != null;
-                fw.close();
-            }
-            catch (Exception e)
-            {
-                log.debug("Unable to close file writer");
-            }
-
-        }
     }
 
-    private static void Json2H2(Connection con, String filename){
-        InputStream is = null;
-        PreparedStatement st = null;
-        try
+    private static void json2H2(Connection con, String filename){
+        File file = new File(filename);
+        String insert = isPortfolio(filename)? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
+        try(
+                InputStream is = new FileInputStream(file);
+                PreparedStatement st = con.prepareStatement(insert);
+        )
         {
-            File file = new File(filename);
-            String insert = isPortfolio(filename)? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
-            st = con.prepareStatement(insert);
-
-            is = new FileInputStream(file);
             JSONTokener tokener = new JSONTokener(is);
+
             JSONArray arr = new JSONArray(tokener);
 
             for ( int i = 0; i < arr.length(); i++){
@@ -370,25 +354,6 @@ public class DatabaseMigration {
         catch(Exception e)
         {
             log.debug("Fail to write to H2" + e);
-        }
-        finally
-        {
-            try
-            {
-                is.close();
-            }
-            catch (Exception e)
-            {
-                log.debug( "Unable to close input stream");
-            }
-            try
-            {
-                st.close();
-            }
-            catch (Exception e)
-            {
-                log.debug( "Unable to close statement");
-            }
         }
     }
 
