@@ -235,29 +235,7 @@ public class DatabaseMigration {
                             .put(ParamConfig.getImageORIHParam(), rs.getInt(12)));
                 }
             }
-
-            Statement shutdownSt = null;
-            try
-            {
-                shutdownSt = con.createStatement();
-                shutdownSt.executeQuery("SHUTDOWN");
-            }
-            catch (Exception e)
-            {
-                log.debug("Unable to execute query SHUTDOWN");
-            }
-            finally
-            {
-                try
-                {
-                    assert shutdownSt != null;
-                    shutdownSt.close();
-                }
-                catch(Exception e)
-                {
-                    log.debug("Unable to close shutdownSt");
-                }
-            }
+            shutdownDatabase(con);
 
             File file = new File(filename);
 
@@ -285,6 +263,31 @@ public class DatabaseMigration {
             catch (Exception e)
             {
                 log.debug( "Unable to close statement " + st);
+            }
+        }
+    }
+
+    private static void shutdownDatabase(Connection con){
+        Statement shutdownSt = null;
+        try
+        {
+            shutdownSt = con.createStatement();
+            shutdownSt.executeQuery("SHUTDOWN");
+        }
+        catch (Exception e)
+        {
+            log.debug("Unable to execute query SHUTDOWN");
+        }
+        finally
+        {
+            try
+            {
+                assert shutdownSt != null;
+                shutdownSt.close();
+            }
+            catch(Exception e)
+            {
+                log.debug("Unable to close shutdownSt");
             }
         }
     }
