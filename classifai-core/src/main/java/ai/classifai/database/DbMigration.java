@@ -68,7 +68,7 @@ public class DbMigration {
         Connection hsqlBndboxConn;
         Connection hsqlSegConn;
 
-        //Copy HSQL to .archive folder
+        //Copy HSQL to .archive folder for backup
         ArchiveHandler.copyToArchive(DbConfig.getPortfolioDirPath());
         ArchiveHandler.copyToArchive(DbConfig.getBndboxDirPath());
         ArchiveHandler.copyToArchive(DbConfig.getSegDirPath());
@@ -135,7 +135,6 @@ public class DbMigration {
             log.debug("Unable to close database: " + e);
         }
 
-        //Move JSON to .archive folder
         deleteFile(new File(portfolioJson));
         deleteFile(new File(bndBoxJson));
         deleteFile(new File(segJson));
