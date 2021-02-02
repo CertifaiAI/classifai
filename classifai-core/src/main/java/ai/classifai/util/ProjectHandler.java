@@ -58,8 +58,8 @@ public class ProjectHandler {
     @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
 
 
-    static {
-
+    static
+    {
         projectIDGenerator = new AtomicInteger(0);
 
         projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
@@ -76,14 +76,17 @@ public class ProjectHandler {
         projectIDGenerator = new AtomicInteger(seedNumber);
     }
 
-    public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType) {
+    public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
+    {
         return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
     }
 
-    private static ProjectLoader getProjectLoader(Pair<String, Integer> project) {
+    private static ProjectLoader getProjectLoader(Pair<String, Integer> project)
+    {
         Integer projectIDKey = getProjectID(project);
 
-        if (projectIDKey == null) {
+        if (projectIDKey == null)
+        {
             log.info("Null projectLoader due to projectID cannot be identified for the project: " + project.getLeft());
             return null;
         }
@@ -91,25 +94,34 @@ public class ProjectHandler {
         return getProjectLoader(projectIDKey);
     }
 
-    public static ProjectLoader getProjectLoader(Integer projectID) {
-        try {
+    public static ProjectLoader getProjectLoader(Integer projectID)
+    {
+        try
+        {
             return (ProjectLoader) projectIDLoaderDict.get(projectID);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.info("Error when retriveing ProjectLoader in ProjectHandler, ", e);
         }
         return null;
     }
 
-    public static Integer getProjectID(Pair<String, Integer> projectNameTypeKey) {
-        if (projectIDSearch.containsKey(projectNameTypeKey)) {
+    public static Integer getProjectID(Pair<String, Integer> projectNameTypeKey)
+    {
+        if (projectIDSearch.containsKey(projectNameTypeKey))
+        {
             return (Integer) projectIDSearch.get(projectNameTypeKey);
-        } else {
+        }
+        else
+        {
             log.info("Project ID not found for project: " + projectNameTypeKey.getLeft() + " with annotation type: " + projectNameTypeKey.getRight());
             return null;
         }
     }
 
-    public static Integer getProjectID(String projectName, Integer annotationType) {
+    public static Integer getProjectID(String projectName, Integer annotationType)
+    {
         Pair key = new ImmutablePair(projectName, annotationType);
 
         return getProjectID(key);
@@ -135,17 +147,22 @@ public class ProjectHandler {
         return loader;
     }
 
-    public static boolean initSelector(String selection) {
+    public static boolean initSelector(String selection)
+    {
         if ((selection.equals(ParamConfig.getFileParam())) || selection.equals(ParamConfig.getFolderParam())) {
             return true;
-        } else {
+        }
+        else
+        {
             log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
             return false;
         }
     }
 
-    public static boolean isProjectNameUnique(String projectName, Integer annotationType) {
-        if (!AnnotationHandler.checkSanity(annotationType)) {
+    public static boolean isProjectNameUnique(String projectName, Integer annotationType)
+    {
+        if (!AnnotationHandler.checkSanity(annotationType))
+        {
             log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
             return false;
         }
@@ -154,7 +171,8 @@ public class ProjectHandler {
 
         boolean isProjectNameUnique = true;
 
-        for (Object key : projectIDDictKeys) {
+        for (Object key : projectIDDictKeys)
+        {
             Pair projectNameType = (Pair) key;
 
             if (projectNameType.getLeft().equals(projectName) && projectNameType.getRight().equals(annotationType))
@@ -168,22 +186,29 @@ public class ProjectHandler {
         return isProjectNameUnique;
     }
 
-    public static void deleteProjectWithID(Integer projectID) {
-        try {
+    public static void deleteProjectWithID(Integer projectID)
+    {
+        try
+        {
             Pair projectPair = (Pair) projectNameSearch.remove(projectID);
 
-            if (projectPair == null) {
+            if (projectPair == null)
+            {
                 throw new NullPointerException("Deletion of ProjectPair from Project Handler failed.");
             }
 
-            if (projectIDLoaderDict.remove(projectID) == null) {
+            if (projectIDLoaderDict.remove(projectID) == null)
+            {
                 throw new NullPointerException("Deletion of Project from ProjectIDLoader failed.");
             }
 
-            if (projectIDSearch.remove(projectPair) == null) {
+            if (projectIDSearch.remove(projectPair) == null)
+            {
                 throw new NullPointerException("Deletion of Project from ProjectIDSearch failed.");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.debug("Error: ", e);
         }
     }

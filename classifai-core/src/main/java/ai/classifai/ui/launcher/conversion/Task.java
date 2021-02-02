@@ -63,7 +63,7 @@ public class Task extends SwingWorker<Void, Void> {
 
         ConverterLauncher.appendTaskOutput("Total number of files to convert: " + inputFiles.size());
 
-        if(inputFiles.isEmpty())
+        if (inputFiles.isEmpty())
         {
             ConverterLauncher.appendTaskOutput("Input file lists empty. Task completed!");
             setProgress(100);
@@ -82,11 +82,11 @@ public class Task extends SwingWorker<Void, Void> {
 
             int fileProcessed = 0;
 
-            if(inputFormat.equals(FileFormat.PDF.getText()))
+            if (inputFormat.equals(FileFormat.PDF.getText()))
             {
                 PdfHandler pdfHandler = new PdfHandler();
 
-                for(File file: inputFiles)
+                for (File file: inputFiles)
                 {
                     if(isStop) break;
 
@@ -99,14 +99,13 @@ public class Task extends SwingWorker<Void, Void> {
                     progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
 
                     setProgress(Math.min(progress, 100));
-
                 }
             }
-            else if(inputFormat.equals(FileFormat.TIF.getText()))
+            else if (inputFormat.equals(FileFormat.TIF.getText()))
             {
                 TifHandler tifHandler = new TifHandler();
 
-                for(File file: inputFiles)
+                for (File file: inputFiles)
                 {
                     if(isStop) break;
 
@@ -119,17 +118,14 @@ public class Task extends SwingWorker<Void, Void> {
                     progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
 
                     setProgress(Math.min(progress, 100));
-
                 }
             }
             else
             {
                 log.info("Input file format not supported: " + inputFormat);
-
             }
             done();
         }
-
         return null;
     }
     /*

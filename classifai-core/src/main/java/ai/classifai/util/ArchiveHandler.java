@@ -15,7 +15,7 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -28,10 +28,12 @@ import java.io.File;
  */
 @Slf4j
 public class ArchiveHandler {
+
     private static final String ARCHIVE_PATH;
 
-    static{
-        ARCHIVE_PATH = DatabaseConfig.getRootPath() + File.separator + ".archive";
+    static
+    {
+        ARCHIVE_PATH = DbConfig.getRootPath() + File.separator + ".archive";
         createArchiveFolder();
     }
 
@@ -39,43 +41,56 @@ public class ArchiveHandler {
         throw new IllegalStateException("Utility class");
     }
 
-    public static String getArchivePath(){ return ARCHIVE_PATH;}
+    public static String getArchivePath() { return ARCHIVE_PATH;}
 
-    private static void createArchiveFolder(){
+    private static void createArchiveFolder()
+    {
         File file = new File(ARCHIVE_PATH);
-        if(! file.exists()) file.mkdir();
+
+        if (!file.exists()) file.mkdir();
     }
 
-    public static void moveToArchive(String path) {
-        try {
+    public static void moveToArchive(String path)
+    {
+        try
+        {
             File source = new File(path);
             File destination = new File(ARCHIVE_PATH,source.getName());
-            if( source.isDirectory()) {
+
+            if (source.isDirectory())
+            {
                 FileUtils.moveDirectory(source, destination);
             }
-            else{
+            else
+            {
                 FileUtils.moveFile(source, destination);
             }
         }
-        catch( Exception e){
+        catch (Exception e)
+        {
             log.error("unable to move " + ARCHIVE_PATH + "\n"+ e);
         }
     }
 
-    public static void copyToArchive(String path) {
-        try {
+    public static void copyToArchive(String path)
+    {
+        try
+        {
             File source = new File(path);
             File destination = new File(ARCHIVE_PATH,source.getName());
-            if( source.isDirectory()) {
+
+            if (source.isDirectory())
+            {
                 FileUtils.copyDirectory(source, destination);
             }
-            else{
+            else
+            {
                 FileUtils.copyFile(source, destination);
             }
         }
-        catch( Exception e){
+        catch (Exception e)
+        {
             log.error("unable to copy " + ARCHIVE_PATH + "\n"+ e);
         }
     }
-
 }

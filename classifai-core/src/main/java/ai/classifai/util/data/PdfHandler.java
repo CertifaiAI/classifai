@@ -47,20 +47,21 @@ public class PdfHandler
         PDDocument document = null;
 
         String fileName = FileHandler.getFileName(pdfFullPath.getAbsolutePath());
-        try {
+        try
+        {
             document = PDDocument.load(pdfFullPath);
             PDFRenderer pdfRenderer = new PDFRenderer(document);
 
             int maxPages = document.getNumberOfPages();
-            if(maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
+            if (maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
 
             for (int page = 0; page < maxPages; ++page)
             {
-                if(Task.isStop()) break;
+                if (Task.isStop()) break;
 
                 String savedPath;
 
-                if(outputPath == null)
+                if (outputPath == null)
                 {
                     savedPath = FileHandler.getAbsolutePath(pdfFullPath);
                 }
@@ -73,11 +74,11 @@ public class PdfHandler
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
-                if(fImageSavedFullPath.exists() == false)
+                if (fImageSavedFullPath.exists() == false)
                 {
                     BufferedImage bim = pdfRenderer.renderImageWithDPI(page, DOTS_PER_INCH, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
 
-                    if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
+                    if ((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {
                         document.close();
                         log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
@@ -91,7 +92,7 @@ public class PdfHandler
             document.close();
 
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             String messageHeader = "PDF Skipped. Failed in reading pdf of file: ";
 
@@ -103,12 +104,12 @@ public class PdfHandler
         {
             try
             {
-                if(document != null)
+                if (document != null)
                 {
                     document.close();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 log.info("Error when closing pdf. ", e);
             }

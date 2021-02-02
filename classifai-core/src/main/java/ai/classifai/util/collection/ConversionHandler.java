@@ -48,7 +48,8 @@ public class ConversionHandler
     public static String arrayString2String(String[] input)
     {
         StringBuffer sb = new StringBuffer();
-        for(int i = 0; i < input.length; i++) {
+        for (int i = 0; i < input.length; i++)
+        {
             sb.append(input[i]);
         }
         return sb.toString();
@@ -80,7 +81,8 @@ public class ConversionHandler
             fileWriter = new FileWriter(outputFilePath);
             fileWriter.write(jsonInput.toJSONString());
 
-            try {
+            try
+            {
                 fileWriter.flush();
                 fileWriter.close();
             }
@@ -89,7 +91,7 @@ public class ConversionHandler
                 log.debug("FileWriter IOException while saving org.json.simple.JSONObject to File: ", e);
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("FileWriter Exception while writing org.json.simple.JSONObject to File: ", e);
         }
@@ -100,8 +102,8 @@ public class ConversionHandler
 
     public static io.vertx.core.json.JsonObject json2JSONObject(Object input)
     {
-        try {
-
+        try
+        {
             JSONParser parser = new JSONParser();
 
             JSONObject json = (JSONObject) parser.parse(input.toString());
@@ -110,7 +112,7 @@ public class ConversionHandler
 
             Iterator keyIterator = json.keySet().iterator();
 
-            while(keyIterator.hasNext())
+            while (keyIterator.hasNext())
             {
                 String key = (String) keyIterator.next();
                 vertxJson.put(key, json.get(key));
@@ -119,7 +121,8 @@ public class ConversionHandler
             return vertxJson;
 
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             log.error("Error in parsing Object to io.vertx.core.json.JsonObject", e);
         }
 
@@ -130,16 +133,16 @@ public class ConversionHandler
     {
         String content = preprocessStringToArray(input);
 
-        if(content.isEmpty()) return new ArrayList<>();
+        if (content.isEmpty()) return new ArrayList<>();
 
-        String delimiter = content.contains(", ") ? ", " :",";
+        String delimiter = content.contains(", ") ? ", " : ",";
 
         return Arrays.asList(content.split(delimiter));
     }
 
     public static String preprocessStringToArray(String input)
     {
-        if(input.equals("[]") || input.equals("[ ]") || (input.length() == 0))
+        if (input.equals("[]") || input.equals("[ ]") || (input.length() == 0))
         {
             return "";
         }
@@ -148,13 +151,13 @@ public class ConversionHandler
 
         String content;
 
-        if(input.substring(0, 1).equals("["))
+        if (input.substring(0, 1).equals("["))
         {
             content = input.substring(1);
             content = content.substring(0, input.length() - 2);
 
         }
-        else if(input.substring(0, 2).equals("[ "))
+        else if (input.substring(0, 2).equals("[ "))
         {
             content = input.substring(2);
             content = content.substring(0, input.length() - 3);
@@ -170,12 +173,12 @@ public class ConversionHandler
     public static List<String> integerList2StringList(List<Integer> oldList)
     {
         List<String> newList = new ArrayList<>();
-        for (Integer myInt : oldList) {
+        for (Integer myInt : oldList)
+        {
             newList.add(String.valueOf(myInt));
         }
 
         return newList;
-
     }
 
 
@@ -183,14 +186,14 @@ public class ConversionHandler
     {
             String content = preprocessStringToArray(input);
 
-            if(content.isEmpty()) return new ArrayList<>();
+            if (content.isEmpty()) return new ArrayList<>();
 
-            if(content.length() == 1)
+            if (content.length() == 1)
             {
                 return new ArrayList<>(Arrays.asList(Integer.parseInt(content)));
             }
 
-            String delimiter = content.contains(", ") ? ", " :",";
+            String delimiter = content.contains(", ") ? ", " : ",";
 
             List<String> subString = Arrays.asList(content.split(delimiter));
 
@@ -204,11 +207,11 @@ public class ConversionHandler
 
     public static List<Integer> jsonArray2IntegerList(JsonArray json)
     {
-        if((json == null) || (json.size() == 0)) return new ArrayList<>();
+        if ((json == null) || (json.size() == 0)) return new ArrayList<>();
 
         List<Integer> array = new ArrayList<>();
 
-        for(int i = 0 ; i < json.size(); ++i)
+        for (int i = 0 ; i < json.size(); ++i)
         {
             array.add(json.getInteger(i));
         }
@@ -218,11 +221,11 @@ public class ConversionHandler
 
     public static List<String> jsonArray2StringList(JsonArray json)
     {
-        if((json == null) || (json.size() == 0)) return new ArrayList<>();
+        if ((json == null) || (json.size() == 0)) return new ArrayList<>();
 
         List<String> array = new ArrayList<>();
 
-        for(int i = 0 ; i < json.size(); ++i)
+        for (int i = 0 ; i < json.size(); ++i)
         {
             array.add(json.getString(i));
         }
@@ -237,10 +240,11 @@ public class ConversionHandler
         JSONObject jsonObject = new JSONObject();
 
         JSONParser parser = new JSONParser();
-        try {
+        try
+        {
             Object obj = parser.parse(new FileReader(inputFilePath));
 
-            if(obj != null)
+            if (obj != null)
             {
                 jsonObject = (JSONObject) obj;
             }
@@ -251,7 +255,9 @@ public class ConversionHandler
             }
 
 
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.debug("Exception when loading from File to org.json.simple.JSONObject", e);
         }
 
@@ -261,7 +267,7 @@ public class ConversionHandler
 
     public static JSONObject map2JSONObjectParser(Map<Integer, String> inputDict)
     {
-        if((inputDict == null) || (inputDict.isEmpty()))
+        if ((inputDict == null) || (inputDict.isEmpty()))
         {
             log.error("Input Map is null/empty. Could not parse to JSONObject");
 

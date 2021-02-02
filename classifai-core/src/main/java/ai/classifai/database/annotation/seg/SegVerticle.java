@@ -15,7 +15,7 @@
  */
 package ai.classifai.database.annotation.seg;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
@@ -42,8 +42,8 @@ public class SegVerticle extends AnnotationVerticle
 {
     @Getter private static JDBCClient jdbcClient;
 
-    public void onMessage(Message<JsonObject> message) {
-
+    public void onMessage(Message<JsonObject> message)
+    {
         if (!message.headers().contains(ParamConfig.getActionKeyword()))
         {
             log.error("No action header specified for message with headers {} and body {}",
@@ -54,15 +54,15 @@ public class SegVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if(action.equals(SegDbQuery.retrieveData()))
+        if (action.equals(SegDbQuery.retrieveData()))
         {
             this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
         }
-        else if(action.equals(SegDbQuery.retrieveDataPath()))
+        else if (action.equals(SegDbQuery.retrieveDataPath()))
         {
             this.retrieveDataPath(message, jdbcClient, SegDbQuery.retrieveDataPath());
         }
-        else if(action.equals(SegDbQuery.updateData()))
+        else if (action.equals(SegDbQuery.updateData()))
         {
             this.updateData(message, jdbcClient, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
         }
@@ -70,11 +70,11 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
         }
-        else if(action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
         {
             this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.deleteProjectUUIDListwithProjectID());
         }
-        else if(action.equals(SegDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(SegDbQuery.deleteProjectUUIDList()))
         {
             this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
         }
@@ -89,20 +89,6 @@ public class SegVerticle extends AnnotationVerticle
     public void stop(Promise<Void> promise) throws Exception
     {
         log.info("Seg Verticle stopping...");
-
-        File lockFile = new DatabaseConfig(Database.H2).getSegLockPath();
-
-        try
-        {
-            if(Files.deleteIfExists(lockFile.toPath()))
-            {
-                log.debug("BoundingBox DB Lockfile deleted");
-            }
-        }
-        catch(Exception e)
-        {
-            log.debug("Exception: ", e);
-        }
     }
 
     //obtain a JDBC client connection,
@@ -111,27 +97,32 @@ public class SegVerticle extends AnnotationVerticle
     public void start(Promise<Void> promise) throws Exception
     {
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:h2:file:" + DatabaseConfig.getSegDbPath())
+                .put("url", "jdbc:h2:file:" + DbConfig.getSegDbPath())
                 .put("driver_class", "org.h2.Driver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));
 
 
         jdbcClient.getConnection(ar -> {
-            if (ar.failed()) {
 
+            if (ar.failed())
+            {
                 log.error("Could not open a database connection for SegVerticle", ar.cause());
                 promise.fail(ar.cause());
 
-            } else {
+            }
+            else
+            {
                 SQLConnection connection = ar.result();
                 connection.execute(SegDbQuery.createProject(), create -> {
                     connection.close();
-                    if (create.failed()) {
+                    if (create.failed())
+                    {
                         log.error("SegVerticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
-                    } else
+                    }
+                    else
                     {
                         //the consumer methods registers an event bus destination handler
                         vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
@@ -140,6 +131,5 @@ public class SegVerticle extends AnnotationVerticle
                 });
             }
         });
-
     }
 }

@@ -15,17 +15,16 @@
  */
 package ai.classifai.ui.launcher;
 
-/**
- * Print Logo on command prompt / terminal
- *
- * @author Kenge
- */
-
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 
+/**
+ * Print Logo on command prompt / terminal
+ *
+ * @author Kenge
+ */
 @Slf4j
 public class LogoLauncher {
 
@@ -54,8 +53,6 @@ public class LogoLauncher {
         {
             log.info("Error when setting icon: " + e);
         }
-
-
         return null;
     }
 }

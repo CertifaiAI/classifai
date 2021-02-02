@@ -57,7 +57,7 @@ public class LogHandler
 
     public static List getOSEditor(@NonNull OS os)
     {
-        if(!textEditorKey.containsKey(os)) return null;
+        if (!textEditorKey.containsKey(os)) return null;
 
         return textEditorKey.get(os);
     }

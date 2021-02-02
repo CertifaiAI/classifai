@@ -42,150 +42,165 @@ import java.sql.*;
  * @author YCCertifai
  */
 @Slf4j
-public class DatabaseMigration {
+public class DbMigration {
 
-    private DatabaseMigration(){
+    private DbMigration(){
         throw new IllegalStateException("Utility class");
     }
 
-    public static boolean migrate(){
-
+    public static boolean migrate()
+    {
         //create temporary json file to store data
-        String portfolioJson = DatabaseConfig.getRootPath() + File.separator + "portfoliodb.json";
-        String bndBoxJson = DatabaseConfig.getRootPath() + File.separator + "bbprojectdb.json";
-        String segJson = DatabaseConfig.getRootPath() + File.separator + "segprojectdb.json";
+        String portfolioJson = DbConfig.getRootPath() + File.separator + "portfoliodb.json";
+        String bndBoxJson = DbConfig.getRootPath() + File.separator + "bbprojectdb.json";
+        String segJson = DbConfig.getRootPath() + File.separator + "segprojectdb.json";
 
-        DatabaseConfig h2 = new DatabaseConfig(Database.H2);
-        DatabaseConfig hsql = new DatabaseConfig(Database.HSQL);
+        DbConfig h2 = new DbConfig(Database.H2);
+        DbConfig hsql = new DbConfig(Database.HSQL);
 
         hsql.deleteLckFile();
 
-        Connection h2PortfolioConnection;
-        Connection h2BndboxConnection;
-        Connection h2SegConnection;
-        Connection hsqlPortfolioConnection;
-        Connection hsqlBndboxConnection;
-        Connection hsqlSegConnection;
+        Connection h2PortfolioConn;
+        Connection h2BndboxConn;
+        Connection h2SegConn;
+
+        Connection hsqlPortfolioConn;
+        Connection hsqlBndboxConn;
+        Connection hsqlSegConn;
 
         //Copy HSQL to .archive folder
-        ArchiveHandler.copyToArchive(DatabaseConfig.getPortfolioDirPath());
-        ArchiveHandler.copyToArchive(DatabaseConfig.getBndboxDirPath());
-        ArchiveHandler.copyToArchive(DatabaseConfig.getSegDirPath());
+        ArchiveHandler.copyToArchive(DbConfig.getPortfolioDirPath());
+        ArchiveHandler.copyToArchive(DbConfig.getBndboxDirPath());
+        ArchiveHandler.copyToArchive(DbConfig.getSegDirPath());
 
         try
         {
-            h2PortfolioConnection = connectDatabase(Database.H2, DatabaseConfig.getPortfolioDbPath());
-            h2BndboxConnection = connectDatabase(Database.H2, DatabaseConfig.getBndboxDbPath());
-            h2SegConnection = connectDatabase(Database.H2, DatabaseConfig.getSegDbPath());
-            hsqlPortfolioConnection = connectDatabase(Database.HSQL, DatabaseConfig.getPortfolioDbPath());
-            hsqlBndboxConnection = connectDatabase(Database.HSQL, DatabaseConfig.getBndboxDbPath());
-            hsqlSegConnection = connectDatabase(Database.HSQL, DatabaseConfig.getSegDbPath());
+            h2PortfolioConn = connectDb(Database.H2, DbConfig.getPortfolioDbPath());
+            h2BndboxConn = connectDb(Database.H2, DbConfig.getBndboxDbPath());
+            h2SegConn = connectDb(Database.H2, DbConfig.getSegDbPath());
+
+            hsqlPortfolioConn = connectDb(Database.HSQL, DbConfig.getPortfolioDbPath());
+            hsqlBndboxConn = connectDb(Database.HSQL, DbConfig.getBndboxDbPath());
+            hsqlSegConn = connectDb(Database.HSQL, DbConfig.getSegDbPath());
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.error("Unable to connect to database: " + e);
-            deleteExcept(DatabaseConfig.getPortfolioDirPath(), "");
-            deleteExcept(DatabaseConfig.getBndboxDirPath(), "");
-            deleteExcept(DatabaseConfig.getSegDirPath(), "");
+
+            deleteExcept(DbConfig.getPortfolioDirPath(), "");
+            deleteExcept(DbConfig.getBndboxDirPath(), "");
+            deleteExcept(DbConfig.getSegDirPath(), "");
+
             return false;
         }
 
         //generate Json file from HSQL
-        hsql2Json(hsqlPortfolioConnection, portfolioJson) ;
-        hsql2Json(hsqlBndboxConnection, bndBoxJson) ;
-        hsql2Json(hsqlSegConnection, segJson) ;
+        hsql2Json(hsqlPortfolioConn, portfolioJson) ;
+        hsql2Json(hsqlBndboxConn, bndBoxJson) ;
+        hsql2Json(hsqlSegConn, segJson) ;
 
-        deleteExcept(DatabaseConfig.getPortfolioDirPath(), h2.getPortfolioDbFileName());
-        deleteExcept(DatabaseConfig.getBndboxDirPath(), h2.getBndboxDbFileName());
-        deleteExcept(DatabaseConfig.getSegDirPath(), h2.getSegDbFileName());
+        deleteExcept(DbConfig.getPortfolioDirPath(), h2.getPortfolioDbFileName());
+        deleteExcept(DbConfig.getBndboxDirPath(), h2.getBndboxDbFileName());
+        deleteExcept(DbConfig.getSegDirPath(), h2.getSegDbFileName());
 
         try
         {
-            hsqlPortfolioConnection.close();
-            hsqlBndboxConnection.close();
-            hsqlSegConnection.close();
+            hsqlPortfolioConn.close();
+            hsqlBndboxConn.close();
+            hsqlSegConn.close();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("Unable to close database: " + e);
         }
 
         //Create H2db tables
-        createH2(h2PortfolioConnection, PortfolioDbQuery.createPortfolioTable());
-        createH2(h2BndboxConnection, BoundingBoxDbQuery.createProject());
-        createH2(h2SegConnection, SegDbQuery.createProject());
+        createH2(h2PortfolioConn, PortfolioDbQuery.createPortfolioTable());
+        createH2(h2BndboxConn, BoundingBoxDbQuery.createProject());
+        createH2(h2SegConn, SegDbQuery.createProject());
 
         //read Json file to H2
-        json2H2(h2PortfolioConnection, portfolioJson);
-        json2H2(h2BndboxConnection, bndBoxJson);
-        json2H2(h2SegConnection, segJson);
+        json2H2(h2PortfolioConn, portfolioJson);
+        json2H2(h2BndboxConn, bndBoxJson);
+        json2H2(h2SegConn, segJson);
 
         try
         {
-            h2PortfolioConnection.close();
-            h2BndboxConnection.close();
-            h2SegConnection.close();
+            h2PortfolioConn.close();
+            h2BndboxConn.close();
+            h2SegConn.close();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("Unable to close database: " + e);
         }
 
         //Move JSON to .archive folder
-        ArchiveHandler.moveToArchive(portfolioJson);
-        ArchiveHandler.moveToArchive(bndBoxJson);
-        ArchiveHandler.moveToArchive(segJson);
+        deleteFile(new File(portfolioJson));
+        deleteFile(new File(bndBoxJson));
+        deleteFile(new File(segJson));
 
         return true;
-
     }
 
     private static boolean isPortfolio(String filename){
         return filename.contains("portfolio");
     }
 
-    private static void deleteExcept(String folderName, String dbPath){
-        File folder = new File(folderName);
-        if( folder.isDirectory()){
-            for (File file: folder.listFiles()){
-                if (file.getName().equals(dbPath)){
-                    continue;
-                }
-                try
-                {
-                    Files.delete(file.toPath());
-                }
-                catch (Exception e)
-                {
-                    log.debug("unable to delete" + file.getName());
-                }
-            }
+    private static void deleteFile(File file)
+    {
+        try
+        {
+            Files.delete(file.toPath());
         }
-        else{
-            log.debug( folderName + " is not a directory");
+        catch (Exception e)
+        {
+            log.debug("unable to delete" + file.getName());
         }
     }
 
-    private static Connection connectDatabase(Database database, String path) throws ClassNotFoundException, SQLException {
+    private static void deleteExcept(String folderName, String dbPath)
+    {
+        File folder = new File(folderName);
+        if (folder.isDirectory())
+        {
+            for (File file: folder.listFiles())
+            {
+                if (file.getName().equals(dbPath))
+                {
+                    continue;
+                }
+                deleteFile(file);
+            }
+        }
+        else
+        {
+            log.debug(folderName + " is not a directory");
+        }
+    }
+
+    private static Connection connectDb(Database database, String path) throws ClassNotFoundException, SQLException
+    {
         Class.forName(database.getDriver());
 
         return DriverManager.getConnection(database.getUrlHeader()+ path, database.getUser(), database.getPassword());
     }
 
-    private static void createH2(Connection con, String query)  {
-
-        try(Statement st = con.createStatement();)
+    private static void createH2(Connection con, String query)
+    {
+        try (Statement st = con.createStatement())
         {
             st.executeUpdate(query);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("Unable to create table. Please check on query: " + query);
         }
     }
 
-    private static void shutdownDatabase(Connection con){
-        try( Statement shutdownSt = con.createStatement();)
+    private static void shutdownDb(Connection con)
+    {
+        try (Statement shutdownSt = con.createStatement())
         {
 
             shutdownSt.executeQuery("SHUTDOWN");
@@ -196,8 +211,9 @@ public class DatabaseMigration {
         }
     }
 
-    private static void writeJsonToFile(File file, JSONArray arr){
-        try(FileWriter fw = new FileWriter(file))
+    private static void writeJsonToFile(File file, JSONArray arr)
+    {
+        try (FileWriter fw = new FileWriter(file))
         {
             fw.write(arr.toString());
         }
@@ -207,17 +223,18 @@ public class DatabaseMigration {
         }
     }
 
-    private static void hsql2Json(Connection con, String filename){
-
-        try (Statement st = con.createStatement();)
+    private static void hsql2Json(Connection con, String filename)
+    {
+        try (Statement st = con.createStatement())
         {
             JSONArray arr = new JSONArray();
-            String read = isPortfolio(filename)?"select * from portfolio":"select * from project";
+            String read = isPortfolio(filename) ? "select * from portfolio" : "select * from project";
 
             ResultSet rs = st.executeQuery(read);
 
-            while(rs.next()){
-                if( isPortfolio(filename))
+            while (rs.next())
+            {
+                if (isPortfolio(filename))
                 {
                     arr.put(new JSONObject()
                             .put(ParamConfig.getProjectIDParam(), rs.getInt(1))
@@ -244,44 +261,45 @@ public class DatabaseMigration {
                             .put(ParamConfig.getImageORIHParam(), rs.getInt(12)));
                 }
             }
-            shutdownDatabase(con);
+
+            shutdownDb(con);
 
             File file = new File(filename);
 
             if (!file.exists())
             {
-                if (! file.createNewFile())
+                if (!file.createNewFile())
                 {
                     log.debug("unable to create file " + file.getName());
                 }
                 writeJsonToFile(file,arr);
             }
-
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("Fail to write to JSON" + e);
-
         }
     }
 
-    private static void json2H2(Connection con, String filename){
+    private static void json2H2(Connection con, String filename)
+    {
         File file = new File(filename);
-        String insert = isPortfolio(filename)? PortfolioDbQuery.createNewProject(): AnnotationQuery.createData();
-        try(
+        String insert = isPortfolio(filename) ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();
+
+        try
+        (
                 InputStream is = new FileInputStream(file);
                 PreparedStatement st = con.prepareStatement(insert)
         )
         {
             JSONTokener tokener = new JSONTokener(is);
-
             JSONArray arr = new JSONArray(tokener);
 
-            for ( int i = 0; i < arr.length(); i++){
-
+            for (int i = 0; i < arr.length(); i++)
+            {
                 JSONObject obj = arr.getJSONObject(i);
 
-                if( isPortfolio(filename))
+                if (isPortfolio(filename))
                 {
                     st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
                     st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));
@@ -308,16 +326,14 @@ public class DatabaseMigration {
                     st.setInt(11, obj.getInt(ParamConfig.getImageORIWParam()));
                     st.setInt(12, obj.getInt(ParamConfig.getImageORIHParam()));
                 }
-
                 st.executeUpdate();
                 st.clearParameters();
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("Fail to write to H2" + e);
         }
     }
-
 }
 

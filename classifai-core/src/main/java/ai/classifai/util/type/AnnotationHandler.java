@@ -32,7 +32,7 @@ public class AnnotationHandler
 {
     public static boolean checkSanity(Integer annotationTypeInt)
     {
-        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
+        if (annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
             return true;
         }
@@ -47,11 +47,11 @@ public class AnnotationHandler
 
     public static boolean checkSanity(String annotationType)
     {
-        if(annotationType.equals(AnnotationType.BOUNDINGBOX.name()))
+        if (annotationType.equals(AnnotationType.BOUNDINGBOX.name()))
         {
             return true;
         }
-        else if(annotationType.equals(AnnotationType.SEGMENTATION.name()))
+        else if (annotationType.equals(AnnotationType.SEGMENTATION.name()))
         {
             return true;
         }
@@ -67,28 +67,27 @@ public class AnnotationHandler
     {
         type = type.toUpperCase(Locale.ROOT);
 
-        if(type.equals(AnnotationType.BOUNDINGBOX.name()))
+        if (type.equals(AnnotationType.BOUNDINGBOX.name()))
         {
             return AnnotationType.BOUNDINGBOX;
         }
-        else if(type.equals(AnnotationType.SEGMENTATION.name()))
+        else if (type.equals(AnnotationType.SEGMENTATION.name()))
         {
             return AnnotationType.SEGMENTATION;
         }
 
         log.debug("Annotation type from string resulted in failure: " + type);
 
-
         return null;
     }
 
     public static AnnotationType getType(Integer type)
     {
-        if(type.equals(AnnotationType.BOUNDINGBOX.ordinal()))
+        if (type.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
             return AnnotationType.BOUNDINGBOX;
         }
-        else if(type.equals(AnnotationType.SEGMENTATION.ordinal()))
+        else if (type.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
             return AnnotationType.SEGMENTATION;
         }

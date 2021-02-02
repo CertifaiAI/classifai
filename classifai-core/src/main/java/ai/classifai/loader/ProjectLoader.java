@@ -126,11 +126,11 @@ public class ProjectLoader
     {
         totalUUIDMaxLen = totalUUIDSizeBuffer;
 
-        if(totalUUIDMaxLen.equals(0))
+        if (totalUUIDMaxLen.equals(0))
         {
             loaderStatus = LoaderStatus.LOADED;
         }
-        else if(totalUUIDMaxLen.compareTo(0) < 0)
+        else if (totalUUIDMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
@@ -173,12 +173,11 @@ public class ProjectLoader
         {
             offloadFileSysNewList2List();
         }
-
     }
 
     private void offloadFileSysNewList2List()
     {
-        if(fileSysNewUUIDList.isEmpty())
+        if (fileSysNewUUIDList.isEmpty())
         {
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
         }
@@ -189,10 +188,7 @@ public class ProjectLoader
             PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
-
-
     }
-
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
@@ -206,5 +202,4 @@ public class ProjectLoader
     {
         fileSystemStatus = status;
     }
-
 }

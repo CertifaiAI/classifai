@@ -43,7 +43,8 @@ public class NameGenerator
             //classifai-core/src/main/resources/file-name which store the name combinations
             InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("name.json");
 
-            if (inputStream == null) {
+            if (inputStream == null)
+            {
                 throw new FileNotFoundException("File for name generator not found.");
             }
 
@@ -52,9 +53,8 @@ public class NameGenerator
             Object obj = parser.parse(new InputStreamReader(inputStream));
 
             jsonObject = (JSONObject) obj;
-
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.info("Create new project from cli might failed. ", e);
         }
@@ -62,7 +62,7 @@ public class NameGenerator
 
     public String getNewProjectName()
     {
-        if(jsonObject == null)
+        if (jsonObject == null)
         {
             return "default";
         }

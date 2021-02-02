@@ -47,7 +47,8 @@ public class ToolFileSelector{
     {
         LookFeelSetter.setDarkMode();
 
-        try {
+        try
+        {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -94,7 +95,7 @@ public class ToolFileSelector{
                     {
                         java.util.List<File> files = new ArrayList<>(java.util.Arrays.asList(chooser.getSelectedFiles()));
 
-                        if((files != null) && (!files.isEmpty()) && (files.get(0) != null))
+                        if ((files != null) && (!files.isEmpty()) && (files.get(0) != null))
                         {
 
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
@@ -110,16 +111,13 @@ public class ToolFileSelector{
                     {
                         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
-
                 }
             });
         }
-        catch (Exception e){
-
+        catch (Exception e)
+        {
             log.info("ProjectHandler for File type failed to open", e);
         }
-
     }
-
 }
 

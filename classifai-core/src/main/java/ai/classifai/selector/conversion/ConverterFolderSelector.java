@@ -34,7 +34,8 @@ public class ConverterFolderSelector {
 
     public void run(ConversionSelection selection)
     {
-        try {
+        try
+        {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {

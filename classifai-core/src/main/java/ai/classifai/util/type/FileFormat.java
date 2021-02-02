@@ -36,18 +36,18 @@ public enum FileFormat
     TIFF("tiff");
 
 
-    private final String text;
+    private final String TEXT;
 
-    FileFormat(final String text) {
-        this.text = text;
+    FileFormat(final String TEXT) {
+        this.TEXT = TEXT;
     }
 
     public String getText() {
-        return text;
+        return TEXT;
     }
 
     public String getUpperCase()
     {
-        return text.toUpperCase();
+        return TEXT.toUpperCase();
     }
 }

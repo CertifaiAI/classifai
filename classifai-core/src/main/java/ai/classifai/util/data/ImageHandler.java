@@ -57,7 +57,7 @@ public class ImageHandler {
     {
         Integer lastIndex = input.length();
 
-        Iterator<Map.Entry<String, String>> itr = ImageFileType.getBase64header().entrySet().iterator();
+        Iterator<Map.Entry<String, String>> itr = ImageFileType.getBase64Header().entrySet().iterator();
 
         while (itr.hasNext())
         {
@@ -65,7 +65,8 @@ public class ImageHandler {
 
             String fileFormat = input.substring(lastIndex - entry.getKey().length(), lastIndex);
 
-            if (fileFormat.equals(entry.getKey())) {
+            if (fileFormat.equals(entry.getKey()))
+            {
                 return entry.getValue();
             }
         }
@@ -75,8 +76,10 @@ public class ImageHandler {
         return null;
     }
 
-    private static String base64FromBufferedImage(BufferedImage img) {
-        try {
+    private static String base64FromBufferedImage(BufferedImage img)
+    {
+        try
+        {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ImageIO.write(img, "PNG", out);
             byte[] bytes = out.toByteArray();
@@ -84,18 +87,19 @@ public class ImageHandler {
             String src = "data:image/png;base64," + base64bytes;
 
             return src;
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.debug("Error in converting BufferedImage into base64: ", e);
             return "";
         }
-
     }
 
     public static boolean isImageReadable(String imagePath)
     {
         File file = new File(imagePath);
 
-        if((file.exists() == false) && (file.length() < 5)) //length() stands for file size
+        if ((file.exists() == false) && (file.length() < 5)) //length() stands for file size
         {
             log.info(imagePath + " not found. Check if the data is in the corresponding path. ");
 
@@ -103,10 +107,10 @@ public class ImageHandler {
         }
 
         return true;
-
     }
 
-    private static int getExifOrientation(File file){
+    private static int getExifOrientation(File file)
+    {
         try
         {
             Metadata metadata = JpegMetadataReader.readMetadata(file);
@@ -114,14 +118,14 @@ public class ImageHandler {
 
             return dir.getInt(274);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             return 0;
         }
     }
 
-    private static BufferedImage rotate(BufferedImage image, double angle){
-
+    private static BufferedImage rotate(BufferedImage image, double angle)
+    {
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
 
@@ -143,8 +147,10 @@ public class ImageHandler {
         return result;
     }
 
-    private static BufferedImage rotateWithOrientation(BufferedImage img, int orientation){
+    private static BufferedImage rotateWithOrientation(BufferedImage img, int orientation)
+    {
         double angle = 0;
+
         if (orientation == 8) angle = -Math.PI/2;
         else if (orientation == 3) angle = Math.PI;
         else if (orientation == 6) angle = Math.PI/2;
@@ -152,15 +158,19 @@ public class ImageHandler {
         return rotate(img,angle);
     }
 
-    private static int getHeight(BufferedImage img, int orientation){
-        if (orientation == 8 || orientation == 6){
+    private static int getHeight(BufferedImage img, int orientation)
+    {
+        if (orientation == 8 || orientation == 6)
+        {
             return img.getWidth();
         }
         return img.getHeight();
     }
 
-    private static int getWidth(BufferedImage img, int orientation){
-        if (orientation == 8 || orientation == 6){
+    private static int getWidth(BufferedImage img, int orientation)
+    {
+        if (orientation == 8 || orientation == 6)
+        {
             return img.getHeight();
         }
         return img.getWidth();
@@ -190,7 +200,7 @@ public class ImageHandler {
             Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
             Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
 
-            if(oriHeight > oriWidth)
+            if (oriHeight > oriWidth)
             {
                 thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
             }
@@ -213,13 +223,14 @@ public class ImageHandler {
             imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
             return imageData;
-
         }
-        catch (IOException e) {
+        catch (IOException e)
+        {
             log.debug("Failed in getting thumbnail for path " + imageAbsPath, e);
             return null;
         }
     }
+
     public static String encodeFileToBase64Binary(File file)
     {
         try
@@ -236,7 +247,7 @@ public class ImageHandler {
 
             return getImageHeader(file.getAbsolutePath()) + encodedfile;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.error("Failed while converting File to base64", e);
         }
@@ -249,7 +260,8 @@ public class ImageHandler {
 
     private static boolean isImageFileValid(String file)
     {
-        try {
+        try
+        {
             File filePath = new File(file);
 
             BufferedImage bimg = ImageIO.read(filePath);
@@ -259,13 +271,13 @@ public class ImageHandler {
                 log.info("Failed in reading. Skipped " + filePath.getAbsolutePath());
                 return false;
             }
-            else if((bimg.getWidth() > ImageFileType.getMaxWidth()) || (bimg.getHeight() > ImageFileType.getMaxHeight()))
+            else if ((bimg.getWidth() > ImageFileType.getMaxWidth()) || (bimg.getHeight() > ImageFileType.getMaxHeight()))
             {
                 log.info("Image size bigger than maximum allowed input size. Skipped " + filePath.getAbsolutePath());
                 return false;
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.debug("Error in checking if image file valid - " + file, e);
             return false;
@@ -280,9 +292,9 @@ public class ImageHandler {
 
         String currentFileFullPath = file.getAbsolutePath();
 
-        if(FileHandler.isfileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
+        if (FileHandler.isfileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
         {
-            if(isImageFileValid(currentFileFullPath))
+            if (isImageFileValid(currentFileFullPath))
             {
                 verifiedFilesList.add(file);
             }
@@ -306,9 +318,9 @@ public class ImageHandler {
 
         Integer annotationTypeInt = loader.getAnnotationType();
 
-        if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
+        if (annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
-            for(int i = 0; i < filesCollection.size(); ++i)
+            for (int i = 0; i < filesCollection.size(); ++i)
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
@@ -317,7 +329,7 @@ public class ImageHandler {
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
-            for(int i = 0; i < filesCollection.size(); ++i)
+            for (int i = 0; i < filesCollection.size(); ++i)
             {
                 Integer uuid = uuidGenerator.incrementAndGet();
 
@@ -330,7 +342,7 @@ public class ImageHandler {
     {
         List<File> validatedFilesList = new ArrayList<>();
 
-        for(File file : filesInput)
+        for (File file : filesInput)
         {
             List<File> files = checkFile(file);
             validatedFilesList.addAll(files);
@@ -349,19 +361,19 @@ public class ImageHandler {
 
         folderStack.push(rootPath);
 
-        if(checkFileFormat.isEmpty())
+        if (checkFileFormat.isEmpty())
         {
             loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
             return;
         }
 
-        while(folderStack.isEmpty() != true)
+        while (folderStack.isEmpty() != true)
         {
             File currentFolderPath = folderStack.pop();
 
             File[] folderList = currentFolderPath.listFiles();
 
-            for(File file : folderList)
+            for (File file : folderList)
             {
                 if (file.isDirectory())
                 {

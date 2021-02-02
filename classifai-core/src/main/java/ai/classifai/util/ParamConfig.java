@@ -15,7 +15,7 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.OS;
@@ -44,7 +44,7 @@ public class ParamConfig
 
         hostingPort = 9999;
 
-        if(OS_MANAGER.getCurrentOS().equals(OS.WINDOWS))
+        if (OS_MANAGER.getCurrentOS().equals(OS.WINDOWS))
         {
             FILE_SEPARATOR = "\\\\";
         }
@@ -55,9 +55,9 @@ public class ParamConfig
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = DatabaseConfig.getRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+    private static final String LOG_FILE_PATH = DbConfig.getRootPath() + File.separator + "logs" + File.separator + "classifai.log";
 
-    private static boolean IS_DOCKER_ENV = false;
+    private static boolean isDockerEnv = false;
 
     private static final String PROJECT_NAME_PARAM = "project_name";
     private static final String PROJECT_ID_PARAM = "project_id";
@@ -119,8 +119,8 @@ public class ParamConfig
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
 
-    public static void setIsDockerEnv(boolean state){ IS_DOCKER_ENV = state; }
-    public static boolean isDockerEnv(){ return IS_DOCKER_ENV; }
+    public static void setIsDockerEnv(boolean state) { isDockerEnv = state; }
+    public static boolean isDockerEnv() { return isDockerEnv; }
 
     public static String getProjectNameParam() { return PROJECT_NAME_PARAM; }
     public static String getProjectIDParam() { return PROJECT_ID_PARAM; }
@@ -133,17 +133,17 @@ public class ParamConfig
     public static String getUUIDListParam() { return UUID_LIST_PARAM; }
     public static String getLabelListParam() { return LABEL_LIST_PARAM;}
 
-    public static String getUUIDParam(){ return UUID_PARAM; }
-    public static String getImagePathParam(){ return IMAGE_PATH_PARAM; }
+    public static String getUUIDParam() { return UUID_PARAM; }
+    public static String getImagePathParam() { return IMAGE_PATH_PARAM; }
 
-    public static String getEmptyArray(){ return EMPTY_ARRAY; }
+    public static String getEmptyArray() { return EMPTY_ARRAY; }
 
-    public static String getImageThumbnailParam(){ return IMAGE_THUMBNAIL_PARAM; }
-    public static String getImageSourceParam(){ return IMAGE_SRC_PARAM; }
+    public static String getImageThumbnailParam() { return IMAGE_THUMBNAIL_PARAM; }
+    public static String getImageSourceParam() { return IMAGE_SRC_PARAM; }
 
-    public static String getBoundingBoxParam(){ return BOUNDING_BOX_PARAM; }
-    public static String getSegmentationParam(){ return SEGMENTATION_PARAM; }
-    public static String getProjectContentParam(){ return PROJECT_CONTENT_PARAM; }
+    public static String getBoundingBoxParam() { return BOUNDING_BOX_PARAM; }
+    public static String getSegmentationParam() { return SEGMENTATION_PARAM; }
+    public static String getProjectContentParam() { return PROJECT_CONTENT_PARAM; }
 
     public static String getImageXParam() { return IMAGEX_PARAM; }
     public static String getImageYParam() { return IMAGEY_PARAM; }
@@ -159,8 +159,8 @@ public class ParamConfig
     public static String getBase64Param() { return BASE64_PARAM; }
     public static String getFileSizeParam() { return FILE_SIZE_PARAM; }
 
-    public static String getFileParam(){ return FILE_PARAM; }
-    public static String getFolderParam(){ return FOLDER_PARAM; }
+    public static String getFileParam() { return FILE_PARAM; }
+    public static String getFolderParam() { return FOLDER_PARAM; }
 
     public static String getActionKeyword() { return ACTION_KEYWORD; }
     public static String getContent() { return CONTENT; }
@@ -168,11 +168,11 @@ public class ParamConfig
 
     public static String getAnnotationParam(AnnotationType type)
     {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
+        if (type.equals(AnnotationType.BOUNDINGBOX))
         {
             return ParamConfig.getBoundingBoxParam();
         }
-        else if(type.equals(AnnotationType.SEGMENTATION))
+        else if (type.equals(AnnotationType.SEGMENTATION))
         {
             return ParamConfig.getSegmentationParam();
         }

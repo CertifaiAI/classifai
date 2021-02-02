@@ -16,7 +16,7 @@
 
 package ai.classifai.database.portfolio;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
@@ -72,32 +72,32 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if(action.equals(PortfolioDbQuery.createNewProject()))
+        if (action.equals(PortfolioDbQuery.createNewProject()))
         {
             this.createNewProject(message);
         }
-        else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
+        else if (action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
         {
             this.getAllProjectsForAnnotationType(message);
         }
-        else if(action.equals(PortfolioDbQuery.updateLabelList()))
+        else if (action.equals(PortfolioDbQuery.updateLabelList()))
         {
             this.updateLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.deleteProject()))
+        else if (action.equals(PortfolioDbQuery.deleteProject()))
         {
             this.deleteProject(message);
         }
         //v2
-        else if(action.equals(PortfolioDbQuery.getProjectMetadata()))
+        else if (action.equals(PortfolioDbQuery.getProjectMetadata()))
         {
             this.getProjectMetadata(message);
         }
-        else if(action.equals(PortfolioDbQuery.getAllProjectsMetadata()))
+        else if (action.equals(PortfolioDbQuery.getAllProjectsMetadata()))
         {
             this.getAllProjectsMetadata(message);
         }
-        else if(action.equals(PortfolioDbQuery.starProject()))
+        else if (action.equals(PortfolioDbQuery.starProject()))
         {
             this.starProject(message);
         }
@@ -114,7 +114,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         String projectName = request.getString(ParamConfig.getProjectNameParam());
         Integer annotationType = request.getInteger(ParamConfig.getAnnotateTypeParam());
 
-        if(ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
 
             String annotationName = AnnotationHandler.getType(annotationType).name();
 
@@ -142,7 +142,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             message.reply(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
-
     }
 
     public void updateLabelList(Message<JsonObject> message)
@@ -152,7 +151,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateLabelList(), new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
 
-            if(fetch.succeeded())
+            if (fetch.succeeded())
             {
                 //update Project loader too
                 List<String> labelListArray = ConversionHandler.jsonArray2StringList(labelList);
@@ -163,7 +162,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 message.reply(ReplyHandler.getOkReply());
             }
-            else {
+            else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -177,11 +177,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.deleteProject(), params, fetch -> {
 
-            if (fetch.succeeded()) {
-
+            if (fetch.succeeded())
+            {
                 message.reply(ReplyHandler.getOkReply());
-
-            } else
+            }
+            else
             {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
@@ -193,8 +193,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
-            if (fetch.succeeded()) {
 
+            if (fetch.succeeded())
+            {
                 List<String> projectNameList = fetch.result()
                         .getResults()
                         .stream()
@@ -207,7 +208,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 message.reply(response);
             }
-            else {
+            else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -221,9 +223,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateUUIDGeneratorSeed(), params, fetch -> {
 
-            if(!fetch.succeeded())
+            if (!fetch.succeeded())
             {
-                log.error("Update seed number in Portfolio failed. Project expected to hit error: ", fetch.cause().getMessage());
+                log.error("Update seed number in Portfolio failed. Project expected to hit error: " + fetch.cause().getMessage());
             }
         });
     }
@@ -238,7 +240,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
 
-            if(!reply.succeeded())
+            if (!reply.succeeded())
             {
                 log.info("Update list of uuids to Portfolio Database failed");
             }
@@ -247,7 +249,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private void loadProjectLoader()
     {
-
         portfolioDbClient.query(PortfolioDbQuery.loadDbProject(), projectNameFetch -> {
 
             if (projectNameFetch.succeeded()) {
@@ -305,7 +306,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     ProjectHandler.setProjectIDGenerator(Collections.max(projectIDList) + 1);
 
-                    for(int i = 0; i < projectIDList.size(); ++i)
+                    for (int i = 0; i < projectIDList.size(); ++i)
                     {
                         ProjectLoader loader = ProjectHandler.buildProjectLoader(projectNameList.get(i), projectIDList.get(i), annotationTypeList.get(i), LoaderStatus.DID_NOT_INITIATED, isNewList.get(i));
 
@@ -328,13 +329,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         //from cli argument
         CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
 
-        if(initiator == null) return;
+        if (initiator == null) return;
 
         String projectName = initiator.getProjectName();
         Integer annotationInt = initiator.getProjectType().ordinal();
         File dataPath = initiator.getRootDataPath();
 
-        if(ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
             log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
@@ -354,13 +355,12 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     log.info("Create project failed. Classifai expect not to work fine in docker mode");
                 }
             });
-
         }
         else
         {
             Integer projectID = ProjectHandler.getProjectID(projectName, annotationInt);
 
-            if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
+            if (dataPath != null) ImageHandler.processFolder(projectID, dataPath);
         }
     }
 
@@ -370,8 +370,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectMetadata(), new JsonArray().add(projectID), fetch -> {
-            if (fetch.succeeded()) {
 
+            if (fetch.succeeded())
+            {
                 List<JsonObject> result = new ArrayList<>();
 
                 JsonArray row = fetch.result().getResults().get(0);
@@ -398,7 +399,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 message.reply(response);
             }
-            else {
+            else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -410,8 +412,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsMetadata(), new JsonArray().add(annotationTypeIndex), fetch -> {
-            if (fetch.succeeded()) {
 
+            if (fetch.succeeded())
+            {
                 ResultSet resultSet = fetch.result();
 
                 List<String> projectNameList = resultSet
@@ -447,7 +450,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 List<JsonObject> result = new ArrayList<>();
 
                 int maxIndex = projectNameList.size() - 1;
-                for(int i = maxIndex ; i > -1; --i)
+                for (int i = maxIndex ; i > -1; --i)
                 {
                     int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
 
@@ -468,7 +471,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 message.reply(response);
             }
-            else {
+            else
+            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -478,7 +482,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateIsNewParam(), new JsonArray().add(Boolean.FALSE).add(projectID), fetch ->{
 
-            if(fetch.succeeded())
+            if (fetch.succeeded())
             {
                 ProjectHandler.getProjectLoader(projectID).setIsProjectNewlyCreated(Boolean.FALSE);
             }
@@ -499,7 +503,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         try
         {
-            if(isStarObject instanceof String)
+            if (isStarObject instanceof String)
             {
                 String isStarStr = (String) isStarObject;
 
@@ -510,7 +514,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 throw new Exception("Status != String. Could not convert to boolean for starring.");
             }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             message.reply(ReplyHandler.reportBadParamError("Starring object value is not boolean. Failed to execute"));
             return;
@@ -518,7 +522,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.starProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
 
-            if(fetch.succeeded())
+            if (fetch.succeeded())
             {
                 message.reply(ReplyHandler.getOkReply());
             }
@@ -531,7 +535,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private JsonArray buildNewProject(String projectName, Integer annotationType, Integer projectID)
     {
-
         return new JsonArray()
                 .add(projectID)                   //project_id
                 .add(projectName)                 //project_name
@@ -548,21 +551,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     public void stop(Promise<Void> promise)
     {
         log.info("Portfolio Verticle stopping...");
-
-        File lockFile = new DatabaseConfig(Database.H2).getPortfolioLockPath();
-
-        try
-        {
-            if(Files.deleteIfExists(lockFile.toPath()))
-            {
-                log.debug("Portfolio DB Lockfile deleted");
-            }
-        }
-        catch(Exception e)
-        {
-            log.debug("Exception: ", e);
-        }
-
     }
 
     //obtain a JDBC client connection,
@@ -570,38 +558,38 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     @Override
     public void start(Promise<Void> promise)
     {
-
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:h2:file:" + DatabaseConfig.getPortfolioDbPath())
+                .put("url", "jdbc:h2:file:" + DbConfig.getPortfolioDbPath())
                 .put("driver_class", "org.h2.Driver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));
 
         portfolioDbClient.getConnection(ar -> {
-                if (ar.succeeded()) {
 
+                if (ar.succeeded()) {
                     SQLConnection connection = ar.result();
                     connection.execute(PortfolioDbQuery.createPortfolioTable(), create -> {
+
                         connection.close();
 
                         if (create.succeeded()) {
-
                             //the consumer methods registers an event bus destination handler
                             vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
                             loadProjectLoader();
 
                             promise.complete();
-
-                        } else
+                        }
+                        else
                         {
                             log.error("Portfolio database preparation error", create.cause());
                             promise.fail(create.cause());
                         }
                     });
 
-                } else {
-
+                }
+                else
+                {
                     log.error("Could not open a portfolio database connection", ar.cause());
                     promise.fail(ar.cause());
                 }

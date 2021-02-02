@@ -46,7 +46,8 @@ public class ToolFolderSelector{
     {
         LookFeelSetter.setDarkMode();
 
-        try {
+        try
+        {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -87,12 +88,11 @@ public class ToolFolderSelector{
 
                     frame.dispose();
 
-
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
 
-                        if((rootFolder != null) && (rootFolder.exists()))
+                        if ((rootFolder != null) && (rootFolder.exists()))
                         {
                             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 

@@ -38,13 +38,13 @@ public class FileHandler
 
         folderStack.push(rootPath);
 
-        while(folderStack.isEmpty() != true)
+        while (folderStack.isEmpty() != true)
         {
             File currentFolderPath = folderStack.pop();
 
             File[] folderList = currentFolderPath.listFiles();
 
-            for(File file : folderList)
+            for (File file : folderList)
             {
                 if (file.isDirectory())
                 {
@@ -52,7 +52,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if(isfileSupported(file.getAbsolutePath(), extensionFormat))
+                    if (isfileSupported(file.getAbsolutePath(), extensionFormat))
                     {
                         totalFilelist.add(file);
                     }
@@ -65,12 +65,12 @@ public class FileHandler
 
     public static boolean isfileSupported(String file, String[] formatTypes)
     {
-        for(String format : formatTypes)
+        for (String format : formatTypes)
         {
             Integer beginIndex = file.length() - format.length();
             Integer endIndex = file.length();
 
-            if(file.substring(beginIndex, endIndex).equals(format))
+            if (file.substring(beginIndex, endIndex).equals(format))
             {
                 return true;
             }

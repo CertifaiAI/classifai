@@ -15,7 +15,7 @@
  */
 package ai.classifai;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -53,9 +53,9 @@ public class MainVerticle extends AbstractVerticle
 
     public void configureDatabase()
     {
-        File dataRootPath = new File(DatabaseConfig.getRootPath());
+        File dataRootPath = new File(DbConfig.getRootPath());
 
-        if(dataRootPath.exists())
+        if (dataRootPath.exists())
         {
             log.info("Existing database of classifai on " + dataRootPath);
         }
@@ -65,7 +65,7 @@ public class MainVerticle extends AbstractVerticle
 
             boolean databaseIsBuild = dataRootPath.mkdir();
 
-            if(!databaseIsBuild)
+            if (!databaseIsBuild)
             {
                 log.debug("Root database could not created: ", dataRootPath);
             }
@@ -73,9 +73,9 @@ public class MainVerticle extends AbstractVerticle
     }
 
     @Override
-    public void start(Promise<Void> promise) {
-
-        if(!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
+    public void start(Promise<Void> promise)
+    {
+        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
         configureDatabase();
 
@@ -101,9 +101,10 @@ public class MainVerticle extends AbstractVerticle
             vertx.deployVerticle(serverVerticle, serverDeployment);
             return serverDeployment.future();
 
-        }).onComplete(ar ->
-        {
-            if (ar.succeeded()) {
+        }).onComplete(ar -> {
+
+            if (ar.succeeded())
+            {
                 portfolioVerticle.buildProjectFromCLI();
 
                 LogoLauncher.print();
@@ -112,8 +113,8 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
                 //docker environment not enabling welcome launcher
-                if(!ParamConfig.isDockerEnv()) {
-
+                if (!ParamConfig.isDockerEnv())
+                {
                     try
                     {
                         WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
@@ -126,7 +127,9 @@ public class MainVerticle extends AbstractVerticle
 
                 promise.complete();
 
-            } else {
+            }
+            else
+            {
                 promise.fail(ar.cause());
             }
         });
@@ -134,17 +137,16 @@ public class MainVerticle extends AbstractVerticle
 
     public static void closeVerticles()
     {
-        try {
-
+        try
+        {
             boundingBoxVerticle.stop(Promise.promise());
             segVerticle.stop(Promise.promise());
             serverVerticle.stop(Promise.promise());
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.info("Error when stopping verticles: ", e);
         }
-
     }
 
     @Override

@@ -22,39 +22,38 @@ package ai.classifai.util.type;
  */
 public enum Database {
     HSQL(".lck", ".script","org.hsqldb.jdbcDriver", "jdbc:hsqldb:file:",null,null),
-    H2(".lock.db",".mv.db", "org.h2.Driver", "jdbc:h2:file:", "admin", "" );
+    H2(null,".mv.db", "org.h2.Driver", "jdbc:h2:file:", "admin", "" );
 
-    private final String lckFileExtension;
-    private final String dbFileExtension;
-    private final String driver;
-    private final String urlHeader;
-    private final String user;
-    private final String password;
+    private final String LCK_FILE_EXTENSION;
+    private final String DB_FILE_EXTENSION;
+    private final String DRIVER;
+    private final String URL_HEADER;
+    private final String USER;
+    private final String PASSWORD;
 
-    Database(final String lckFileExtension, final String dbFileExtension, final String driver, final String urlHeader, final String user, final String password){
-
-        this.lckFileExtension = lckFileExtension;
-        this.dbFileExtension = dbFileExtension;
-        this.driver = driver;
-        this.urlHeader = urlHeader;
-        this.user = user;
-        this.password = password;
-
+    Database(final String LCK_FILE_EXTENSION, final String DB_FILE_EXTENSION, final String DRIVER, final String URL_HEADER, final String USER, final String PASSWORD)
+    {
+        this.LCK_FILE_EXTENSION = LCK_FILE_EXTENSION;
+        this.DB_FILE_EXTENSION = DB_FILE_EXTENSION;
+        this.DRIVER = DRIVER;
+        this.URL_HEADER = URL_HEADER;
+        this.USER = USER;
+        this.PASSWORD = PASSWORD;
     }
 
     public String getDbFileExtension() {
-        return dbFileExtension;
+        return DB_FILE_EXTENSION;
     }
 
     public String getLckFileExtension() {
-        return lckFileExtension;
+        return LCK_FILE_EXTENSION;
     }
 
-    public String getDriver() { return driver; }
+    public String getDriver() { return DRIVER; }
 
-    public String getUrlHeader() { return urlHeader; }
+    public String getUrlHeader() { return URL_HEADER; }
 
-    public String getUser() { return user; }
+    public String getUser() { return USER; }
 
-    public String getPassword() { return password; }
+    public String getPassword() { return PASSWORD; }
 }

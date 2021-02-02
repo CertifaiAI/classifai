@@ -26,13 +26,13 @@ public enum RunningStatus
     STARTING("Starting..."),
     RUNNING("Running...");
 
-    private final String text;
+    private final String TEXT;
 
-    RunningStatus(final String text) {
-        this.text = text;
+    RunningStatus(final String TEXT) {
+        this.TEXT = TEXT;
     }
 
     public String getText() {
-        return text;
+        return TEXT;
     }
 }

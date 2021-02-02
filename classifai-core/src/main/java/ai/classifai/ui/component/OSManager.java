@@ -37,23 +37,23 @@ public class OSManager
 
     private OS getOS(String osPropertyName)
     {
-        if(osPropertyName.indexOf("mac") >= 0)
+        if (osPropertyName.indexOf("mac") >= 0)
         {
             return OS.MAC;
         }
-        else if(osPropertyName.indexOf("win") >= 0)
+        else if (osPropertyName.indexOf("win") >= 0)
         {
             return OS.WINDOWS;
         }
-        else if(osPropertyName.indexOf("linux") >= 0) //centos, ubuntu
+        else if (osPropertyName.indexOf("linux") >= 0) //centos, ubuntu
         {
             return OS.LINUX;
         }
-        else if(osPropertyName.indexOf("nix") >= 0 || osPropertyName.indexOf("nux") >= 0 || osPropertyName.indexOf("aix") > 0)
+        else if (osPropertyName.indexOf("nix") >= 0 || osPropertyName.indexOf("nux") >= 0 || osPropertyName.indexOf("aix") > 0)
         {
             return OS.UNIX;
         }
-        else if(osPropertyName.indexOf("sunos") >= 0)
+        else if (osPropertyName.indexOf("sunos") >= 0)
         {
             return OS.SOLARIS;
         }
