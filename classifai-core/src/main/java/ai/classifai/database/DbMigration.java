@@ -182,7 +182,7 @@ public class DbMigration {
     {
         Class.forName(database.getDriver());
 
-        return DriverManager.getConnection(database.getUrlHeader()+ path, database.getUser(), database.getPassword());
+        return DriverManager.getConnection(database.getUrlHeader() + path, database.getUser(), database.getPassword());
     }
 
     private static void createH2(Connection con, String query)
@@ -201,7 +201,6 @@ public class DbMigration {
     {
         try (Statement shutdownSt = con.createStatement())
         {
-
             shutdownSt.executeQuery("SHUTDOWN");
         }
         catch (Exception e)

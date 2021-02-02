@@ -52,6 +52,7 @@ public class ClassifaiApp
             }
         }
 
+        //initiate to run cli arguments
         new CLIArgument(args);
 
         VertxOptions vertxOptions = new VertxOptions();

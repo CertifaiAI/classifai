@@ -29,7 +29,6 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.Database;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -42,7 +41,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -114,8 +112,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         String projectName = request.getString(ParamConfig.getProjectNameParam());
         Integer annotationType = request.getInteger(ParamConfig.getAnnotateTypeParam());
 
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
-
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationType))
+        {
             String annotationName = AnnotationHandler.getType(annotationType).name();
 
             log.info("Create " + annotationName + " project with name: " + projectName);
@@ -251,8 +249,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         portfolioDbClient.query(PortfolioDbQuery.loadDbProject(), projectNameFetch -> {
 
-            if (projectNameFetch.succeeded()) {
-
+            if (projectNameFetch.succeeded())
+            {
                 ResultSet resultSet = projectNameFetch.result();
 
                 if (resultSet.getNumRows() == 0)
@@ -315,7 +313,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         loader.setLabelList(ConversionHandler.string2StringList(labelList.get(i)));
                     }
                 }
-
             }
             else
             {

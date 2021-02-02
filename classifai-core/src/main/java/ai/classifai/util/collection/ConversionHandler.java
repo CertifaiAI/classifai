@@ -59,7 +59,7 @@ public class ConversionHandler
     {
         boolean value = false;
 
-        if(input.equals("true") || input.equals("false"))
+        if (input.equals("true") || input.equals("false"))
         {
             value = Boolean.parseBoolean(input);
         }

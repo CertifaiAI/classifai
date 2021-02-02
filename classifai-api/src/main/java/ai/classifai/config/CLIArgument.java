@@ -15,13 +15,11 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.database.DbConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import ai.classifai.util.type.Database;
 import com.formdev.flatlaf.FlatLightLaf;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,30 +31,27 @@ import java.io.File;
  *
  * @author codenamewei
  *
- * Sample: java -jar classifai-uberjar-dev.jar --unlockdb --docker --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
+ * Sample: java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
  *
  * Argument:
  * 1. --port=1234
  *    Port for Classifai
  *
- * 2. --unlockdb
- *    To use database even the lck file exist
- *
- * 3. --docker
+ * 2. --docker
  *    Docker build. WelcomeLauncher, FolderSelector & FileSelector will not initiate.
  *
- * 4. --projectname=<projectname>
+ * 3. --projectname=<projectname>
  *    Create new project from cli / Use existing project if exist
  *    if not defined, default project name will be randomly generated
  *
  *    --projectname=helloworld
  *
- * 5. --projecttype=boundingbox/segmentation
+ * 4. --projecttype=boundingbox/segmentation
  *    Project Type
  *
  *    --projecttype=boundingbox
  *
- * 6. --datapath=<datapath>
+ * 5. --datapath=<datapath>
  *
  *    Source of data file
  *
