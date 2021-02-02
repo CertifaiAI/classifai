@@ -74,22 +74,10 @@ public class ConversionHandler
     //JSONObject -> .json
     public static void saveJson2File(org.json.simple.JSONObject jsonInput, File outputFilePath)
     {
-        FileWriter fileWriter;
 
-        try
+        try (FileWriter fileWriter = new FileWriter(outputFilePath))
         {
-            fileWriter = new FileWriter(outputFilePath);
             fileWriter.write(jsonInput.toJSONString());
-
-            try
-            {
-                fileWriter.flush();
-                fileWriter.close();
-            }
-            catch (IOException e)
-            {
-                log.debug("FileWriter IOException while saving org.json.simple.JSONObject to File: ", e);
-            }
         }
         catch (Exception e)
         {
