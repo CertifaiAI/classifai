@@ -52,6 +52,8 @@ public class ClassifaiApp
             }
         }
 
+        new CLIArgument(args);
+
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);
