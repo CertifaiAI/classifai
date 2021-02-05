@@ -1169,6 +1169,8 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/seg/projects/meta").handler(this::getAllSegProjectsMeta);
 
+        router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
+
         router.put("/seg/newproject/:project_name").handler(this::createSegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
