@@ -15,13 +15,16 @@
  */
 package ai.classifai.database;
 
-import ai.classifai.database.source.H2;
-import ai.classifai.database.source.Hsql;
+import ai.classifai.util.type.database.H2;
+import ai.classifai.util.type.database.Hsql;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Db Operations for files and paths of database
@@ -36,7 +39,7 @@ public class DbConfig
     @Getter private static H2 H2;
     @Getter private static Hsql HSQL;
 
-    @Getter private static Map<String, String>  tableFolderPathDict;
+    @Getter private static Map<String, String> tableFolderPathDict;
     @Getter private static Map<String, String> tableAbsPathDict;
 
     @Getter private static String portfolioKey;

@@ -20,6 +20,7 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.database.H2;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -84,6 +85,8 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
+        jdbcClient.close();
+
         log.info("Seg Verticle stopping...");
     }
 
@@ -92,10 +95,13 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
+        H2 h2 = DbConfig.getH2();
+
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:h2:file:" + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
-                .put("driver_class", "org.h2.Driver")
-                .put("user", "admin")
+                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .put("driver_class", h2.getDriver())
+                .put("user", h2.getUser())
+                .put("password", h2.getPassword())
                 .put("max_pool_size", 30));
 
 

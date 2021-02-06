@@ -1,4 +1,4 @@
-package ai.classifai.database.source;
+package ai.classifai.util.type.database;
 
 import lombok.Getter;
 
@@ -41,13 +41,12 @@ public abstract class RelationalDb
     {
         for(File tablePath : tableAbsPathDict.values())
         {
-            if((tablePath == null) || (!tablePath.exists()))
+            if(tablePath.exists())
             {
-                //return false if either doesn't exist
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 }

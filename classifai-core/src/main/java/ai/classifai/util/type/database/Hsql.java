@@ -1,4 +1,4 @@
-package ai.classifai.database.source;
+package ai.classifai.util.type.database;
 
 import ai.classifai.util.data.FileHandler;
 import lombok.Getter;

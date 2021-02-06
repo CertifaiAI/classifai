@@ -1,4 +1,4 @@
-package ai.classifai.database.source;
+package ai.classifai.util.type.database;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ public class H2 extends RelationalDb
 {
     public H2()
     {
-        driver = "org.h2.jdbcDriver";
+        driver = "org.h2.Driver";
         dbFileExtension = ".mv.db";
         lckFileExtension = dbFileExtension;
         urlHeader = "jdbc:h2:file:";
@@ -50,21 +50,24 @@ public class H2 extends RelationalDb
 
     private boolean isFileLocked(String fileName)
     {
+        if(!new File(fileName).exists()) return false;
+
         FileStore fs = new FileStore();
 
         try
         {
             fs.open(fileName, true, null);
-            return false;
         }
         catch (IllegalStateException e)
         {
-            log.debug("Failed in opening locked file:", fileName);
+            log.debug(fileName + "cannot be opened.");
             return true;
         }
         finally
         {
             fs.close();
         }
+
+        return false;
     }
 }

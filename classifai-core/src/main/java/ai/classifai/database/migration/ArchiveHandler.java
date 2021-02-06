@@ -16,7 +16,6 @@
 package ai.classifai.database.migration;
 
 import ai.classifai.database.DbConfig;
-import ai.classifai.database.DbOps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -69,7 +68,7 @@ public class ArchiveHandler {
         }
         catch (Exception e)
         {
-            log.error("unable to copy " + ARCHIVE_PATH + "\n"+ e);
+            log.error("Unable to copy " + ARCHIVE_PATH + "\n"+ e);
         }
     }
 }

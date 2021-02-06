@@ -20,10 +20,10 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
-import ai.classifai.database.source.RelationalDb;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.FileHandler;
+import ai.classifai.util.type.database.RelationalDb;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
-
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,6 +76,7 @@ public class DbMigration
 
             return false;
         }
+
 
         //generate Json file from HSQL
         hsql2Json();
@@ -160,7 +160,6 @@ public class DbMigration
         }
     }
 
-
     private static void createH2(Connection con, String query)
     {
         try (Statement st = con.createStatement())
@@ -195,13 +194,13 @@ public class DbMigration
             {
                 JSONArray arr = new JSONArray();
 
-                String read = key.equals("portfolio") ? "SELECT * FROM portfolio" : "SELECT * FROM project";
+                String read = key.equals(DbConfig.getPortfolioKey()) ? "SELECT * FROM portfolio" : "SELECT * FROM project";
 
                 ResultSet rs = st.executeQuery(read);
 
                 while (rs.next())
                 {
-                    if (key.equals("portfolio"))
+                    if (key.equals(DbConfig.getPortfolioKey()))
                     {
                         arr.put(new JSONObject()
                                 .put(ParamConfig.getProjectIDParam(), rs.getInt(1))

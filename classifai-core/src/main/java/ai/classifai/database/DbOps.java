@@ -16,9 +16,12 @@
 package ai.classifai.database;
 
 import ai.classifai.database.migration.DbMigration;
+import ai.classifai.util.data.FileHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -61,9 +64,9 @@ public class DbOps
 
     private static void setupDb()
     {
-        File dataRootPath = new File(DbConfig.getDbRootPath());
+        String dataRootPath = DbConfig.getDbRootPath();
 
-        if (dataRootPath.exists())
+        if (isDbExist())
         {
             log.info("Existing database of classifai on " + dataRootPath);
 
@@ -74,15 +77,55 @@ public class DbOps
         }
         else
         {
-            log.info("Database of classifai created on " + dataRootPath);
+            boolean databaseIsBuild = mkdirDatabase();
 
-            boolean databaseIsBuild = dataRootPath.mkdir();
-
-            if (!databaseIsBuild)
+            if (databaseIsBuild)
+            {
+                log.info("Database of classifai created on " + dataRootPath);
+            }
+            else
             {
                 log.debug("Root database could not created: ", dataRootPath);
             }
         }
     }
 
+
+    private static boolean isDbExist()
+    {
+        if(!new File(DbConfig.getDbRootPath()).exists()) return false;
+
+        List<String> dbFolderList = new ArrayList<>(DbConfig.getTableFolderPathDict().values());
+
+        for(String path : dbFolderList)
+        {
+            if(!new File(path).exists()) return false;
+        }
+
+        return true;
+    }
+
+    private static boolean mkdirDatabase()
+    {
+        File dataRootPath = new File(DbConfig.getDbRootPath());
+
+        if(!FileHandler.createFolderIfNotExist(dataRootPath))
+        {
+            return false;
+        }
+
+        List<String> dbFolderList = new ArrayList<>(DbConfig.getTableFolderPathDict().values());
+
+        for(String path : dbFolderList)
+        {
+            File folderPath = new File(path);
+
+            if(!FileHandler.createFolderIfNotExist(folderPath))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
