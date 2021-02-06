@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Segmentation Verticle
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
@@ -93,7 +93,7 @@ public class SegVerticle extends AnnotationVerticle
     public void start(Promise<Void> promise) throws Exception
     {
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:h2:file:" + DbConfig.getSegDbPath())
+                .put("url", "jdbc:h2:file:" + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
                 .put("driver_class", "org.h2.Driver")
                 .put("user", "admin")
                 .put("max_pool_size", 30));

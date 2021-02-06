@@ -15,7 +15,7 @@
  */
 package ai.classifai;
 
-import ai.classifai.database.DbConfig;
+import ai.classifai.database.DbOps;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -27,8 +27,6 @@ import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
 
 /**
  * Main verticle to create multiple verticles
@@ -51,33 +49,12 @@ public class MainVerticle extends AbstractVerticle
         serverVerticle = new EndpointRouter();
     }
 
-    public void configureDatabase()
-    {
-        File dataRootPath = new File(DbConfig.getRootPath());
-
-        if (dataRootPath.exists())
-        {
-            log.info("Existing database of classifai on " + dataRootPath);
-        }
-        else
-        {
-            log.info("Database of classifai created on " + dataRootPath);
-
-            boolean databaseIsBuild = dataRootPath.mkdir();
-
-            if (!databaseIsBuild)
-            {
-                log.debug("Root database could not created: ", dataRootPath);
-            }
-        }
-    }
-
     @Override
     public void start(Promise<Void> promise)
     {
         if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
-        configureDatabase();
+        DbOps.configureDatabase();
 
         Promise<String> portfolioDeployment = Promise.promise();
         vertx.deployVerticle(portfolioVerticle, portfolioDeployment);

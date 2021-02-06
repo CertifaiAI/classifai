@@ -16,10 +16,7 @@
 package ai.classifai;
 
 import ai.classifai.config.CLIArgument;
-import ai.classifai.database.DbConfig;
-import ai.classifai.database.DbMigration;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.type.Database;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -38,20 +35,6 @@ public class ClassifaiApp
 {
     public static void main(String[] args) throws Exception
     {
-        if (!new DbConfig(Database.H2).isDatabaseExist() && new DbConfig(Database.HSQL).isDatabaseExist())
-        {
-            log.info("Database migration required. Executing database migration.");
-
-            if (!DbMigration.migrate())
-            {
-                log.info("Database migration failed. Old data will not be migrated. You can choose to move on with empty database, or close Classifai now to prevent data lost.");
-            }
-            else
-            {
-                log.info("Database migration is successful!");
-            }
-        }
-
         //initiate to run cli arguments
         new CLIArgument(args);
 

@@ -55,7 +55,8 @@ public class ParamConfig
     }
 
     private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = DbConfig.getRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+    private static final String LOG_FILE_PATH = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+
 
     private static boolean isDockerEnv = false;
 

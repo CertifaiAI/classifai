@@ -17,8 +17,10 @@ package ai.classifai.util.data;
 
 import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -28,6 +30,7 @@ import java.util.Stack;
  *
  * @author codenamewei
  */
+@Slf4j
 public class FileHandler
 {
     public static List<File> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
@@ -105,5 +108,37 @@ public class FileHandler
         String fileName = filePath.substring(fileStartIndex, fileEndIndex);
 
         return fileName;
+    }
+
+    public static boolean deleteFile(File file)
+    {
+        try
+        {
+            //folder
+            if (file.isDirectory())
+            {
+                File[] allContents = file.listFiles();
+                if (allContents != null)
+                {
+                    for (File buffer : allContents)
+                    {
+                        deleteFile(buffer);
+                    }
+                }
+
+                Files.delete(file.toPath());
+            }
+            //file
+            else
+            {
+                Files.delete(file.toPath());
+            }
+            return true;
+        }
+        catch (Exception e)
+        {
+            log.debug("Unable to delete" + file.getName());
+            return false;
+        }
     }
 }

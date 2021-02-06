@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
+package ai.classifai.database.migration;
 
 import ai.classifai.database.DbConfig;
+import ai.classifai.database.DbOps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -29,47 +30,25 @@ import java.io.File;
 @Slf4j
 public class ArchiveHandler {
 
-    private static final String ARCHIVE_PATH;
-
-    static
-    {
-        ARCHIVE_PATH = DbConfig.getRootPath() + File.separator + ".archive";
-        createArchiveFolder();
-    }
-
     private ArchiveHandler(){
         throw new IllegalStateException("Utility class");
     }
 
-    public static String getArchivePath() { return ARCHIVE_PATH;}
+    private static final String ARCHIVE = ".archive";
+    private static final String ARCHIVE_PATH;
+
+    static
+    {
+        ARCHIVE_PATH = DbConfig.getDbRootPath() + File.separator + ARCHIVE;
+
+        createArchiveFolder();
+    }
 
     private static void createArchiveFolder()
     {
         File file = new File(ARCHIVE_PATH);
 
         if (!file.exists()) file.mkdir();
-    }
-
-    public static void moveToArchive(String path)
-    {
-        try
-        {
-            File source = new File(path);
-            File destination = new File(ARCHIVE_PATH,source.getName());
-
-            if (source.isDirectory())
-            {
-                FileUtils.moveDirectory(source, destination);
-            }
-            else
-            {
-                FileUtils.moveFile(source, destination);
-            }
-        }
-        catch (Exception e)
-        {
-            log.error("unable to move " + ARCHIVE_PATH + "\n"+ e);
-        }
     }
 
     public static void copyToArchive(String path)
