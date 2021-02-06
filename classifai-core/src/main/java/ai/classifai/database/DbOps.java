@@ -60,6 +60,10 @@ public class DbOps
                 log.info("Database migration is successful!");
             }
         }
+        else
+        {
+            log.debug("Database migration did not initiated");
+        }
     }
 
     private static void setupDb()
