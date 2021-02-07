@@ -31,12 +31,9 @@ public class Hsql extends RelationalDb
     {
         for(File filePath : lockAbsPathList)
         {
-            if (filePath.exists()){
+            if (filePath.exists() && !FileHandler.deleteFile(filePath)){
 
-                if(!FileHandler.deleteFile(filePath))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 

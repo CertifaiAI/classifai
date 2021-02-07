@@ -156,13 +156,10 @@ public class FileHandler
 
     public static boolean createFolderIfNotExist(File file)
     {
-        if(!file.exists())
+        if(!file.exists() && !file.mkdir())
         {
-            if(!file.mkdir())
-            {
-                log.debug("Failed to create " + file.getAbsolutePath());
-                return false;
-            }
+            log.debug("Failed to create " + file.getAbsolutePath());
+            return false;
         }
         return true;
     }

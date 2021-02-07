@@ -60,7 +60,7 @@ public class DbMigration
         createTempJson();
 
         //hsql lock file to be removed to open up for migration
-        if(!DbConfig.getHSQL().removeLckIfExist())
+        if(!DbConfig.getHsql().removeLckIfExist())
         {
             log.info("Remove lock file of hsql database failed. Migration aborted");
             return false;
@@ -132,7 +132,7 @@ public class DbMigration
         {
             try
             {
-                Connection hsqlConn = connectDb(DbConfig.getTableAbsPathDict().get(key), DbConfig.getHSQL());
+                Connection hsqlConn = connectDb(DbConfig.getTableAbsPathDict().get(key), DbConfig.getHsql());
                 Connection h2Conn = connectDb(DbConfig.getTableAbsPathDict().get(key), DbConfig.getH2());
 
                 hsqlConnDict.put(key, hsqlConn);
@@ -150,7 +150,7 @@ public class DbMigration
     }
 
 
-    private static Connection connectDb(String tableAbsPath, RelationalDb db) throws Exception
+    private static Connection connectDb(String tableAbsPath, RelationalDb db) throws ClassNotFoundException, SQLException
     {
         Class.forName(db.getDriver());
 
@@ -191,9 +191,11 @@ public class DbMigration
 
     private void hsql2Json()
     {
-        for(String key : hsqlConnDict.keySet())
+        for (Map.Entry<String, Connection> entry : hsqlConnDict.entrySet())
         {
-            Connection con = hsqlConnDict.get(key);
+            String key = entry.getKey();
+
+            Connection con = entry.getValue();
 
             try (Statement st = con.createStatement())
             {
@@ -257,9 +259,11 @@ public class DbMigration
 
     private void json2H2()
     {
-        for(String key : h2ConnDict.keySet())
+        for (Map.Entry<String, Connection> entry : h2ConnDict.entrySet())
         {
-            Connection con = h2ConnDict.get(key);
+            String key = entry.getKey();
+
+            Connection con = entry.getValue();
 
             File file = new File(tempJsonDict.get(key));
             String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();

@@ -47,7 +47,7 @@ public class DbOps
     //hsqldb v1 -> h2 v2 database migration
     private static void migrateDbIfExist()
     {
-        if(DbConfig.getHSQL().isDbExist() && !DbConfig.getH2().isDbExist())
+        if(DbConfig.getHsql().isDbExist() && !DbConfig.getH2().isDbExist())
         {
             log.info("Database migration required. Executing database migration.");
 

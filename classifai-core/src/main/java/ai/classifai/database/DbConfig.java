@@ -36,8 +36,8 @@ public class DbConfig
 {
     @Getter private static String dbRootPath;
 
-    @Getter private static H2 H2;
-    @Getter private static Hsql HSQL;
+    @Getter private static H2 h2;
+    @Getter private static Hsql hsql;
 
     @Getter private static Map<String, String> tableFolderPathDict;
     @Getter private static Map<String, String> tableAbsPathDict;
@@ -62,7 +62,7 @@ public class DbConfig
         segKey  = "segproject";
 
         //add more database tables here if created
-        tableKeys = Arrays.asList(new String[]{portfolioKey, bndBoxKey, segKey});
+        tableKeys = Arrays.asList(portfolioKey, bndBoxKey, segKey);
 
         tableFolderPathDict = new HashMap<>();
         tableAbsPathDict = new HashMap<>();
@@ -75,12 +75,12 @@ public class DbConfig
             tableAbsPathDict.put(name, dbFolderPath + File.separator + name +  "db");
         }
 
-        H2 = new H2();
-        HSQL = new Hsql();
+        h2 = new H2();
+        hsql = new Hsql();
 
-        H2.setupDb(tableKeys, tableAbsPathDict);
+        h2.setupDb(tableKeys, tableAbsPathDict);
 
-        HSQL.setupDb(tableKeys, tableAbsPathDict);
+        hsql.setupDb(tableKeys, tableAbsPathDict);
 
     }
 }

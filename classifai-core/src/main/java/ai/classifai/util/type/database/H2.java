@@ -22,7 +22,7 @@ public class H2 extends RelationalDb
         lckFileExtension = dbFileExtension;
         urlHeader = "jdbc:h2:file:";
         user = "admin";
-        password = "admin";
+        password = "";
         tableAbsPathDict = null;
         lockAbsPathList = null;
 
