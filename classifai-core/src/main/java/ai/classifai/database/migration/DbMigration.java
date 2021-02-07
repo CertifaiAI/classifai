@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,7 +71,7 @@ public class DbMigration
 
         if(!createConnection())
         {
-            log.debug("Failed to get connection");
+            log.debug("Migration aborted due to failed connection");
 
             return false;
         }
@@ -142,7 +141,7 @@ public class DbMigration
             }
             catch (Exception e)
             {
-                log.error("Unable to connect to database: " + e);
+                log.error("Unable to create connection by failing to connect to database: " + e);
 
                 return false;
             }
@@ -280,8 +279,6 @@ public class DbMigration
                     {
                         JSONObject obj = arr.getJSONObject(i);
 
-                        System.out.println(obj.getString(ParamConfig.getProjectNameParam()));
-
                         st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
                         st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));
                         st.setInt(3, obj.getInt(ParamConfig.getAnnotateTypeParam()));
@@ -292,6 +289,7 @@ public class DbMigration
                         st.setBoolean(8, false);
                         st.setString(9, DateTime.get()); //changed created date of old projects to current date of migration
 
+
                         st.executeUpdate();
                         st.clearParameters();
                     }
@@ -301,9 +299,6 @@ public class DbMigration
                     for(int i = 0; i < arr.length(); ++i)
                     {
                         JSONObject obj = arr.getJSONObject(i);
-
-
-                        System.out.println(obj.getString(ParamConfig.getImagePathParam()));
 
                         st.setInt(1, obj.getInt(ParamConfig.getUUIDParam()));
                         st.setInt(2, obj.getInt(ParamConfig.getProjectIDParam()));
@@ -340,12 +335,10 @@ public class DbMigration
         {
             for (File file: folder.listFiles())
             {
-                if (file.getName().equals(pathOmitted))
+                if (!file.getAbsolutePath().equals(pathOmitted))
                 {
-                    continue;
+                    FileHandler.deleteFile(file);
                 }
-
-                FileHandler.deleteFile(file);
             }
         }
         else
