@@ -109,8 +109,6 @@ public class DbMigration
             FileHandler.deleteFile(new File(tempJsonDict.get(key)));
         }
 
-
-
         return true;
     }
 
@@ -140,6 +138,7 @@ public class DbMigration
 
                 hsqlConnDict.put(key, hsqlConn);
                 h2ConnDict.put(key, h2Conn);
+
             }
             catch (Exception e)
             {
@@ -281,6 +280,8 @@ public class DbMigration
                     {
                         JSONObject obj = arr.getJSONObject(i);
 
+                        System.out.println(obj.getString(ParamConfig.getProjectNameParam()));
+
                         st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
                         st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));
                         st.setInt(3, obj.getInt(ParamConfig.getAnnotateTypeParam()));
@@ -300,6 +301,9 @@ public class DbMigration
                     for(int i = 0; i < arr.length(); ++i)
                     {
                         JSONObject obj = arr.getJSONObject(i);
+
+
+                        System.out.println(obj.getString(ParamConfig.getImagePathParam()));
 
                         st.setInt(1, obj.getInt(ParamConfig.getUUIDParam()));
                         st.setInt(2, obj.getInt(ParamConfig.getProjectIDParam()));
@@ -352,7 +356,6 @@ public class DbMigration
 
     private static void closeConnection(List<Connection> connection)
     {
-
         for(Connection conn : connection)
         {
             try {
