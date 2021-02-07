@@ -201,9 +201,9 @@ public class DbMigration
             {
                 JSONArray arr = new JSONArray();
 
-                String read = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getAllProjects() : AnnotationQuery.getAllProjects();
+                String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getAllProjects() : AnnotationQuery.getAllProjects();
 
-                ResultSet rs = st.executeQuery(read);
+                ResultSet rs = st.executeQuery(query);
 
                 if (key.equals(DbConfig.getPortfolioKey()))
                 {
@@ -240,14 +240,12 @@ public class DbMigration
 
                 File file = new File(tempJsonDict.get(key));
 
-                if (!file.exists())
+                if (!file.exists() && !file.createNewFile())
                 {
-                    if (!file.createNewFile())
-                    {
-                        log.debug("Unable to create file " + file.getName());
-                    }
-                    writeJsonToFile(file, arr);
+                    log.debug("Unable to create file " + file.getName());
                 }
+
+                writeJsonToFile(file, arr);
             }
             catch (Exception e)
             {
