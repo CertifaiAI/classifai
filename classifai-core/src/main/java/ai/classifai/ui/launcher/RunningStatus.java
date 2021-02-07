@@ -26,9 +26,9 @@ public enum RunningStatus
     STARTING("Starting..."),
     RUNNING("Running...");
 
-    private final String text;
+    private String text;
 
-    RunningStatus(final String text) {
+    RunningStatus(String text) {
         this.text = text;
     }
 

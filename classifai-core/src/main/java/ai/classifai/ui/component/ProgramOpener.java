@@ -37,8 +37,8 @@ public class ProgramOpener
 
     static
     {
-        try {
-
+        try
+        {
             Image iconImage = ImageIO.read(BrowserHandler.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
 
             browserNotFoundIcon = new ImageIcon(iconImage);
@@ -55,7 +55,7 @@ public class ProgramOpener
 
         try
         {
-            if(os.equals(OS.LINUX) || os.equals(OS.MAC))
+            if (os.equals(OS.LINUX) || os.equals(OS.MAC))
             {
                 isProgramAbleToRun = isRunning(Runtime.getRuntime().exec(commandPath));
             }
@@ -65,7 +65,7 @@ public class ProgramOpener
             }
 
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.info("Failed to run " + ConversionHandler.arrayString2String(commandPath) +  ": ", e);
         }
@@ -76,13 +76,14 @@ public class ProgramOpener
 
     public static boolean isRunning(Process process)
     {
-        try {
+        try
+        {
             process.exitValue();
             return false;
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             return true;
         }
     }
-
 }

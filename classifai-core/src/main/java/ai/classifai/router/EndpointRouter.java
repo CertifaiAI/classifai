@@ -582,7 +582,7 @@ public class EndpointRouter extends AbstractVerticle
             res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + "did not initiated");
         }
 
-                    HTTPResponseHandler.configureOK(context, res);
+        HTTPResponseHandler.configureOK(context, res);
     }
 
     private void checkIfDockerEnv(RoutingContext context)
@@ -745,11 +745,11 @@ public class EndpointRouter extends AbstractVerticle
                     }
                 });
 
-                }catch (Exception e)
-                {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-                }
-            });
+            }catch (Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
+            }
+        });
     }
 
     /***
@@ -848,9 +848,9 @@ public class EndpointRouter extends AbstractVerticle
                     if (reply.succeeded()) {
                         JsonObject response = (JsonObject) reply.result().body();
 
-                HTTPResponseHandler.configureOK(context, response);
-            }
-        });
+                        HTTPResponseHandler.configureOK(context, response);
+                    }
+                });
             }catch (Exception e)
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));

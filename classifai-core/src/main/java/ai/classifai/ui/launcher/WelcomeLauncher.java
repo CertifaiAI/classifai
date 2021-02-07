@@ -47,25 +47,25 @@ import static javax.swing.JOptionPane.showMessageDialog;
 public class WelcomeLauncher extends JFrame
 {
     private static JFrame mainFrame;
-    private final static String BUTTON_PATH = "/console/";
-    private final static String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler.jpg";
-    private final static String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
-    private final static String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
-    private final static String LOG_BUTTON_FILE_NAME = "Log_Button.png";
+    private static final String BUTTON_PATH = File.separator + "console" + File.separator;
+    private static final String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler.jpg";
+    private static final String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
+    private static final String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
+    private static final String LOG_BUTTON_FILE_NAME = "Log_Button.png";
 
-    private final static int PANE_WIDTH = 640;
-    private final static int PANE_HEIGHT = 480;
+    private static final int PANE_WIDTH = 640;
+    private static final int PANE_HEIGHT = 480;
 
-    private final static int BTN_X_COORD = 217;
-    private final static int BTN_Y_COORD = 342;
+    private static final int BTN_X_COORD = 217;
+    private static final int BTN_Y_COORD = 342;
 
-    private final static int BTN_WIDTH = 55;
-    private final static int BTN_HEIGHT = 55;
+    private static final int BTN_WIDTH = 55;
+    private static final int BTN_HEIGHT = 55;
 
-    private final static int X_GAP = 88;
+    private static final int X_GAP = 88;
 
-    private final static String browserFailedMessage;
-    private final static String logFailedMessage;
+    private static final String BROWSER_FAILED_MESSAGE;
+    private static final String LOG_FAILED_MESSAGE;
 
     private static JLabel runningStatusText;
     private static JLabel runningStatusLabel;
@@ -81,10 +81,10 @@ public class WelcomeLauncher extends JFrame
 
     static
     {
-        browserFailedMessage = "Initialization of url failed.\n" +
+        BROWSER_FAILED_MESSAGE = "Initialization of url failed.\n" +
                                "Open classifai in chrome/firefox with http://localhost:" + ParamConfig.getHostingPort();
 
-        logFailedMessage = "Log file failed to open in editor.\n" +
+        LOG_FAILED_MESSAGE = "Log file failed to open in editor.\n" +
                 "Find the log file in " + ParamConfig.getLogFilePath();
 
         configure();
@@ -107,8 +107,8 @@ public class WelcomeLauncher extends JFrame
 
         setUpBackground();
 
-        try {
-
+        try
+        {
             Image iconImage = ImageIO.read(BrowserHandler.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
 
             browserNotFoundIcon = new ImageIcon(iconImage);
@@ -150,7 +150,7 @@ public class WelcomeLauncher extends JFrame
         panel.add(runningStatusLabel);
         panel.add(runningStatusText);
 
-        if(backgroundLabel != null) panel.add(backgroundLabel);
+        if (backgroundLabel != null) panel.add(backgroundLabel);
 
         mainFrame.setIconImage(LogoLauncher.getClassifaiIcon());
         mainFrame.add(panel);
@@ -169,7 +169,7 @@ public class WelcomeLauncher extends JFrame
 
     private static void configureConverterLauncher()
     {
-        if(converterLauncher == null)
+        if (converterLauncher == null)
         {
             LookFeelSetter.setDarkMode();
 
@@ -192,15 +192,22 @@ public class WelcomeLauncher extends JFrame
 
                 java.util.List<String> programPath = BrowserHandler.getOSBrowser(currentOS);
 
-                for(String browser : programPath) {
-                    if (isProgramPathExist(browser)) {
+                for (String browser : programPath)
+                {
+                    if (isProgramPathExist(browser))
+                    {
                         String[] command = null;
 
-                        if (currentOS.equals(OS.MAC)) {
+                        if (currentOS.equals(OS.MAC))
+                        {
                             command = new String[]{"/usr/bin/open", "-a", browser, BrowserHandler.getBrowserURL()};
-                        } else if (currentOS.equals(OS.WINDOWS)) {
+                        }
+                        else if (currentOS.equals(OS.WINDOWS))
+                        {
                             command = new String[]{browser + " " + BrowserHandler.getBrowserURL()};
-                        } else if (currentOS.equals(OS.LINUX)) {
+                        }
+                        else if (currentOS.equals(OS.LINUX))
+                        {
                             command = new String[]{"gio", "open", BrowserHandler.getBrowserURL()};
                         }
 
@@ -211,9 +218,9 @@ public class WelcomeLauncher extends JFrame
                     }
                 }
 
-                if(!isOpen)
+                if (!isOpen)
                 {
-                    failToOpenProgramPathMessage(browserFailedMessage);
+                    failToOpenProgramPathMessage(BROWSER_FAILED_MESSAGE);
                 }
             }
         });
@@ -227,7 +234,8 @@ public class WelcomeLauncher extends JFrame
         converterButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!ConverterLauncher.isOpened()) {
+                if (!ConverterLauncher.isOpened())
+                {
                     converterLauncher = new ConverterLauncher();//to prevent any lingering tasks
                     converterLauncher.launch();
                 }
@@ -249,28 +257,28 @@ public class WelcomeLauncher extends JFrame
 
                 java.util.List<String> programPath = LogHandler.getOSEditor(currentOS);
 
-                for(String editor : programPath)
+                for (String editor : programPath)
                 {
-                    if(isProgramPathExist(editor))
+                    if (isProgramPathExist(editor))
                     {
                         String[] command = null;
 
                         String logPath = ParamConfig.getLogFilePath();
 
-                        if(currentOS.equals(OS.MAC))
+                        if (currentOS.equals(OS.MAC))
                         {
                             command = new String[]{"/usr/bin/open", "-e", logPath};
                         }
-                        else if(currentOS.equals(OS.WINDOWS))
+                        else if (currentOS.equals(OS.WINDOWS))
                         {
                             command = new String[]{editor + " " + logPath};
                         }
-                        else if(currentOS.equals(OS.LINUX))
+                        else if (currentOS.equals(OS.LINUX))
                         {
                             command = new String[]{"gio", "open", logPath};
                         }
 
-                        if(ProgramOpener.runProgramPath(currentOS, command))
+                        if (ProgramOpener.runProgramPath(currentOS, command))
                         {
                             isOpen = true;
                             break;
@@ -278,9 +286,9 @@ public class WelcomeLauncher extends JFrame
                     }
                 }
 
-                if(!isOpen)
+                if (!isOpen)
                 {
-                    failToOpenProgramPathMessage(logFailedMessage);
+                    failToOpenProgramPathMessage(LOG_FAILED_MESSAGE);
                 }
             }
         });
@@ -298,8 +306,8 @@ public class WelcomeLauncher extends JFrame
             backgroundLabel.setLayout(null);
             backgroundLabel.setBounds(0,0, PANE_WIDTH, PANE_HEIGHT);
         }
-        catch(Exception e) {
-
+        catch (Exception e)
+        {
             log.info("Exception when setting WelcomeLauncher background: ", e);
         }
     }
@@ -310,7 +318,7 @@ public class WelcomeLauncher extends JFrame
         setRunningStatusIcon(status);
 
         //text
-        if(runningStatusText == null)
+        if (runningStatusText == null)
         {
             runningStatusText = new JLabel(status.getText());
             runningStatusText.setFont(new Font("SansSerif", Font.BOLD, 14)); //Serif, SansSerif, Monospaced, Dialog, and DialogInput.
@@ -328,8 +336,8 @@ public class WelcomeLauncher extends JFrame
     {
         JButton button = new JButton();
 
-        try {
-
+        try
+        {
             Image img = ImageIO.read(WelcomeLauncher.class.getResource(BUTTON_PATH + fileName));
 
             Image scaledImg = img.getScaledInstance(BTN_WIDTH, BTN_HEIGHT, Image.SCALE_SMOOTH);
@@ -351,11 +359,11 @@ public class WelcomeLauncher extends JFrame
     {
         String imageName = null;
 
-        if(status.equals(RunningStatus.STARTING))
+        if (status.equals(RunningStatus.STARTING))
         {
             imageName ="RedLight.png";
         }
-        else if(status.equals(RunningStatus.RUNNING))
+        else if (status.equals(RunningStatus.RUNNING))
         {
             imageName = "GreenLight.png";
         }
@@ -372,7 +380,7 @@ public class WelcomeLauncher extends JFrame
 
             ImageIcon icon = new ImageIcon(img);
 
-            if(runningStatusLabel == null)
+            if (runningStatusLabel == null)
             {
                 runningStatusLabel = new JLabel(icon);
                 runningStatusLabel.setBounds(0,0, 82, 874);
@@ -382,13 +390,14 @@ public class WelcomeLauncher extends JFrame
                 runningStatusLabel.setIcon(icon);
             }
         }
-        catch(Exception e) {
-
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
-    private static BufferedImage resize(BufferedImage img, int newW, int newH) {
+    private static BufferedImage resize(BufferedImage img, int newW, int newH)
+    {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
 
@@ -408,17 +417,16 @@ public class WelcomeLauncher extends JFrame
 
     private static boolean isProgramPathExist(String appPath)
     {
-        if(appPath.equals("default"))
+        if (appPath.equals("default"))
         {
             return true;
         }
-        if(!new File(appPath).exists())
+        if (!new File(appPath).exists())
         {
             log.debug("Program not found - " + appPath);
 
             return false;
         }
-
         return true;
     }
 }

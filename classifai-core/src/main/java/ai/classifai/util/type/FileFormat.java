@@ -36,9 +36,9 @@ public enum FileFormat
     TIFF("tiff");
 
 
-    private final String text;
+    private String text;
 
-    FileFormat(final String text) {
+    FileFormat(String text) {
         this.text = text;
     }
 

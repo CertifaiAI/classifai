@@ -41,7 +41,8 @@ public class BrowserHandler {
     private static Map<OS, List<String>> browserKey;
     @Getter private static String browserURL;
 
-    static {
+    static
+    {
         browserURL = "http://localhost:" + ParamConfig.getHostingPort();
 
         browserKey = new HashMap<>();
@@ -70,7 +71,7 @@ public class BrowserHandler {
 
     public static List getOSBrowser(@NonNull OS os)
     {
-        if(!browserKey.containsKey(os))return null;
+        if (!browserKey.containsKey(os)) return null;
         return browserKey.get(os);
     }
 }

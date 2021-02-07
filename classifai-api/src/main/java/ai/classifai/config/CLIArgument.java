@@ -15,7 +15,6 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.database.DatabaseConfig;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -32,30 +31,27 @@ import java.io.File;
  *
  * @author codenamewei
  *
- * Sample: java -jar classifai-uberjar-dev.jar --unlockdb --docker --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
+ * Sample: java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
  *
  * Argument:
  * 1. --port=1234
  *    Port for Classifai
  *
- * 2. --unlockdb
- *    To use database even the lck file exist
- *
- * 3. --docker
+ * 2. --docker
  *    Docker build. WelcomeLauncher, FolderSelector & FileSelector will not initiate.
  *
- * 4. --projectname=<projectname>
+ * 3. --projectname=<projectname>
  *    Create new project from cli / Use existing project if exist
  *    if not defined, default project name will be randomly generated
  *
  *    --projectname=helloworld
  *
- * 5. --projecttype=boundingbox/segmentation
+ * 4. --projecttype=boundingbox/segmentation
  *    Project Type
  *
  *    --projecttype=boundingbox
  *
- * 6. --datapath=<datapath>
+ * 5. --datapath=<datapath>
  *
  *    Source of data file
  *
@@ -65,7 +61,6 @@ import java.io.File;
 @Slf4j
 public class CLIArgument
 {
-    private boolean removeDbLock = false;
     private boolean isDockerEnv = false;
 
     private String projectName = null;
@@ -73,20 +68,11 @@ public class CLIArgument
 
     private String dataPath = null;
 
-    public boolean isDbSetup()
-    {
-        return DatabaseConfig.isDatabaseSetup(removeDbLock);
-    }
-
     public CLIArgument(String[] args)
     {
         for (String arg : args)
         {
-            if (arg.contains("--unlockdb"))
-            {
-                removeDbLock = true;
-            }
-            else if (arg.contains("--docker"))
+            if (arg.contains("--docker"))
             {
                 isDockerEnv = true;
                 ParamConfig.setIsDockerEnv(true);
@@ -95,7 +81,7 @@ public class CLIArgument
             {
                 String port = getArg(arg);
 
-                if(port != null)
+                if (port != null)
                 {
                     PortSelector.configurePort(port);
                 }
@@ -118,16 +104,15 @@ public class CLIArgument
             }
         }
 
-        if(!isDockerEnv) FlatLightLaf.install();
+        if (!isDockerEnv) FlatLightLaf.install();
 
         checkToInitiateCLIProject();
-
     }
 
     private String getArg(String arg)
     {
         String[] buffer = arg.split("=");
-        if(buffer.length == 2)
+        if (buffer.length == 2)
         {
             return buffer[1];
         }
@@ -138,7 +123,7 @@ public class CLIArgument
     private void checkToInitiateCLIProject()
     {
 
-        if((projectType == null) && (dataPath == null)) return;
+        if ((projectType == null) && (dataPath == null)) return;
 
         /*
          * failed scenario:
@@ -149,7 +134,7 @@ public class CLIArgument
          *
          */
         //Scenario 1
-        if(projectType == null)
+        if (projectType == null)
         {
             log.info("--projecttype not defined while project intend to initiated through cli");
 
@@ -160,7 +145,7 @@ public class CLIArgument
         AnnotationType type = AnnotationHandler.getType(projectType);
 
         //scenario 2
-        if(type == null)
+        if (type == null)
         {
             log.info("--projecttype not valid with argument: " + projectType);
             printMessageForCLIProjectFailed();
@@ -172,11 +157,11 @@ public class CLIArgument
         boolean isDataPathValid = dataPath != null && !dataPath.equals("") && new File(dataPath).exists();
         boolean isProjectNameValid = (projectName != null) && (!projectName.equals(""));
 
-        if(isDataPathValid)
+        if (isDataPathValid)
         {
             log.info("Data path imported through cli: " + dataPath);
 
-            if(isProjectNameValid)
+            if (isProjectNameValid)
             {
                 initiator = new CLIProjectInitiator(type, projectName, new File(dataPath));
             }
@@ -188,7 +173,7 @@ public class CLIArgument
         }
         else
         {
-            if(isProjectNameValid)
+            if (isProjectNameValid)
             {
                 initiator = new CLIProjectInitiator(type, projectName);
             }

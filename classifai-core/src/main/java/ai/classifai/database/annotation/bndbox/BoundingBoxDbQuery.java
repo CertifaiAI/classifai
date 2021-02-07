@@ -24,14 +24,14 @@ import ai.classifai.database.annotation.AnnotationQuery;
  */
 public class BoundingBoxDbQuery extends AnnotationQuery
 {
-    private final static String QUEUE = "boundingbox.queue";
+    private static final String QUEUE = "boundingbox.queue";
 
-    private final static String CREATE_PROJECT = "CREATE TABLE IF NOT EXISTS Project (uuid integer, project_id integer, img_path varchar(2000), bnd_box varchar(65535), img_depth integer, " +
-            "img_x integer, img_y integer, img_w double, img_h double, file_size integer, img_ori_w integer, img_ori_h integer, PRIMARY KEY(uuid, project_id))";
+    private static final String CREATE_PROJECT = "CREATE TABLE IF NOT EXISTS Project (uuid INT, project_id INT, img_path VARCHAR(2000), bnd_box CLOB, img_depth INT, " +
+            "img_x INT, img_y INT, img_w DOUBLE, img_h DOUBLE, file_size INT, img_ori_w INT, img_ori_h INT, PRIMARY KEY(uuid, project_id))";
 
-    private final static String RETRIEVE_DATA = "SELECT img_path, bnd_box, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project WHERE uuid = ? AND project_id = ?";
+    private static final String RETRIEVE_DATA = "SELECT img_path, bnd_box, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project WHERE uuid = ? AND project_id = ?";
 
-    private final static String UPDATE_DATA = "UPDATE Project SET bnd_box = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
+    private static final String UPDATE_DATA = "UPDATE Project SET bnd_box = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
 
     public static String getQueue()
     {

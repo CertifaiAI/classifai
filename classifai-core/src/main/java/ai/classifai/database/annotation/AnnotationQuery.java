@@ -22,15 +22,17 @@ package ai.classifai.database.annotation;
  */
 public abstract class AnnotationQuery
 {
-    protected final static String CREATE_DATA = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    protected static final String CREATE_DATA = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    protected final static String RETRIEVE_DATA_PATH = "SELECT img_path FROM Project WHERE uuid = ? AND project_id = ?";
+    protected static final String RETRIEVE_DATA_PATH = "SELECT img_path FROM Project WHERE uuid = ? AND project_id = ?";
 
-    protected final static String LOAD_VALID_PROJECT_UUID = "SELECT img_path FROM Project WHERE project_id = ? AND uuid = ?";
+    protected static final String LOAD_VALID_PROJECT_UUID = "SELECT img_path FROM Project WHERE project_id = ? AND uuid = ?";
 
-    protected final static String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "DELETE FROM Project WHERE project_id = ?";
+    protected static final String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "DELETE FROM Project WHERE project_id = ?";
 
-    protected final static String DELETE_PROJECT_UUID_LIST = "DELETE FROM Project WHERE project_id = ? AND uuid = ?";
+    protected static final String DELETE_PROJECT_UUID_LIST = "DELETE FROM Project WHERE project_id = ? AND uuid = ?";
+
+    protected static final String GET_ALL_PROJECTS = "SELECT * FROM Project";
 
     public static String createData() { return CREATE_DATA; }
 
@@ -41,4 +43,6 @@ public abstract class AnnotationQuery
     public static String deleteProjectUUIDListwithProjectID() { return DELETE_PROJECT_UUID_LIST_WITH_PROJECTID; }
 
     public static String deleteProjectUUIDList(){ return DELETE_PROJECT_UUID_LIST; }
+
+    public static String getAllProjects() { return GET_ALL_PROJECTS; }
 }

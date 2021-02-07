@@ -15,11 +15,12 @@
  */
 package ai.classifai.database.annotation.seg;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.database.H2;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -28,21 +29,18 @@ import io.vertx.ext.sql.SQLConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.nio.file.Files;
-
 /**
  * Segmentation Verticle
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
 {
     @Getter private static JDBCClient jdbcClient;
 
-    public void onMessage(Message<JsonObject> message) {
-
+    public void onMessage(Message<JsonObject> message)
+    {
         if (!message.headers().contains(ParamConfig.getActionKeyword()))
         {
             log.error("No action header specified for message with headers {} and body {}",
@@ -53,15 +51,15 @@ public class SegVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if(action.equals(SegDbQuery.retrieveData()))
+        if (action.equals(SegDbQuery.retrieveData()))
         {
             this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
         }
-        else if(action.equals(SegDbQuery.retrieveDataPath()))
+        else if (action.equals(SegDbQuery.retrieveDataPath()))
         {
             this.retrieveDataPath(message, jdbcClient, SegDbQuery.retrieveDataPath());
         }
-        else if(action.equals(SegDbQuery.updateData()))
+        else if (action.equals(SegDbQuery.updateData()))
         {
             this.updateData(message, jdbcClient, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
         }
@@ -69,11 +67,11 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
         }
-        else if(action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
         {
             this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.deleteProjectUUIDListwithProjectID());
         }
-        else if(action.equals(SegDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(SegDbQuery.deleteProjectUUIDList()))
         {
             this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
         }
@@ -87,21 +85,9 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
+        jdbcClient.close();
+
         log.info("Seg Verticle stopping...");
-
-        File lockFile = DatabaseConfig.getSegLockPath();
-
-        try
-        {
-            if(Files.deleteIfExists(lockFile.toPath()))
-            {
-                log.debug("BoundingBox DB Lockfile deleted");
-            }
-        }
-        catch(Exception e)
-        {
-            log.debug("Exception: ", e);
-        }
     }
 
     //obtain a JDBC client connection,
@@ -109,28 +95,36 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
+        H2 h2 = DbConfig.getH2();
+
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getSegDbPath())
-                .put("driver_class", "org.hsqldb.jdbcDriver")
-                .put("user", "admin")
+                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .put("driver_class", h2.getDriver())
+                .put("user", h2.getUser())
+                .put("password", h2.getPassword())
                 .put("max_pool_size", 30));
 
 
         jdbcClient.getConnection(ar -> {
-            if (ar.failed()) {
 
+            if (ar.failed())
+            {
                 log.error("Could not open a database connection for SegVerticle", ar.cause());
                 promise.fail(ar.cause());
 
-            } else {
+            }
+            else
+            {
                 SQLConnection connection = ar.result();
                 connection.execute(SegDbQuery.createProject(), create -> {
                     connection.close();
-                    if (create.failed()) {
+                    if (create.failed())
+                    {
                         log.error("SegVerticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
-                    } else
+                    }
+                    else
                     {
                         //the consumer methods registers an event bus destination handler
                         vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
@@ -139,6 +133,5 @@ public class SegVerticle extends AnnotationVerticle
                 });
             }
         });
-
     }
 }

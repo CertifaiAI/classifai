@@ -15,7 +15,7 @@
  */
 package ai.classifai;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbOps;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -27,8 +27,6 @@ import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
 
 /**
  * Main verticle to create multiple verticles
@@ -51,33 +49,12 @@ public class MainVerticle extends AbstractVerticle
         serverVerticle = new EndpointRouter();
     }
 
-    public void configureDatabase()
-    {
-        File dataRootPath = new File(DatabaseConfig.getRootPath());
-
-        if(dataRootPath.exists())
-        {
-            log.info("Existing database of classifai on " + dataRootPath);
-        }
-        else
-        {
-            log.info("Database of classifai created on " + dataRootPath);
-
-            boolean databaseIsBuild = dataRootPath.mkdir();
-
-            if(!databaseIsBuild)
-            {
-                log.debug("Root database could not created: ", dataRootPath);
-            }
-        }
-    }
-
     @Override
-    public void start(Promise<Void> promise) {
+    public void start(Promise<Void> promise)
+    {
+        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
-        if(!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
-
-        configureDatabase();
+        DbOps.configureDatabase();
 
         Promise<String> portfolioDeployment = Promise.promise();
         vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
@@ -101,9 +78,10 @@ public class MainVerticle extends AbstractVerticle
             vertx.deployVerticle(serverVerticle, serverDeployment);
             return serverDeployment.future();
 
-        }).onComplete(ar ->
-        {
-            if (ar.succeeded()) {
+        }).onComplete(ar -> {
+
+            if (ar.succeeded())
+            {
                 portfolioVerticle.buildProjectFromCLI();
 
                 LogoLauncher.print();
@@ -112,8 +90,8 @@ public class MainVerticle extends AbstractVerticle
                 log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
 
                 //docker environment not enabling welcome launcher
-                if(!ParamConfig.isDockerEnv()) {
-
+                if (!ParamConfig.isDockerEnv())
+                {
                     try
                     {
                         WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
@@ -126,7 +104,9 @@ public class MainVerticle extends AbstractVerticle
 
                 promise.complete();
 
-            } else {
+            }
+            else
+            {
                 promise.fail(ar.cause());
             }
         });
@@ -134,17 +114,16 @@ public class MainVerticle extends AbstractVerticle
 
     public static void closeVerticles()
     {
-        try {
-
+        try
+        {
             boundingBoxVerticle.stop(Promise.promise());
             segVerticle.stop(Promise.promise());
             serverVerticle.stop(Promise.promise());
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.info("Error when stopping verticles: ", e);
         }
-
     }
 
     @Override

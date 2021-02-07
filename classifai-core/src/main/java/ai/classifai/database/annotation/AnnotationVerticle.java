@@ -54,7 +54,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
             jdbcClient.queryWithParams(query, params, fetch -> {
-                if(fetch.succeeded())
+
+                if (fetch.succeeded())
                 {
                     ResultSet resultSet = fetch.result();
 
@@ -73,10 +74,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         message.reply(response);
                     }
                 }
-                else {
-                        message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                else
+                {
+                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                }
+            });
     }
 
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
@@ -89,7 +91,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         message.reply(ReplyHandler.getOkReply());
 
-        if(oriUUIDList.isEmpty())
+        if (oriUUIDList.isEmpty())
         {
             loader.updateDBLoadingProgress(0);
         }
@@ -100,7 +102,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
-        for(int i = 0; i < oriUUIDList.size(); ++i)
+        for (int i = 0; i < oriUUIDList.size(); ++i)
         {
             final Integer currentLength = i + 1;
             final Integer UUID = oriUUIDList.get(i);
@@ -109,7 +111,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             jdbcClient.queryWithParams(query, params, fetch -> {
 
-                if (fetch.succeeded()) {
+                if (fetch.succeeded())
+                {
                     ResultSet resultSet = fetch.result();
                     JsonArray row = resultSet.getResults().get(0);
                     String dataPath = row.getString(0);
@@ -140,10 +143,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .add(0)
                 .add(0);
 
-        jdbcClient.queryWithParams(query, params, fetch ->
-        {
+        jdbcClient.queryWithParams(query, params, fetch -> {
+
             ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-            if(fetch.succeeded())
+            if (fetch.succeeded())
             {
                 loader.pushFileSysNewUUIDList(UUID);
             }
@@ -164,7 +167,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcClient.queryWithParams(query, params, fetch -> {
 
-            if(fetch.succeeded())
+            if (fetch.succeeded())
             {
                 message.reply(ReplyHandler.getOkReply());
             }
@@ -189,9 +192,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
         List<Integer> dbUUIDList = loader.getUuidListFromDatabase();
 
-        for(Integer UUID : oriUUIDList)
+        for (Integer UUID : oriUUIDList)
         {
-            if(dbUUIDList.contains(UUID))
+            if (dbUUIDList.contains(UUID))
             {
                 JsonArray params = new JsonArray().add(projectID).add(UUID);
 
@@ -199,7 +202,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                 jdbcClient.queryWithParams(query, params, fetch -> {
 
-                    if(!fetch.succeeded())
+                    if (!fetch.succeeded())
                     {
                         log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
                     }
@@ -219,18 +222,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcClient.queryWithParams(deleteUUIDListQuery, params, fetch -> {
 
-            if(!fetch.succeeded())
+            if (!fetch.succeeded())
             {
                 log.debug("Failure in deleting uuids in project " + projectID);
             }
         });
 
-        if(dbUUIDList.removeAll(successUUIDList))
+        if (dbUUIDList.removeAll(successUUIDList))
         {
             loader.setUuidListFromDatabase(dbUUIDList);
 
             List<Integer> sanityUUIDList = loader.getSanityUUIDList();
-            if(sanityUUIDList.removeAll(successUUIDList))
+            if (sanityUUIDList.removeAll(successUUIDList))
             {
                 loader.setSanityUUIDList(sanityUUIDList);
             }
@@ -275,16 +278,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
 
             jdbcClient.queryWithParams(query, params, fetch -> {
-                if(fetch.succeeded())
+
+                if (fetch.succeeded())
                 {
                     message.reply(ReplyHandler.getOkReply());
                 }
-                else {
+                else
+                {
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.info("AnnotationVerticle: " + message.body().toString());
             String messageInfo = "Error occur when updating data, " + e;
@@ -302,7 +307,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcClient.queryWithParams(query, params, fetch -> {
 
-            if(fetch.succeeded())
+            if (fetch.succeeded())
             {
                 ResultSet resultSet = fetch.result();
 
@@ -313,7 +318,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
                     message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
-                else {
+                else
+                {
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
@@ -347,5 +353,4 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         });
     }
-
 }

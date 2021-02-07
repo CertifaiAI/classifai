@@ -28,7 +28,8 @@ public class HTTPResponseCode{
 
     private static Map<String, Integer> STATUS_CODE;
 
-    static {
+    static
+    {
         STATUS_CODE = new HashMap<>();
 
         STATUS_CODE.put("OK", 200);

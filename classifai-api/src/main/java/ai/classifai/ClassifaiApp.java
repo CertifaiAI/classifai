@@ -35,13 +35,8 @@ public class ClassifaiApp
 {
     public static void main(String[] args) throws Exception
     {
-        CLIArgument argumentSelector = new CLIArgument(args);
-
-        if(!argumentSelector.isDbSetup())
-        {
-            log.info("Classifai failed to configure. Abort.");
-            return;
-        }
+        //initiate to run cli arguments
+        new CLIArgument(args);
 
         VertxOptions vertxOptions = new VertxOptions();
 
@@ -55,6 +50,5 @@ public class ClassifaiApp
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
-
     }
 }

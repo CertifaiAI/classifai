@@ -29,7 +29,7 @@ public class PortSelector {
 
     public static void configurePort(@NonNull String inputArg)
     {
-        if((inputArg != null) && (inputArg.length() > 0) && (inputArg.matches("[0-9]+")))
+        if ((inputArg != null) && (inputArg.length() > 0) && (inputArg.matches("[0-9]+")))
         {
             setHostingPort(Integer.parseInt(inputArg));
         }

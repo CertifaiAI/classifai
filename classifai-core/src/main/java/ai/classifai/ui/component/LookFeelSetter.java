@@ -30,7 +30,8 @@ public class LookFeelSetter
 {
     public static void setLightMode()
     {
-        try {
+        try
+        {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         catch (Exception e)
@@ -41,7 +42,8 @@ public class LookFeelSetter
 
     public static void setDarkMode()
     {
-        try {
+        try
+        {
             UIManager.setLookAndFeel(new FlatDarkLaf());
         }
         catch (Exception e)

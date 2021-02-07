@@ -29,8 +29,8 @@ import java.io.File;
 @Slf4j
 public class CLIProjectInitiator
 {
-    @Getter private final String projectName;
-    @Getter private final AnnotationType projectType;
+    @Getter private String projectName;
+    @Getter private AnnotationType projectType;
 
     @Getter private File rootDataPath;
 

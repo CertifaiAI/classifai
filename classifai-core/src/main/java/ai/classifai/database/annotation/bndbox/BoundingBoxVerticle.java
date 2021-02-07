@@ -15,11 +15,12 @@
  */
 package ai.classifai.database.annotation.bndbox;
 
-import ai.classifai.database.DatabaseConfig;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.util.type.database.H2;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -27,9 +28,6 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.nio.file.Files;
 
 /**
  * Bounding Box Verticle
@@ -41,8 +39,8 @@ public class BoundingBoxVerticle extends AnnotationVerticle
 {
     @Getter private static JDBCClient jdbcClient;
 
-    public void onMessage(Message<JsonObject> message) {
-
+    public void onMessage(Message<JsonObject> message)
+    {
         if (!message.headers().contains(ParamConfig.getActionKeyword()))
         {
             log.error("No action header specified for message with headers {} and body {}",
@@ -53,15 +51,15 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if(action.equals(BoundingBoxDbQuery.retrieveData()))
+        if (action.equals(BoundingBoxDbQuery.retrieveData()))
         {
             this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.retrieveData(), AnnotationType.BOUNDINGBOX);
         }
-        else if(action.equals(BoundingBoxDbQuery.updateData()))
+        else if (action.equals(BoundingBoxDbQuery.updateData()))
         {
             this.updateData(message, jdbcClient, BoundingBoxDbQuery.updateData(), AnnotationType.BOUNDINGBOX);
         }
-        else if(action.equals(BoundingBoxDbQuery.retrieveDataPath()))
+        else if (action.equals(BoundingBoxDbQuery.retrieveDataPath()))
         {
             this.retrieveDataPath(message, jdbcClient, BoundingBoxDbQuery.retrieveDataPath());
         }
@@ -69,11 +67,11 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.loadValidProjectUUID());
         }
-        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
         {
             this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
         }
-        else if(action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
         {
             this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDList());
         }
@@ -86,21 +84,9 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise)
     {
+        jdbcClient.close();
+
         log.info("Bounding Box Verticle stopping...");
-
-        File lockFile = DatabaseConfig.getBndBoxLockPath();
-
-        try
-        {
-            if(Files.deleteIfExists(lockFile.toPath()))
-            {
-                log.debug("BoundingBox DB Lockfile deleted");
-            }
-        }
-        catch(Exception e)
-        {
-            log.debug("Exception: ", e);
-        }
     }
 
     //obtain a JDBC client connection,
@@ -108,27 +94,35 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
+        H2 h2 = DbConfig.getH2();
+
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getBndboxDbPath())
-                .put("driver_class", "org.hsqldb.jdbcDriver")
-                .put("user", "admin")
+                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
+                .put("driver_class", h2.getDriver())
+                .put("user", h2.getUser())
+                .put("password", h2.getPassword())
                 .put("max_pool_size", 30));
 
 
         jdbcClient.getConnection(ar -> {
-            if (ar.failed()) {
+
+            if (ar.failed())
+            {
                 log.error("Could not open a database connection for Bounding Box Verticle", ar.cause());
                 promise.fail(ar.cause());
-
-            } else {
+            }
+            else
+            {
                 SQLConnection connection = ar.result();
                 connection.execute(BoundingBoxDbQuery.createProject(), create -> {
                     connection.close();
-                    if (create.failed()) {
+                    if (create.failed())
+                    {
                         log.error("BoundingBoxVerticle database preparation error", create.cause());
                         promise.fail(create.cause());
 
-                    } else
+                    }
+                    else
                     {
                         //the consumer methods registers an event bus destination handler
                         vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
@@ -137,6 +131,5 @@ public class BoundingBoxVerticle extends AnnotationVerticle
                 });
             }
         });
-
     }
 }

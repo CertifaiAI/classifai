@@ -35,20 +35,20 @@ public class ImageFileType {
     private static final Integer FIXED_THUMBNAIL_WIDTH = 100;
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
 
-    private static final Map base64header;
+    private static final Map BASE_64_HEADER;
 
     private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "bmp", "JPG", "PNG", "JPEG"}; //{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
 
     static
     {
-        base64header = new HashMap();
-        base64header.put("jpg", "data:image/jpeg;base64,");
-        base64header.put("JPG", "data:image/jpeg;base64,");
-        base64header.put("jpeg", "data:image/png;base64,");
-        base64header.put("JPEG", "data:image/jpeg;base64,");
-        base64header.put("png", "data:image/jpeg;base64,");
-        base64header.put("PNG", "data:image/png;base64,");
-        base64header.put("bmp", "data:image/bmp;base64,");
+        BASE_64_HEADER = new HashMap();
+        BASE_64_HEADER.put("jpg", "data:image/jpeg;base64,");
+        BASE_64_HEADER.put("JPG", "data:image/jpeg;base64,");
+        BASE_64_HEADER.put("jpeg", "data:image/png;base64,");
+        BASE_64_HEADER.put("JPEG", "data:image/jpeg;base64,");
+        BASE_64_HEADER.put("png", "data:image/jpeg;base64,");
+        BASE_64_HEADER.put("PNG", "data:image/png;base64,");
+        BASE_64_HEADER.put("bmp", "data:image/bmp;base64,");
     }
 
     public static String[] getImageFileTypes()
@@ -56,9 +56,9 @@ public class ImageFileType {
         return ALLOWED_FILE_TYPES;
     }
 
-    public static Map getBase64header()
+    public static Map getBase64Header()
     {
-        return base64header;
+        return BASE_64_HEADER;
     }
 
     public static Integer getMaxWidth()

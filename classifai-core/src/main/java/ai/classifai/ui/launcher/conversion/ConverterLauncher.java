@@ -59,7 +59,7 @@ public class ConverterLauncher extends JPanel
     private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
     private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
 
-    private final static String DEFAULT_OUTPUT_PATH = "Same as source file";
+    private static final String DEFAULT_OUTPUT_PATH = "Same as source file";
 
     private JLabel inputFolderLabel =  new JLabel("Input Folder     : ");
     private JLabel outputFolderLabel = new JLabel("Output Folder  : ");
@@ -87,8 +87,8 @@ public class ConverterLauncher extends JPanel
     private Task task;
     private JFrame frame;
 
-    static {
-
+    static
+    {
         String gap = "   ";
         String[] inputFormat = new String[] {
                 gap + FileFormat.PDF.getUpperCase(),
@@ -166,7 +166,7 @@ public class ConverterLauncher extends JPanel
             public void windowClosing(WindowEvent e)
             {
                 isOpened = false;
-                if(task != null)
+                if (task != null)
                 {
                     Task.stop();
                     task.cancel(true);
@@ -258,14 +258,14 @@ public class ConverterLauncher extends JPanel
         outputFolderField.setMinimumSize(folderDimension);
 
         design(inputBrowserButton);
-        if(inputFolderListener == null)
+        if (inputFolderListener == null)
         {
             inputFolderListener = new InputFolderListener();
             inputBrowserButton.addActionListener(inputFolderListener);
         }
 
         design(outputBrowserButton);
-        if(outputFolderListener == null)
+        if (outputFolderListener == null)
         {
             outputFolderListener = new OutputFolderListener();
             outputBrowserButton.addActionListener(outputFolderListener);
@@ -296,8 +296,7 @@ public class ConverterLauncher extends JPanel
 
     private void design(Object obj)
     {
-
-        if(obj instanceof JLabel)
+        if (obj instanceof JLabel)
         {
             Font font = new Font(FONT_TYPE, Font.BOLD, 14);
 
@@ -307,7 +306,7 @@ public class ConverterLauncher extends JPanel
             label.setFont(font);
             label.setPreferredSize(dimension);
         }
-        else if(obj instanceof JTextField)
+        else if (obj instanceof JTextField)
         {
             Font font = new Font(FONT_TYPE, Font.BOLD, 12);
 
@@ -316,7 +315,7 @@ public class ConverterLauncher extends JPanel
             textField.setBackground(Color.DARK_GRAY);
             textField.setEditable(false);
         }
-        else if(obj instanceof JButton)
+        else if (obj instanceof JButton)
         {
             Font font = new Font(FONT_TYPE, Font.BOLD, 14);
 
@@ -326,7 +325,7 @@ public class ConverterLauncher extends JPanel
             button.setFont(font);
             button.setPreferredSize(dimension);
         }
-        else if(obj instanceof JComboBox)
+        else if (obj instanceof JComboBox)
         {
             Font font = new Font(FONT_TYPE, Font.BOLD, 14);
 
@@ -337,7 +336,7 @@ public class ConverterLauncher extends JPanel
 
             comboBox.setMaximumSize(dimension);
         }
-        else if(obj instanceof JProgressBar)
+        else if (obj instanceof JProgressBar)
         {
             Dimension dimension = new Dimension(100, ELEMENT_HEIGHT / 2);
 
@@ -361,7 +360,7 @@ public class ConverterLauncher extends JPanel
             progressBar.setBorder(border);
 
         }
-        else if(obj instanceof JTextArea)
+        else if (obj instanceof JTextArea)
         {
             JTextArea textArea = (JTextArea) obj;
 
@@ -370,7 +369,7 @@ public class ConverterLauncher extends JPanel
             textArea.setText(null);
             textArea.setForeground(Color.WHITE);
         }
-        else if(obj instanceof JComponent)
+        else if (obj instanceof JComponent)
         {
             Dimension dimension = new Dimension(100, ELEMENT_HEIGHT * 5);
 
@@ -381,8 +380,7 @@ public class ConverterLauncher extends JPanel
             scrollPane.setMinimumSize(dimension);
         }
 
-
-        if(obj == null)
+        if (obj == null)
         {
             log.info("Object for ConversionLauncher is null");
         }
@@ -413,7 +411,7 @@ public class ConverterLauncher extends JPanel
     {
         public void actionPerformed(ActionEvent e)
         {
-            if(!isConvertButtonClicked) //prevent multiple clicks
+            if (!isConvertButtonClicked) //prevent multiple clicks
             {
                 task = new Task();
                 task.addPropertyChangeListener(this::propertyChange);
@@ -442,6 +440,7 @@ public class ConverterLauncher extends JPanel
             }
         }
     }
+
     class InputFolderListener implements ActionListener
     {
         public void actionPerformed(ActionEvent e)
@@ -464,11 +463,11 @@ public class ConverterLauncher extends JPanel
 
         String extensionRepresentative = ((String) inputFormatCombo.getSelectedItem()).trim();
 
-        if(extensionRepresentative.equals(FileFormat.PDF.getUpperCase()))
+        if (extensionRepresentative.equals(FileFormat.PDF.getUpperCase()))
         {
             return new String[]{"pdf"};
         }
-        else if(extensionRepresentative.equals(FileFormat.TIF.getUpperCase()))
+        else if (extensionRepresentative.equals(FileFormat.TIF.getUpperCase()))
         {
             return new String[]{"tif", "tiff"};
         }
@@ -485,7 +484,7 @@ public class ConverterLauncher extends JPanel
     {
         String buffer = outputFolderField.getText();
 
-        if(buffer.equals(DEFAULT_OUTPUT_PATH))
+        if (buffer.equals(DEFAULT_OUTPUT_PATH))
         {
             return null; // for same path
         }

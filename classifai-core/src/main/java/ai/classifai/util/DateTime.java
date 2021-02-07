@@ -38,7 +38,7 @@ public class DateTime {
 
             return dtf.format(now);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.error("Error in getting datetime: ", e.getMessage());
         }

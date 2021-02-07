@@ -45,16 +45,19 @@ public class TifHandler
         String message = null;
         String fileName = FileHandler.getFileName(tifFullPath.getAbsolutePath());
 
-        try {
+        try
+        {
             List<File> tif2Images = new ArrayList<>();
 
             ImageInputStream is = ImageIO.createImageInputStream(tifFullPath);
-            if (is == null || is.length() == 0){
+            if (is == null || is.length() == 0)
+            {
                 return message;
             }
 
             Iterator<ImageReader> iterator = ImageIO.getImageReaders(is);
-            if (iterator == null || !iterator.hasNext()) {
+            if (iterator == null || !iterator.hasNext())
+            {
                 return message;
             }
 
@@ -63,14 +66,14 @@ public class TifHandler
 
             int maxPages = reader.getNumImages(true);
 
-            if(maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
+            if (maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
 
             for (int page = 0; page < maxPages; ++page)
             {
-                if(Task.isStop()) break;
+                if (Task.isStop()) break;
 
                 String savedPath;
-                if(outputPath == null)
+                if (outputPath == null)
                 {
                     savedPath = FileHandler.getAbsolutePath(tifFullPath);
                 }
@@ -83,11 +86,11 @@ public class TifHandler
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
-                if(fImageSavedFullPath.exists() == false)
+                if (fImageSavedFullPath.exists() == false)
                 {
                     BufferedImage bim = reader.read(page);
 
-                    if((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
+                    if ((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {
                         log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
                     }
@@ -95,7 +98,7 @@ public class TifHandler
                     // suffix in filename will be used as the file format
                     boolean bSavedSuccess = ImageIO.write(bim, extensionFormat, new File(imageSavedFullPath));
 
-                    if(!bSavedSuccess)
+                    if (!bSavedSuccess)
                     {
                         String messageHeader = "Save TIF image failed: ";
                         message = messageHeader + tifFullPath.getName();
@@ -110,7 +113,7 @@ public class TifHandler
             }
 
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.info("Tif Skipped. Failed in reading tif of file: " + tifFullPath, e);
         }
