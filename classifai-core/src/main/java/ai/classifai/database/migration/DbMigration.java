@@ -69,14 +69,10 @@ public class DbMigration
 
         if(!createConnection())
         {
-            for(String key : DbConfig.getTableKeys())
-            {
-                FileHandler.deleteFile(new File(DbConfig.getTableFolderPathDict().get(key)));
-            }
+            log.debug("Failed to get connection");
 
             return false;
         }
-
 
         //generate Json file from HSQL
         hsql2Json();
@@ -97,6 +93,8 @@ public class DbMigration
                 h2ConnDict.get(key).close();
 
                 FileHandler.deleteFile(new File(tempJsonDict.get(key)));
+
+                FileHandler.deleteFile(new File(DbConfig.getTableFolderPathDict().get(key)));
             }
             catch(Exception e)
             {
@@ -115,6 +113,7 @@ public class DbMigration
         for(String table : DbConfig.getTableKeys())
         {
             String tempJson = DbConfig.getDbRootPath() + File.separator + table + ".json";
+
             tempJsonDict.put(table, tempJson);
         }
     }
@@ -128,8 +127,8 @@ public class DbMigration
         {
             try
             {
-                Connection h2Conn = connectDb(key, DbConfig.getH2());
                 Connection hsqlConn = connectDb(key, DbConfig.getHSQL());
+                Connection h2Conn = connectDb(key, DbConfig.getH2());
 
                 hsqlConnDict.put(key, hsqlConn);
                 h2ConnDict.put(key, h2Conn);
@@ -194,13 +193,13 @@ public class DbMigration
             {
                 JSONArray arr = new JSONArray();
 
-                String read = key.equals(DbConfig.getPortfolioKey()) ? "SELECT * FROM portfolio" : "SELECT * FROM project";
+                String read = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getAllProjects() : AnnotationQuery.getAllProjects();
 
                 ResultSet rs = st.executeQuery(read);
 
-                while (rs.next())
+                if (key.equals(DbConfig.getPortfolioKey()))
                 {
-                    if (key.equals(DbConfig.getPortfolioKey()))
+                    while (rs.next())
                     {
                         arr.put(new JSONObject()
                                 .put(ParamConfig.getProjectIDParam(), rs.getInt(1))
@@ -210,7 +209,10 @@ public class DbMigration
                                 .put(ParamConfig.getUuidGeneratorParam(), rs.getInt(5))
                                 .put(ParamConfig.getUUIDListParam(), rs.getString(6)));
                     }
-                    else
+                }
+                else
+                {
+                    while (rs.next())
                     {
                         arr.put(new JSONObject()
                                 .put(ParamConfig.getUUIDParam(), rs.getInt(1))
@@ -236,7 +238,7 @@ public class DbMigration
                     {
                         log.debug("unable to create file " + file.getName());
                     }
-                    writeJsonToFile(file,arr);
+                    writeJsonToFile(file, arr);
                 }
             }
             catch (Exception e)
@@ -254,23 +256,23 @@ public class DbMigration
             Connection con = h2ConnDict.get(key);
 
             File file = new File(tempJsonDict.get(key));
-            String insert = key.equals("portfolio") ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();
+            String insert = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();
 
             try
             (
-                    InputStream is = new FileInputStream(file);
-                    PreparedStatement st = con.prepareStatement(insert)
+                InputStream is = new FileInputStream(file);
+                PreparedStatement st = con.prepareStatement(insert)
             )
             {
                 JSONTokener tokener = new JSONTokener(is);
                 JSONArray arr = new JSONArray(tokener);
 
-                for(int i = 0; i < arr.length(); ++i)
+                if(key.equals(DbConfig.getPortfolioKey()))
                 {
-                    JSONObject obj = arr.getJSONObject(i);
-
-                    if(key.equals("portfolio"))
+                    for(int i = 0; i < arr.length(); ++i)
                     {
+                        JSONObject obj = arr.getJSONObject(i);
+
                         st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
                         st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));
                         st.setInt(3, obj.getInt(ParamConfig.getAnnotateTypeParam()));
@@ -279,10 +281,15 @@ public class DbMigration
                         st.setString(6, obj.getString(ParamConfig.getUUIDListParam()));
                         st.setBoolean(7, false);
                         st.setBoolean(8, false);
-                        st.setString(9, DateTime.get());
+                        st.setString(9, DateTime.get()); //changed created date of old projects to current date of migration
                     }
-                    else
+                }
+                else
+                {
+                    for(int i = 0; i < arr.length(); ++i)
                     {
+                        JSONObject obj = arr.getJSONObject(i);
+
                         st.setInt(1, obj.getInt(ParamConfig.getUUIDParam()));
                         st.setInt(2, obj.getInt(ParamConfig.getProjectIDParam()));
                         st.setString(3, obj.getString(ParamConfig.getImagePathParam()));
@@ -296,9 +303,10 @@ public class DbMigration
                         st.setInt(11, obj.getInt(ParamConfig.getImageORIWParam()));
                         st.setInt(12, obj.getInt(ParamConfig.getImageORIHParam()));
                     }
-                    st.executeUpdate();
-                    st.clearParameters();
                 }
+
+                st.executeUpdate();
+                st.clearParameters();
             }
             catch (Exception e)
             {

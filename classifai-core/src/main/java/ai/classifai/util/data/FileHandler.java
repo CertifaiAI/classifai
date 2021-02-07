@@ -137,7 +137,7 @@ public class FileHandler
         }
         catch (Exception e)
         {
-            log.debug("Unable to delete" + file.getName());
+            log.debug("Unable to delete " + file.getName());
             return false;
         }
     }

@@ -79,6 +79,7 @@ public class DbConfig
         HSQL = new Hsql();
 
         H2.setupDb(tableKeys, tableAbsPathDict);
+
         HSQL.setupDb(tableKeys, tableAbsPathDict);
 
     }

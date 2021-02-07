@@ -97,7 +97,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         H2 h2 = DbConfig.getH2();
 
         jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
                 .put("driver_class", h2.getDriver())
                 .put("user", h2.getUser())
                 .put("password", h2.getPassword())
