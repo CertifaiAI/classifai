@@ -110,6 +110,18 @@ public class FileHandler
         return fileName;
     }
 
+    private static void delete(File file)
+    {
+        try
+        {
+            Files.delete(file.toPath());
+        }
+        catch (Exception e)
+        {
+            log.debug("unable to delete" + file.getName());
+        }
+    }
+
     public static boolean deleteFile(File file)
     {
         try
@@ -126,12 +138,12 @@ public class FileHandler
                     }
                 }
 
-                Files.delete(file.toPath());
+                delete(file);
             }
             //file
             else
             {
-                Files.delete(file.toPath());
+                delete(file);
             }
             return true;
         }
@@ -154,4 +166,5 @@ public class FileHandler
         }
         return true;
     }
+
 }

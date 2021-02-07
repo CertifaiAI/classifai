@@ -55,7 +55,7 @@ public class ArchiveHandler {
         try
         {
             File source = new File(path);
-            File destination = new File(ARCHIVE_PATH,source.getName());
+            File destination = new File(ARCHIVE_PATH, source.getName());
 
             if (source.isDirectory())
             {

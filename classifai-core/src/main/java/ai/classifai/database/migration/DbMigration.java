@@ -67,6 +67,7 @@ public class DbMigration
         //Copy HSQL to .archive folder for backup
         copyToArchive();
 
+
         if(!createConnection())
         {
             log.debug("Failed to get connection");
@@ -77,6 +78,17 @@ public class DbMigration
         //generate Json file from HSQL
         hsql2Json();
 
+
+        ///delete hsql lingering files
+        for(String key : DbConfig.getTableKeys())
+        {
+            String tableFolderPath = DbConfig.getTableFolderPathDict().get(key);
+            File tableFilePath = DbConfig.getH2().getTableAbsPathDict().get(key);
+
+            deleteExcept(tableFolderPath, tableFilePath.getAbsolutePath());
+        }
+
+
         //Create h2 tables
         createH2(h2ConnDict.get(DbConfig.getPortfolioKey()), PortfolioDbQuery.createPortfolioTable());
         createH2(h2ConnDict.get(DbConfig.getBndBoxKey()), BoundingBoxDbQuery.createProject());
@@ -85,7 +97,7 @@ public class DbMigration
         //read Json file to H2
         json2H2();
 
-        //close connection
+        //wrap migration up
         for(String key : DbConfig.getTableKeys())
         {
             try {
@@ -93,8 +105,6 @@ public class DbMigration
                 h2ConnDict.get(key).close();
 
                 FileHandler.deleteFile(new File(tempJsonDict.get(key)));
-
-                FileHandler.deleteFile(new File(DbConfig.getTableFolderPathDict().get(key)));
             }
             catch(Exception e)
             {
@@ -127,8 +137,8 @@ public class DbMigration
         {
             try
             {
-                Connection hsqlConn = connectDb(key, DbConfig.getHSQL());
-                Connection h2Conn = connectDb(key, DbConfig.getH2());
+                Connection hsqlConn = connectDb(DbConfig.getTableAbsPathDict().get(key), DbConfig.getHSQL());
+                Connection h2Conn = connectDb(DbConfig.getTableAbsPathDict().get(key), DbConfig.getH2());
 
                 hsqlConnDict.put(key, hsqlConn);
                 h2ConnDict.put(key, h2Conn);
@@ -144,11 +154,11 @@ public class DbMigration
     }
 
 
-    private static Connection connectDb(String key, RelationalDb db) throws Exception
+    private static Connection connectDb(String tableAbsPath, RelationalDb db) throws Exception
     {
         Class.forName(db.getDriver());
 
-        return DriverManager.getConnection(db.getUrlHeader() + db.getTableAbsPathDict().get(key), db.getUser(), db.getPassword());
+        return DriverManager.getConnection(db.getUrlHeader() + tableAbsPath, db.getUser(), db.getPassword());
     }
 
     private void copyToArchive()
@@ -314,4 +324,28 @@ public class DbMigration
             }
         }
     }
+
+
+    private static void deleteExcept(String folderName, String dbPath)
+    {
+        File folder = new File(folderName);
+
+        if (folder.isDirectory())
+        {
+            for (File file: folder.listFiles())
+            {
+                if (file.getName().equals(dbPath))
+                {
+                    continue;
+                }
+
+                FileHandler.deleteFile(file);
+            }
+        }
+        else
+        {
+            log.debug(folderName + " is not a directory");
+        }
+    }
+
 }
