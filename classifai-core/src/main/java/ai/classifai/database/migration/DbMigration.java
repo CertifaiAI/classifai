@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,13 +80,14 @@ public class DbMigration
         hsql2Json();
 
 
+        /*
         ///delete hsql lingering files
         for(String key : DbConfig.getTableKeys())
         {
             String tableFolderPath = DbConfig.getTableFolderPathDict().get(key);
             File tableFilePath = DbConfig.getH2().getTableAbsPathDict().get(key);
 
-            deleteExcept(tableFolderPath, tableFilePath.getAbsolutePath());
+            selectiveDelete(tableFolderPath, tableFilePath.getAbsolutePath());
         }
 
 
@@ -112,6 +114,8 @@ public class DbMigration
                 return false;
             }
         }
+
+         */
 
         return true;
     }
@@ -326,7 +330,7 @@ public class DbMigration
     }
 
 
-    private static void deleteExcept(String folderName, String dbPath)
+    private static void selectiveDelete(String folderName, String pathOmitted)
     {
         File folder = new File(folderName);
 
@@ -334,7 +338,7 @@ public class DbMigration
         {
             for (File file: folder.listFiles())
             {
-                if (file.getName().equals(dbPath))
+                if (file.getName().equals(pathOmitted))
                 {
                     continue;
                 }
@@ -347,5 +351,4 @@ public class DbMigration
             log.debug(folderName + " is not a directory");
         }
     }
-
 }
