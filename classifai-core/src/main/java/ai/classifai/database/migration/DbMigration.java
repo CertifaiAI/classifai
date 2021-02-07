@@ -36,7 +36,9 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /***
@@ -68,7 +70,6 @@ public class DbMigration
         //Copy HSQL to .archive folder for backup
         copyToArchive();
 
-
         if(!createConnection())
         {
             log.debug("Failed to get connection");
@@ -79,8 +80,9 @@ public class DbMigration
         //generate Json file from HSQL
         hsql2Json();
 
+        //close hsql connection
+        closeConnection(new ArrayList<>(hsqlConnDict.values()));
 
-        /*
         ///delete hsql lingering files
         for(String key : DbConfig.getTableKeys())
         {
@@ -90,7 +92,6 @@ public class DbMigration
             selectiveDelete(tableFolderPath, tableFilePath.getAbsolutePath());
         }
 
-
         //Create h2 tables
         createH2(h2ConnDict.get(DbConfig.getPortfolioKey()), PortfolioDbQuery.createPortfolioTable());
         createH2(h2ConnDict.get(DbConfig.getBndBoxKey()), BoundingBoxDbQuery.createProject());
@@ -99,23 +100,16 @@ public class DbMigration
         //read Json file to H2
         json2H2();
 
-        //wrap migration up
+        //close h2 connections
+        closeConnection(new ArrayList<>(h2ConnDict.values()));
+
+        //delete intermediate json files
         for(String key : DbConfig.getTableKeys())
         {
-            try {
-                hsqlConnDict.get(key).close();
-                h2ConnDict.get(key).close();
-
-                FileHandler.deleteFile(new File(tempJsonDict.get(key)));
-            }
-            catch(Exception e)
-            {
-                log.debug("Close connection failed with: " + e);
-                return false;
-            }
+            FileHandler.deleteFile(new File(tempJsonDict.get(key)));
         }
 
-         */
+
 
         return true;
     }
@@ -250,14 +244,14 @@ public class DbMigration
                 {
                     if (!file.createNewFile())
                     {
-                        log.debug("unable to create file " + file.getName());
+                        log.debug("Unable to create file " + file.getName());
                     }
                     writeJsonToFile(file, arr);
                 }
             }
             catch (Exception e)
             {
-                log.debug("Fail to write to JSON" + e);
+                log.debug("Fail to write to JSON: " + e);
             }
         }
 
@@ -270,12 +264,12 @@ public class DbMigration
             Connection con = h2ConnDict.get(key);
 
             File file = new File(tempJsonDict.get(key));
-            String insert = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();
+            String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();
 
             try
             (
                 InputStream is = new FileInputStream(file);
-                PreparedStatement st = con.prepareStatement(insert)
+                PreparedStatement st = con.prepareStatement(query)
             )
             {
                 JSONTokener tokener = new JSONTokener(is);
@@ -296,6 +290,9 @@ public class DbMigration
                         st.setBoolean(7, false);
                         st.setBoolean(8, false);
                         st.setString(9, DateTime.get()); //changed created date of old projects to current date of migration
+
+                        st.executeUpdate();
+                        st.clearParameters();
                     }
                 }
                 else
@@ -316,15 +313,16 @@ public class DbMigration
                         st.setInt(10, obj.getInt(ParamConfig.getFileSizeParam()));
                         st.setInt(11, obj.getInt(ParamConfig.getImageORIWParam()));
                         st.setInt(12, obj.getInt(ParamConfig.getImageORIHParam()));
+
+                        st.executeUpdate();
+                        st.clearParameters();
                     }
                 }
 
-                st.executeUpdate();
-                st.clearParameters();
             }
             catch (Exception e)
             {
-                log.debug("Fail to write to H2" + e);
+                log.debug("Fail to write to H2: " + e);
             }
         }
     }
@@ -349,6 +347,21 @@ public class DbMigration
         else
         {
             log.debug(folderName + " is not a directory");
+        }
+    }
+
+    private static void closeConnection(List<Connection> connection)
+    {
+
+        for(Connection conn : connection)
+        {
+            try {
+                conn.close();
+            }
+            catch(Exception e)
+            {
+                log.debug("Close connection failed with: " + e);
+            }
         }
     }
 }

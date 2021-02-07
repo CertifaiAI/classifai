@@ -589,7 +589,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             promise.fail(create.cause());
                         }
                     });
-
                 }
                 else
                 {
