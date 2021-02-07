@@ -29,6 +29,7 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.database.H2;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -547,6 +548,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     @Override
     public void stop(Promise<Void> promise)
     {
+        portfolioDbClient.close();
+
         log.info("Portfolio Verticle stopping...");
     }
 
@@ -555,10 +558,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     @Override
     public void start(Promise<Void> promise)
     {
+        H2 h2 = DbConfig.getH2();
+
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", "jdbc:h2:file:" + DbConfig.getPortfolioDbPath())
-                .put("driver_class", "org.h2.Driver")
-                .put("user", "admin")
+                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getPortfolioKey()))
+                .put("driver_class", h2.getDriver())
+                .put("user", h2.getUser())
+                .put("password", h2.getPassword())
                 .put("max_pool_size", 30));
 
         portfolioDbClient.getConnection(ar -> {
@@ -583,7 +589,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             promise.fail(create.cause());
                         }
                     });
-
                 }
                 else
                 {

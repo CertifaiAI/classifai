@@ -32,6 +32,8 @@ public abstract class AnnotationQuery
 
     protected static final String DELETE_PROJECT_UUID_LIST = "DELETE FROM Project WHERE project_id = ? AND uuid = ?";
 
+    protected static final String GET_ALL_PROJECTS = "SELECT * FROM Project";
+
     public static String createData() { return CREATE_DATA; }
 
     public static String retrieveDataPath() { return RETRIEVE_DATA_PATH; }
@@ -41,4 +43,6 @@ public abstract class AnnotationQuery
     public static String deleteProjectUUIDListwithProjectID() { return DELETE_PROJECT_UUID_LIST_WITH_PROJECTID; }
 
     public static String deleteProjectUUIDList(){ return DELETE_PROJECT_UUID_LIST; }
+
+    public static String getAllProjects() { return GET_ALL_PROJECTS; }
 }
