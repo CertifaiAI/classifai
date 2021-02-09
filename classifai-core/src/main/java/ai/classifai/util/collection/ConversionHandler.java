@@ -124,7 +124,7 @@ public class ConversionHandler
 
         String delimiter = content.contains(", ") ? ", " : ",";
 
-        return Arrays.asList(content.split(delimiter));
+        return new ArrayList<>(Arrays.asList(content.split(delimiter)));
     }
 
     public static String preprocessStringToArray(String input)
@@ -190,7 +190,6 @@ public class ConversionHandler
 
             return arrayList;
     }
-
 
     public static List<Integer> jsonArray2IntegerList(JsonArray json)
     {

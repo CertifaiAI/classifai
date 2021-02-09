@@ -25,6 +25,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.type.AnnotationType;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
@@ -304,14 +305,10 @@ public class ImageHandler {
     }
 
 
-    public static void saveToDatabase(@NonNull Integer projectID, @NonNull List<File> filesCollection)
+    public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesCollection)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        AtomicInteger uuidGenerator = new AtomicInteger(loader.getUuidGeneratorSeed());
-
-        //update Portfolio Verticle Generator Seed
-        Integer uuidNewSeed = filesCollection.size() + loader.getUuidGeneratorSeed();
-        PortfolioVerticle.updateUUIDGeneratorSeed(projectID, uuidNewSeed);
+        Set<String> uuidSet = new HashSet<>(loader.getSanityUUIDList());
 
         loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesCollection.size());
@@ -322,7 +319,8 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
-                Integer uuid = uuidGenerator.incrementAndGet();
+                String uuid = UUIDGenerator.generateUUID(uuidSet);
+                uuidSet.add(uuid);
 
                 BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
             }
@@ -331,14 +329,14 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
-                Integer uuid = uuidGenerator.incrementAndGet();
+                String uuid = UUIDGenerator.generateUUID(uuidSet);
+                uuidSet.add(uuid);
 
                 SegVerticle.updateUUID(SegVerticle.getJdbcClient(), SegDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
-
             }
         }
     }
-    public static void processFile(@NonNull Integer projectID, @NonNull List<File> filesInput)
+    public static void processFile(@NonNull String projectID, @NonNull List<File> filesInput)
     {
         List<File> validatedFilesList = new ArrayList<>();
 
@@ -351,7 +349,7 @@ public class ImageHandler {
         saveToDatabase(projectID, validatedFilesList);
     }
 
-    public static void processFolder(@NonNull Integer projectID, @NonNull File rootPath)
+    public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
         Stack<File> folderStack = new Stack<>();
