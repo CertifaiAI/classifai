@@ -159,10 +159,22 @@ public class ConversionHandler
 
     public static List<String> integerList2StringList(List<Integer> oldList)
     {
+        return integerList2StringListWithMap(oldList, null);
+    }
+
+    public static List<String> integerList2StringListWithMap(List<Integer> oldList, Map<Integer,String> map)
+    {
         List<String> newList = new ArrayList<>();
         for (Integer myInt : oldList)
         {
-            newList.add(String.valueOf(myInt));
+            if (map != null)
+            {
+                newList.add(map.get(myInt));
+            }
+            else
+            {
+                newList.add(String.valueOf(myInt));
+            }
         }
 
         return newList;
