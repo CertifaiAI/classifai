@@ -77,7 +77,7 @@ public class DbMigration
             return false;
         }
 
-        //convert all integer id to uuid
+        //create map for conversion from integer id to uuid
         UUIDConversion();
 
         //generate Json file from HSQL
