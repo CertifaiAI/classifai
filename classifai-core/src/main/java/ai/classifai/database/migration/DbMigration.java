@@ -28,8 +28,6 @@ import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.type.database.RelationalDb;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;

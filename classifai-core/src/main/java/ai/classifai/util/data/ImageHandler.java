@@ -20,7 +20,6 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.annotation.seg.SegVerticle;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
@@ -44,7 +43,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Image Handler

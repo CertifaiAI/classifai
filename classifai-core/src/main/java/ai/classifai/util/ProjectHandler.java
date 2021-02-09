@@ -31,8 +31,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Project Handler for File & Folder Selector and Database Update
