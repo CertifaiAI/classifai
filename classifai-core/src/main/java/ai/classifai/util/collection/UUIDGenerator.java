@@ -15,6 +15,8 @@
  */
 package ai.classifai.util.collection;
 
+import lombok.NoArgsConstructor;
+
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,9 +25,10 @@ import java.util.UUID;
  *
  * @author YCCertifai
  */
+@NoArgsConstructor
 public class UUIDGenerator
 {
-    public static String generateUUID(Set uniqueSet)
+    public static String generateUUID(Set<String> uniqueSet)
     {
         String newID;
         do {
