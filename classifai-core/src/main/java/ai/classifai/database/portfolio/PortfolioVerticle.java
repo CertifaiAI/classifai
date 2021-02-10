@@ -424,7 +424,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 int maxIndex = projectNameList.size() - 1;
                 for (int i = maxIndex ; i > -1; --i)
                 {
-                    int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
+                    int total_uuid = ConversionHandler.string2StringList(uuidList.get(i)).size();
 
                     String projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
                     Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();

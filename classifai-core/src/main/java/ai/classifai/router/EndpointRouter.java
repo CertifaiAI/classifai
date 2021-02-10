@@ -144,7 +144,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void getProjectMetadata(RoutingContext context, String projectName, AnnotationType annotationType)
     {
-        log.info("Get metadata of project: " + projectName + " of annotation type: " + annotationType.name());
+        log.debug("Get metadata of project: " + projectName + " of annotation type: " + annotationType.name());
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
 
