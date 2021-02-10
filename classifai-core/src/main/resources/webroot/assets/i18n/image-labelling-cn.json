@@ -39,5 +39,8 @@
   },
   "deleteswitch":{
     "selectall" : "全选"
+  },
+  "deletebtn":{
+    "delete" : "删除"
   }
 }

@@ -39,6 +39,9 @@
     },
     "deleteswitch":{
       "selectall" : "Select all"
+    },
+    "deletebtn":{
+      "delete" : "Delete"
     }
   }
   
