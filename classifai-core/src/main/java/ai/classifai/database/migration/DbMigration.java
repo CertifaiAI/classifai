@@ -52,7 +52,15 @@ public class DbMigration
     private Map<String, String> tempJsonDict;
     private Map<String, Connection> hsqlConnDict;
     private Map<String, Connection> h2ConnDict;
+
+    //Migration from v1 -> v2, replacing project id  & uuid from int -> string(uuidv4)
+
+    //Key: v1 project id
+    //Value: v2 project id
     private Map<Integer, String> projectIDDict;
+
+    //Key: v1 project id
+    //Value: Map<Integer v1 uuid, String v2 uuid>
     private Map<Integer, Map<Integer, String>> projectUUIDDict;
 
     public boolean migrate()
@@ -193,6 +201,18 @@ public class DbMigration
         }
     }
 
+    private static List<String> integerList2StringListWithMap(List<Integer> subsetList, Map<Integer,String> fullListMap)
+    {
+        List<String> convertedList = new ArrayList<>();
+
+        for (Integer myInt : subsetList)
+        {
+            convertedList.add(fullListMap.get(myInt));
+        }
+
+        return convertedList;
+    }
+
     private void UUIDConversion()
     {
         projectIDDict = new HashMap<>();
@@ -261,7 +281,7 @@ public class DbMigration
                         Integer projectID = rs.getInt(1);
                         List<Integer> UUIDIntList = ConversionHandler.string2IntegerList(rs.getString(6));
 
-                        List<String> UUIDList = ConversionHandler.integerList2StringListWithMap(UUIDIntList, projectUUIDDict.get(projectID));
+                        List<String> UUIDList = integerList2StringListWithMap(UUIDIntList, projectUUIDDict.get(projectID));
 
                         arr.put(new JSONObject()
                                 .put(ParamConfig.getProjectIDParam(), projectIDDict.get(projectID))
