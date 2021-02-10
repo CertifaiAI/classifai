@@ -35,21 +35,20 @@ public class ProjectLoader
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     @Getter @Setter private LoaderStatus loaderStatus;
 
-    @Getter @Setter private Integer uuidGeneratorSeed;
     @Getter @Setter private List<String> labelList;
 
     @Getter private Integer annotationType;
-    @Getter private Integer projectID;
+    @Getter private String projectID;
     private String projectName;
 
     //Status when dealing with file/folder opener
     @Getter private FileSystemStatus fileSystemStatus;
 
     //list to send the new added datapoints as thumbnails to front end
-    @Getter private List<Integer> fileSysNewUUIDList;
+    @Getter private List<String> fileSysNewUUIDList;
 
     //a list of unique uuid representing number of data points in one project
-    @Setter @Getter private List<Integer> sanityUUIDList;
+    @Setter @Getter private List<String> sanityUUIDList;
 
     @Setter @Getter private Boolean isLoadedFrontEndToggle;
     @Setter private Boolean isProjectNewlyCreated;
@@ -58,8 +57,8 @@ public class ProjectLoader
 
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
-    private Set<Integer> validUUIDSet;
-    @Getter @Setter private List<Integer> uuidListFromDatabase;
+    private Set<String> validUUIDSet;
+    @Getter @Setter private List<String> uuidListFromDatabase;
 
     //used when checking for progress in
     //(1) validity of database data point
@@ -67,7 +66,7 @@ public class ProjectLoader
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus, Boolean isNewlyCreated)
+    public ProjectLoader(String currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus, Boolean isNewlyCreated)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
@@ -79,8 +78,6 @@ public class ProjectLoader
         sanityUUIDList = new ArrayList<>();
         uuidListFromDatabase = new ArrayList<>();
 
-        uuidGeneratorSeed = 0;
-
         isLoadedFrontEndToggle = Boolean.FALSE;
         isProjectNewlyCreated = isNewlyCreated;
 
@@ -89,7 +86,7 @@ public class ProjectLoader
 
     public void reset(FileSystemStatus currentFileSystemStatus)
     {
-        validUUIDSet = new HashSet<>();
+        validUUIDSet = new LinkedHashSet<>();
         fileSysNewUUIDList = new ArrayList<>();
 
         currentUUIDMarker = 0;
@@ -152,12 +149,12 @@ public class ProjectLoader
         }
     }
 
-    public void pushDBValidUUID(Integer uuid)
+    public void pushDBValidUUID(String uuid)
     {
         validUUIDSet.add(uuid);
     }
 
-    public void pushFileSysNewUUIDList(Integer uuid)
+    public void pushFileSysNewUUIDList(String uuid)
     {
         fileSysNewUUIDList.add(uuid);
     }

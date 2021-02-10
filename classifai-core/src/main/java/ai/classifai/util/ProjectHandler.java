@@ -18,6 +18,7 @@ package ai.classifai.util;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
@@ -30,7 +31,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Project Handler for File & Folder Selector and Database Update
@@ -39,9 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class ProjectHandler {
-
-    //unique project id generator for each project
-    private static AtomicInteger projectIDGenerator;
 
     //key: projectID
     //value: ProjectLoader
@@ -60,20 +57,13 @@ public class ProjectHandler {
 
     static
     {
-        projectIDGenerator = new AtomicInteger(0);
-
-        projectIDLoaderDict = new HashMap<Integer, ProjectLoader>();
-        projectIDSearch = new HashMap<Pair<String, Integer>, Integer>();
-        projectNameSearch = new HashMap<Integer, Pair<String, Integer>>();
+        projectIDLoaderDict = new HashMap<String, ProjectLoader>();
+        projectIDSearch = new HashMap<Pair<String, Integer>, String>();
+        projectNameSearch = new HashMap<String, Pair<String, Integer>>();
     }
 
-
-    public static Integer generateProjectID() {
-        return projectIDGenerator.incrementAndGet();
-    }
-
-    public static void setProjectIDGenerator(Integer seedNumber) {
-        projectIDGenerator = new AtomicInteger(seedNumber);
+    public static String generateProjectID(){
+        return UUIDGenerator.generateUUID(projectIDLoaderDict.keySet());
     }
 
     public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
@@ -83,7 +73,7 @@ public class ProjectHandler {
 
     private static ProjectLoader getProjectLoader(Pair<String, Integer> project)
     {
-        Integer projectIDKey = getProjectID(project);
+        String projectIDKey = getProjectID(project);
 
         if (projectIDKey == null)
         {
@@ -94,7 +84,7 @@ public class ProjectHandler {
         return getProjectLoader(projectIDKey);
     }
 
-    public static ProjectLoader getProjectLoader(Integer projectID)
+    public static ProjectLoader getProjectLoader(String projectID)
     {
         try
         {
@@ -107,11 +97,11 @@ public class ProjectHandler {
         return null;
     }
 
-    public static Integer getProjectID(Pair<String, Integer> projectNameTypeKey)
+    public static String getProjectID(Pair<String, Integer> projectNameTypeKey)
     {
         if (projectIDSearch.containsKey(projectNameTypeKey))
         {
-            return (Integer) projectIDSearch.get(projectNameTypeKey);
+            return (String) projectIDSearch.get(projectNameTypeKey);
         }
         else
         {
@@ -120,15 +110,14 @@ public class ProjectHandler {
         }
     }
 
-    public static Integer getProjectID(String projectName, Integer annotationType)
+    public static String getProjectID(String projectName, Integer annotationType)
     {
         Pair key = new ImmutablePair(projectName, annotationType);
 
         return getProjectID(key);
     }
 
-
-    public static ProjectLoader buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
+    public static ProjectLoader buildProjectLoader(@NonNull String projectName, @NonNull String projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
     {
         if (!AnnotationHandler.checkSanity(annotationType))
         {
@@ -186,7 +175,7 @@ public class ProjectHandler {
         return isProjectNameUnique;
     }
 
-    public static void deleteProjectWithID(Integer projectID)
+    public static void deleteProjectWithID(String projectID)
     {
         try
         {

@@ -48,8 +48,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 {
     public void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
-        Integer uuid = message.body().getInteger(ParamConfig.getUUIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
+        String uuid = message.body().getString(ParamConfig.getUUIDParam());
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -83,11 +83,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        Integer projectID  = message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID  = message.body().getString(ParamConfig.getProjectIDParam());
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        List<Integer> oriUUIDList = loader.getUuidListFromDatabase();
+        List<String> oriUUIDList = loader.getUuidListFromDatabase();
 
         message.reply(ReplyHandler.getOkReply());
 
@@ -105,7 +105,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         for (int i = 0; i < oriUUIDList.size(); ++i)
         {
             final Integer currentLength = i + 1;
-            final Integer UUID = oriUUIDList.get(i);
+            final String UUID = oriUUIDList.get(i);
 
             JsonArray params = new JsonArray().add(projectID).add(UUID);
 
@@ -127,7 +127,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
+    public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentProcessedLength)
     {
         JsonArray params = new JsonArray()
                 .add(UUID) //uuid
@@ -161,7 +161,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void deleteProjectUUIDListwithProjectID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -181,18 +181,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID =  message.body().getString(ParamConfig.getProjectIDParam());
         JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
 
-        List<Integer> oriUUIDList = ConversionHandler.jsonArray2IntegerList(UUIDListJsonArray);
+        List<String> oriUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
 
-        List<Integer> successUUIDList = new ArrayList<>();
-        List<Integer> failedUUIDList = new ArrayList<>();
+        List<String> successUUIDList = new ArrayList<>();
+        List<String> failedUUIDList = new ArrayList<>();
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        List<Integer> dbUUIDList = loader.getUuidListFromDatabase();
+        List<String> dbUUIDList = loader.getUuidListFromDatabase();
 
-        for (Integer UUID : oriUUIDList)
+        for (String UUID : oriUUIDList)
         {
             if (dbUUIDList.contains(UUID))
             {
@@ -214,9 +214,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             }
         }
 
-        List<String> successUUIDListString = ConversionHandler.integerList2StringList(successUUIDList);
-
-        String deleteUUIDListQuery = query + "(" + String.join(",", successUUIDListString) + ")";
+        String deleteUUIDListQuery = query + "(" + String.join(",", successUUIDList) + ")";
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -232,7 +230,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             loader.setUuidListFromDatabase(dbUUIDList);
 
-            List<Integer> sanityUUIDList = loader.getSanityUUIDList();
+            List<String> sanityUUIDList = loader.getSanityUUIDList();
             if (sanityUUIDList.removeAll(successUUIDList))
             {
                 loader.setSanityUUIDList(sanityUUIDList);
@@ -259,7 +257,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         try
         {
-            Integer projectID = requestBody.getInteger(ParamConfig.getProjectIDParam());
+            String projectID = requestBody.getString(ParamConfig.getProjectIDParam());
 
             String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam(annotationType)).encode();
 
@@ -273,7 +271,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     .add(requestBody.getInteger(ParamConfig.getFileSizeParam()))
                     .add(requestBody.getInteger(ParamConfig.getImageORIWParam()))
                     .add(requestBody.getInteger(ParamConfig.getImageORIHParam()))
-                    .add(requestBody.getInteger(ParamConfig.getUUIDParam()))
+                    .add(requestBody.getString(ParamConfig.getUUIDParam()))
                     .add(projectID);
 
 
@@ -300,8 +298,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
-        Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
-        Integer uuid = message.body().getInteger(ParamConfig.getUUIDParam());
+        String projectID =  message.body().getString(ParamConfig.getProjectIDParam());
+        String uuid = message.body().getString(ParamConfig.getUUIDParam());
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 

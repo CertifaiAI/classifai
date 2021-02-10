@@ -501,7 +501,7 @@ public class EndpointRouter extends AbstractVerticle
                 return;
             }
 
-            Integer currentProjectID = loader.getProjectID();
+            String currentProjectID = loader.getProjectID();
 
             if (fileType.equals(ParamConfig.getFileParam()))
             {
@@ -572,7 +572,7 @@ public class EndpointRouter extends AbstractVerticle
         }
         else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) | (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
         {
-            List<Integer> newAddedUUIDList = loader.getFileSysNewUUIDList();
+            List<String> newAddedUUIDList = loader.getFileSysNewUUIDList();
 
             res.put(ParamConfig.getUUIDListParam(), newAddedUUIDList);
 
@@ -602,8 +602,8 @@ public class EndpointRouter extends AbstractVerticle
     private void getBndBoxThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
+        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
+        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
 
         JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
                 .put(ParamConfig.getProjectIDParam(), projectID)
@@ -621,8 +621,8 @@ public class EndpointRouter extends AbstractVerticle
     private void getSegThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
+        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
+        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
 
         JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
                 .put(ParamConfig.getProjectIDParam(), projectID)
@@ -660,8 +660,8 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void getBndBoxImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
+        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
+        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getUUIDParam(), uuid)
@@ -680,8 +680,8 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void getSegImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-        Integer uuid = Integer.parseInt(context.request().getParam(ParamConfig.getUUIDParam()));
+        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
+        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
 
         JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
                 .put(ParamConfig.getProjectIDParam(), projectID);
@@ -720,7 +720,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -762,7 +762,7 @@ public class EndpointRouter extends AbstractVerticle
     private void updateSegData(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
 
         if (checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -829,7 +829,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -882,7 +882,7 @@ public class EndpointRouter extends AbstractVerticle
     private void closeProjectState(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -935,7 +935,7 @@ public class EndpointRouter extends AbstractVerticle
     private void starProject(RoutingContext context, AnnotationType annotationType)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -1004,7 +1004,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        Integer projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -1085,7 +1085,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+        String projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
 
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
