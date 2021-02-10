@@ -23,7 +23,6 @@ import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -251,7 +250,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType)
+    public void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         JsonObject requestBody = message.body();
 
@@ -259,7 +258,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             String projectID = requestBody.getString(ParamConfig.getProjectIDParam());
 
-            String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam(annotationType)).encode();
+            String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam()).encode();
 
             JsonArray params = new JsonArray()
                     .add(annotationContent)
@@ -295,7 +294,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType)
+    public void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
         String projectID =  message.body().getString(ParamConfig.getProjectIDParam());
@@ -331,7 +330,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     response.put(ParamConfig.getProjectNameParam(), projectName);
 
                     response.put(ParamConfig.getImagePathParam(), dataPath);
-                    response.put(ParamConfig.getAnnotationParam(annotationType), new JsonArray(row.getString(counter++)));
+                    response.put(ParamConfig.getAnnotationParam(), new JsonArray(row.getString(counter++)));
                     response.put(ParamConfig.getImageDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
                     response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
                     response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));

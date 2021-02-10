@@ -53,11 +53,11 @@ public class BoundingBoxVerticle extends AnnotationVerticle
 
         if (action.equals(BoundingBoxDbQuery.retrieveData()))
         {
-            this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.retrieveData(), AnnotationType.BOUNDINGBOX);
+            this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.retrieveData());
         }
         else if (action.equals(BoundingBoxDbQuery.updateData()))
         {
-            this.updateData(message, jdbcClient, BoundingBoxDbQuery.updateData(), AnnotationType.BOUNDINGBOX);
+            this.updateData(message, jdbcClient, BoundingBoxDbQuery.updateData());
         }
         else if (action.equals(BoundingBoxDbQuery.retrieveDataPath()))
         {

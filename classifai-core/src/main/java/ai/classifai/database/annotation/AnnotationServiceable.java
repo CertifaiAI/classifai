@@ -29,13 +29,13 @@ import lombok.NonNull;
  */
 public interface AnnotationServiceable
 {
-    void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType);
+    void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
     void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
     void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
-    void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType);
+    void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 
     void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query);
 }

@@ -53,7 +53,7 @@ public class SegVerticle extends AnnotationVerticle
 
         if (action.equals(SegDbQuery.retrieveData()))
         {
-            this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
+            this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData());
         }
         else if (action.equals(SegDbQuery.retrieveDataPath()))
         {
@@ -61,7 +61,7 @@ public class SegVerticle extends AnnotationVerticle
         }
         else if (action.equals(SegDbQuery.updateData()))
         {
-            this.updateData(message, jdbcClient, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
+            this.updateData(message, jdbcClient, SegDbQuery.updateData());
         }
         else if (action.equals(SegDbQuery.loadValidProjectUUID()))
         {

@@ -79,8 +79,8 @@ public class ParamConfig
     private static final String IMAGE_THUMBNAIL_PARAM = "img_thumbnail";
     private static final String IMAGE_SRC_PARAM = "img_src";
 
-    private static final String BOUNDING_BOX_PARAM = "bnd_box";
-    private static final String SEGMENTATION_PARAM = "polygons";
+    private static final String ANNOTATION_PARAM = "annotation";
+
     //Common name when performing data migration
     private static final String PROJECT_CONTENT_PARAM = "content";
 
@@ -142,8 +142,7 @@ public class ParamConfig
     public static String getImageThumbnailParam() { return IMAGE_THUMBNAIL_PARAM; }
     public static String getImageSourceParam() { return IMAGE_SRC_PARAM; }
 
-    public static String getBoundingBoxParam() { return BOUNDING_BOX_PARAM; }
-    public static String getSegmentationParam() { return SEGMENTATION_PARAM; }
+    public static String getAnnotationParam() { return ANNOTATION_PARAM; }
     public static String getProjectContentParam() { return PROJECT_CONTENT_PARAM; }
 
     public static String getImageXParam() { return IMAGEX_PARAM; }
@@ -166,21 +165,6 @@ public class ParamConfig
     public static String getActionKeyword() { return ACTION_KEYWORD; }
     public static String getContent() { return CONTENT; }
     public static String getProgressMetadata() { return PROGRESS_METADATA; }
-
-    public static String getAnnotationParam(AnnotationType type)
-    {
-        if (type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return ParamConfig.getBoundingBoxParam();
-        }
-        else if (type.equals(AnnotationType.SEGMENTATION))
-        {
-            return ParamConfig.getSegmentationParam();
-        }
-        //ADD WHEN HAVE NEW ANNOTATION TYPE
-
-        return null;
-    }
 
     //v2
     public static String getIsStarredParam() { return IS_STARRED; }
