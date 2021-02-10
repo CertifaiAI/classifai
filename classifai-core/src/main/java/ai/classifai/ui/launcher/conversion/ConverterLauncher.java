@@ -248,7 +248,7 @@ public class ConverterLauncher extends JPanel
 
         design(inputFolderField);
         inputFolderField.setEditable(false);
-        inputFolderField.setText(ParamConfig.getFileSysRootSearchPath().getAbsolutePath() + File.separator + "Desktop");
+        inputFolderField.setText(ParamConfig.getRootSearchPath().getAbsolutePath() + File.separator + "Desktop");
 
         Dimension folderDimension = new Dimension(250, ELEMENT_HEIGHT - 10);
         inputFolderField.setMinimumSize(folderDimension);

@@ -47,8 +47,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 {
     public void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
-        String uuid = message.body().getString(ParamConfig.getUUIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
+        String uuid = message.body().getString(ParamConfig.getUuidParam());
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -69,7 +69,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         JsonObject response = ReplyHandler.getOkReply();
                         JsonArray row = resultSet.getResults().get(0);
                         String imagePath = row.getString(0);
-                        response.put(ParamConfig.getImageSourceParam(), ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
+                        response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
                         message.reply(response);
                     }
                 }
@@ -82,7 +82,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        String projectID  = message.body().getString(ParamConfig.getProjectIDParam());
+        String projectID  = message.body().getString(ParamConfig.getProjectIdParam());
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -160,7 +160,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void deleteProjectUUIDListwithProjectID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -180,8 +180,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
-        String projectID =  message.body().getString(ParamConfig.getProjectIDParam());
-        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUUIDListParam());
+        String projectID =  message.body().getString(ParamConfig.getProjectIdParam());
+        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
 
         List<String> oriUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
 
@@ -242,7 +242,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUUIDList(projectID);
 
-            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
+            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUuidListParam(), failedUUIDList));
         }
         else
         {
@@ -256,21 +256,21 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         try
         {
-            String projectID = requestBody.getString(ParamConfig.getProjectIDParam());
+            String projectID = requestBody.getString(ParamConfig.getProjectIdParam());
 
             String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam()).encode();
 
             JsonArray params = new JsonArray()
                     .add(annotationContent)
-                    .add(requestBody.getInteger(ParamConfig.getImageDepth()))
-                    .add(requestBody.getInteger(ParamConfig.getImageXParam()))
-                    .add(requestBody.getInteger(ParamConfig.getImageYParam()))
-                    .add(requestBody.getDouble(ParamConfig.getImageWParam()))
-                    .add(requestBody.getDouble(ParamConfig.getImageHParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImgDepth()))
+                    .add(requestBody.getInteger(ParamConfig.getImgXParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImgYParam()))
+                    .add(requestBody.getDouble(ParamConfig.getImgWParam()))
+                    .add(requestBody.getDouble(ParamConfig.getImgHParam()))
                     .add(requestBody.getInteger(ParamConfig.getFileSizeParam()))
-                    .add(requestBody.getInteger(ParamConfig.getImageORIWParam()))
-                    .add(requestBody.getInteger(ParamConfig.getImageORIHParam()))
-                    .add(requestBody.getString(ParamConfig.getUUIDParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImgOriWParam()))
+                    .add(requestBody.getInteger(ParamConfig.getImgOriHParam()))
+                    .add(requestBody.getString(ParamConfig.getUuidParam()))
                     .add(projectID);
 
 
@@ -297,8 +297,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     public void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
-        String projectID =  message.body().getString(ParamConfig.getProjectIDParam());
-        String uuid = message.body().getString(ParamConfig.getUUIDParam());
+        String projectID =  message.body().getString(ParamConfig.getProjectIdParam());
+        String uuid = message.body().getString(ParamConfig.getUuidParam());
 
         JsonArray params = new JsonArray().add(uuid).add(projectID);
 
@@ -326,20 +326,20 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                     JsonObject response = ReplyHandler.getOkReply();
 
-                    response.put(ParamConfig.getUUIDParam(), uuid);
+                    response.put(ParamConfig.getUuidParam(), uuid);
                     response.put(ParamConfig.getProjectNameParam(), projectName);
 
-                    response.put(ParamConfig.getImagePathParam(), dataPath);
+                    response.put(ParamConfig.getImgPathParam(), dataPath);
                     response.put(ParamConfig.getAnnotationParam(), new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.getImageDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
-                    response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
-                    response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
-                    response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
+                    response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
+                    response.put(ParamConfig.getImgXParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImgYParam(), row.getInteger(counter++));
+                    response.put(ParamConfig.getImgWParam(), row.getDouble(counter++));
+                    response.put(ParamConfig.getImgHParam(), row.getDouble(counter++));
                     response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
-                    response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
-                    response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
-                    response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
+                    response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
+                    response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
+                    response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
                     message.reply(response);
                 }
             }

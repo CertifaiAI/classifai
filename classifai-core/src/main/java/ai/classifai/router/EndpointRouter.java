@@ -94,9 +94,9 @@ public class EndpointRouter extends AbstractVerticle
     private void getAllProjects(RoutingContext context, AnnotationType type)
     {
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), type.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsForAnnotationType());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
@@ -123,7 +123,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        getProjectMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), projectName, AnnotationType.BOUNDINGBOX);
+        getProjectMetadata(context, projectName, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -136,13 +136,13 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        getProjectMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), projectName, AnnotationType.SEGMENTATION);
+        getProjectMetadata(context, projectName, AnnotationType.SEGMENTATION);
     }
 
     /**
      * Retrieve metadata of project
      */
-    private void getProjectMetadata(RoutingContext context, String queue, String query, String projectName, AnnotationType annotationType)
+    private void getProjectMetadata(RoutingContext context, String projectName, AnnotationType annotationType)
     {
         log.info("Get metadata of project: " + projectName + " of annotation type: " + annotationType.name());
 
@@ -155,10 +155,10 @@ public class EndpointRouter extends AbstractVerticle
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving metadata of project: " + projectName));
         }
 
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
 
         //load label list
-        DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectMetadata());
+        DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsMetadata());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, metadataOptions, metaReply ->
         {
@@ -191,7 +191,7 @@ public class EndpointRouter extends AbstractVerticle
     private void getAllBndBoxProjectsMeta(RoutingContext context)
     {
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
 
         getAllProjectsMeta(context, request, AnnotationType.BOUNDINGBOX);
     }
@@ -204,14 +204,14 @@ public class EndpointRouter extends AbstractVerticle
     private void getAllSegProjectsMeta(RoutingContext context)
     {
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
 
         getAllProjectsMeta(context, request, AnnotationType.SEGMENTATION);
     }
 
     private void getAllProjectsMeta(RoutingContext context, JsonObject request, AnnotationType type)
     {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsMetadata());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsMetadata());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
@@ -242,7 +242,7 @@ public class EndpointRouter extends AbstractVerticle
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
 
         createProject(context, request, AnnotationType.BOUNDINGBOX);
     }
@@ -260,7 +260,7 @@ public class EndpointRouter extends AbstractVerticle
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
 
         createProject(context, request, AnnotationType.SEGMENTATION);
     }
@@ -269,7 +269,7 @@ public class EndpointRouter extends AbstractVerticle
     {
         context.request().bodyHandler(h -> {
 
-            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.createNewProject());
+            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getCreateNewProject());
 
             vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, createOptions, reply -> {
 
@@ -300,7 +300,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void loadBndBoxProject(RoutingContext context)
     {
-        loadProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.loadValidProjectUUID(), AnnotationType.BOUNDINGBOX);
+        loadProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getLoadValidProjectUUID(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -314,7 +314,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void loadSegProject(RoutingContext context)
     {
-        loadProject(context, SegDbQuery.getQueue(), SegDbQuery.loadValidProjectUUID(), AnnotationType.SEGMENTATION);
+        loadProject(context, SegDbQuery.getQueue(), SegDbQuery.getLoadValidProjectUUID(), AnnotationType.SEGMENTATION);
     }
 
     public void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
@@ -336,7 +336,7 @@ public class EndpointRouter extends AbstractVerticle
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
-            JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
 
             DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
@@ -426,7 +426,7 @@ public class EndpointRouter extends AbstractVerticle
             jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
 
             jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-            jsonObject.put(ParamConfig.getUUIDListParam(), projectLoader.getSanityUUIDList());
+            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUUIDList());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
@@ -574,7 +574,7 @@ public class EndpointRouter extends AbstractVerticle
         {
             List<String> newAddedUUIDList = loader.getFileSysNewUUIDList();
 
-            res.put(ParamConfig.getUUIDListParam(), newAddedUUIDList);
+            res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
 
         }
         else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE)) {
@@ -603,13 +603,13 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
+        String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
-                .put(ParamConfig.getProjectIDParam(), projectID)
+        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
+                .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getThumbnail(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), request);
+        getThumbnail(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getRetrieveData(), request);
     }
 
     /**
@@ -622,13 +622,13 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
+        String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
-                .put(ParamConfig.getProjectIDParam(), projectID)
+        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
+                .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.retrieveData(), request);
+        getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.getRetrieveData(), request);
     }
 
     private void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
@@ -661,14 +661,14 @@ public class EndpointRouter extends AbstractVerticle
     private void getBndBoxImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
+        String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getUUIDParam(), uuid)
-                .put(ParamConfig.getProjectIDParam(), projectID)
+                .put(ParamConfig.getUuidParam(), uuid)
+                .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getImageSource(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveDataPath(), request);
+        getImageSource(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getRetrieveDataPath(), request);
     }
 
     /***
@@ -681,12 +681,12 @@ public class EndpointRouter extends AbstractVerticle
     private void getSegImageSource(RoutingContext context) {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-        String uuid = context.request().getParam(ParamConfig.getUUIDParam());
+        String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        JsonObject request = new JsonObject().put(ParamConfig.getUUIDParam(), uuid)
-                .put(ParamConfig.getProjectIDParam(), projectID);
+        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
+                .put(ParamConfig.getProjectIdParam(), projectID);
 
-        getImageSource(context, SegDbQuery.getQueue(), SegDbQuery.retrieveDataPath(), request);
+        getImageSource(context, SegDbQuery.getQueue(), SegDbQuery.getRetrieveDataPath(), request);
     }
 
     private void getImageSource(RoutingContext context, String queue, String query, JsonObject request)
@@ -726,12 +726,12 @@ public class EndpointRouter extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), BoundingBoxDbQuery.updateData());
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), BoundingBoxDbQuery.getUpdateData());
 
             try
             {
                 io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-                jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+                jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
                 vertx.eventBus().request(BoundingBoxDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
                 {
@@ -768,11 +768,11 @@ public class EndpointRouter extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), SegDbQuery.updateData());
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), SegDbQuery.getUpdateData());
 
             try {
                 io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-                jsonObject.put(ParamConfig.getProjectIDParam(), ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
+                jsonObject.put(ParamConfig.getProjectIdParam(), ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
 
                 vertx.eventBus().request(SegDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
                 {
@@ -839,9 +839,9 @@ public class EndpointRouter extends AbstractVerticle
             {
                 io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-                jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+                jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
-                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateLabelList());
+                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLabelList());
 
                 vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
                 {
@@ -943,9 +943,9 @@ public class EndpointRouter extends AbstractVerticle
         {
             io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.starProject());
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
 
             vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
             {
@@ -983,7 +983,7 @@ public class EndpointRouter extends AbstractVerticle
     private void deleteBndBoxProject(RoutingContext context)
     {
         //delete in Portfolio Table
-        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.BOUNDINGBOX);
+        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -997,7 +997,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProject(RoutingContext context)
     {
-        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDListwithProjectID(), AnnotationType.SEGMENTATION);
+        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteProjectUuidListWithProjectId(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProject(RoutingContext context, String queue, String query,  AnnotationType type)
@@ -1009,9 +1009,9 @@ public class EndpointRouter extends AbstractVerticle
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIDParam(), projectID);
+                .put(ParamConfig.getProjectIdParam(), projectID);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.deleteProject());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getDeleteProject());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
@@ -1064,7 +1064,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteBndBoxProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.deleteProjectUUIDList(), AnnotationType.BOUNDINGBOX);
+        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteProjectUuidList(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -1078,7 +1078,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.deleteProjectUUIDList(), AnnotationType.SEGMENTATION);
+        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteProjectUuidList(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProjectUUID(RoutingContext context, String queue, String query, AnnotationType annotationType)
@@ -1093,9 +1093,9 @@ public class EndpointRouter extends AbstractVerticle
         {
             io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
 
-            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUUIDListParam());
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
 
-            request.put(ParamConfig.getProjectIDParam(), projectID).put(ParamConfig.getUUIDListParam(), uuidListArray);
+            request.put(ParamConfig.getProjectIdParam(), projectID).put(ParamConfig.getUuidListParam(), uuidListArray);
 
             DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 

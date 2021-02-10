@@ -216,9 +216,9 @@ public class ImageHandler {
 
 
             Map<String, String> imageData = new HashMap<>();
-            imageData.put(ParamConfig.getImageDepth(), Integer.toString(depth));
-            imageData.put(ParamConfig.getImageORIHParam(), Integer.toString(oriHeight));
-            imageData.put(ParamConfig.getImageORIWParam(), Integer.toString(oriWidth));
+            imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
+            imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
+            imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
             imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
             return imageData;
@@ -320,7 +320,7 @@ public class ImageHandler {
                 String uuid = UUIDGenerator.generateUUID(uuidSet);
                 uuidSet.add(uuid);
 
-                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
+                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.getCreateData(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -330,7 +330,7 @@ public class ImageHandler {
                 String uuid = UUIDGenerator.generateUUID(uuidSet);
                 uuidSet.add(uuid);
 
-                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), SegDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
+                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), SegDbQuery.getCreateData(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
     }

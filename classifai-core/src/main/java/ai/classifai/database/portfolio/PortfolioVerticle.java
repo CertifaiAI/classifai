@@ -70,32 +70,32 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(PortfolioDbQuery.createNewProject()))
+        if (action.equals(PortfolioDbQuery.getCreateNewProject()))
         {
             this.createNewProject(message);
         }
-        else if (action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
+        else if (action.equals(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType()))
         {
             this.getAllProjectsForAnnotationType(message);
         }
-        else if (action.equals(PortfolioDbQuery.updateLabelList()))
+        else if (action.equals(PortfolioDbQuery.getUpdateLabelList()))
         {
             this.updateLabelList(message);
         }
-        else if (action.equals(PortfolioDbQuery.deleteProject()))
+        else if (action.equals(PortfolioDbQuery.getDeleteProject()))
         {
             this.deleteProject(message);
         }
         //v2
-        else if (action.equals(PortfolioDbQuery.getProjectMetadata()))
+        else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
         {
             this.getProjectMetadata(message);
         }
-        else if (action.equals(PortfolioDbQuery.getAllProjectsMetadata()))
+        else if (action.equals(PortfolioDbQuery.getRetrieveAllProjectsMetadata()))
         {
             this.getAllProjectsMetadata(message);
         }
-        else if (action.equals(PortfolioDbQuery.starProject()))
+        else if (action.equals(PortfolioDbQuery.getStarProject()))
         {
             this.starProject(message);
         }
@@ -110,7 +110,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         JsonObject request = message.body();
 
         String projectName = request.getString(ParamConfig.getProjectNameParam());
-        Integer annotationType = request.getInteger(ParamConfig.getAnnotateTypeParam());
+        Integer annotationType = request.getInteger(ParamConfig.getAnnotationTypeParam());
 
         if (ProjectHandler.isProjectNameUnique(projectName, annotationType))
         {
@@ -122,7 +122,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             JsonArray params = buildNewProject(projectName, annotationType, projectID);
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
                 if (fetch.succeeded())
                 {
@@ -144,10 +144,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void updateLabelList(Message<JsonObject> message)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
         JsonArray labelList = message.body().getJsonArray(ParamConfig.getLabelListParam());
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateLabelList(), new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getUpdateLabelList(), new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
 
             if (fetch.succeeded())
             {
@@ -169,11 +169,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void deleteProject(Message<JsonObject> message)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.deleteProject(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getDeleteProject(), params, fetch -> {
 
             if (fetch.succeeded())
             {
@@ -188,9 +188,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
     {
-        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
 
             if (fetch.succeeded())
             {
@@ -221,7 +221,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProject(), jsonUpdateBody, reply -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getUpdateProject(), jsonUpdateBody, reply -> {
 
             if (!reply.succeeded())
             {
@@ -232,7 +232,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private void loadProjectLoader()
     {
-        portfolioDbClient.query(PortfolioDbQuery.loadDbProject(), projectNameFetch -> {
+        portfolioDbClient.query(PortfolioDbQuery.getLoadDbProject(), projectNameFetch -> {
 
             if (projectNameFetch.succeeded())
             {
@@ -314,7 +314,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             String projectID = ProjectHandler.generateProjectID();
             JsonArray params = buildNewProject(projectName, annotationInt, projectID);
 
-            portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
                 if (fetch.succeeded())
                 {
@@ -339,9 +339,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     //V2 API
     public void getProjectMetadata(Message<JsonObject> message)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectMetadata(), new JsonArray().add(projectID), fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getRetrieveProjectMetadata(), new JsonArray().add(projectID), fetch -> {
 
             if (fetch.succeeded())
             {
@@ -364,7 +364,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         .put(ParamConfig.getIsStarredParam(), isStarred)
                         .put(ParamConfig.getIsLoadedParam(), isLoaded)
                         .put(ParamConfig.getCreatedDateParam(), dataTime)
-                        .put(ParamConfig.getTotalUUIDParam(), uuidList.size()));
+                        .put(ParamConfig.getTotalUuidParam(), uuidList.size()));
 
                 JsonObject response = ReplyHandler.getOkReply();
                 response.put(ParamConfig.getContent(), result);
@@ -381,9 +381,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     //V2 API
     public void getAllProjectsMetadata(Message<JsonObject> message)
     {
-        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsMetadata(), new JsonArray().add(annotationTypeIndex), fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getRetrieveAllProjectsMetadata(), new JsonArray().add(annotationTypeIndex), fetch -> {
 
             if (fetch.succeeded())
             {
@@ -435,7 +435,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
                             .put(ParamConfig.getIsLoadedParam(), isLoaded)
                             .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i))
-                            .put(ParamConfig.getTotalUUIDParam(), total_uuid));
+                            .put(ParamConfig.getTotalUuidParam(), total_uuid));
                 }
 
                 JsonObject response = ReplyHandler.getOkReply();
@@ -452,7 +452,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public static void updateIsNewParam(@NonNull String projectID)
     {
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateIsNewParam(), new JsonArray().add(Boolean.FALSE).add(projectID), fetch ->{
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getUpdateIsNewParam(), new JsonArray().add(Boolean.FALSE).add(projectID), fetch ->{
 
             if (fetch.succeeded())
             {
@@ -468,7 +468,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     //V2 API
     public void starProject(Message<JsonObject> message)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
         Object isStarObject = message.body().getString(ParamConfig.getStatusParam());
 
         boolean isStarStatus;
@@ -492,7 +492,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             return;
         }
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.starProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getStarProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
 
             if (fetch.succeeded())
             {
@@ -544,7 +544,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (ar.succeeded()) {
                     SQLConnection connection = ar.result();
-                    connection.execute(PortfolioDbQuery.createPortfolioTable(), create -> {
+                    connection.execute(PortfolioDbQuery.getCreatePortfolioTable(), create -> {
 
                         connection.close();
 

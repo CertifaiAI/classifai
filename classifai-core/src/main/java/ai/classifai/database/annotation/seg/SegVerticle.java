@@ -19,7 +19,6 @@ import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -51,29 +50,29 @@ public class SegVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(SegDbQuery.retrieveData()))
+        if (action.equals(SegDbQuery.getRetrieveData()))
         {
-            this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData());
+            this.retrieveData(message, jdbcClient, SegDbQuery.getRetrieveData());
         }
-        else if (action.equals(SegDbQuery.retrieveDataPath()))
+        else if (action.equals(SegDbQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient, SegDbQuery.retrieveDataPath());
+            this.retrieveDataPath(message, jdbcClient, SegDbQuery.getRetrieveDataPath());
         }
-        else if (action.equals(SegDbQuery.updateData()))
+        else if (action.equals(SegDbQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcClient, SegDbQuery.updateData());
+            this.updateData(message, jdbcClient, SegDbQuery.getUpdateData());
         }
-        else if (action.equals(SegDbQuery.loadValidProjectUUID()))
+        else if (action.equals(SegDbQuery.getLoadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.getLoadValidProjectUUID());
         }
-        else if (action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(SegDbQuery.getDeleteProjectUuidListWithProjectId()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.deleteProjectUUIDListwithProjectID());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.getDeleteProjectUuidListWithProjectId());
         }
-        else if (action.equals(SegDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(SegDbQuery.getDeleteProjectUuidList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.getDeleteProjectUuidList());
         }
         else
         {
@@ -116,7 +115,7 @@ public class SegVerticle extends AnnotationVerticle
             else
             {
                 SQLConnection connection = ar.result();
-                connection.execute(SegDbQuery.createProject(), create -> {
+                connection.execute(SegDbQuery.getCreateProject(), create -> {
                     connection.close();
                     if (create.failed())
                     {

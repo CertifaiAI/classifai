@@ -15,6 +15,8 @@
  */
 package ai.classifai.database.annotation;
 
+import lombok.Getter;
+
 /**
  * Common SQL Query for Each Annotation Type
  *
@@ -22,32 +24,22 @@ package ai.classifai.database.annotation;
  */
 public abstract class AnnotationQuery
 {
-    private static final String CREATE_PROJECT = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, project_id UUID, img_path VARCHAR(2000), annotation CLOB, img_depth INT, " +
-            "img_x INT, img_y INT, img_w DOUBLE, img_h DOUBLE, file_size INT, img_ori_w INT, img_ori_h INT, PRIMARY KEY(uuid, project_id))";
+    @Getter private static final String createProject = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, projectId UUID, imgPath VARCHAR(2000), annotation CLOB, imgDepth INT, " +
+            "imgX INT, imgY INT, imgW DOUBLE, imgH DOUBLE, fileSize INT, imgOriW INT, imgOriH INT, PRIMARY KEY(uuid, projectId))";
 
-    protected static final String CREATE_DATA = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    @Getter private static final String retrieveData = "SELECT imgPath, annotation, imgX, imgY, imgW, imgH, fileSize, imgOriW, imgOriH from Project WHERE uuid = ? AND projectId = ?";
 
-    protected static final String RETRIEVE_DATA_PATH = "SELECT img_path FROM Project WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String updateData = "UPDATE Project SET annotation = ?, imgDepth = ?, imgX = ?, imgY = ?, imgW = ?, imgH = ?, fileSize = ?, imgOriW = ?, imgOriH = ? WHERE uuid = ? AND projectId = ?";
 
-    protected static final String LOAD_VALID_PROJECT_UUID = "SELECT img_path FROM Project WHERE project_id = ? AND uuid = ?";
+    @Getter private static final String createData = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    protected static final String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "DELETE FROM Project WHERE project_id = ?";
+    @Getter private static final String retrieveDataPath = "SELECT imgPath FROM Project WHERE uuid = ? AND projectId = ?";
 
-    protected static final String DELETE_PROJECT_UUID_LIST = "DELETE FROM Project WHERE project_id = ? AND uuid = ?";
+    @Getter private static final String loadValidProjectUUID = "SELECT imgPath FROM Project WHERE projectId = ? AND uuid = ?";
 
-    protected static final String GET_ALL_PROJECTS = "SELECT * FROM Project";
+    @Getter private static final String DeleteProjectUuidListWithProjectId = "DELETE FROM Project WHERE projectId = ?";
 
-    public static String createProject() { return CREATE_PROJECT; }
+    @Getter private static final String deleteProjectUuidList = "DELETE FROM Project WHERE projectId = ? AND uuid = ?";
 
-    public static String createData() { return CREATE_DATA; }
-
-    public static String retrieveDataPath() { return RETRIEVE_DATA_PATH; }
-
-    public static String loadValidProjectUUID() { return LOAD_VALID_PROJECT_UUID; }
-
-    public static String deleteProjectUUIDListwithProjectID() { return DELETE_PROJECT_UUID_LIST_WITH_PROJECTID; }
-
-    public static String deleteProjectUUIDList(){ return DELETE_PROJECT_UUID_LIST; }
-
-    public static String getAllProjects() { return GET_ALL_PROJECTS; }
+    @Getter private static final String retrieveAllProjects = "SELECT * FROM Project";
 }

@@ -16,6 +16,8 @@
 package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.annotation.AnnotationQuery;
+import lombok.Getter;
+
 /***
  * Segmentation database query
  *
@@ -23,15 +25,5 @@ import ai.classifai.database.annotation.AnnotationQuery;
  */
 public class SegDbQuery extends AnnotationQuery
 {
-    private static final String QUEUE = "segmentation.queue";
-
-    private static final String RETRIEVE_DATA = "SELECT img_path, polygons, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h from Project WHERE uuid = ? AND project_id = ?";
-
-    private static final String UPDATE_DATA = "UPDATE Project SET polygons = ?, img_depth = ?, img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
-
-    public static String getQueue(){ return QUEUE; }
-
-    public static String retrieveData() { return RETRIEVE_DATA; }
-
-    public static String updateData() { return UPDATE_DATA; }
+    @Getter private static final String queue = "segmentation.queue";
 }

@@ -19,7 +19,6 @@ import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -51,29 +50,29 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(BoundingBoxDbQuery.retrieveData()))
+        if (action.equals(BoundingBoxDbQuery.getRetrieveData()))
         {
-            this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.retrieveData());
+            this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.getRetrieveData());
         }
-        else if (action.equals(BoundingBoxDbQuery.updateData()))
+        else if (action.equals(BoundingBoxDbQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcClient, BoundingBoxDbQuery.updateData());
+            this.updateData(message, jdbcClient, BoundingBoxDbQuery.getUpdateData());
         }
-        else if (action.equals(BoundingBoxDbQuery.retrieveDataPath()))
+        else if (action.equals(BoundingBoxDbQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient, BoundingBoxDbQuery.retrieveDataPath());
+            this.retrieveDataPath(message, jdbcClient, BoundingBoxDbQuery.getRetrieveDataPath());
         }
-        else if (action.equals(BoundingBoxDbQuery.loadValidProjectUUID()))
+        else if (action.equals(BoundingBoxDbQuery.getLoadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.loadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.getLoadValidProjectUUID());
         }
-        else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId());
         }
-        else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(BoundingBoxDbQuery.getDeleteProjectUuidList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.getDeleteProjectUuidList());
         }
         else
         {
@@ -114,7 +113,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
             else
             {
                 SQLConnection connection = ar.result();
-                connection.execute(BoundingBoxDbQuery.createProject(), create -> {
+                connection.execute(BoundingBoxDbQuery.getCreateProject(), create -> {
                     connection.close();
                     if (create.failed())
                     {

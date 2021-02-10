@@ -75,7 +75,7 @@ public class ToolFolderSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(ParamConfig.getFileSysRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

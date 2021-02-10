@@ -75,7 +75,7 @@ public class CLIArgument
             if (arg.contains("--docker"))
             {
                 isDockerEnv = true;
-                ParamConfig.setIsDockerEnv(true);
+                ParamConfig.setDockerEnv(true);
             }
             else if (arg.contains("--port="))
             {

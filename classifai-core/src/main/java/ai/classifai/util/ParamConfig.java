@@ -17,10 +17,10 @@ package ai.classifai.util;
 
 import ai.classifai.database.DbConfig;
 import ai.classifai.ui.component.OSManager;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.OS;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 
@@ -29,149 +29,74 @@ import java.io.File;
  *
  * @author codenamewei
  */
-
+@Slf4j
 public class ParamConfig
 {
-
-    @Getter @Setter private static Integer hostingPort;
-
-    private static final String FILE_SEPARATOR;
-    private static final OSManager OS_MANAGER;
-
-    static
+    private ParamConfig()
     {
-        OS_MANAGER = new OSManager();
-
-        hostingPort = 9999;
-
-        if (OS_MANAGER.getCurrentOS().equals(OS.WINDOWS))
-        {
-            FILE_SEPARATOR = "\\\\";
-        }
-        else
-        {
-            FILE_SEPARATOR = File.separator;
-        }
+        log.debug("Parameters LUT");
     }
 
-    private static final File ROOT_SEARCH_PATH = new File(System.getProperty("user.home"));
-    private static final String LOG_FILE_PATH = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+    @Setter @Getter private static Integer hostingPort = 9999;
+    @Setter @Getter private static boolean isDockerEnv = false;
+
+    @Getter private static final OSManager osManager = new OSManager();
+
+    @Getter private static final String fileSeparator = osManager.getCurrentOS().equals(OS.WINDOWS) ? "\\\\" : File.separator;
+
+    @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
+    @Getter private static final String logFilePath = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+
+    @Getter private static final String projectNameParam = "projectName";
+    @Getter private static final String projectIdParam = "projectId";
+
+    @Getter private static final String annotationTypeParam = "annotationType";
+    @Getter private static final String annotationParam = "annotation";
 
 
-    private static boolean isDockerEnv = false;
+    @Getter private static final String totalUuidParam = "totalUuid";
+    @Getter private static final String uuidListParam = "uuidList";
+    @Getter private static final String labelListParam = "labelList";
 
-    private static final String PROJECT_NAME_PARAM = "project_name";
-    private static final String PROJECT_ID_PARAM = "project_id";
-    private static final String FILE_SYS_PARAM = "file_sys";
+    @Getter private static final String uuidParam = "uuid";
+    @Getter private static final String imgPathParam = "imgPath";
 
-    private static final String UUID_GENERATOR_PARAM = "uuid_generator_seed";
-    private static final String ANNOTATE_TYPE_PARAM = "annotation_type";
+    @Getter private static final String imgSrcParam = "imgSrc";
 
-    private static final String TOTAL_UUID_PARAM = "total_uuid";
-    private static final String UUID_LIST_PARAM = "uuid_list";
-    private static final String LABEL_LIST_PARAM = "label_list";
+    @Getter private static final String imgXParam = "imgX";
+    @Getter private static final String imgYParam = "imgY";
 
-    private static final String UUID_PARAM = "uuid";
-    private static final String IMAGE_PATH_PARAM = "img_path";
+    @Getter private static final String imgWParam = "imgW";
+    @Getter private static final String imgHParam = "imgH";
+    @Getter private static final String imgOriWParam = "imgOriW";
+    @Getter private static final String imgOriHParam = "imgOriH";
 
-    private static final String EMPTY_ARRAY = "[]";
+    @Getter private static final String imgDepth = "imgDepth";
+    @Getter private static final String fileSizeParam = "fileSize";
 
-    private static final String IMAGE_THUMBNAIL_PARAM = "img_thumbnail";
-    private static final String IMAGE_SRC_PARAM = "img_src";
+    @Getter private static final String fileParam = "file";
+    @Getter private static final String folderParam = "folder";
 
-    private static final String ANNOTATION_PARAM = "annotation";
+    @Getter private static final String actionKeyword = "action";
+    @Getter private static final String content = "content";
+    @Getter private static final String progressMetadata = "progress";
+
+    //v2
+    @Getter private static final String isNewParam = "isNew";
+    @Getter private static final String isStarredParam = "isStarred";
+    @Getter private static final String isLoadedParam = "isLoaded";
+    @Getter private static final String createdDateParam = "createdData";
+
+    @Getter private static final String statusParam = "status";
+
+    //keyword to retrieve image thumbnail
+    @Getter private static final String imgThumbnailParam = "imgThumbnail";
+    @Getter private static final String base64Param = "base64";
 
     //Common name when performing data migration
-    private static final String PROJECT_CONTENT_PARAM = "content";
+    @Getter private static final String projectContentParam = "content";
 
-    private static final String IMAGEX_PARAM = "img_x";
-    private static final String IMAGEY_PARAM = "img_y";
-
-    private static final String IMAGEW_PARAM = "img_w";
-    private static final String IMAGEH_PARAM = "img_h";
-    private static final String IMAGEORIW_PARAM = "img_ori_w";
-    private static final String IMAGEORIH_PARAM = "img_ori_h";
-
-    private static final String IMAGE_DEPTH = "img_depth";
-
-    private static final String BASE64_PARAM = "base64";
-    private static final String FILE_SIZE_PARAM = "file_size";
-
-    private static final String FILE_PARAM = "file";
-    private static final String FOLDER_PARAM = "folder";
-
-    private static final String ACTION_KEYWORD = "action";
-    private static final String CONTENT = "content";
-    private static final String PROGRESS_METADATA = "progress";
-
-
-    //v2
-    private static final String IS_NEW = "is_new";
-    private static final String IS_STARRED = "is_starred";
-    private static final String IS_LOADED = "is_loaded";
-    private static final String CREATED_DATE = "created_date";
-
-    private static final String STATUS_PARAM = "status";
-
-    public static OSManager getOsManager() {return OS_MANAGER;}
-
-    public static String getFileSeparator() {return FILE_SEPARATOR;}
-
-    public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
-    public static String getLogFilePath() { return LOG_FILE_PATH; }
-
-    public static void setIsDockerEnv(boolean state) { isDockerEnv = state; }
-    public static boolean isDockerEnv() { return isDockerEnv; }
-
-    public static String getProjectNameParam() { return PROJECT_NAME_PARAM; }
-    public static String getProjectIDParam() { return PROJECT_ID_PARAM; }
-    public static String getFileSysParam() { return FILE_SYS_PARAM; }
-
-    public static String getUuidGeneratorParam() { return UUID_GENERATOR_PARAM; }
-    public static String getAnnotateTypeParam() { return ANNOTATE_TYPE_PARAM; }
-
-    public static String getTotalUUIDParam() { return TOTAL_UUID_PARAM; }
-    public static String getUUIDListParam() { return UUID_LIST_PARAM; }
-    public static String getLabelListParam() { return LABEL_LIST_PARAM;}
-
-    public static String getUUIDParam() { return UUID_PARAM; }
-    public static String getImagePathParam() { return IMAGE_PATH_PARAM; }
-
-    public static String getEmptyArray() { return EMPTY_ARRAY; }
-
-    public static String getImageThumbnailParam() { return IMAGE_THUMBNAIL_PARAM; }
-    public static String getImageSourceParam() { return IMAGE_SRC_PARAM; }
-
-    public static String getAnnotationParam() { return ANNOTATION_PARAM; }
-    public static String getProjectContentParam() { return PROJECT_CONTENT_PARAM; }
-
-    public static String getImageXParam() { return IMAGEX_PARAM; }
-    public static String getImageYParam() { return IMAGEY_PARAM; }
-
-    public static String getImageWParam() { return IMAGEW_PARAM; }
-    public static String getImageHParam() { return IMAGEH_PARAM; }
-
-    public static String getImageORIWParam() { return IMAGEORIW_PARAM; }
-    public static String getImageORIHParam() { return IMAGEORIH_PARAM; }
-
-    public static String getImageDepth() { return IMAGE_DEPTH; }
-
-    public static String getBase64Param() { return BASE64_PARAM; }
-    public static String getFileSizeParam() { return FILE_SIZE_PARAM; }
-
-    public static String getFileParam() { return FILE_PARAM; }
-    public static String getFolderParam() { return FOLDER_PARAM; }
-
-    public static String getActionKeyword() { return ACTION_KEYWORD; }
-    public static String getContent() { return CONTENT; }
-    public static String getProgressMetadata() { return PROGRESS_METADATA; }
-
-    //v2
-    public static String getIsStarredParam() { return IS_STARRED; }
-    public static String getIsLoadedParam() { return IS_LOADED; }
-    public static String getIsNewParam() { return IS_NEW; }
-
-    public static String getCreatedDateParam() { return CREATED_DATE; }
-
-    public static String getStatusParam() { return STATUS_PARAM; }
+    //router endpoint
+    @Getter private static final String fileSysParam = "file_sys";
+    @Getter private static final String emptyArray = "[]";
 }

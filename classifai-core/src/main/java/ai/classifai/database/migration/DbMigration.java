@@ -104,9 +104,9 @@ public class DbMigration
         }
 
         //Create h2 tables
-        createH2(h2ConnDict.get(DbConfig.getPortfolioKey()), PortfolioDbQuery.createPortfolioTable());
-        createH2(h2ConnDict.get(DbConfig.getBndBoxKey()), BoundingBoxDbQuery.createProject());
-        createH2(h2ConnDict.get(DbConfig.getSegKey()), SegDbQuery.createProject());
+        createH2(h2ConnDict.get(DbConfig.getPortfolioKey()), PortfolioDbQuery.getCreatePortfolioTable());
+        createH2(h2ConnDict.get(DbConfig.getBndBoxKey()), BoundingBoxDbQuery.getCreateProject());
+        createH2(h2ConnDict.get(DbConfig.getSegKey()), SegDbQuery.getCreateProject());
 
         //read Json file to H2
         json2H2();
@@ -222,7 +222,7 @@ public class DbMigration
 
         try (Statement st = hsqlConnDict.get(DbConfig.getPortfolioKey()).createStatement())
         {
-            String query = PortfolioDbQuery.getAllProjects();
+            String query = PortfolioDbQuery.getRetrieveAllProjects();
 
             ResultSet rs = st.executeQuery(query);
 
@@ -270,7 +270,7 @@ public class DbMigration
             {
                 JSONArray arr = new JSONArray();
 
-                String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getAllProjects() : AnnotationQuery.getAllProjects();
+                String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getRetrieveAllProjects() : AnnotationQuery.getRetrieveAllProjects();
 
                 ResultSet rs = st.executeQuery(query);
 
@@ -284,11 +284,11 @@ public class DbMigration
                         List<String> UUIDList = integerList2StringListWithMap(UUIDIntList, projectUUIDDict.get(projectID));
 
                         arr.put(new JSONObject()
-                                .put(ParamConfig.getProjectIDParam(), projectIDDict.get(projectID))
+                                .put(ParamConfig.getProjectIdParam(), projectIDDict.get(projectID))
                                 .put(ParamConfig.getProjectNameParam(), rs.getString(2))
-                                .put(ParamConfig.getAnnotateTypeParam(), rs.getInt(3))
+                                .put(ParamConfig.getAnnotationTypeParam(), rs.getInt(3))
                                 .put(ParamConfig.getLabelListParam(), rs.getString(4))
-                                .put(ParamConfig.getUUIDListParam(), UUIDList));
+                                .put(ParamConfig.getUuidListParam(), UUIDList));
                     }
                 }
                 else
@@ -299,18 +299,18 @@ public class DbMigration
                         Integer uuidInt = rs.getInt(1);
 
                         arr.put(new JSONObject()
-                                .put(ParamConfig.getUUIDParam(), projectUUIDDict.get(projectIDInt).get(uuidInt))
-                                .put(ParamConfig.getProjectIDParam(), projectIDDict.get(projectIDInt))
-                                .put(ParamConfig.getImagePathParam(), rs.getString(3))
+                                .put(ParamConfig.getUuidParam(), projectUUIDDict.get(projectIDInt).get(uuidInt))
+                                .put(ParamConfig.getProjectIdParam(), projectIDDict.get(projectIDInt))
+                                .put(ParamConfig.getImgPathParam(), rs.getString(3))
                                 .put(ParamConfig.getProjectContentParam(), rs.getString(4))
-                                .put(ParamConfig.getImageDepth(), rs.getInt(5))
-                                .put(ParamConfig.getImageXParam(), rs.getInt(6))
-                                .put(ParamConfig.getImageYParam(), rs.getInt(7))
-                                .put(ParamConfig.getImageWParam(), rs.getDouble(8))
-                                .put(ParamConfig.getImageHParam(), rs.getDouble(9))
+                                .put(ParamConfig.getImgDepth(), rs.getInt(5))
+                                .put(ParamConfig.getImgXParam(), rs.getInt(6))
+                                .put(ParamConfig.getImgYParam(), rs.getInt(7))
+                                .put(ParamConfig.getImgWParam(), rs.getDouble(8))
+                                .put(ParamConfig.getImgHParam(), rs.getDouble(9))
                                 .put(ParamConfig.getFileSizeParam(), rs.getInt(10))
-                                .put(ParamConfig.getImageORIWParam(), rs.getInt(11))
-                                .put(ParamConfig.getImageORIHParam(), rs.getInt(12)));
+                                .put(ParamConfig.getImgOriWParam(), rs.getInt(11))
+                                .put(ParamConfig.getImgOriHParam(), rs.getInt(12)));
                     }
                 }
 
@@ -340,7 +340,7 @@ public class DbMigration
             Connection con = entry.getValue();
 
             File file = new File(tempJsonDict.get(key));
-            String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.createNewProject() : AnnotationQuery.createData();
+            String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getCreateNewProject() : AnnotationQuery.getCreateData();
 
             try
             (
@@ -357,11 +357,11 @@ public class DbMigration
                     {
                         JSONObject obj = arr.getJSONObject(i);
 
-                        st.setString(1, obj.getString(ParamConfig.getProjectIDParam()));
+                        st.setString(1, obj.getString(ParamConfig.getProjectIdParam()));
                         st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));
-                        st.setInt(3, obj.getInt(ParamConfig.getAnnotateTypeParam()));
+                        st.setInt(3, obj.getInt(ParamConfig.getAnnotationTypeParam()));
                         st.setString(4, obj.getString(ParamConfig.getLabelListParam()));
-                        st.setString(5, obj.getJSONArray(ParamConfig.getUUIDListParam()).toString());
+                        st.setString(5, obj.getJSONArray(ParamConfig.getUuidListParam()).toString());
                         st.setBoolean(6, false);
                         st.setBoolean(7, false);
                         st.setString(8, DateTime.get()); //changed created date of old projects to current date of migration
@@ -377,18 +377,18 @@ public class DbMigration
                     {
                         JSONObject obj = arr.getJSONObject(i);
 
-                        st.setString(1, obj.getString(ParamConfig.getUUIDParam()));
-                        st.setString(2, obj.getString(ParamConfig.getProjectIDParam()));
-                        st.setString(3, obj.getString(ParamConfig.getImagePathParam()));
+                        st.setString(1, obj.getString(ParamConfig.getUuidParam()));
+                        st.setString(2, obj.getString(ParamConfig.getProjectIdParam()));
+                        st.setString(3, obj.getString(ParamConfig.getImgPathParam()));
                         st.setString(4, obj.getString(ParamConfig.getProjectContentParam()));
-                        st.setInt(5, obj.getInt(ParamConfig.getImageDepth()));
-                        st.setInt(6, obj.getInt(ParamConfig.getImageXParam()));
-                        st.setInt(7, obj.getInt(ParamConfig.getImageYParam()));
-                        st.setDouble(8, obj.getDouble(ParamConfig.getImageWParam()));
-                        st.setDouble(9, obj.getDouble(ParamConfig.getImageHParam()));
+                        st.setInt(5, obj.getInt(ParamConfig.getImgDepth()));
+                        st.setInt(6, obj.getInt(ParamConfig.getImgXParam()));
+                        st.setInt(7, obj.getInt(ParamConfig.getImgYParam()));
+                        st.setDouble(8, obj.getDouble(ParamConfig.getImgWParam()));
+                        st.setDouble(9, obj.getDouble(ParamConfig.getImgHParam()));
                         st.setInt(10, obj.getInt(ParamConfig.getFileSizeParam()));
-                        st.setInt(11, obj.getInt(ParamConfig.getImageORIWParam()));
-                        st.setInt(12, obj.getInt(ParamConfig.getImageORIHParam()));
+                        st.setInt(11, obj.getInt(ParamConfig.getImgOriWParam()));
+                        st.setInt(12, obj.getInt(ParamConfig.getImgOriHParam()));
 
                         st.executeUpdate();
                         st.clearParameters();
