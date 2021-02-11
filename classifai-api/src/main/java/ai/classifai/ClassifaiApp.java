@@ -46,9 +46,7 @@ public class ClassifaiApp
         DeploymentOptions opt = new DeploymentOptions();
         opt.setWorker(true);
 
-        opt.setConfig(new JsonObject().put("http.port", ParamConfig.getHostingPort()));
-
         Vertx vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(ai.classifai.MainVerticle.class.getName(), opt);
+        vertx.deployVerticle(new MainVerticle(), opt);
     }
 }
