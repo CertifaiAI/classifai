@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,7 +118,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             log.info("Create " + annotationName + " project with name: " + projectName);
 
-            Integer projectID = ProjectHandler.generateProjectID();
+            String projectID = ProjectHandler.generateProjectID();
 
             JsonArray params = buildNewProject(projectName, annotationType, projectID);
 
@@ -145,7 +144,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void updateLabelList(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
         JsonArray labelList = message.body().getJsonArray(ParamConfig.getLabelListParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateLabelList(), new JsonArray().add(labelList.toString()).add(projectID), fetch ->{
@@ -170,7 +169,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void deleteProject(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
@@ -214,26 +213,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    public static void updateUUIDGeneratorSeed(@NonNull Integer projectID, @NonNull Integer seedNumber)
-    {
-        ProjectHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
-
-        JsonArray params = new JsonArray().add(seedNumber).add(projectID);
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateUUIDGeneratorSeed(), params, fetch -> {
-
-            if (!fetch.succeeded())
-            {
-                log.error("Update seed number in Portfolio failed. Project expected to hit error: " + fetch.cause().getMessage());
-            }
-        });
-    }
-
-    public static void updateFileSystemUUIDList(@NonNull Integer projectID)
+    public static void updateFileSystemUUIDList(@NonNull String projectID)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        List<Integer> uuidList = loader.getUuidListFromDatabase();
+        List<String> uuidList = loader.getUuidListFromDatabase();
 
         JsonArray jsonUpdateBody = new JsonArray().add(uuidList.toString()).add(projectID);
 
@@ -256,15 +240,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (resultSet.getNumRows() == 0)
                 {
-                    log.debug("Project ID List is empty. Initiate generator id from 0");
-                    ProjectHandler.setProjectIDGenerator(0);
+                    log.debug("Project ID List is empty.");
                 }
                 else
                 {
-                    List<Integer> projectIDList = resultSet
+                    List<String> projectIDList = resultSet
                             .getResults()
                             .stream()
-                            .map(json -> json.getInteger(0))
+                            .map(json -> json.getString(0))
                             .collect(Collectors.toList());
 
                     List<String> projectNameList = resultSet
@@ -285,32 +268,23 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             .map(json -> json.getString(3))
                             .collect(Collectors.toList());
 
-                    List<Integer> uuidGeneratorList = resultSet
-                            .getResults()
-                            .stream()
-                            .map(json -> json.getInteger(4))
-                            .collect(Collectors.toList());
-
                     List<String> uuidsFromDatabaseList = resultSet
                             .getResults()
                             .stream()
-                            .map(json -> json.getString(5))
+                            .map(json -> json.getString(4))
                             .collect(Collectors.toList());
 
                     List<Boolean> isNewList = resultSet
                             .getResults()
                             .stream()
-                            .map(json -> json.getBoolean(6))
+                            .map(json -> json.getBoolean(5))
                             .collect(Collectors.toList());
-
-                    ProjectHandler.setProjectIDGenerator(Collections.max(projectIDList) + 1);
 
                     for (int i = 0; i < projectIDList.size(); ++i)
                     {
                         ProjectLoader loader = ProjectHandler.buildProjectLoader(projectNameList.get(i), projectIDList.get(i), annotationTypeList.get(i), LoaderStatus.DID_NOT_INITIATED, isNewList.get(i));
 
-                        loader.setUuidGeneratorSeed(uuidGeneratorList.get(i));
-                        loader.setUuidListFromDatabase(ConversionHandler.string2IntegerList(uuidsFromDatabaseList.get(i)));
+                        loader.setUuidListFromDatabase(ConversionHandler.string2StringList(uuidsFromDatabaseList.get(i)));
                         loader.setLabelList(ConversionHandler.string2StringList(labelList.get(i)));
                     }
                 }
@@ -337,7 +311,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
-            Integer projectID = ProjectHandler.generateProjectID();
+            String projectID = ProjectHandler.generateProjectID();
             JsonArray params = buildNewProject(projectName, annotationInt, projectID);
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
@@ -356,7 +330,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else
         {
-            Integer projectID = ProjectHandler.getProjectID(projectName, annotationInt);
+            String projectID = ProjectHandler.getProjectID(projectName, annotationInt);
 
             if (dataPath != null) ImageHandler.processFolder(projectID, dataPath);
         }
@@ -365,7 +339,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     //V2 API
     public void getProjectMetadata(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectMetadata(), new JsonArray().add(projectID), fetch -> {
 
@@ -376,7 +350,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 JsonArray row = fetch.result().getResults().get(0);
 
                 String projectName = row.getString(0);
-                List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
+                List<String> uuidList = ConversionHandler.string2StringList(row.getString(1));
 
                 Boolean isNew = row.getBoolean(2);
                 Boolean isStarred = row.getBoolean(3);
@@ -450,9 +424,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 int maxIndex = projectNameList.size() - 1;
                 for (int i = maxIndex ; i > -1; --i)
                 {
-                    int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
+                    int total_uuid = ConversionHandler.string2StringList(uuidList.get(i)).size();
 
-                    Integer projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
+                    String projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
                     Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
 
                     result.add(new JsonObject()
@@ -476,7 +450,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    public static void updateIsNewParam(@NonNull Integer projectID)
+    public static void updateIsNewParam(@NonNull String projectID)
     {
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateIsNewParam(), new JsonArray().add(Boolean.FALSE).add(projectID), fetch ->{
 
@@ -494,7 +468,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     //V2 API
     public void starProject(Message<JsonObject> message)
     {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        String projectID = message.body().getString(ParamConfig.getProjectIDParam());
         Object isStarObject = message.body().getString(ParamConfig.getStatusParam());
 
         boolean isStarStatus;
@@ -531,14 +505,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    private JsonArray buildNewProject(String projectName, Integer annotationType, Integer projectID)
+    private JsonArray buildNewProject(String projectName, Integer annotationType, String projectID)
     {
         return new JsonArray()
                 .add(projectID)                   //project_id
                 .add(projectName)                 //project_name
                 .add(annotationType)              //annotation_type
                 .add(ParamConfig.getEmptyArray()) //label_list
-                .add(0)                           //uuid_generator_seed
                 .add(ParamConfig.getEmptyArray()) //uuid_list
                 .add(true)                        //is_new
                 .add(false)                       //is_starred

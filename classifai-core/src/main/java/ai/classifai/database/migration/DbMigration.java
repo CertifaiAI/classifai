@@ -22,6 +22,8 @@ import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.type.database.RelationalDb;
 import lombok.NoArgsConstructor;
@@ -35,10 +37,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /***
  * Program for database migration from HSQL -> H2
@@ -53,6 +52,16 @@ public class DbMigration
     private Map<String, String> tempJsonDict;
     private Map<String, Connection> hsqlConnDict;
     private Map<String, Connection> h2ConnDict;
+
+    //Migration from v1 -> v2, replacing project id  & uuid from int -> string(uuidv4)
+
+    //Key: v1 project id
+    //Value: v2 project id
+    private Map<Integer, String> projectIDDict;
+
+    //Key: v1 project id
+    //Value: Map<Integer v1 uuid, String v2 uuid>
+    private Map<Integer, Map<Integer, String>> projectUUIDDict;
 
     public boolean migrate()
     {
@@ -75,6 +84,9 @@ public class DbMigration
 
             return false;
         }
+
+        //create map for conversion from integer id to uuid
+        UUIDConversion();
 
         //generate Json file from HSQL
         hsql2Json();
@@ -189,6 +201,63 @@ public class DbMigration
         }
     }
 
+    private static List<String> integerList2StringListWithMap(List<Integer> subsetList, Map<Integer,String> fullListMap)
+    {
+        List<String> convertedList = new ArrayList<>();
+
+        for (Integer myInt : subsetList)
+        {
+            convertedList.add(fullListMap.get(myInt));
+        }
+
+        return convertedList;
+    }
+
+    private void UUIDConversion()
+    {
+        projectIDDict = new HashMap<>();
+        projectUUIDDict = new HashMap<>();
+
+        Set<String> projectIDSet = new HashSet<>();
+
+        try (Statement st = hsqlConnDict.get(DbConfig.getPortfolioKey()).createStatement())
+        {
+            String query = PortfolioDbQuery.getAllProjects();
+
+            ResultSet rs = st.executeQuery(query);
+
+            while (rs.next())
+            {
+                Set<String> uuidSet = new HashSet<>();
+                Map<Integer, String> uuidMap = new HashMap<>();
+
+                Integer projectIDInt = rs.getInt(1);
+                List<Integer> UUIDIntList = ConversionHandler.string2IntegerList(rs.getString(6));
+
+                String projectID = UUIDGenerator.generateUUID(projectIDSet);
+
+                projectIDDict.put(projectIDInt, projectID);
+
+                projectIDSet.add(projectID);
+
+                for (Integer uuidInt: UUIDIntList)
+                {
+                    String uuid = UUIDGenerator.generateUUID(uuidSet);
+
+                    uuidMap.put(uuidInt, uuid);
+
+                    uuidSet.add(uuid);
+                }
+
+                projectUUIDDict.put(projectIDInt, uuidMap);
+            }
+        }
+        catch (Exception e)
+        {
+            log.debug("Unable to convert to UUID " + e);
+        }
+    }
+
     private void hsql2Json()
     {
         for (Map.Entry<String, Connection> entry : hsqlConnDict.entrySet())
@@ -209,22 +278,29 @@ public class DbMigration
                 {
                     while (rs.next())
                     {
+                        Integer projectID = rs.getInt(1);
+                        List<Integer> UUIDIntList = ConversionHandler.string2IntegerList(rs.getString(6));
+
+                        List<String> UUIDList = integerList2StringListWithMap(UUIDIntList, projectUUIDDict.get(projectID));
+
                         arr.put(new JSONObject()
-                                .put(ParamConfig.getProjectIDParam(), rs.getInt(1))
+                                .put(ParamConfig.getProjectIDParam(), projectIDDict.get(projectID))
                                 .put(ParamConfig.getProjectNameParam(), rs.getString(2))
                                 .put(ParamConfig.getAnnotateTypeParam(), rs.getInt(3))
                                 .put(ParamConfig.getLabelListParam(), rs.getString(4))
-                                .put(ParamConfig.getUuidGeneratorParam(), rs.getInt(5))
-                                .put(ParamConfig.getUUIDListParam(), rs.getString(6)));
+                                .put(ParamConfig.getUUIDListParam(), UUIDList));
                     }
                 }
                 else
                 {
                     while (rs.next())
                     {
+                        Integer projectIDInt = rs.getInt(2);
+                        Integer uuidInt = rs.getInt(1);
+
                         arr.put(new JSONObject()
-                                .put(ParamConfig.getUUIDParam(), rs.getInt(1))
-                                .put(ParamConfig.getProjectIDParam(), rs.getInt(2))
+                                .put(ParamConfig.getUUIDParam(), projectUUIDDict.get(projectIDInt).get(uuidInt))
+                                .put(ParamConfig.getProjectIDParam(), projectIDDict.get(projectIDInt))
                                 .put(ParamConfig.getImagePathParam(), rs.getString(3))
                                 .put(ParamConfig.getProjectContentParam(), rs.getString(4))
                                 .put(ParamConfig.getImageDepth(), rs.getInt(5))
@@ -281,15 +357,14 @@ public class DbMigration
                     {
                         JSONObject obj = arr.getJSONObject(i);
 
-                        st.setInt(1, obj.getInt(ParamConfig.getProjectIDParam()));
+                        st.setString(1, obj.getString(ParamConfig.getProjectIDParam()));
                         st.setString(2, obj.getString(ParamConfig.getProjectNameParam()));
                         st.setInt(3, obj.getInt(ParamConfig.getAnnotateTypeParam()));
                         st.setString(4, obj.getString(ParamConfig.getLabelListParam()));
-                        st.setInt(5, obj.getInt(ParamConfig.getUuidGeneratorParam()));
-                        st.setString(6, obj.getString(ParamConfig.getUUIDListParam()));
+                        st.setString(5, obj.getJSONArray(ParamConfig.getUUIDListParam()).toString());
+                        st.setBoolean(6, false);
                         st.setBoolean(7, false);
-                        st.setBoolean(8, false);
-                        st.setString(9, DateTime.get()); //changed created date of old projects to current date of migration
+                        st.setString(8, DateTime.get()); //changed created date of old projects to current date of migration
 
 
                         st.executeUpdate();
@@ -302,8 +377,8 @@ public class DbMigration
                     {
                         JSONObject obj = arr.getJSONObject(i);
 
-                        st.setInt(1, obj.getInt(ParamConfig.getUUIDParam()));
-                        st.setInt(2, obj.getInt(ParamConfig.getProjectIDParam()));
+                        st.setString(1, obj.getString(ParamConfig.getUUIDParam()));
+                        st.setString(2, obj.getString(ParamConfig.getProjectIDParam()));
                         st.setString(3, obj.getString(ParamConfig.getImagePathParam()));
                         st.setString(4, obj.getString(ParamConfig.getProjectContentParam()));
                         st.setInt(5, obj.getInt(ParamConfig.getImageDepth()));

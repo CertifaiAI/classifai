@@ -24,20 +24,18 @@ public class PortfolioDbQuery
 {
     private static final String QUEUE = "portfolio.queue";
 
-    private static final String CREATE_PORTFOLIO_TABLE = "CREATE TABLE IF NOT EXISTS Portfolio (project_id INT, project_name VARCHAR(255), annotation_type INT, " +
-            "label_list VARCHAR(10000), uuid_generator_seed INT, uuid_list CLOB, is_new BOOLEAN, is_starred BOOLEAN, created_date VARCHAR(255), PRIMARY KEY (project_id))";
+    private static final String CREATE_PORTFOLIO_TABLE = "CREATE TABLE IF NOT EXISTS Portfolio (project_id UUID, project_name VARCHAR(255), annotation_type INT, " +
+            "label_list VARCHAR(10000), uuid_list CLOB, is_new BOOLEAN, is_starred BOOLEAN, created_date VARCHAR(255), PRIMARY KEY (project_id))";
 
-    private static final String CREATE_NEW_PROJECT = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String CREATE_NEW_PROJECT = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String UPDATE_PROJECT = "UPDATE Portfolio SET uuid_list = ? WHERE project_id = ?";
 
     private static final String DELETE_PROJECT = "DELETE FROM Portfolio WHERE project_id = ?";
 
-    private static final String UPDATE_UUID_GENERATOR_SEED = "UPDATE Portfolio SET uuid_generator_seed = ? WHERE project_id = ?";
-
     private static final String UPDATE_LABEL_LIST = "UPDATE Portfolio set label_list = ? WHERE project_id = ?";
 
-    private static final String LOAD_DB_PROJECT = "SELECT project_id, project_name, annotation_type, label_list, uuid_generator_seed, uuid_list, is_new FROM Portfolio";
+    private static final String LOAD_DB_PROJECT = "SELECT project_id, project_name, annotation_type, label_list, uuid_list, is_new FROM Portfolio";
 
     private static final String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "SELECT project_name FROM Portfolio WHERE annotation_type = ?";
 
@@ -61,8 +59,6 @@ public class PortfolioDbQuery
     public static String updateProject() { return UPDATE_PROJECT; }
 
     public static String deleteProject() { return DELETE_PROJECT; }
-
-    public static String updateUUIDGeneratorSeed() { return UPDATE_UUID_GENERATOR_SEED; }
 
     public static String updateLabelList() { return UPDATE_LABEL_LIST; }
 
