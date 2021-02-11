@@ -143,9 +143,9 @@ public class ProjectLoader
         {
             sanityUUIDList = new ArrayList<>(validUUIDSet);
 
-            loaderStatus = LoaderStatus.LOADED;
-
             validUUIDSet.clear();
+
+            loaderStatus = LoaderStatus.LOADED;
         }
     }
 
