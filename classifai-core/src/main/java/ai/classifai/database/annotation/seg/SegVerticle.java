@@ -26,6 +26,10 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLConnection;
+import io.vertx.jdbcclient.JDBCConnectOptions;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
 {
-    @Getter private static JDBCClient jdbcClient;
+    @Getter private static JDBCPool jdbcPool;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -53,27 +57,27 @@ public class SegVerticle extends AnnotationVerticle
 
         if (action.equals(SegDbQuery.retrieveData()))
         {
-            this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
+            this.retrieveData(message, jdbcPool, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
         }
         else if (action.equals(SegDbQuery.retrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient, SegDbQuery.retrieveDataPath());
+            this.retrieveDataPath(message, jdbcPool, SegDbQuery.retrieveDataPath());
         }
         else if (action.equals(SegDbQuery.updateData()))
         {
-            this.updateData(message, jdbcClient, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
+            this.updateData(message, jdbcPool, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
         }
         else if (action.equals(SegDbQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcPool, SegDbQuery.loadValidProjectUUID());
         }
         else if (action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.deleteProjectUUIDListwithProjectID());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, SegDbQuery.deleteProjectUUIDListwithProjectID());
         }
         else if (action.equals(SegDbQuery.deleteProjectUUIDList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDList(message, jdbcPool, SegDbQuery.deleteProjectUUIDList());
         }
         else
         {
@@ -85,7 +89,7 @@ public class SegVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
-        jdbcClient.close();
+        jdbcPool.close();
 
         log.info("Seg Verticle stopping...");
     }
@@ -97,15 +101,14 @@ public class SegVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
-                .put("driver_class", h2.getDriver())
-                .put("user", h2.getUser())
-                .put("password", h2.getPassword())
-                .put("max_pool_size", 30));
+        jdbcPool = JDBCPool.pool(vertx,  new JDBCConnectOptions()
+                .setJdbcUrl(h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .setUser(h2.getUser())
+                .setPassword(h2.getPassword())
+                ,new PoolOptions().setMaxSize(30)
+        );
 
-
-        jdbcClient.getConnection(ar -> {
+        jdbcPool.getConnection(ar -> {
 
             if (ar.failed())
             {
@@ -115,21 +118,23 @@ public class SegVerticle extends AnnotationVerticle
             }
             else
             {
-                SQLConnection connection = ar.result();
-                connection.execute(SegDbQuery.createProject(), create -> {
-                    connection.close();
-                    if (create.failed())
-                    {
-                        log.error("SegVerticle database preparation error", create.cause());
-                        promise.fail(create.cause());
+                SqlConnection connection = ar.result();
+                connection.query(SegDbQuery.createProject())
+                .execute()
+                .onComplete(create -> {
+                        connection.close();
+                        if (create.succeeded())
+                        {
+                            log.error("SegVerticle database preparation error", create.cause());
+                            promise.fail(create.cause());
 
-                    }
-                    else
-                    {
-                        //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
-                        promise.complete();
-                    }
+                        }
+                        else
+                        {
+                            //the consumer methods registers an event bus destination handler
+                            vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
+                            promise.complete();
+                        }
                 });
             }
         });

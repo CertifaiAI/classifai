@@ -30,6 +30,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +67,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         String projectName = message.body().getString(ParamConfig.getProjectNameParam());
                         String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
-                        message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                        message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                     }
                     else
                     {
@@ -71,12 +75,12 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         JsonArray row = resultSet.getResults().get(0);
                         String imagePath = row.getString(0);
                         response.put(ParamConfig.getImageSourceParam(), ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
-                        message.reply(response);
+                        message.replyAndRequest(response);
                     }
                 }
                 else
                 {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
     }
@@ -89,7 +93,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         List<Integer> oriUUIDList = loader.getUuidListFromDatabase();
 
-        message.reply(ReplyHandler.getOkReply());
+        message.replyAndRequest(ReplyHandler.getOkReply());
 
         if (oriUUIDList.isEmpty())
         {
@@ -169,12 +173,12 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             if (fetch.succeeded())
             {
-                message.reply(ReplyHandler.getOkReply());
+                message.replyAndRequest(ReplyHandler.getOkReply());
             }
             else
             {
                 log.debug("Failure in deleting uuid list from Annotation Verticle");
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
@@ -245,15 +249,15 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUUIDList(projectID);
 
-            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
+            message.replyAndRequest(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), failedUUIDList));
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
+            message.replyAndRequest(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
         }
     }
 
-    public void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType)
+    public void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query, AnnotationType annotationType)
     {
         JsonObject requestBody = message.body();
 
@@ -262,6 +266,19 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             Integer projectID = requestBody.getInteger(ParamConfig.getProjectIDParam());
 
             String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam(annotationType)).encode();
+
+            Tuple params = Tuple.of(
+                    annotationContent,
+                    requestBody.getInteger(ParamConfig.getImageDepth()),
+                    requestBody.getInteger(ParamConfig.getImageXParam()),
+                    requestBody.getInteger(ParamConfig.getImageYParam()),
+                    requestBody.getDouble(ParamConfig.getImageWParam()),
+                    requestBody.getDouble(ParamConfig.getImageHParam()),
+                    requestBody.getInteger(ParamConfig.getFileSizeParam()),
+                    requestBody.getInteger(ParamConfig.getImageORIWParam()),
+                    requestBody.getInteger(ParamConfig.getImageORIHParam()),
+                    requestBody.getInteger(ParamConfig.getUUIDParam()),
+                    projectID);
 
             JsonArray params = new JsonArray()
                     .add(annotationContent)
@@ -276,16 +293,17 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     .add(requestBody.getInteger(ParamConfig.getUUIDParam()))
                     .add(projectID);
 
-
-            jdbcClient.queryWithParams(query, params, fetch -> {
+            jdbcPool.preparedQuery(query)
+                    .execute(params)
+            jdbcPool.(query, params, fetch -> {
 
                 if (fetch.succeeded())
                 {
-                    message.reply(ReplyHandler.getOkReply());
+                    message.replyAndRequest(ReplyHandler.getOkReply());
                 }
                 else
                 {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
         }
@@ -293,64 +311,66 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             log.info("AnnotationVerticle: " + message.body().toString());
             String messageInfo = "Error occur when updating data, " + e;
-            message.reply(ReplyHandler.reportBadParamError(messageInfo));
+            message.replyAndRequest(ReplyHandler.reportBadParamError(messageInfo));
         }
     }
 
-    public void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient, @NonNull String query, AnnotationType annotationType)
+    public void retrieveData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query, AnnotationType annotationType)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
         Integer projectID =  message.body().getInteger(ParamConfig.getProjectIDParam());
         Integer uuid = message.body().getInteger(ParamConfig.getUUIDParam());
 
-        JsonArray params = new JsonArray().add(uuid).add(projectID);
+        Tuple params = Tuple.of(uuid,projectID);
 
-        jdbcClient.queryWithParams(query, params, fetch -> {
+        jdbcPool.preparedQuery(query)
+                .execute(params)
+                .onComplete(fetch -> {
 
-            if (fetch.succeeded())
-            {
-                ResultSet resultSet = fetch.result();
-
-                if (resultSet.getNumRows() == 0)
+                if (fetch.succeeded())
                 {
-                    log.info("Project id: " + params.getInteger(1));
+                    RowSet<Row> rowSet = fetch.result();
 
-                    String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
-                    message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                    if (rowSet.size() == 0)
+                    {
+                        log.info("Project id: " + params.getInteger(1));
+
+                        String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
+                        message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                    }
+                    else
+                    {
+                        for(Row row : rowSet){
+                            Integer counter = 0;
+                            String dataPath = row.getString(counter++);
+
+                            Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
+
+                            JsonObject response = ReplyHandler.getOkReply();
+
+                            response.put(ParamConfig.getUUIDParam(), uuid);
+                            response.put(ParamConfig.getProjectNameParam(), projectName);
+
+                            response.put(ParamConfig.getImagePathParam(), dataPath);
+                            response.put(ParamConfig.getAnnotationParam(annotationType), new JsonArray(row.getString(counter++)));
+                            response.put(ParamConfig.getImageDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
+                            response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
+                            response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
+                            response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
+                            response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
+                            response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
+                            response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
+                            response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
+                            response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
+                            message.replyAndRequest(response);
+                        }
+                    }
                 }
                 else
                 {
-                    JsonArray row = resultSet.getResults().get(0);
-
-                    Integer counter = 0;
-                    String dataPath = row.getString(counter++);
-
-                    Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
-
-                    JsonObject response = ReplyHandler.getOkReply();
-
-                    response.put(ParamConfig.getUUIDParam(), uuid);
-                    response.put(ParamConfig.getProjectNameParam(), projectName);
-
-                    response.put(ParamConfig.getImagePathParam(), dataPath);
-                    response.put(ParamConfig.getAnnotationParam(annotationType), new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.getImageDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
-                    response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
-                    response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
-                    response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
-                    response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
-                    response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
-                    response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
-                    message.reply(response);
+                    String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                    message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
-            }
-            else
-            {
-                String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
-                message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
-            }
         });
     }
 }

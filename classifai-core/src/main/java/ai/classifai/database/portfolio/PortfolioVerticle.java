@@ -128,18 +128,18 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 if (fetch.succeeded())
                 {
                     ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
-                    message.reply(ReplyHandler.getOkReply());
+                    message.replyAndRequest(ReplyHandler.getOkReply());
                 }
                 else
                 {
                     //query database failed
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
+            message.replyAndRequest(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
     }
 
@@ -159,11 +159,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 loader.setLabelList(labelListArray);
 
-                message.reply(ReplyHandler.getOkReply());
+                message.replyAndRequest(ReplyHandler.getOkReply());
             }
             else
             {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
@@ -178,11 +178,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             if (fetch.succeeded())
             {
-                message.reply(ReplyHandler.getOkReply());
+                message.replyAndRequest(ReplyHandler.getOkReply());
             }
             else
             {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
@@ -205,11 +205,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 JsonObject response = ReplyHandler.getOkReply();
                 response.put(ParamConfig.getContent(), projectNameList);
 
-                message.reply(response);
+                message.replyAndRequest(response);
             }
             else
             {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
@@ -395,11 +395,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 JsonObject response = ReplyHandler.getOkReply();
                 response.put(ParamConfig.getContent(), result);
 
-                message.reply(response);
+                message.replyAndRequest(response);
             }
             else
             {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
@@ -467,11 +467,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 JsonObject response = ReplyHandler.getOkReply();
                 response.put(ParamConfig.getContent(), result);
 
-                message.reply(response);
+                message.replyAndRequest(response);
             }
             else
             {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
@@ -514,7 +514,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         catch (Exception e)
         {
-            message.reply(ReplyHandler.reportBadParamError("Starring object value is not boolean. Failed to execute"));
+            message.replyAndRequest(ReplyHandler.reportBadParamError("Starring object value is not boolean. Failed to execute"));
             return;
         }
 
@@ -522,11 +522,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             if (fetch.succeeded())
             {
-                message.reply(ReplyHandler.getOkReply());
+                message.replyAndRequest(ReplyHandler.getOkReply());
             }
             else
             {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
     }
