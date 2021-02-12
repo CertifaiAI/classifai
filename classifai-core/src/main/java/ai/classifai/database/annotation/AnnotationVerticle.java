@@ -91,15 +91,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         message.reply(ReplyHandler.getOkReply());
 
-        if (oriUUIDList.isEmpty())
-        {
-            loader.updateDBLoadingProgress(0);
-        }
-        else
-        {
-            loader.updateDBLoadingProgress(1);// in order for loading process not to be NAN
-        }
-
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
         for (int i = 0; i < oriUUIDList.size(); ++i)
