@@ -31,9 +31,11 @@ public class UUIDGenerator
     public static String generateUUID(Set<String> uniqueSet)
     {
         String newID;
-        do {
+        do
+        {
             newID = UUID.randomUUID().toString();
-        } while (uniqueSet.contains(newID));
+        }
+        while (uniqueSet.contains(newID));
 
         return newID;
     }

@@ -29,6 +29,7 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -72,7 +73,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         if (action.equals(PortfolioDbQuery.getCreateNewProject()))
         {
-            this.createNewProject(message);
+            this.createV1NewProject(message);
         }
         else if (action.equals(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType()))
         {
@@ -105,7 +106,35 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
     }
 
-    public void createNewProject(Message<JsonObject> message)
+    public static void createV2NewProject(@NonNull String projectName, @NonNull AnnotationType annotation)
+    {
+        Integer annotationType = annotation.ordinal();
+
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
+            String annotationName = AnnotationHandler.getType(annotationType).name();
+
+            log.info("Create " + annotationName + " project with name: " + projectName);
+
+            String projectID = ProjectHandler.generateProjectID();
+
+            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID);
+
+            portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
+
+                if (fetch.succeeded())
+                {
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
+                }
+                else
+                {
+                    log.debug("Create project failed from database");
+                }
+            });
+        }
+    }
+
+    //v1 create new project
+    public void createV1NewProject(Message<JsonObject> message)
     {
         JsonObject request = message.body();
 
@@ -120,7 +149,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             String projectID = ProjectHandler.generateProjectID();
 
-            JsonArray params = buildNewProject(projectName, annotationType, projectID);
+            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID);
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
@@ -312,7 +341,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
             String projectID = ProjectHandler.generateProjectID();
-            JsonArray params = buildNewProject(projectName, annotationInt, projectID);
+            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationInt, projectID);
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
@@ -505,7 +534,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    private JsonArray buildNewProject(String projectName, Integer annotationType, String projectID)
+    private static JsonArray buildNewProject(String projectName, Integer annotationType, String projectID)
     {
         return new JsonArray()
                 .add(projectID)                   //project_id

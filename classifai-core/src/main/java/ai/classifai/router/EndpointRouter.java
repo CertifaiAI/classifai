@@ -23,6 +23,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
@@ -32,12 +33,14 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,6 +56,7 @@ public class EndpointRouter extends AbstractVerticle
 {
     private ToolFileSelector fileSelector;
     private ToolFolderSelector folderSelector;
+    private ProjectFolderSelector  projectFolderSelector;
 
     public EndpointRouter()
     {
@@ -69,6 +73,14 @@ public class EndpointRouter extends AbstractVerticle
             }
         };
         threadfolder.start();
+
+        Thread projectFolder = new Thread(){
+            public void run(){
+                projectFolderSelector = new ProjectFolderSelector();
+            }
+        };
+        projectFolder.start();
+
     }
 
     /**
@@ -231,20 +243,43 @@ public class EndpointRouter extends AbstractVerticle
 
     /**
      * Create new project under the category of bounding box
+     * PUT http://localhost:{port}/v2/bndbox/newproject/:project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/newproject/helloworld
+     *
+     */
+    private void createV2BndBoxProject(RoutingContext context)
+    {
+        createV2Project(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    private void createV2Project(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        projectFolderSelector.run(projectName, annotationType);
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
+
+    /**
+     * Create new project under the category of bounding box
      * PUT http://localhost:{port}/bndbox/newproject/:project_name
      *
      * Example:
      * PUT http://localhost:{port}/bndbox/newproject/helloworld
      *
      */
-    private void createBndBoxProject(RoutingContext context)
+    private void createV1BndBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), projectName)
                 .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
 
-        createProject(context, request, AnnotationType.BOUNDINGBOX);
+        createV1NewProject(context, request, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -255,17 +290,17 @@ public class EndpointRouter extends AbstractVerticle
      * PUT http://localhost:{port}/seg/newproject/helloworld
      *
      */
-    private void createSegProject(RoutingContext context)
+    private void createV1SegProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), projectName)
                 .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
 
-        createProject(context, request, AnnotationType.SEGMENTATION);
+        createV1NewProject(context, request, AnnotationType.SEGMENTATION);
     }
 
-    private void createProject(RoutingContext context, JsonObject request, AnnotationType annotationType)
+    private void createV1NewProject(RoutingContext context, JsonObject request, AnnotationType annotationType)
     {
         context.request().bodyHandler(h -> {
 
@@ -1134,7 +1169,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);
 
-        router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
+        router.put("/bndbox/newproject/:project_name").handler(this::createV1BndBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
 
@@ -1162,6 +1197,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
 
+        router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
 
         //*******************************Segmentation*******************************
 
@@ -1171,7 +1207,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
 
-        router.put("/seg/newproject/:project_name").handler(this::createSegProject);
+        router.put("/seg/newproject/:project_name").handler(this::createV2SegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
