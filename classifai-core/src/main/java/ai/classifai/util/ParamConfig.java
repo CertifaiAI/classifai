@@ -49,6 +49,7 @@ public class ParamConfig
 
     @Getter private static final String projectNameParam = "project_name"; //"projectName";
     @Getter private static final String projectIdParam = "project_id"; //"projectId";
+    @Getter private static final String projectPathParam = "project_path"; //"projectId";
 
     @Getter private static final String annotationTypeParam = "annotation_type"; //"annotationType";
     @Getter private static final String annotationParam = "annotation";

@@ -21,6 +21,7 @@ import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -106,10 +107,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
     }
 
-    public static void createV2NewProject(@NonNull String projectName, @NonNull AnnotationType annotation)
+    public static void createV2NewProject(@NonNull String projectName, @NonNull Integer annotationType, @NonNull File rootPath)
     {
-        Integer annotationType = annotation.ordinal();
-
         if (ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
             String annotationName = AnnotationHandler.getType(annotationType).name();
 
@@ -123,7 +122,22 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
+                    ProjectLoader loader = new ProjectLoader.Builder()
+                            .projectID(projectID)
+                            .projectName(projectName)
+                            .annotationType(annotationType)
+                            .projectPath(rootPath.toString())
+                            .loaderStatus(LoaderStatus.LOADED)
+                            .isProjectNewlyCreated(Boolean.TRUE)
+                            .build();
+
+                    ProjectHandler.buildProjectLoader(loader);
+
+                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
+                    ImageHandler.processFolder(projectID, rootPath);
+
+                    //jsonbuilder
                 }
                 else
                 {
@@ -155,7 +169,18 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED, Boolean.TRUE);
+                    ProjectLoader loader = new ProjectLoader.Builder()
+                            .projectID(projectID)
+                            .projectName(projectName)
+                            .annotationType(annotationType)
+                            .projectPath("")
+                            .loaderStatus(LoaderStatus.LOADED)
+                            .isProjectNewlyCreated(Boolean.TRUE)
+                            .build();
+
+                    ProjectHandler.buildProjectLoader(loader);
+
+
                     message.reply(ReplyHandler.getOkReply());
                 }
                 else
@@ -311,7 +336,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     for (int i = 0; i < projectIDList.size(); ++i)
                     {
-                        ProjectLoader loader = ProjectHandler.buildProjectLoader(projectNameList.get(i), projectIDList.get(i), annotationTypeList.get(i), LoaderStatus.DID_NOT_INITIATED, isNewList.get(i));
+                        ProjectLoader loader = new ProjectLoader.Builder()
+                                .projectID(projectIDList.get(i))
+                                .projectName(projectNameList.get(i))
+                                .annotationType(annotationTypeList.get(i))
+                                .projectPath("")
+                                .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
+                                .isProjectNewlyCreated(isNewList.get(i))
+                                .build();
+
+                        ProjectHandler.buildProjectLoader(loader);
 
                         loader.setUuidListFromDatabase(ConversionHandler.string2StringList(uuidsFromDatabaseList.get(i)));
                         loader.setLabelList(ConversionHandler.string2StringList(labelList.get(i)));
@@ -347,9 +381,23 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.LOADED, Boolean.TRUE);
+                    String rootProjectPath = dataPath == null ? "" : dataPath.getAbsolutePath();
 
-                    if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
+                    ProjectLoader loader = new ProjectLoader.Builder()
+                            .projectID(projectID)
+                            .projectName(projectName)
+                            .annotationType(annotationInt)
+                            .projectPath(rootProjectPath)
+                            .loaderStatus(LoaderStatus.LOADED)
+                            .isProjectNewlyCreated(Boolean.TRUE)
+                            .build();
+
+                    if(dataPath != null)
+                    {
+                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                        ImageHandler.processFolder(projectID, dataPath);
+                    }
+
                 }
                 else
                 {

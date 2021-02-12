@@ -98,9 +98,7 @@ public class ProjectFolderSelector{
                         {
                             log.debug("Proceed with creating project");
 
-                            PortfolioVerticle.createV2NewProject(projectName, annotationType);
-
-                            //proceed with loading files
+                            PortfolioVerticle.createV2NewProject(projectName, annotationType.ordinal(), rootFolder);
                         }
                     }
                     else

@@ -29,65 +29,63 @@ import java.util.*;
  * @author codenamewei
  */
 @Slf4j
+@Getter
+@Setter
 public class ProjectLoader
 {
-    //Load an existing project from database
-    //After loaded once, this value will be always LOADED so retrieving of project from memory than db
-    @Getter @Setter private LoaderStatus loaderStatus;
-
-    @Getter @Setter private List<String> labelList;
-
-    @Getter private Integer annotationType;
-    @Getter private String projectID;
+    private String projectID;
     private String projectName;
 
-    //Status when dealing with file/folder opener
-    @Getter private FileSystemStatus fileSystemStatus;
+    private Integer annotationType;
+    private String projectPath;
 
-    //list to send the new added datapoints as thumbnails to front end
-    @Getter private List<String> fileSysNewUUIDList;
+    private Boolean isProjectNewlyCreated;
 
-    //a list of unique uuid representing number of data points in one project
-    @Setter @Getter private List<String> sanityUUIDList;
+    //Load an existing project from database
+    //After loaded once, this value will be always LOADED so retrieving of project from memory than db
+    private LoaderStatus loaderStatus;
+    
+    //-----
+    private List<String> labelList = new ArrayList<>();
 
-    @Setter @Getter private Boolean isLoadedFrontEndToggle;
-    @Setter private Boolean isProjectNewlyCreated;
-
-    @Getter private List<Integer> progressUpdate;
-
-    //Set to push in unique uuid to prevent recurrence
-    //this will eventually port into List<Integer>
-    private Set<String> validUUIDSet;
-    @Getter @Setter private List<String> uuidListFromDatabase;
+     //a list of unique uuid representing number of data points in one project
+    private List<String> sanityUUIDList = new ArrayList<>();
+    private List<String> uuidListFromDatabase = new ArrayList<>();
+    private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
     //used when checking for progress in
     //(1) validity of database data point
     //(2) adding new data point through file/folder
-    private Integer currentUUIDMarker;
-    private Integer totalUUIDMaxLen;
+    private Integer currentUUIDMarker = 0;
+    private Integer totalUUIDMaxLen = 1;
 
-    public ProjectLoader(String currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus, Boolean isNewlyCreated)
+    //Set to push in unique uuid to prevent recurrence
+    //this will eventually port into List<Integer>
+    private Set<String> validUUIDSet = new LinkedHashSet<>();
+
+    //Status when dealing with file/folder opener
+    private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+
+    //list to send the new added datapoints as thumbnails to front end
+    private List<String> fileSysNewUUIDList = new ArrayList<>();
+
+    private List<Integer> progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
+
+
+    private ProjectLoader(Builder build)
     {
-        projectID = currentProjectID;
-        projectName = currentProjectName;
-        annotationType = annotationTypeInt;
-
-        loaderStatus = currentLoaderStatus;
-
-        labelList = new ArrayList<>();
-        sanityUUIDList = new ArrayList<>();
-        uuidListFromDatabase = new ArrayList<>();
-
-        isLoadedFrontEndToggle = Boolean.FALSE;
-        isProjectNewlyCreated = isNewlyCreated;
-
-        reset(FileSystemStatus.DID_NOT_INITIATE);
+        this.projectID = build.projectID;
+        this.projectName = build.projectName;
+        this.annotationType = build.annotationType;
+        this.projectPath = build.projectPath;
+        this.isProjectNewlyCreated = build.isProjectNewlyCreated;
+        this.loaderStatus = build.loaderStatus;
     }
 
     public void reset(FileSystemStatus currentFileSystemStatus)
     {
-        validUUIDSet = new LinkedHashSet<>();
-        fileSysNewUUIDList = new ArrayList<>();
+        validUUIDSet.clear();
+        fileSysNewUUIDList.clear();
 
         currentUUIDMarker = 0;
         totalUUIDMaxLen = 1;
@@ -198,5 +196,64 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
+    }
+
+    public static class Builder
+    {
+        private String projectID;
+        private String projectName;
+
+        private Integer annotationType;
+        private String projectPath;
+
+        private Boolean isProjectNewlyCreated;
+
+        //Load an existing project from database
+        //After loaded once, this value will be always LOADED so retrieving of project from memory than db
+        private LoaderStatus loaderStatus;
+
+        public ProjectLoader build()
+        {
+            return new ProjectLoader(this);
+        }
+
+        public Builder projectID(String projectID)
+        {
+            this.projectID = projectID;
+            return this;
+        }
+
+        public Builder projectName(String projectName)
+        {
+            this.projectName = projectName;
+            return this;
+        }
+
+        public Builder annotationType(Integer annotationType)
+        {
+            this.annotationType = annotationType;
+            return this;
+        }
+
+        public Builder projectPath(String projectPath)
+        {
+            this.projectPath = projectPath;
+           return this;
+        }
+
+        public Builder isProjectNewlyCreated(Boolean isProjectNewlyCreated)
+        {
+            this.isProjectNewlyCreated = isProjectNewlyCreated;
+            return this;
+        }
+
+        public Builder loaderStatus(LoaderStatus loaderStatus)
+        {
+            this.loaderStatus = loaderStatus;
+            return this;
+        }
+
+
+
     }
 }

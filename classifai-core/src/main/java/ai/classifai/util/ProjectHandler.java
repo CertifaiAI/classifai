@@ -118,21 +118,19 @@ public class ProjectHandler {
         return getProjectID(key);
     }
 
-    public static ProjectLoader buildProjectLoader(@NonNull String projectName, @NonNull String projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus, boolean isNew)
+    public static ProjectLoader buildProjectLoader(ProjectLoader loader)
     {
-        if (!AnnotationHandler.checkSanity(annotationType))
+        if (!AnnotationHandler.checkSanity(loader.getAnnotationType()))
         {
-            log.debug("Saving new project of name: " + projectName + " failed with invalid annotation type.");
+            log.debug("Saving new project of name: " + loader.getProjectName() + " failed with invalid annotation type.");
         }
 
-        Pair projectNameWithType = new ImmutablePair(projectName, annotationType);
+        Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
 
-        projectIDSearch.put(projectNameWithType, projectID);
-        projectNameSearch.put(projectID, projectNameWithType);
+        projectIDSearch.put(projectNameWithType, loader.getProjectID());
+        projectNameSearch.put(loader.getProjectID(), projectNameWithType);
 
-        ProjectLoader loader = new ProjectLoader(projectID, projectName, annotationType, loaderStatus, isNew);
-
-        projectIDLoaderDict.put(projectID, loader);
+        projectIDLoaderDict.put(loader.getProjectID(), loader);
 
         return loader;
     }

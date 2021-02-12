@@ -1199,6 +1199,8 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
 
+        //router.put("/v2/bndbox/projects/:project_name/reload").handler(this::createV2BndBoxProject);
+
         //*******************************Segmentation*******************************
 
         router.get("/seg/projects").handler(this::getAllSegProjects);
@@ -1207,7 +1209,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
 
-        router.put("/seg/newproject/:project_name").handler(this::createV2SegProject);
+        router.put("/seg/newproject/:project_name").handler(this::createV1SegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
