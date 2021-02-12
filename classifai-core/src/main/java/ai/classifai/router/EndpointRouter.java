@@ -280,9 +280,31 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        //command
+        log.info("Reloading project: " + projectName + " of annotation type: " + annotationType.name());
 
-        HTTPResponseHandler.configureOK(context);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
+
+        if(checkIfProjectNull(context, loader, projectName)) return;
+
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
+
+        DeliveryOptions reloadOpts = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOpts, fetch ->
+        {
+            JsonObject response = (JsonObject) fetch.result().body();
+
+            if (ReplyHandler.isReplyOk(response))
+            {
+                HTTPResponseHandler.configureOK(context);
+
+            } else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
+            }
+        });
     }
 
     /**

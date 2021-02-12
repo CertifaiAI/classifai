@@ -52,27 +52,27 @@ public class BoundingBoxVerticle extends AnnotationVerticle
 
         if (action.equals(BoundingBoxDbQuery.getRetrieveData()))
         {
-            this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.getRetrieveData());
+            this.retrieveData(message, jdbcClient);
         }
         else if (action.equals(BoundingBoxDbQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcClient, BoundingBoxDbQuery.getUpdateData());
+            this.updateData(message, jdbcClient);
         }
         else if (action.equals(BoundingBoxDbQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient, BoundingBoxDbQuery.getRetrieveDataPath());
+            this.retrieveDataPath(message, jdbcClient);
         }
         else if (action.equals(BoundingBoxDbQuery.getLoadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.getLoadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcClient);
         }
         else if (action.equals(BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient);
         }
         else if (action.equals(BoundingBoxDbQuery.getDeleteProjectUuidList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.getDeleteProjectUuidList());
+            this.deleteProjectUUIDList(message, jdbcClient);
         }
         else
         {

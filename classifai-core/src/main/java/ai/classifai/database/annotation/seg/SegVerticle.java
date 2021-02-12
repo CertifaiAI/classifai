@@ -52,27 +52,27 @@ public class SegVerticle extends AnnotationVerticle
 
         if (action.equals(SegDbQuery.getRetrieveData()))
         {
-            this.retrieveData(message, jdbcClient, SegDbQuery.getRetrieveData());
+            this.retrieveData(message, jdbcClient);
         }
         else if (action.equals(SegDbQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient, SegDbQuery.getRetrieveDataPath());
+            this.retrieveDataPath(message, jdbcClient);
         }
         else if (action.equals(SegDbQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcClient, SegDbQuery.getUpdateData());
+            this.updateData(message, jdbcClient);
         }
         else if (action.equals(SegDbQuery.getLoadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.getLoadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcClient);
         }
         else if (action.equals(SegDbQuery.getDeleteProjectUuidListWithProjectId()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.getDeleteProjectUuidListWithProjectId());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcClient);
         }
         else if (action.equals(SegDbQuery.getDeleteProjectUuidList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.getDeleteProjectUuidList());
+            this.deleteProjectUUIDList(message, jdbcClient);
         }
         else
         {

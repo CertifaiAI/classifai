@@ -320,7 +320,7 @@ public class ImageHandler {
                 String uuid = UUIDGenerator.generateUUID(uuidSet);
                 uuidSet.add(uuid);
 
-                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.getCreateData(), projectID, filesCollection.get(i), uuid, i + 1);
+                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -330,7 +330,7 @@ public class ImageHandler {
                 String uuid = UUIDGenerator.generateUUID(uuidSet);
                 uuidSet.add(uuid);
 
-                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), SegDbQuery.getCreateData(), projectID, filesCollection.get(i), uuid, i + 1);
+                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
     }
@@ -350,18 +350,20 @@ public class ImageHandler {
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
-        Stack<File> folderStack = new Stack<>();
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
         String[] fileExtension = ImageFileType.getImageFileTypes();
-        java.util.List<File> checkFileFormat = FileHandler.processFolder(rootPath, fileExtension);
+        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
 
-        folderStack.push(rootPath);
-
-        if (checkFileFormat.isEmpty())
+        if (dataList.isEmpty())
         {
             loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
             return;
         }
+
+        Stack<File> folderStack = new Stack<>();
+        folderStack.push(rootPath);
 
         while (folderStack.isEmpty() != true)
         {
@@ -381,9 +383,53 @@ public class ImageHandler {
                     totalFilelist.addAll(files);
                 }
             }
-
         }
 
         saveToDatabase(projectID, totalFilelist);
+    }
+
+    /*
+    search through rootpath and check if list of files exists
+    scenario 1: root file missing
+    scenario 2: files missing - removed from ProjectLoader
+    scenario 3: adding new files
+    scenario 4: evrything stills the same
+    */
+    public static void recheckProjectRootPath(@NonNull String projectID, @NonNull File rootPath)
+    {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        //scenario 1
+        if(!rootPath.exists())
+        {
+            loader.setSanityUUIDList(new ArrayList<>());
+            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+
+            log.info("Project home path of " + rootPath.getAbsolutePath() + " is missing.");
+            return;
+        }
+
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
+
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+
+        loader.setFileSysTotalUUIDSize(dataList.size());
+
+        //scenario 2 & 3
+
+        for(int i = 0; i < dataList.size(); ++i)
+        {
+            if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
+            {
+                //BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.getRetrieveObjectPath(), BoundingBoxDbQuery.g projectID, dataList.get(i),i + 1);
+                //BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.getCreateData(), projectID, filesCollection.get(i), uuid, i + 1);
+
+            }
+            else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
+            {
+                //TODO
+            }
+        }
     }
 }

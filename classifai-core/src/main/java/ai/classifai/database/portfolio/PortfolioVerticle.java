@@ -30,7 +30,6 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -100,6 +99,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         else if (action.equals(PortfolioDbQuery.getStarProject()))
         {
             this.starProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getReloadProject()))
+        {
+            this.reloadProject(message);
         }
         else
         {
@@ -316,22 +319,28 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             .map(json -> json.getInteger(2))
                             .collect(Collectors.toList());
 
-                    List<String> labelList = resultSet
+                    List<String> projectPathList = resultSet
                             .getResults()
                             .stream()
                             .map(json -> json.getString(3))
                             .collect(Collectors.toList());
 
-                    List<String> uuidsFromDatabaseList = resultSet
+                    List<String> labelList = resultSet
                             .getResults()
                             .stream()
                             .map(json -> json.getString(4))
                             .collect(Collectors.toList());
 
+                    List<String> uuidsFromDatabaseList = resultSet
+                            .getResults()
+                            .stream()
+                            .map(json -> json.getString(5))
+                            .collect(Collectors.toList());
+
                     List<Boolean> isNewList = resultSet
                             .getResults()
                             .stream()
-                            .map(json -> json.getBoolean(5))
+                            .map(json -> json.getBoolean(6))
                             .collect(Collectors.toList());
 
                     for (int i = 0; i < projectIDList.size(); ++i)
@@ -340,7 +349,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 .projectID(projectIDList.get(i))
                                 .projectName(projectNameList.get(i))
                                 .annotationType(annotationTypeList.get(i))
-                                .projectPath("")
+                                .projectPath(projectPathList.get(i))
                                 .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
                                 .isProjectNewlyCreated(isNewList.get(i))
                                 .build();
@@ -580,6 +589,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
+    }
+
+    public void reloadProject(Message<JsonObject> message)
+    {
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
+
+        //TODO: Reload project
+
+
+        message.reply(ReplyHandler.getOkReply());
+
     }
 
     private static JsonArray buildNewProject(String projectName, Integer annotationType, String projectID, String projectPath)

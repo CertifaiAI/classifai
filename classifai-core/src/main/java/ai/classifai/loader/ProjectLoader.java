@@ -187,10 +187,8 @@ public class ProjectLoader
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
-
         totalUUIDMaxLen = totalUUIDSizeBuffer;
         progressUpdate = Arrays.asList(new Integer[]{0, totalUUIDMaxLen});
-
     }
 
     public void setFileSystemStatus(FileSystemStatus status)
