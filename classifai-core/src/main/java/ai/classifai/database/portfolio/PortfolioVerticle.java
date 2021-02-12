@@ -35,7 +35,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -46,7 +45,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * General database processing to get high level infos of each created project
@@ -265,47 +263,19 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             List<String> projectIDList = new ArrayList<>();
                             List<String> projectNameList = new ArrayList<>();
                             List<Integer> annotationTypeList = new ArrayList<>();
-                            List<Integer> annotationTypeList = new ArrayList<>();
                             List<String> labelList = new ArrayList<>();
                             List<String> uuidsFromDatabaseList = new ArrayList<>();
                             List<Boolean> isNewList = new ArrayList<>();
 
-
-                            rowSet
-                                    .getResults()
-                                    .stream()
-                                    .map(json -> json.getString(0))
-                                    .collect(Collectors.toList());
-
-                             = rowSet
-                                    .getResults()
-                                    .stream()
-                                    .map(json -> json.getString(1))
-                                    .collect(Collectors.toList());
-
-                             = rowSet
-                                    .getResults()
-                                    .stream()
-                                    .map(json -> json.getInteger(2))
-                                    .collect(Collectors.toList());
-
-                             = rowSet
-                                    .getResults()
-                                    .stream()
-                                    .map(json -> json.getString(3))
-                                    .collect(Collectors.toList());
-
-                             = rowSet
-                                    .getResults()
-                                    .stream()
-                                    .map(json -> json.getString(4))
-                                    .collect(Collectors.toList());
-
-                             = rowSet
-                                    .getResults()
-                                    .stream()
-                                    .map(json -> json.getBoolean(5))
-                                    .collect(Collectors.toList());
+                            for (Row row : rowSet)
+                            {
+                                projectIDList.add(row.getString(0));
+                                projectNameList.add(row.getString(1));
+                                annotationTypeList.add(row.getInteger(2));
+                                labelList.add(row.getString(3));
+                                uuidsFromDatabaseList.add(row.getString(4));
+                                isNewList.add(row.getBoolean(5));
+                            }
 
                             for (int i = 0; i < projectIDList.size(); ++i)
                             {
@@ -339,21 +309,23 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
             String projectID = ProjectHandler.generateProjectID();
-            JsonArray params = buildNewProject(projectName, annotationInt, projectID);
+            Tuple params = buildNewProject(projectName, annotationInt, projectID);
 
-            portfolioDbPool.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
+            portfolioDbPool.preparedQuery(PortfolioDbQuery.createNewProject())
+                    .execute(params)
+                    .onComplete(fetch -> {
 
-                if (fetch.succeeded())
-                {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.LOADED, Boolean.TRUE);
+                        if (fetch.succeeded())
+                        {
+                            ProjectHandler.buildProjectLoader(projectName, projectID, annotationInt, LoaderStatus.LOADED, Boolean.TRUE);
 
-                    if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
-                }
-                else
-                {
-                    log.info("Create project failed. Classifai expect not to work fine in docker mode");
-                }
-            });
+                            if(dataPath != null) ImageHandler.processFolder(projectID, dataPath);
+                        }
+                        else
+                        {
+                            log.info("Create project failed. Classifai expect not to work fine in docker mode");
+                        }
+                    });
         }
         else
         {
@@ -368,41 +340,45 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         String projectID = message.body().getString(ParamConfig.getProjectIDParam());
 
-        portfolioDbPool.queryWithParams(PortfolioDbQuery.getProjectMetadata(), new JsonArray().add(projectID), fetch -> {
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getProjectMetadata())
+                .execute(Tuple.of(projectID))
+                .onComplete(fetch -> {
 
-            if (fetch.succeeded())
-            {
-                List<JsonObject> result = new ArrayList<>();
+                    if (fetch.succeeded())
+                    {
+                        List<JsonObject> result = new ArrayList<>();
 
-                JsonArray row = fetch.result().getResults().get(0);
+                        RowSet<Row> rowSet = fetch.result();
 
-                String projectName = row.getString(0);
-                List<String> uuidList = ConversionHandler.string2StringList(row.getString(1));
+                        for (Row row : rowSet)
+                        {
+                            String projectName = row.getString(0);
+                            List<String> uuidList = ConversionHandler.string2StringList(row.getString(1));
+                            Boolean isNew = row.getBoolean(2);
+                            Boolean isStarred = row.getBoolean(3);
+                            Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
+                            String dataTime = row.getString(4);
 
-                Boolean isNew = row.getBoolean(2);
-                Boolean isStarred = row.getBoolean(3);
-                Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
-                String dataTime = row.getString(4);
+                            //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
+                            result.add(new JsonObject()
+                                    .put(ParamConfig.getProjectNameParam(), projectName)
+                                    .put(ParamConfig.getIsNewParam(), isNew)
+                                    .put(ParamConfig.getIsStarredParam(), isStarred)
+                                    .put(ParamConfig.getIsLoadedParam(), isLoaded)
+                                    .put(ParamConfig.getCreatedDateParam(), dataTime)
+                                    .put(ParamConfig.getTotalUUIDParam(), uuidList.size()));
 
-                //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
-                result.add(new JsonObject()
-                        .put(ParamConfig.getProjectNameParam(), projectName)
-                        .put(ParamConfig.getIsNewParam(), isNew)
-                        .put(ParamConfig.getIsStarredParam(), isStarred)
-                        .put(ParamConfig.getIsLoadedParam(), isLoaded)
-                        .put(ParamConfig.getCreatedDateParam(), dataTime)
-                        .put(ParamConfig.getTotalUUIDParam(), uuidList.size()));
+                            JsonObject response = ReplyHandler.getOkReply();
+                            response.put(ParamConfig.getContent(), result);
 
-                JsonObject response = ReplyHandler.getOkReply();
-                response.put(ParamConfig.getContent(), result);
-
-                message.replyAndRequest(response);
-            }
-            else
-            {
-                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+                            message.replyAndRequest(response);
+                        }
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
     }
 
     //V2 API
@@ -410,86 +386,65 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
 
-        portfolioDbPool.queryWithParams(PortfolioDbQuery.getAllProjectsMetadata(), new JsonArray().add(annotationTypeIndex), fetch -> {
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getAllProjectsMetadata())
+                .execute(Tuple.of(annotationTypeIndex))
+                .onComplete(fetch -> {
 
-            if (fetch.succeeded())
-            {
-                ResultSet resultSet = fetch.result();
+                    if (fetch.succeeded())
+                    {
+                        List<JsonObject> result = new ArrayList<>();
 
-                List<String> projectNameList = resultSet
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getString(0))
-                        .collect(Collectors.toList());
+                        RowSet<Row> rowSet = fetch.result();
 
-                List<String> uuidList = resultSet
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getString(1))
-                        .collect(Collectors.toList());
+                        for (Row row : rowSet)
+                        {
+                            String projectName = row.getString(0);
+                            String uuidList = row.getString(1);
+                            Boolean isNew = row.getBoolean(2);
+                            Boolean isStarred = row.getBoolean(3);
+                            String  dateTime = row.getString(4);
 
-                List<Boolean> isNewList = resultSet
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getBoolean(2))
-                        .collect(Collectors.toList());
+                            int total_uuid = ConversionHandler.string2StringList(uuidList).size();
 
-                List<Boolean> isStarredList = resultSet
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getBoolean(3))
-                        .collect(Collectors.toList());
+                            String projectID = ProjectHandler.getProjectID(projectName, annotationTypeIndex);
+                            Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
 
-                List<String> dateTimeList = resultSet
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getString(4))
-                        .collect(Collectors.toList());
+                            result.add(new JsonObject()
+                                    .put(ParamConfig.getProjectNameParam(), projectName)
+                                    .put(ParamConfig.getIsNewParam(), isNew)
+                                    .put(ParamConfig.getIsStarredParam(), isStarred)
+                                    .put(ParamConfig.getIsLoadedParam(), isLoaded)
+                                    .put(ParamConfig.getCreatedDateParam(), dateTime)
+                                    .put(ParamConfig.getTotalUUIDParam(), total_uuid));
+                        }
 
-                List<JsonObject> result = new ArrayList<>();
+                        JsonObject response = ReplyHandler.getOkReply();
+                        response.put(ParamConfig.getContent(), result);
 
-                int maxIndex = projectNameList.size() - 1;
-                for (int i = maxIndex ; i > -1; --i)
-                {
-                    int total_uuid = ConversionHandler.string2StringList(uuidList.get(i)).size();
-
-                    String projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
-                    Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
-
-                    result.add(new JsonObject()
-                            .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
-                            .put(ParamConfig.getIsNewParam(), isNewList.get(i))
-                            .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
-                            .put(ParamConfig.getIsLoadedParam(), isLoaded)
-                            .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i))
-                            .put(ParamConfig.getTotalUUIDParam(), total_uuid));
-                }
-
-                JsonObject response = ReplyHandler.getOkReply();
-                response.put(ParamConfig.getContent(), result);
-
-                message.replyAndRequest(response);
-            }
-            else
-            {
-                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+                        message.replyAndRequest(response);
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
     }
 
     public static void updateIsNewParam(@NonNull String projectID)
     {
-        portfolioDbPool.queryWithParams(PortfolioDbQuery.updateIsNewParam(), new JsonArray().add(Boolean.FALSE).add(projectID), fetch ->{
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.updateIsNewParam())
+                .execute(Tuple.of(Boolean.FALSE, projectID))
+                .onComplete(fetch ->{
 
-            if (fetch.succeeded())
-            {
-                ProjectHandler.getProjectLoader(projectID).setIsProjectNewlyCreated(Boolean.FALSE);
-            }
-            else
-            {
-                log.info("Update is_new param for project of projectid: " + projectID + " failed");
-            }
-        });
+                    if (fetch.succeeded())
+                    {
+                        ProjectHandler.getProjectLoader(projectID).setIsProjectNewlyCreated(Boolean.FALSE);
+                    }
+                    else
+                    {
+                        log.info("Update is_new param for project of projectid: " + projectID + " failed");
+                    }
+                });
     }
 
     //V2 API
@@ -519,17 +474,19 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             return;
         }
 
-        portfolioDbPool.queryWithParams(PortfolioDbQuery.starProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.starProject())
+                .execute(Tuple.of(isStarStatus,projectID))
+                .onComplete(fetch ->{
 
-            if (fetch.succeeded())
-            {
-                message.replyAndRequest(ReplyHandler.getOkReply());
-            }
-            else
-            {
-                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+                    if (fetch.succeeded())
+                    {
+                        message.replyAndRequest(ReplyHandler.getOkReply());
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
     }
 
     private Tuple buildNewProject(String projectName, Integer annotationType, String projectID)

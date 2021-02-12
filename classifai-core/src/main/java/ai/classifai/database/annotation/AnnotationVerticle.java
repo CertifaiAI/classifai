@@ -250,7 +250,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     requestBody.getInteger(ParamConfig.getFileSizeParam()),
                     requestBody.getInteger(ParamConfig.getImageORIWParam()),
                     requestBody.getInteger(ParamConfig.getImageORIHParam()),
-                    requestBody.getInteger(ParamConfig.getUUIDParam()),
+                    requestBody.getString(ParamConfig.getUUIDParam()),
                     projectID);
 
             jdbcPool.preparedQuery(query)
