@@ -24,12 +24,7 @@ import ai.classifai.util.type.database.H2;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
-import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

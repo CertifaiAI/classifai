@@ -16,11 +16,9 @@
 package ai.classifai;
 
 import ai.classifai.config.CLIArgument;
-import ai.classifai.util.ParamConfig;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;

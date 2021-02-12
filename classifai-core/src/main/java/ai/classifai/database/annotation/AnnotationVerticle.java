@@ -216,7 +216,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             //update Portfolio Verticle
                             PortfolioVerticle.updateFileSystemUUIDList(projectID);
 
-                            message.replyAndRequest(ReplyHandler.getOkReply());
+                            message.replyAndRequest(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), "[]"));
                         }
                         else
                         {
