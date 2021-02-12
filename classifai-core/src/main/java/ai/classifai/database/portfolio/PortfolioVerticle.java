@@ -340,8 +340,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         String projectID = message.body().getString(ParamConfig.getProjectIDParam());
 
+        Tuple params = Tuple.of(projectID);
+
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getProjectMetadata())
-                .execute(Tuple.of(projectID))
+                .execute(params)
                 .onComplete(fetch -> {
 
                     if (fetch.succeeded())
@@ -386,8 +388,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
 
+        Tuple params = Tuple.of(annotationTypeIndex);
+
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getAllProjectsMetadata())
-                .execute(Tuple.of(annotationTypeIndex))
+                .execute(params)
                 .onComplete(fetch -> {
 
                     if (fetch.succeeded())
@@ -432,8 +436,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public static void updateIsNewParam(@NonNull String projectID)
     {
+        Tuple params = Tuple.of(Boolean.FALSE, projectID);
+
         portfolioDbPool.preparedQuery(PortfolioDbQuery.updateIsNewParam())
-                .execute(Tuple.of(Boolean.FALSE, projectID))
+                .execute(params)
                 .onComplete(fetch ->{
 
                     if (fetch.succeeded())
@@ -474,8 +480,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             return;
         }
 
+        Tuple params = Tuple.of(isStarStatus,projectID);
+
         portfolioDbPool.preparedQuery(PortfolioDbQuery.starProject())
-                .execute(Tuple.of(isStarStatus,projectID))
+                .execute(params)
                 .onComplete(fetch ->{
 
                     if (fetch.succeeded())

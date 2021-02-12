@@ -300,9 +300,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     }
                     else
                     {
-                        for(Row row : rowSet){
-                            Integer counter = 0;
-                            String dataPath = row.getString(counter++);
+                        for(Row row : rowSet)
+                        {
+                            String dataPath = row.getString(0);
 
                             Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
 
@@ -310,15 +310,14 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                             response.put(ParamConfig.getUUIDParam(), uuid);
                             response.put(ParamConfig.getProjectNameParam(), projectName);
-
                             response.put(ParamConfig.getImagePathParam(), dataPath);
-                            response.put(ParamConfig.getAnnotationParam(annotationType), new JsonArray(row.getString(counter++)));
+                            response.put(ParamConfig.getAnnotationParam(annotationType), new JsonArray(row.getString(1)));
                             response.put(ParamConfig.getImageDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
-                            response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
-                            response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
-                            response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
-                            response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
-                            response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
+                            response.put(ParamConfig.getImageXParam(), row.getInteger(2));
+                            response.put(ParamConfig.getImageYParam(), row.getInteger(3));
+                            response.put(ParamConfig.getImageWParam(), row.getDouble(4));
+                            response.put(ParamConfig.getImageHParam(), row.getDouble(5));
+                            response.put(ParamConfig.getFileSizeParam(), row.getInteger(6));
                             response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
                             response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
                             response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
