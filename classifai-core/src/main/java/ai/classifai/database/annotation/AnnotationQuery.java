@@ -30,7 +30,7 @@ public abstract class AnnotationQuery
 
     protected static final String DELETE_PROJECT_UUID_LIST_WITH_PROJECTID = "DELETE FROM Project WHERE project_id = ?";
 
-    protected static final String DELETE_PROJECT_UUID_LIST = "DELETE FROM Project WHERE project_id = ? AND uuid = ?";
+    protected static final String DELETE_PROJECT_UUID_LIST = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
 
     protected static final String GET_ALL_PROJECTS = "SELECT * FROM Project";
 

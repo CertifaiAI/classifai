@@ -101,12 +101,12 @@ public class SegVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcPool = JDBCPool.pool(vertx,  new JDBCConnectOptions()
-                .setJdbcUrl(h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
-                .setUser(h2.getUser())
-                .setPassword(h2.getPassword())
-                ,new PoolOptions().setMaxSize(30)
-        );
+        jdbcPool = JDBCPool.pool(vertx,  new JsonObject()
+                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .put("driver_class", h2.getDriver())
+                .put("user", h2.getUser())
+                .put("password", h2.getPassword())
+                .put("max_pool_size", 30));
 
         jdbcPool.getConnection(ar -> {
 
@@ -118,24 +118,22 @@ public class SegVerticle extends AnnotationVerticle
             }
             else
             {
-                SqlConnection connection = ar.result();
-                connection.query(SegDbQuery.createProject())
-                .execute()
-                .onComplete(create -> {
-                        connection.close();
-                        if (create.succeeded())
-                        {
-                            log.error("SegVerticle database preparation error", create.cause());
-                            promise.fail(create.cause());
+                jdbcPool.query(SegDbQuery.createProject())
+                        .execute()
+                        .onComplete(create -> {
+                                if (create.failed())
+                                {
+                                    log.error("SegVerticle database preparation error", create.cause());
+                                    promise.fail(create.cause());
 
-                        }
-                        else
-                        {
-                            //the consumer methods registers an event bus destination handler
-                            vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
-                            promise.complete();
-                        }
-                });
+                                }
+                                else
+                                {
+                                    //the consumer methods registers an event bus destination handler
+                                    vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
+                                    promise.complete();
+                                }
+                        });
             }
         });
     }

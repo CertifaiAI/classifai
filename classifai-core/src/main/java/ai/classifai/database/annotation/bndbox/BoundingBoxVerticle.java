@@ -25,7 +25,10 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
+import io.vertx.jdbcclient.JDBCConnectOptions;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BoundingBoxVerticle extends AnnotationVerticle
 {
-    @Getter private static JDBCClient jdbcClient;
+    @Getter private static JDBCPool jdbcPool;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -53,27 +56,27 @@ public class BoundingBoxVerticle extends AnnotationVerticle
 
         if (action.equals(BoundingBoxDbQuery.retrieveData()))
         {
-            this.retrieveData(message, jdbcClient, BoundingBoxDbQuery.retrieveData(), AnnotationType.BOUNDINGBOX);
+            this.retrieveData(message, jdbcPool, BoundingBoxDbQuery.retrieveData(), AnnotationType.BOUNDINGBOX);
         }
         else if (action.equals(BoundingBoxDbQuery.updateData()))
         {
-            this.updateData(message, jdbcClient, BoundingBoxDbQuery.updateData(), AnnotationType.BOUNDINGBOX);
+            this.updateData(message, jdbcPool, BoundingBoxDbQuery.updateData(), AnnotationType.BOUNDINGBOX);
         }
         else if (action.equals(BoundingBoxDbQuery.retrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient, BoundingBoxDbQuery.retrieveDataPath());
+            this.retrieveDataPath(message, jdbcPool, BoundingBoxDbQuery.retrieveDataPath());
         }
         else if (action.equals(BoundingBoxDbQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, BoundingBoxDbQuery.loadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcPool, BoundingBoxDbQuery.loadValidProjectUUID());
         }
         else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
         }
         else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, BoundingBoxDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDList(message, jdbcPool, BoundingBoxDbQuery.deleteProjectUUIDList());
         }
         else
         {
@@ -84,7 +87,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     @Override
     public void stop(Promise<Void> promise)
     {
-        jdbcClient.close();
+        jdbcPool.close();
 
         log.info("Bounding Box Verticle stopping...");
     }
@@ -96,15 +99,14 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcClient = JDBCClient.create(vertx, new JsonObject()
+        jdbcPool = JDBCPool.pool(vertx,  new JsonObject()
                 .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
                 .put("driver_class", h2.getDriver())
                 .put("user", h2.getUser())
                 .put("password", h2.getPassword())
                 .put("max_pool_size", 30));
 
-
-        jdbcClient.getConnection(ar -> {
+        jdbcPool.getConnection(ar -> {
 
             if (ar.failed())
             {
@@ -113,22 +115,22 @@ public class BoundingBoxVerticle extends AnnotationVerticle
             }
             else
             {
-                SQLConnection connection = ar.result();
-                connection.execute(BoundingBoxDbQuery.createProject(), create -> {
-                    connection.close();
-                    if (create.failed())
-                    {
-                        log.error("BoundingBoxVerticle database preparation error", create.cause());
-                        promise.fail(create.cause());
+                jdbcPool.query(BoundingBoxDbQuery.createProject())
+                        .execute()
+                        .onComplete(create -> {
+                            if (create.failed())
+                            {
+                                log.error("BoundingBoxVerticle database preparation error", create.cause());
+                                promise.fail(create.cause());
 
-                    }
-                    else
-                    {
-                        //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
-                        promise.complete();
-                    }
-                });
+                            }
+                            else
+                            {
+                                //the consumer methods registers an event bus destination handler
+                                vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
+                                promise.complete();
+                            }
+                        });
             }
         });
     }

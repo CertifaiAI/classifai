@@ -320,7 +320,7 @@ public class ImageHandler {
                 String uuid = UUIDGenerator.generateUUID(uuidSet);
                 uuidSet.add(uuid);
 
-                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
+                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcPool(), BoundingBoxDbQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
