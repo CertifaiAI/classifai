@@ -116,7 +116,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             String projectID = ProjectHandler.generateProjectID();
 
-            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID);
+            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, rootPath.getAbsolutePath());
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
@@ -163,7 +163,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             String projectID = ProjectHandler.generateProjectID();
 
-            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID);
+            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, "");
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
@@ -375,7 +375,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
             String projectID = ProjectHandler.generateProjectID();
-            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationInt, projectID);
+            JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationInt, projectID, dataPath.getAbsolutePath());
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
 
@@ -582,17 +582,18 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
-    private static JsonArray buildNewProject(String projectName, Integer annotationType, String projectID)
+    private static JsonArray buildNewProject(String projectName, Integer annotationType, String projectID, String projectPath)
     {
         return new JsonArray()
-                .add(projectID)                   //project_id
-                .add(projectName)                 //project_name
-                .add(annotationType)              //annotation_type
-                .add(ParamConfig.getEmptyArray()) //label_list
-                .add(ParamConfig.getEmptyArray()) //uuid_list
-                .add(true)                        //is_new
-                .add(false)                       //is_starred
-                .add(DateTime.get());             //created_date
+                .add(projectID)                     //project_id
+                .add(projectName)                   //project_name
+                .add(annotationType)                //annotation_type
+                .add(projectPath)                   //project_path
+                .add(ParamConfig.getEmptyArray())   //label_list
+                .add(ParamConfig.getEmptyArray())   //uuid_list
+                .add(true)                          //is_new
+                .add(false)                         //is_starred
+                .add(DateTime.get());               //created_date
     }
 
     @Override

@@ -33,14 +33,14 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
-import lombok.Getter;
+
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -263,6 +263,49 @@ public class EndpointRouter extends AbstractVerticle
         HTTPResponseHandler.configureOK(context);
     }
 
+    /**
+     * Reload v2 project
+     * PUT http://localhost:{port}/v2/bndbox/projects/:project_name/reload
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
+     *
+     */
+    private void reloadV2BndBoxProject(RoutingContext context)
+    {
+        reloadV2Project(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    private void reloadV2Project(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        //command
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
+    /**
+     * Get load status of project
+     * GET http://localhost:{port}/v2/bndbox/projects/:project_name/reloadstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
+     *
+     */
+    private void reloadV2BndBoxProjectStatus(RoutingContext context)
+    {
+        reloadV2ProjectStatus(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    private void reloadV2ProjectStatus(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        //todo
+
+        HTTPResponseHandler.configureOK(context);
+    }
 
     /**
      * Create new project under the category of bounding box
@@ -1199,7 +1242,9 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
 
-        //router.put("/v2/bndbox/projects/:project_name/reload").handler(this::createV2BndBoxProject);
+        router.put("/v2/bndbox/projects/:project_name/load").handler(this::reloadV2BndBoxProject);
+
+        router.get("/v2/bndbox/projects/:project_name/loadstatus").handler(this::reloadV2BndBoxProjectStatus);
 
         //*******************************Segmentation*******************************
 
