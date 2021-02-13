@@ -153,7 +153,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     }
 
 
-    public static void updateUUIDFromReloading(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+    public static void updateUUIDFromReloading(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file)
     {
         String uuid = UUIDGenerator.generateUUID();
 
@@ -184,12 +184,12 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
             }
 
-            loader.updateReloadingProgress(currentProcessedLength);
         });
     }
 
     public static void createUUIDIfNotExist(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
     {
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         JsonArray params = new JsonArray().add(file.getAbsolutePath()).add(projectID);
@@ -203,18 +203,27 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 //not exist , create data point
                 if (resultSet.getNumRows() == 0)
                 {
-                    updateUUIDFromReloading(jdbcClient, projectID, file, currentProcessedLength);
+                    updateUUIDFromReloading(jdbcClient, projectID, file);
 
                 }
-                else // if exist remove from sanityUUIDList to prevent from checking the item again
+                else
                 {
                     JsonArray row = resultSet.getResults().get(0);
                     String uuid = row.getString(0);
 
-                    loader.getDbListBuffer().remove(uuid);
-
-                    loader.updateReloadingProgress(currentProcessedLength);
+                    // if exist remove from Listbuffer to prevent from checking the item again
+                    if(loader.getSanityUUIDList().contains(uuid))
+                    {
+                        loader.getDbListBuffer().remove(uuid);
+                    }
+                    else
+                    {
+                        //scenario 3: existing uuids previously missing from current paths, but returns to the original paths
+                        loader.getSanityUUIDList().add(uuid);
+                    }
                 }
+
+                loader.updateReloadingProgress(currentProcessedLength);
             }
         });
     }

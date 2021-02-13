@@ -208,12 +208,14 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentSize.equals(totalUUIDMaxLen))
         {
+            System.out.println("Debugging: offloadReloadingList");
             offloadReloadingList();
         }
     }
 
     private void offloadReloadingList()
     {
+        System.out.println("DBList to removed: " + dbListBuffer.size());
         sanityUUIDList.removeAll(dbListBuffer);
 
         PortfolioVerticle.updateFileSystemUUIDList(projectID);

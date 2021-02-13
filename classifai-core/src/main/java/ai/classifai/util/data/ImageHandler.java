@@ -387,12 +387,14 @@ public class ImageHandler {
     search through rootpath and check if list of files exists
     scenario 1: root file missing
     scenario 2: files missing - removed from ProjectLoader
-    scenario 3: adding new files
-    scenario 4: evrything stills the same
+    scenario 3: existing uuids previously missing from current paths, but returns to the original paths
+    scenario 4: adding new files
+    scenario 5: evrything stills the same
     */
     public static void recheckProjectRootPath(@NonNull String projectID)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
         loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
         File rootPath = new File(loader.getProjectPath());
@@ -409,11 +411,19 @@ public class ImageHandler {
         String[] fileExtension = ImageFileType.getImageFileTypes();
         List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
 
+        //Scenario 2 - 1: root path exist but all images missing
+        if(dataList.isEmpty())
+        {
+            loader.getSanityUUIDList().clear();
+            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+            return;
+        }
+
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
 
         loader.setFileSysTotalUUIDSize(dataList.size());
 
-        //scenario 2 & 3
+        //scenario 2 - 5
 
         for(int i = 0; i < dataList.size(); ++i)
         {
