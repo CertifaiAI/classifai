@@ -189,7 +189,7 @@ public class ProjectLoader
 
     public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
     {
-        dbListBuffer = uuidListFromDatabase;
+        dbListBuffer = new ArrayList<>(uuidListFromDatabase);
         fileSysNewUUIDList.clear();
 
         currentUUIDMarker = 0;
@@ -208,14 +208,12 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentSize.equals(totalUUIDMaxLen))
         {
-            System.out.println("Debugging: offloadReloadingList");
             offloadReloadingList();
         }
     }
 
     private void offloadReloadingList()
     {
-        System.out.println("DBList to removed: " + dbListBuffer.size());
         sanityUUIDList.removeAll(dbListBuffer);
 
         PortfolioVerticle.updateFileSystemUUIDList(projectID);

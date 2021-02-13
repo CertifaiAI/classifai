@@ -189,7 +189,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public static void createUUIDIfNotExist(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
     {
-
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         JsonArray params = new JsonArray().add(file.getAbsolutePath()).add(projectID);
@@ -204,7 +203,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 if (resultSet.getNumRows() == 0)
                 {
                     updateUUIDFromReloading(jdbcClient, projectID, file);
-
                 }
                 else
                 {
@@ -212,15 +210,14 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     String uuid = row.getString(0);
 
                     // if exist remove from Listbuffer to prevent from checking the item again
-                    if(loader.getSanityUUIDList().contains(uuid))
+                    if(!loader.getSanityUUIDList().contains(uuid))
                     {
-                        loader.getDbListBuffer().remove(uuid);
-                    }
-                    else
-                    {
-                        //scenario 3: existing uuids previously missing from current paths, but returns to the original paths
                         loader.getSanityUUIDList().add(uuid);
                     }
+
+                    loader.getDbListBuffer().remove(uuid);
+
+
                 }
 
                 loader.updateReloadingProgress(currentProcessedLength);
