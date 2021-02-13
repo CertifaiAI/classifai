@@ -21,6 +21,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -151,9 +152,71 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         });
     }
 
-    public static void createUUIDIfNotExist(@NonNull JDBCClient jdbcClient, @NonNull String query, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+
+    public static void updateUUIDFromReloading(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
     {
-        //TODO
+        String uuid = UUIDGenerator.generateUUID();
+
+        JsonArray params = new JsonArray()
+                .add(uuid) //uuid
+                .add(projectID) //projectid
+                .add(file.getAbsolutePath()) //imgpath
+                .add(new JsonArray().toString()) //new ArrayList<Integer>()
+                .add(0) //img_depth
+                .add(0) //imgX
+                .add(0) //imgY
+                .add(0) //imgW
+                .add(0) //imgH
+                .add(0) //file_size
+                .add(0)
+                .add(0);
+
+        jdbcClient.queryWithParams(AnnotationQuery.getCreateData(), params, fetch -> {
+
+            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+            if (fetch.succeeded())
+            {
+                loader.getUuidListFromDatabase().add(uuid);
+                loader.getSanityUUIDList().add(uuid);
+            }
+            else
+            {
+                log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+            }
+
+            loader.updateReloadingProgress(currentProcessedLength);
+        });
+    }
+
+    public static void createUUIDIfNotExist(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+    {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        JsonArray params = new JsonArray().add(file.getAbsolutePath()).add(projectID);
+
+        jdbcClient.queryWithParams(AnnotationQuery.getRetrieveDataUuid(), params, fetch -> {
+
+            if(fetch.succeeded())
+            {
+                ResultSet resultSet = fetch.result();
+
+                //not exist , create data point
+                if (resultSet.getNumRows() == 0)
+                {
+                    updateUUIDFromReloading(jdbcClient, projectID, file, currentProcessedLength);
+
+                }
+                else // if exist remove from sanityUUIDList to prevent from checking the item again
+                {
+                    JsonArray row = resultSet.getResults().get(0);
+                    String uuid = row.getString(0);
+
+                    loader.getDbListBuffer().remove(uuid);
+
+                    loader.updateReloadingProgress(currentProcessedLength);
+                }
+            }
+        });
     }
 
 

@@ -255,8 +255,6 @@ public class ImageHandler {
     }
 
 
-
-
     private static boolean isImageFileValid(String file)
     {
         try
@@ -306,9 +304,8 @@ public class ImageHandler {
     public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesCollection)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        Set<String> uuidSet = new HashSet<>(loader.getSanityUUIDList());
 
-        loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesCollection.size());
 
         Integer annotationTypeInt = loader.getAnnotationType();
@@ -317,8 +314,7 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
-                String uuid = UUIDGenerator.generateUUID(uuidSet);
-                uuidSet.add(uuid);
+                String uuid = UUIDGenerator.generateUUID();
 
                 BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), projectID, filesCollection.get(i), uuid, i + 1);
             }
@@ -327,8 +323,7 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
-                String uuid = UUIDGenerator.generateUUID(uuidSet);
-                uuidSet.add(uuid);
+                String uuid = UUIDGenerator.generateUUID();
 
                 SegVerticle.updateUUID(SegVerticle.getJdbcClient(), projectID, filesCollection.get(i), uuid, i + 1);
             }
@@ -358,7 +353,7 @@ public class ImageHandler {
 
         if (dataList.isEmpty())
         {
-            loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
             return;
         }
 
@@ -395,10 +390,12 @@ public class ImageHandler {
     scenario 3: adding new files
     scenario 4: evrything stills the same
     */
-    public static void recheckProjectRootPath(@NonNull String projectID, @NonNull File rootPath)
+    public static void recheckProjectRootPath(@NonNull String projectID)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
+        File rootPath = new File(loader.getProjectPath());
         //scenario 1
         if(!rootPath.exists())
         {
@@ -422,9 +419,7 @@ public class ImageHandler {
         {
             if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
-                //BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.getRetrieveObjectPath(), BoundingBoxDbQuery.g projectID, dataList.get(i),i + 1);
-                //BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), BoundingBoxDbQuery.getCreateData(), projectID, filesCollection.get(i), uuid, i + 1);
-
+                BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcClient(), projectID, dataList.get(i), i + 1);
             }
             else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
             {

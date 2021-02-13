@@ -324,9 +324,31 @@ public class EndpointRouter extends AbstractVerticle
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        //todo
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
 
-        HTTPResponseHandler.configureOK(context);
+        if(checkIfProjectNull(context, loader, projectName));
+
+        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+
+        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+
+        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
+        {
+            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) | (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
+        {
+            List<String> uuidListFromDatabase = loader.getSanityUUIDList();
+
+            res.put(ParamConfig.getUuidListParam(), uuidListFromDatabase);
+
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE)) {
+            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + "did not initiated");
+        }
+
+        HTTPResponseHandler.configureOK(context, res);
     }
 
     /**
@@ -1264,9 +1286,9 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
 
-        router.put("/v2/bndbox/projects/:project_name/load").handler(this::reloadV2BndBoxProject);
+        router.put("/v2/bndbox/projects/:project_name/reload").handler(this::reloadV2BndBoxProject);
 
-        router.get("/v2/bndbox/projects/:project_name/loadstatus").handler(this::reloadV2BndBoxProjectStatus);
+        router.get("/v2/bndbox/projects/:project_name/reloadstatus").handler(this::reloadV2BndBoxProjectStatus);
 
         //*******************************Segmentation*******************************
 

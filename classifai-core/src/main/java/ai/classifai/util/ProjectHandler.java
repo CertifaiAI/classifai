@@ -62,11 +62,6 @@ public class ProjectHandler {
         projectNameSearch = new HashMap<String, Pair<String, Integer>>();
     }
 
-    public static String generateProjectID()
-    {
-        return UUIDGenerator.generateUUID(projectIDLoaderDict.keySet());
-    }
-
     public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
     {
         return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));

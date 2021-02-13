@@ -228,13 +228,12 @@ public class DbMigration
 
             while (rs.next())
             {
-                Set<String> uuidSet = new HashSet<>();
                 Map<Integer, String> uuidMap = new HashMap<>();
 
                 Integer projectIDInt = rs.getInt(1);
                 List<Integer> UUIDIntList = ConversionHandler.string2IntegerList(rs.getString(6));
 
-                String projectID = UUIDGenerator.generateUUID(projectIDSet);
+                String projectID = UUIDGenerator.generateUUID();
 
                 projectIDDict.put(projectIDInt, projectID);
 
@@ -242,11 +241,10 @@ public class DbMigration
 
                 for (Integer uuidInt: UUIDIntList)
                 {
-                    String uuid = UUIDGenerator.generateUUID(uuidSet);
+                    String uuid = UUIDGenerator.generateUUID();
 
                     uuidMap.put(uuidInt, uuid);
 
-                    uuidSet.add(uuid);
                 }
 
                 projectUUIDDict.put(projectIDInt, uuidMap);

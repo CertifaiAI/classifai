@@ -18,6 +18,7 @@ package ai.classifai.database.portfolio;
 
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -26,6 +27,7 @@ import ai.classifai.util.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
+import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -117,7 +119,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             log.info("Create " + annotationName + " project with name: " + projectName);
 
-            String projectID = ProjectHandler.generateProjectID();
+            String projectID = UUIDGenerator.generateUUID();
 
             JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, rootPath.getAbsolutePath());
 
@@ -140,7 +142,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     ImageHandler.processFolder(projectID, rootPath);
 
-                    //jsonbuilder
+                    //TODO: jsonbuilder
                 }
                 else
                 {
@@ -164,7 +166,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             log.info("Create " + annotationName + " project with name: " + projectName);
 
-            String projectID = ProjectHandler.generateProjectID();
+            String projectID = UUIDGenerator.generateUUID();
 
             JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, "");
 
@@ -383,7 +385,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
 
-            String projectID = ProjectHandler.generateProjectID();
+            String projectID = UUIDGenerator.generateUUID();
             JsonArray params = PortfolioVerticle.buildNewProject(projectName, annotationInt, projectID, dataPath.getAbsolutePath());
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.getCreateNewProject(), params, fetch -> {
@@ -595,8 +597,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
-        //TODO: Reload project
-
+        ImageHandler.recheckProjectRootPath(projectID);
 
         message.reply(ReplyHandler.getOkReply());
 

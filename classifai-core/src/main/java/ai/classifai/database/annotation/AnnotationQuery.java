@@ -45,5 +45,5 @@ public class AnnotationQuery
     @Getter private static final String retrieveAllProjects = "SELECT * FROM Project";
 
     //v2
-    @Getter private static final String retrieveObjectPath = "SELECT uuid FROM Project WHERE img_path = ? AND project_id = ?";
+    @Getter private static final String retrieveDataUuid = "SELECT uuid FROM Project WHERE img_path = ? AND project_id = ?";
 }

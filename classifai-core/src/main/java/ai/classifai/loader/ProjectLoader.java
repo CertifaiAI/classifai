@@ -45,7 +45,6 @@ public class ProjectLoader
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private LoaderStatus loaderStatus;
     
-    //-----
     private List<String> labelList = new ArrayList<>();
 
      //a list of unique uuid representing number of data points in one project
@@ -69,6 +68,9 @@ public class ProjectLoader
     //list to send the new added datapoints as thumbnails to front end
     private List<String> fileSysNewUUIDList = new ArrayList<>();
 
+    //list to iterate through uuid list from existing database to remove if necessary
+    private List<String> dbListBuffer = new ArrayList<>();
+
     private List<Integer> progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
 
@@ -82,7 +84,7 @@ public class ProjectLoader
         this.loaderStatus = build.loaderStatus;
     }
 
-    public void reset(FileSystemStatus currentFileSystemStatus)
+    public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
     {
         validUUIDSet.clear();
         fileSysNewUUIDList.clear();
@@ -185,6 +187,39 @@ public class ProjectLoader
         }
     }
 
+    public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
+    {
+        dbListBuffer = uuidListFromDatabase;
+        fileSysNewUUIDList.clear();
+
+        currentUUIDMarker = 0;
+        totalUUIDMaxLen = 1;
+
+        progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
+
+        fileSystemStatus = currentFileSystemStatus;
+    }
+
+    //updating project progress from reloading it
+    public void updateReloadingProgress(Integer currentSize)
+    {
+        progressUpdate.set(0, currentSize);
+
+        //if done, offload set to list
+        if (currentSize.equals(totalUUIDMaxLen))
+        {
+            offloadReloadingList();
+        }
+    }
+
+    private void offloadReloadingList()
+    {
+        sanityUUIDList.removeAll(dbListBuffer);
+
+        PortfolioVerticle.updateFileSystemUUIDList(projectID);
+        fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
+    }
+
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
         totalUUIDMaxLen = totalUUIDSizeBuffer;
@@ -250,8 +285,5 @@ public class ProjectLoader
             this.loaderStatus = loaderStatus;
             return this;
         }
-
-
-
     }
 }
