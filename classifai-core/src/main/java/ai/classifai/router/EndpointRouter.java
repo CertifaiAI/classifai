@@ -1290,6 +1290,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/v2/bndbox/projects/:project_name/reloadstatus").handler(this::reloadV2BndBoxProjectStatus);
 
+
         //*******************************Segmentation*******************************
 
         router.get("/seg/projects").handler(this::getAllSegProjects);

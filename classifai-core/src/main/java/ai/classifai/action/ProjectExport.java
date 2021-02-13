@@ -23,12 +23,11 @@ public class ProjectExport
         String filePath = ParserHelper.getFilePath();
 
         JsonObject compiledOutput = new JsonObject()
-                .put(ParamConfig.getProjectIDParam(), portfolio.getProjectID())
+                .put(ParamConfig.getProjectIdParam(), portfolio.getProjectID())
                 .put(ParamConfig.getProjectNameParam(), portfolio.getProjectName())
-                .put(ParamConfig.getAnnotateTypeParam(), portfolio.getAnnotationType())
+                .put(ParamConfig.getAnnotationTypeParam(), portfolio.getAnnotationType())
                 .put(ParamConfig.getLabelListParam(), portfolio.getLabelList())
-                .put(ParamConfig.getUuidGeneratorParam(), portfolio.getUuidGeneratorSeed())
-                .put(ParamConfig.getUUIDListParam(), portfolio.getUuidList())
+                .put(ParamConfig.getUuidListParam(), portfolio.getUuidList())
                 .put(ParamConfig.getIsNewParam(), portfolio.isNew())
                 .put(ParamConfig.getIsStarredParam(), portfolio.isStar())
                 .put(ParamConfig.getCreatedDateParam(), portfolio.getCreatedDate())

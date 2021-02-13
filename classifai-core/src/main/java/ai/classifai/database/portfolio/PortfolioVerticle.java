@@ -438,16 +438,18 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 JsonArray row = fetch.result().getResults().get(0);
 
                 String projectName = row.getString(0);
-                List<String> uuidList = ConversionHandler.string2StringList(row.getString(1));
+                String projectPath = row.getString(1);
+                List<String> uuidList = ConversionHandler.string2StringList(row.getString(2));
 
-                Boolean isNew = row.getBoolean(2);
-                Boolean isStarred = row.getBoolean(3);
+                Boolean isNew = row.getBoolean(3);
+                Boolean isStarred = row.getBoolean(4);
                 Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
-                String dataTime = row.getString(4);
+                String dataTime = row.getString(5);
 
                 //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
                 result.add(new JsonObject()
                         .put(ParamConfig.getProjectNameParam(), projectName)
+                        .put(ParamConfig.getProjectPathParam(), projectPath)
                         .put(ParamConfig.getIsNewParam(), isNew)
                         .put(ParamConfig.getIsStarredParam(), isStarred)
                         .put(ParamConfig.getIsLoadedParam(), isLoaded)
@@ -483,28 +485,34 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         .map(json -> json.getString(0))
                         .collect(Collectors.toList());
 
-                List<String> uuidList = resultSet
+                List<String> projectPathList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getString(1))
                         .collect(Collectors.toList());
 
-                List<Boolean> isNewList = resultSet
+                List<String> uuidList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getBoolean(2))
+                        .map(json -> json.getString(2))
                         .collect(Collectors.toList());
 
-                List<Boolean> isStarredList = resultSet
+                List<Boolean> isNewList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getBoolean(3))
                         .collect(Collectors.toList());
 
+                List<Boolean> isStarredList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getBoolean(4))
+                        .collect(Collectors.toList());
+
                 List<String> dateTimeList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getString(4))
+                        .map(json -> json.getString(5))
                         .collect(Collectors.toList());
 
                 List<JsonObject> result = new ArrayList<>();
@@ -519,6 +527,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     result.add(new JsonObject()
                             .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
+                            .put(ParamConfig.getProjectPathParam(), projectPathList.get(i))
                             .put(ParamConfig.getIsNewParam(), isNewList.get(i))
                             .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
                             .put(ParamConfig.getIsLoadedParam(), isLoaded)

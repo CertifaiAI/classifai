@@ -22,6 +22,7 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.AbstractVerticle;
@@ -69,8 +70,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         JsonObject response = ReplyHandler.getOkReply();
                         JsonArray row = resultSet.getResults().get(0);
-                        String imagePath = row.getString(0);
-                        response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
+
+                        String imgSubPath = row.getString(0);
+                        File fileImgPath = getDataFullPath(projectID, imgSubPath);
+
+                        response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
                         message.reply(response);
                     }
                 }
@@ -79,6 +83,12 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                 }
             });
+    }
+
+    private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
+    {
+        String projectRootPath = ProjectHandler.getProjectLoader(projectId).getProjectPath();
+        return new File(projectRootPath + dataSubPath);
     }
 
     public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
@@ -107,8 +117,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     ResultSet resultSet = fetch.result();
                     JsonArray row = resultSet.getResults().get(0);
                     String dataPath = row.getString(0);
+                    String dataFullPath = getDataFullPath(projectID, dataPath).getAbsolutePath();
 
-                    if (ImageHandler.isImageReadable(dataPath))
+                    if (ImageHandler.isImageReadable(dataFullPath))
                     {
                         loader.pushDBValidUUID(UUID);
                     }
@@ -122,23 +133,26 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentProcessedLength)
     {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
+
         JsonArray params = new JsonArray()
-                .add(UUID) //uuid
-                .add(projectID) //projectid
-                .add(file.getAbsolutePath()) //imgpath
-                .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                .add(0) //img_depth
-                .add(0) //imgX
-                .add(0) //imgY
-                .add(0) //imgW
-                .add(0) //imgH
-                .add(0) //file_size
+                .add(UUID)                          //uuid
+                .add(projectID)                     //projectid
+                .add(dataChildPath)                 //imgpath
+                .add(new JsonArray().toString())    //new ArrayList<Integer>()
+                .add(0)                             //img_depth
+                .add(0)                             //imgX
+                .add(0)                             //imgY
+                .add(0)                             //imgW
+                .add(0)                             //imgH
+                .add(0)                             //file_size
                 .add(0)
                 .add(0);
 
         jdbcClient.queryWithParams(AnnotationQuery.getCreateData(), params, fetch -> {
 
-            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
             if (fetch.succeeded())
             {
                 loader.pushFileSysNewUUIDList(UUID);
@@ -153,14 +167,20 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     }
 
 
+
+
     public static void updateUUIDFromReloading(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file)
     {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
+
         String uuid = UUIDGenerator.generateUUID();
 
         JsonArray params = new JsonArray()
                 .add(uuid) //uuid
                 .add(projectID) //projectid
-                .add(file.getAbsolutePath()) //imgpath
+                .add(dataSubPath) //imgpath
                 .add(new JsonArray().toString()) //new ArrayList<Integer>()
                 .add(0) //img_depth
                 .add(0) //imgX
@@ -173,7 +193,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcClient.queryWithParams(AnnotationQuery.getCreateData(), params, fetch -> {
 
-            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
             if (fetch.succeeded())
             {
                 loader.getUuidListFromDatabase().add(uuid);
@@ -389,16 +409,17 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     JsonArray row = resultSet.getResults().get(0);
 
                     Integer counter = 0;
-                    String dataPath = row.getString(counter++);
+                    String dataSubPath = row.getString(counter++);
+                    String dataFullPath = AnnotationVerticle.getDataFullPath(projectID, dataSubPath).getAbsolutePath();
 
-                    Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
+                    Map<String, String> imgData = ImageHandler.getThumbNail(dataFullPath);
 
                     JsonObject response = ReplyHandler.getOkReply();
 
                     response.put(ParamConfig.getUuidParam(), uuid);
                     response.put(ParamConfig.getProjectNameParam(), projectName);
 
-                    response.put(ParamConfig.getImgPathParam(), dataPath);
+                    response.put(ParamConfig.getImgPathParam(), dataFullPath);
                     response.put(ParamConfig.getAnnotationParam(), new JsonArray(row.getString(counter++)));
                     response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
                     response.put(ParamConfig.getImgXParam(), row.getInteger(counter++));

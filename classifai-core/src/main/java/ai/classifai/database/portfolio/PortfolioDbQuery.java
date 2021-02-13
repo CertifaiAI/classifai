@@ -42,9 +42,9 @@ public class PortfolioDbQuery
     @Getter private static final String retrieveAllProjectsForAnnotationType =  "SELECT project_name FROM Portfolio WHERE annotation_type = ?";
 
     //V2
-    @Getter private static final String retrieveProjectMetadata = "SELECT project_name, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE project_id = ?";
+    @Getter private static final String retrieveProjectMetadata = "SELECT project_name, project_path, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE project_id = ?";
 
-    @Getter private static final String retrieveAllProjectsMetadata = "SELECT project_name, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE annotation_type = ?";
+    @Getter private static final String retrieveAllProjectsMetadata = "SELECT project_name, project_path, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE annotation_type = ?";
 
     @Getter private static final String updateIsNewParam = "UPDATE Portfolio SET is_new = ? WHERE project_id = ?";
 
