@@ -13,12 +13,12 @@ public class ProjectImport
 
     public boolean importFromFile()
     {
-        String filePath = ParserHelper.getFilePath();
+        //String filePath = ParserHelper.getFilePath();
 
         try
         {
-            String jsonStr = IOUtils.toString(new FileReader(filePath));
-            JsonObject jsonObject = new JsonObject(jsonStr);
+            //String jsonStr = IOUtils.toString(new FileReader(filePath));
+            //JsonObject jsonObject = new JsonObject(jsonStr);
 
         }
         catch(Exception e)

@@ -1093,6 +1093,47 @@ public class EndpointRouter extends AbstractVerticle
         return false;
     }
 
+    /***
+     * export a project to json
+     *
+     * PUT http://localhost:{port}/v2/bndbox/projects/:project_name/export
+     */
+    private void exportV2BndBoxProject(RoutingContext context)
+    {
+        exportV2Project(context, AnnotationType.BOUNDINGBOX);
+    }
+
+    private void exportV2Project(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getProjectIdParam(), projectID)
+                .put(ParamConfig.getAnnotationTypeParam(), annotationType.ordinal());
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
+
+            if (reply.succeeded()) {
+
+                JsonObject response = (JsonObject) reply.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
+
+            }
+        });
+
+    }
+
     /**
      * Delete bounding box project
      *
@@ -1289,6 +1330,9 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/bndbox/projects/:project_name/reload").handler(this::reloadV2BndBoxProject);
 
         router.get("/v2/bndbox/projects/:project_name/reloadstatus").handler(this::reloadV2BndBoxProjectStatus);
+
+        router.put("/v2/bndbox/projects/:project_name/export").handler(this::exportV2BndBoxProject);
+
 
 
         //*******************************Segmentation*******************************

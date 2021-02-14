@@ -16,9 +16,14 @@
 
 package ai.classifai.database.portfolio;
 
+import ai.classifai.action.ProjectExport;
+import ai.classifai.action.parser.ParserHelper;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -32,6 +37,7 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -142,7 +148,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     ImageHandler.processFolder(projectID, rootPath);
 
-                    //TODO: jsonbuilder
+                    String exportPath = ParserHelper.getProjectExportPath(projectID);
+                    if(ProjectExport.exportToFile(new File(exportPath), loader))
+                    {
+                        log.debug("Create initial project file success");
+                    }
                 }
                 else
                 {
@@ -218,6 +228,36 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 loader.setLabelList(labelListArray);
 
                 message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void exportProject(Message<JsonObject> message)
+    {
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
+        Integer annotationType = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
+        JsonArray params = new JsonArray().add(projectID);
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getExportProject(), params, fetch ->
+        {
+            if (fetch.succeeded())
+            {
+                JsonArray portfolioJsonArray = fetch.result().getResults().get(0);
+                //export
+                String exportPath = ParserHelper.getProjectExportPath(projectID);
+                JDBCClient client = (AnnotationType.BOUNDINGBOX.ordinal() == annotationType) ? BoundingBoxVerticle.getJdbcClient() : SegVerticle.getJdbcClient();
+                client.queryWithParams(BoundingBoxDbQuery.getExportProject(), params, annotationFetch ->
+                {
+                    if (annotationFetch.succeeded())
+                    {
+                        message.reply(ReplyHandler.getOkReply().put(ParamConfig.getProjectJsonPathParam(), exportPath));
+                        JsonArray annotationJsonArray = annotationFetch.result().getResults().get(0);
+                        ProjectExport.exportToFile(new File(exportPath), portfolioJsonArray, annotationJsonArray);
+                    }
+                });
             }
             else
             {

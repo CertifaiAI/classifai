@@ -46,4 +46,7 @@ public class AnnotationQuery
 
     //v2
     @Getter private static final String retrieveDataUuid = "SELECT uuid FROM Project WHERE img_path = ? AND project_id = ?";
+
+    @Getter private static final String exportProject = "SELECT * FROM Project WHERE project_id = ?";
+
 }

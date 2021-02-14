@@ -1,42 +1,69 @@
-package ai.classifai.action.export;
+package ai.classifai.action;
 
-
-import ai.classifai.action.parser.BoundingBoxParser;
-import ai.classifai.action.parser.ParserHelper;
+import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.action.parser.PortfolioParser;
-import ai.classifai.util.ParamConfig;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.DateTime;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.sql.ResultSet;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 @Builder
+@Slf4j
 public class ProjectExport
 {
-    private PortfolioParser portfolio;
-    private BoundingBoxParser bndBox;
-
-
-    public boolean exportToFile()
+    private static JsonObject getDefaultJsonObject()
     {
-        String filePath = ParserHelper.getFilePath();
+        JsonObject jsonObject = new JsonObject()
+                .put("tool", "classifai")
+                .put("version", "2.0.0-alpha")
+                .put("updateddate", DateTime.get());
 
-        JsonObject compiledOutput = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), portfolio.getProjectID())
-                .put(ParamConfig.getProjectNameParam(), portfolio.getProjectName())
-                .put(ParamConfig.getAnnotationTypeParam(), portfolio.getAnnotationType())
-                .put(ParamConfig.getLabelListParam(), portfolio.getLabelList())
-                .put(ParamConfig.getUuidListParam(), portfolio.getUuidList())
-                .put(ParamConfig.getIsNewParam(), portfolio.isNew())
-                .put(ParamConfig.getIsStarredParam(), portfolio.isStar())
-                .put(ParamConfig.getCreatedDateParam(), portfolio.getCreatedDate())
-                .put(ParamConfig.getProjectContentParam(), bndBox.getContent());
 
+        return jsonObject;
+    }
+
+    public static boolean exportToFile(@NonNull File jsonPath, ProjectLoader loader)
+    {
+        JsonObject compiledOutput = getDefaultJsonObject();
+
+        return saveToFile(jsonPath, compiledOutput);
+    }
+
+
+    public static boolean exportToFile(@NonNull File jsonPath, JsonArray portfolioJsonArray, JsonArray annotationJsonArray)
+    {
+        JsonObject compiledOutput = getDefaultJsonObject();
+
+        if(portfolioJsonArray != null)
+        {
+            compiledOutput = PortfolioParser.get(compiledOutput, portfolioJsonArray);
+        }
+
+        if(annotationJsonArray != null)
+        {
+            compiledOutput = AnnotationParser.get(compiledOutput, annotationJsonArray);
+        }
+
+        return saveToFile(jsonPath, compiledOutput);
+
+        //false if file not created
+    }
+
+
+    private static boolean saveToFile(@NonNull File jsonPath, JsonObject jsonObj)
+    {
         try {
-            FileWriter file = new FileWriter(filePath);
+            FileWriter file = new FileWriter(jsonPath);
 
-            file.write(compiledOutput.encodePrettily());
+            file.write(jsonObj.encodePrettily());
 
             file.close();
 
@@ -44,13 +71,11 @@ public class ProjectExport
         catch (IOException e)
         {
             e.printStackTrace();
+            return false;
         }
 
-        System.out.println("JSON file created: " + filePath);
+        log.info("Project configuration file saved at: " + jsonPath);
 
         return true;
-
-        //false if file not created
     }
-
 }

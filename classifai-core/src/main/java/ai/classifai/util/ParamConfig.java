@@ -100,4 +100,9 @@ public class ParamConfig
     //router endpoint
     @Getter private static final String fileSysParam = "file_sys";
     @Getter private static final String emptyArray = "[]";
+
+
+    //output file path
+    @Getter private static final String projectJsonPathParam = "project_config_path";
+
 }

@@ -52,5 +52,7 @@ public class PortfolioDbQuery
 
     @Getter private static final String retrieveAllProjects = "SELECT * FROM Portfolio";
 
+    @Getter private static final String exportProject = "SELECT * FROM Portfolio WHERE project_id = ?";
+
     @Getter private static final String reloadProject = "SELECT project_path FROM Portfolio WHERE project_id = ?";
 }
