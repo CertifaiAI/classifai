@@ -112,6 +112,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.reloadProject(message);
         }
+        else if(action.equals(PortfolioDbQuery.getExportProject()))
+        {
+            this.exportProject(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -236,11 +240,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 
+
     public void exportProject(Message<JsonObject> message)
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
         Integer annotationType = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
+
         JsonArray params = new JsonArray().add(projectID);
+
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getExportProject(), params, fetch ->
         {
             if (fetch.succeeded())
@@ -248,16 +255,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 JsonArray portfolioJsonArray = fetch.result().getResults().get(0);
                 //export
                 String exportPath = ParserHelper.getProjectExportPath(projectID);
+
                 JDBCClient client = (AnnotationType.BOUNDINGBOX.ordinal() == annotationType) ? BoundingBoxVerticle.getJdbcClient() : SegVerticle.getJdbcClient();
+
                 client.queryWithParams(BoundingBoxDbQuery.getExportProject(), params, annotationFetch ->
                 {
                     if (annotationFetch.succeeded())
                     {
                         message.reply(ReplyHandler.getOkReply().put(ParamConfig.getProjectJsonPathParam(), exportPath));
+
                         JsonArray annotationJsonArray = annotationFetch.result().getResults().get(0);
+
                         ProjectExport.exportToFile(new File(exportPath), portfolioJsonArray, annotationJsonArray);
                     }
                 });
+
             }
             else
             {
