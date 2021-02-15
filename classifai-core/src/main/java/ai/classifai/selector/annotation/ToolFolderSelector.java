@@ -42,7 +42,7 @@ public class ToolFolderSelector{
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
-    public void run(@NonNull Integer projectID)
+    public void run(@NonNull String projectID)
     {
         LookFeelSetter.setDarkMode();
 
