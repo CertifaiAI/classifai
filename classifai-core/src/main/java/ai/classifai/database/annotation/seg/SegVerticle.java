@@ -16,17 +16,20 @@
 package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DbConfig;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
+import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
+import io.vertx.jdbcclient.JDBCPool;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
 {
-    @Getter private static JDBCClient jdbcClient;
+    @Getter @Setter static JDBCPool jdbcPool;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -53,27 +56,27 @@ public class SegVerticle extends AnnotationVerticle
 
         if (action.equals(SegDbQuery.retrieveData()))
         {
-            this.retrieveData(message, jdbcClient, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
-        }
-        else if (action.equals(SegDbQuery.retrieveDataPath()))
-        {
-            this.retrieveDataPath(message, jdbcClient, SegDbQuery.retrieveDataPath());
+            this.retrieveData(message, jdbcPool, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
         }
         else if (action.equals(SegDbQuery.updateData()))
         {
-            this.updateData(message, jdbcClient, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
+            this.updateData(message, jdbcPool, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
         }
-        else if (action.equals(SegDbQuery.loadValidProjectUUID()))
+        else if (action.equals(AnnotationQuery.retrieveDataPath()))
         {
-            this.loadValidProjectUUID(message, jdbcClient, SegDbQuery.loadValidProjectUUID());
+            this.retrieveDataPath(message, jdbcPool, AnnotationQuery.retrieveDataPath());
         }
-        else if (action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(AnnotationQuery.loadValidProjectUUID()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient, SegDbQuery.deleteProjectUUIDListwithProjectID());
+            this.loadValidProjectUUID(message, jdbcPool, AnnotationQuery.loadValidProjectUUID());
         }
-        else if (action.equals(SegDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDListwithProjectID()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient, SegDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, AnnotationQuery.deleteProjectUUIDListwithProjectID());
+        }
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
+        {
+            this.deleteProjectUUIDList(message, jdbcPool, AnnotationQuery.deleteProjectUUIDList());
         }
         else
         {
@@ -81,31 +84,34 @@ public class SegVerticle extends AnnotationVerticle
         }
     }
 
+    private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    {
+        return JDBCPool.pool(vertx, new JsonObject()
+                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .put("driver_class", db.getDriver())
+                .put("user", db.getUser())
+                .put("password", db.getPassword())
+                .put("max_pool_size", 30));
+    }
 
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
-        jdbcClient.close();
+        jdbcPool.close();
 
         log.info("Seg Verticle stopping...");
     }
 
-    //obtain a JDBC client connection,
+    //obtain a JDBC pool connection,
     //Performs a SQL query to create the pages table unless it already existed
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
-                .put("driver_class", h2.getDriver())
-                .put("user", h2.getUser())
-                .put("password", h2.getPassword())
-                .put("max_pool_size", 30));
+        setJdbcPool(createJDBCPool(vertx, h2));
 
-
-        jdbcClient.getConnection(ar -> {
+        jdbcPool.getConnection(ar -> {
 
             if (ar.failed())
             {
@@ -115,22 +121,22 @@ public class SegVerticle extends AnnotationVerticle
             }
             else
             {
-                SQLConnection connection = ar.result();
-                connection.execute(SegDbQuery.createProject(), create -> {
-                    connection.close();
-                    if (create.failed())
-                    {
-                        log.error("SegVerticle database preparation error", create.cause());
-                        promise.fail(create.cause());
+                jdbcPool.query(SegDbQuery.createProject())
+                        .execute()
+                        .onComplete(create -> {
+                                if (create.failed())
+                                {
+                                    log.error("SegVerticle database preparation error", create.cause());
+                                    promise.fail(create.cause());
 
-                    }
-                    else
-                    {
-                        //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
-                        promise.complete();
-                    }
-                });
+                                }
+                                else
+                                {
+                                    //the consumer methods registers an event bus destination handler
+                                    vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
+                                    promise.complete();
+                                }
+                        });
             }
         });
     }

@@ -72,7 +72,6 @@ public class MainVerticle extends AbstractVerticle
 
             Promise<String> segDeployment = Promise.promise();
             vertx.deployVerticle(segVerticle, segDeployment);
-
             return segDeployment.future();
 
         }).compose(id_ -> {
@@ -90,7 +89,7 @@ public class MainVerticle extends AbstractVerticle
                 LogoLauncher.print();
 
                 log.info("Classifai started successfully");
-                log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
+                log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
 
                 //docker environment not enabling welcome launcher
                 if (!ParamConfig.isDockerEnv())
