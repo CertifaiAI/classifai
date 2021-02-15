@@ -97,8 +97,6 @@ public class WelcomeLauncher extends JFrame
 
     public static void configure()
     {
-        LookFeelSetter.setLightMode(); //light mode for welcome launcher to prevent around buttons
-
         setUpFrame();
         setRunningStatus(RunningStatus.STARTING);
 
