@@ -101,9 +101,12 @@ public class WelcomeLauncher extends JFrame
 
         setUpFrame();
         setRunningStatus(RunningStatus.STARTING);
+
+        LookFeelSetter.setLightMode(); //hack to prevent rim around the button
         setUpOpenButton();
         setUpConverterButton();
         setUpLogButton();
+        LookFeelSetter.setDarkMode(); //hack to prevent rim around the button
 
         setUpBackground();
 
