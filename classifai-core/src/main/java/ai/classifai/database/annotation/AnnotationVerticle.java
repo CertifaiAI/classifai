@@ -113,7 +113,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         {
                             RowSet<Row> rowSet = fetch.result();
 
-                            for(Row row : rowSet){
+                            for(Row row : rowSet)
+                            {
                                 String dataPath = row.getString(0);
 
                                 if (ImageHandler.isImageReadable(dataPath))

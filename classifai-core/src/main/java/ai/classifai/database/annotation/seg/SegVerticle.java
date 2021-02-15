@@ -96,7 +96,7 @@ public class SegVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcPool = JDBCPool.pool(vertx,  new JsonObject()
+        jdbcPool = JDBCPool.pool(vertx, new JsonObject()
                 .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
                 .put("driver_class", h2.getDriver())
                 .put("user", h2.getUser())
