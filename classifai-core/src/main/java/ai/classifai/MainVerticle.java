@@ -52,9 +52,9 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
-        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
-
         DbOps.configureDatabase();
+
+        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
         Promise<String> portfolioDeployment = Promise.promise();
         vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
