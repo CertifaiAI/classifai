@@ -16,12 +16,15 @@
 package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DbConfig;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
+import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
@@ -54,25 +57,25 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.retrieveData(message, jdbcPool, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
         }
-        else if (action.equals(SegDbQuery.retrieveDataPath()))
-        {
-            this.retrieveDataPath(message, jdbcPool, SegDbQuery.retrieveDataPath());
-        }
         else if (action.equals(SegDbQuery.updateData()))
         {
             this.updateData(message, jdbcPool, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
         }
-        else if (action.equals(SegDbQuery.loadValidProjectUUID()))
+        else if (action.equals(AnnotationQuery.retrieveDataPath()))
         {
-            this.loadValidProjectUUID(message, jdbcPool, SegDbQuery.loadValidProjectUUID());
+            this.retrieveDataPath(message, jdbcPool, AnnotationQuery.retrieveDataPath());
         }
-        else if (action.equals(SegDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(AnnotationQuery.loadValidProjectUUID()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, SegDbQuery.deleteProjectUUIDListwithProjectID());
+            this.loadValidProjectUUID(message, jdbcPool, AnnotationQuery.loadValidProjectUUID());
         }
-        else if (action.equals(SegDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDListwithProjectID()))
         {
-            this.deleteProjectUUIDList(message, jdbcPool, SegDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, AnnotationQuery.deleteProjectUUIDListwithProjectID());
+        }
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
+        {
+            this.deleteProjectUUIDList(message, jdbcPool, AnnotationQuery.deleteProjectUUIDList());
         }
         else
         {
@@ -80,6 +83,15 @@ public class SegVerticle extends AnnotationVerticle
         }
     }
 
+    private static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    {
+        return JDBCPool.pool(vertx, new JsonObject()
+                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
+                .put("driver_class", db.getDriver())
+                .put("user", db.getUser())
+                .put("password", db.getPassword())
+                .put("max_pool_size", 30));
+    }
 
     @Override
     public void stop(Promise<Void> promise) throws Exception
@@ -96,12 +108,7 @@ public class SegVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcPool = JDBCPool.pool(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
-                .put("driver_class", h2.getDriver())
-                .put("user", h2.getUser())
-                .put("password", h2.getPassword())
-                .put("max_pool_size", 30));
+        jdbcPool = createJDBCPool(vertx, h2);
 
         jdbcPool.getConnection(ar -> {
 

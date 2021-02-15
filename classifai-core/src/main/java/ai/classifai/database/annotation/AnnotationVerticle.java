@@ -28,6 +28,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;

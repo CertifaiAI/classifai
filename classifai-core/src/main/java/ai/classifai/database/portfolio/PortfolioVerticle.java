@@ -30,8 +30,10 @@ import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.database.H2;
+import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -510,6 +512,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 DateTime.get());             //created_date
     }
 
+    private static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    {
+        return JDBCPool.pool(vertx, new JsonObject()
+                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getPortfolioKey()))
+                .put("driver_class", db.getDriver())
+                .put("user", db.getUser())
+                .put("password", db.getPassword())
+                .put("max_pool_size", 30));
+    }
+
     @Override
     public void stop(Promise<Void> promise)
     {
@@ -525,12 +537,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         H2 h2 = DbConfig.getH2();
 
-        portfolioDbPool = JDBCPool.pool(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getPortfolioKey()))
-                .put("driver_class", h2.getDriver())
-                .put("user", h2.getUser())
-                .put("password", h2.getPassword())
-                .put("max_pool_size", 30));
+        portfolioDbPool = createJDBCPool(vertx, h2);
 
         portfolioDbPool.getConnection(ar -> {
 

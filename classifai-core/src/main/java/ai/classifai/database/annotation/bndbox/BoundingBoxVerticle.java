@@ -16,12 +16,15 @@
 package ai.classifai.database.annotation.bndbox;
 
 import ai.classifai.database.DbConfig;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
+import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
@@ -58,26 +61,36 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.updateData(message, jdbcPool, BoundingBoxDbQuery.updateData(), AnnotationType.BOUNDINGBOX);
         }
-        else if (action.equals(BoundingBoxDbQuery.retrieveDataPath()))
+        else if (action.equals(AnnotationQuery.retrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcPool, BoundingBoxDbQuery.retrieveDataPath());
+            this.retrieveDataPath(message, jdbcPool, AnnotationQuery.retrieveDataPath());
         }
-        else if (action.equals(BoundingBoxDbQuery.loadValidProjectUUID()))
+        else if (action.equals(AnnotationQuery.loadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcPool, BoundingBoxDbQuery.loadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcPool, AnnotationQuery.loadValidProjectUUID());
         }
-        else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDListwithProjectID()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, BoundingBoxDbQuery.deleteProjectUUIDListwithProjectID());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, AnnotationQuery.deleteProjectUUIDListwithProjectID());
         }
-        else if (action.equals(BoundingBoxDbQuery.deleteProjectUUIDList()))
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
         {
-            this.deleteProjectUUIDList(message, jdbcPool, BoundingBoxDbQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDList(message, jdbcPool, AnnotationQuery.deleteProjectUUIDList());
         }
         else
         {
             log.error("Bounding Box Verticle query error. Action did not have an assigned function for handling.");
         }
+    }
+
+    private static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    {
+        return JDBCPool.pool(vertx, new JsonObject()
+                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
+                .put("driver_class", db.getDriver())
+                .put("user", db.getUser())
+                .put("password", db.getPassword())
+                .put("max_pool_size", 30));
     }
 
     @Override
@@ -95,12 +108,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcPool = JDBCPool.pool(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
-                .put("driver_class", h2.getDriver())
-                .put("user", h2.getUser())
-                .put("password", h2.getPassword())
-                .put("max_pool_size", 30));
+        jdbcPool = createJDBCPool(vertx, h2);
 
         jdbcPool.getConnection(ar -> {
 
