@@ -29,6 +29,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -39,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
 {
-    @Getter private static JDBCPool jdbcPool;
+    @Getter @Setter static JDBCPool jdbcPool;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -108,7 +109,7 @@ public class SegVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcPool = createJDBCPool(vertx, h2);
+        setJdbcPool(createJDBCPool(vertx, h2));
 
         jdbcPool.getConnection(ar -> {
 

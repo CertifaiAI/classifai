@@ -42,6 +42,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -56,7 +57,7 @@ import java.util.List;
 @Slf4j
 public class PortfolioVerticle extends AbstractVerticle implements VerticleServiceable, PortfolioServiceable
 {
-    private static JDBCPool portfolioDbPool;
+    @Setter private static JDBCPool portfolioDbPool;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -537,7 +538,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         H2 h2 = DbConfig.getH2();
 
-        portfolioDbPool = createJDBCPool(vertx, h2);
+        setPortfolioDbPool(createJDBCPool(vertx, h2));
 
         portfolioDbPool.getConnection(ar -> {
 
