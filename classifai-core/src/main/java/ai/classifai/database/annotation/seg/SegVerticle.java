@@ -84,7 +84,7 @@ public class SegVerticle extends AnnotationVerticle
         }
     }
 
-    private static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {
         return JDBCPool.pool(vertx, new JsonObject()
                 .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))
