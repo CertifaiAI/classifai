@@ -45,8 +45,6 @@ public class ToolFileSelector{
 
     public void run(@NonNull String projectID)
     {
-        LookFeelSetter.setDarkMode();
-
         try
         {
             EventQueue.invokeLater(new Runnable() {

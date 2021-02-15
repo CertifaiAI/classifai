@@ -171,8 +171,6 @@ public class WelcomeLauncher extends JFrame
     {
         if (converterLauncher == null)
         {
-            LookFeelSetter.setDarkMode();
-
             converterLauncher = new ConverterLauncher();
         }
     }

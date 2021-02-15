@@ -20,6 +20,7 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.router.EndpointRouter;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -52,6 +53,8 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
+        if(!ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode(); //to align dark mode for windows
+
         DbOps.configureDatabase();
 
         if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
