@@ -102,7 +102,7 @@ public class SegVerticle extends AnnotationVerticle
         log.info("Seg Verticle stopping...");
     }
 
-    //obtain a JDBC client connection,
+    //obtain a JDBC pool connection,
     //Performs a SQL query to create the pages table unless it already existed
     @Override
     public void start(Promise<Void> promise) throws Exception

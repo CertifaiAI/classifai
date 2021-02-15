@@ -57,8 +57,8 @@
 
     <!--
     Debug having the most authorative access
-    ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
-    <root level="ALL">
+    ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>

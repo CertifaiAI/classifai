@@ -531,7 +531,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         log.info("Portfolio Verticle stopping...");
     }
 
-    //obtain a JDBC client connection,
+    //obtain a JDBC pool connection,
     //Performs a SQL query to create the portfolio table unless existed
     @Override
     public void start(Promise<Void> promise)
