@@ -1,0 +1,88 @@
+{
+  "modal": {
+    "header": "Alatan pelabelan gambar Classifai",
+    "existing": {
+      "header": "Daripada Projek Sedia Ada",
+      "label": "Nama projek : ",
+      "option" : "tiada",
+      "button": "Hantar"
+    },
+    "create": {
+      "header": "Reka Projek Baru",
+      "label": "Nama Projek Baru : ",
+      "inputPlaceholder": "id baru anda ....",
+      "subLabel": "Fail Senarai Label(*.txt): ",
+      "button": "Reka"
+    },
+    "delete":{
+      "header": "Padam Projek",
+      "label": "Nama Projek : ",
+      "button": "Padam",
+      "option": "tiada"
+    },
+    "delimg":{
+      "header": "Padam Imej"
+    },
+    "info": {
+      "header": "Informasi Kekunci Pintasan",
+      "shortcut": {
+        "tableHeader": {
+          "no": "No",
+          "shortcutKey": "Kekunci Pintasan",
+          "functionality": "Kefungsian"
+        },
+        "1": {
+          "key": "Ctrl + Alt",
+          "functionality": "Hidup/matikan lampu hijau<br/><br/>Lampu Hijau Hidup: Gerakkan poligon yang dipilih dengan menggunakan kekunci anak panah (kiri kanan atas bawah)<br/>Lampu Hijau Mati: Pergi ke gambar berikutnya/sebelumnya dengan menggunakan kekunci kiri atau kanan"
+        },
+        "2": {
+          "key": "Ctrl + Shift",
+          "functionality": "Beralih antara melukis poligon dan menggerakkan gambar"
+        },
+        "3": {
+          "key": "Ctrl + z",
+          "functionality": "Kembali ke tindakan terakhir"
+        },
+        "4": {
+          "key": "Ctrl + c",
+          "functionality": "Menyalin poligon yang dipilih"
+        },
+        "5": {
+          "key": "Ctrl + v",
+          "functionality": "Menampal poligon yang telah disalin"
+        },
+        "6": {
+          "key": "Delete/Backspace",
+          "functionality": "Memadam poligon yang dipilih<br/>Memadam titik lukisan terakhir (semasa melukis poligon baru)"
+        },
+        "7": {
+          "key": "Klik dua kali pada poligon yang dipilih di dalam antaramuka pengguna",
+          "functionality": "Memilih/ menukar label untuk poligon yang dipilih"
+        },
+        "8": {
+          "key": "Esc",
+          "functionality": "Memadam poligon yang sedang dilukis"
+        }
+      }
+    }
+  },
+  "loading": "Dikuasakan oleh Skymind",
+  "saveFormat": {
+    "currImg": "Simpan imej semasa",
+    "bulkSaving": "Simpan secara pukal",
+    "pascalVoc": "Pascal VOC",
+    "textOcr": "Text OCR",
+    "label": "Label"
+  },
+  "sideNav": {
+    "imgList": "Senarai Imej",
+    "labelList": "Senarai Label",
+    "polygon": "Poligon"
+  },
+  "deleteswitch":{
+    "selectall" : "Pilih semua"
+  },
+  "deletebtn":{
+    "delete" : "Padam"
+  }
+}

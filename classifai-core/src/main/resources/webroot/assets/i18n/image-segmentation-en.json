@@ -22,6 +22,48 @@
       },
       "delimg":{
         "header": "Delete Images"
+      },
+      "info": {
+        "header": "Keyboard Shortcut Information",
+        "shortcut": {
+          "tableHeader": {
+            "no": "No",
+            "shortcutKey": "Shortcut Key",
+            "functionality": "Functionality"
+          },
+          "1": {
+            "key": "Ctrl + Alt",
+            "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected polygon using arrow keys (left right up down)<br/>Green Light Off: Go to the next/previous image using left right key"
+          },
+          "2": {
+            "key": "Ctrl + Shift",
+            "functionality": "Toggle between drawing polygon and moving image"
+          },
+          "3": {
+            "key": "Ctrl + z",
+            "functionality": "Undo the last action"
+          },
+          "4": {
+            "key": "Ctrl + c",
+            "functionality": "Copy the selected polygon"
+          },
+          "5": {
+            "key": "Ctrl + v",
+            "functionality": "Paste the selected polygon"
+          },
+          "6": {
+            "key": "Delete/Backspace",
+            "functionality": "Delete a selected polygon<br/>Delete the last drawing dot (during drawing new polygon)"
+          },
+          "7": {
+            "key": "Double click on a selected polygon in the UI",
+            "functionality": "Choose label for the selected polygon"
+          },
+          "8": {
+            "key": "Esc",
+            "functionality": "Delete the polygon currently in the midst of drawing"
+          }
+        }
       }
     },
     "loading": "Powered by Skymind",
@@ -44,4 +86,3 @@
       "delete" : "Delete"
     }
   }
-  

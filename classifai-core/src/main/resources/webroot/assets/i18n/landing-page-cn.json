@@ -3,5 +3,9 @@
   "tabular": "表格",
   "image": "图片",
   "video": "视频",
-  "voice": "语音"
+  "voice": "语音",
+  "imageOptions": {
+    "boundingBoxes": "边界框",
+    "polygons": "多边形"
+  }
 }
