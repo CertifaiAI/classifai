@@ -19,9 +19,12 @@ import ai.classifai.database.migration.DbMigration;
 import ai.classifai.util.data.FileHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 
 /**
@@ -30,38 +33,28 @@ import java.util.List;
  * @author codenamewei
  */
 @Slf4j
-public class DbOps
-{
-    private DbOps()
-    {
+public class DbOps {
+    private DbOps() {
         throw new IllegalStateException("DbOps class");
     }
 
-    public static void configureDatabase()
-    {
+    public static void configureDatabase() {
         migrateDbIfExist();
 
         setupDb();
     }
 
     //hsqldb v1 -> h2 v2 database migration
-    private static void migrateDbIfExist()
-    {
-        if(DbConfig.getHsql().isDbExist() && !DbConfig.getH2().isDbExist())
-        {
+    private static void migrateDbIfExist() {
+        if (DbConfig.getHsql().isDbExist() && !DbConfig.getH2().isDbExist()) {
             log.info("Database migration required. Executing database migration.");
 
-            if (!new DbMigration().migrate())
-            {
+            if (!new DbMigration().migrate()) {
                 log.info("Database migration failed. Old data will not be migrated. You can choose to move on with empty database, or close Classifai now to prevent data lost.");
-            }
-            else
-            {
+            } else {
                 log.info("Database migration is successful!");
             }
-        }
-        else
-        {
+        } else {
             log.debug("Database migration did not initiated");
         }
     }
@@ -76,7 +69,12 @@ public class DbOps
 
             if(DbConfig.getH2().isDbLocked())
             {
-                log.info("H2 Database is locked. Likely classifai application is running. Close it to proceed.");
+                log.info("H2 Database is locked. Likely another classifai application is running. Close it and try again.");
+                showMessageDialog(null,
+                        "H2 Database is locked. Likely another classifai application is running. Close it and try again.",
+                        "Database Setup Error", JOptionPane.ERROR_MESSAGE);
+
+                System.exit(0);
             }
         }
         else
@@ -89,11 +87,10 @@ public class DbOps
             }
             else
             {
-                log.debug("Root database could not created: ", dataRootPath);
+                log.debug("Base database could not created: ", dataRootPath);
             }
         }
     }
-
 
     private static boolean isDbExist()
     {
