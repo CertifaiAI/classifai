@@ -16,16 +16,19 @@
 package ai.classifai.database.annotation.bndbox;
 
 import ai.classifai.database.DbConfig;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.type.database.H2;
+import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
+import io.vertx.jdbcclient.JDBCPool;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -36,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BoundingBoxVerticle extends AnnotationVerticle
 {
-    @Getter private static JDBCClient jdbcClient;
+    @Getter @Setter private static JDBCPool jdbcPool;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -50,29 +53,29 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(BoundingBoxDbQuery.getRetrieveData()))
+        if (action.equals(AnnotationQuery.getRetrieveData()))
         {
-            this.retrieveData(message, jdbcClient);
+            this.retrieveData(message, jdbcPool);
         }
-        else if (action.equals(BoundingBoxDbQuery.getUpdateData()))
+        else if (action.equals(AnnotationQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcClient);
+            this.updateData(message, jdbcPool);
         }
-        else if (action.equals(BoundingBoxDbQuery.getRetrieveDataPath()))
+        else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcClient);
+            this.retrieveDataPath(message, jdbcPool);
         }
-        else if (action.equals(BoundingBoxDbQuery.getLoadValidProjectUUID()))
+        else if (action.equals(AnnotationQuery.getLoadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcClient);
+            this.loadValidProjectUUID(message, jdbcPool);
         }
-        else if (action.equals(BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId()))
+        else if (action.equals(AnnotationQuery.getDeleteProjectUuidListWithProjectId()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcClient);
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool);
         }
-        else if (action.equals(BoundingBoxDbQuery.getDeleteProjectUuidList()))
+        else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
         {
-            this.deleteProjectUUIDList(message, jdbcClient);
+            this.deleteProjectUUIDList(message, jdbcPool);
         }
         else
         {
@@ -80,30 +83,34 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         }
     }
 
+    private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    {
+        return JDBCPool.pool(vertx, new JsonObject()
+                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
+                .put("driver_class", db.getDriver())
+                .put("user", db.getUser())
+                .put("password", db.getPassword())
+                .put("max_pool_size", 30));
+    }
+
     @Override
     public void stop(Promise<Void> promise)
     {
-        jdbcClient.close();
+        jdbcPool.close();
 
         log.info("Bounding Box Verticle stopping...");
     }
 
-    //obtain a JDBC client connection,
+    //obtain a JDBC pool connection,
     //Performs a SQL query to create the pages table unless it already existed
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
         H2 h2 = DbConfig.getH2();
 
-        jdbcClient = JDBCClient.create(vertx, new JsonObject()
-                .put("url", h2.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))
-                .put("driver_class", h2.getDriver())
-                .put("user", h2.getUser())
-                .put("password", h2.getPassword())
-                .put("max_pool_size", 30));
+        setJdbcPool(createJDBCPool(vertx, h2));
 
-
-        jdbcClient.getConnection(ar -> {
+        jdbcPool.getConnection(ar -> {
 
             if (ar.failed())
             {
@@ -112,22 +119,22 @@ public class BoundingBoxVerticle extends AnnotationVerticle
             }
             else
             {
-                SQLConnection connection = ar.result();
-                connection.execute(BoundingBoxDbQuery.getCreateProject(), create -> {
-                    connection.close();
-                    if (create.failed())
-                    {
-                        log.error("BoundingBoxVerticle database preparation error", create.cause());
-                        promise.fail(create.cause());
+                jdbcPool.query(BoundingBoxDbQuery.createProject())
+                        .execute()
+                        .onComplete(create -> {
+                            if (create.failed())
+                            {
+                                log.error("BoundingBoxVerticle database preparation error", create.cause());
+                                promise.fail(create.cause());
 
-                    }
-                    else
-                    {
-                        //the consumer methods registers an event bus destination handler
-                        vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
-                        promise.complete();
-                    }
-                });
+                            }
+                            else
+                            {
+                                //the consumer methods registers an event bus destination handler
+                                vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
+                                promise.complete();
+                            }
+                        });
             }
         });
     }

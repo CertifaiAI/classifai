@@ -16,9 +16,9 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.AnnotationQuery;
+import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
@@ -316,7 +316,7 @@ public class ImageHandler {
             {
                 String uuid = UUIDGenerator.generateUUID();
 
-                BoundingBoxVerticle.updateUUID(BoundingBoxVerticle.getJdbcClient(), projectID, filesCollection.get(i), uuid, i + 1);
+                AnnotationVerticle.updateUUID(BoundingBoxVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -324,8 +324,8 @@ public class ImageHandler {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
                 String uuid = UUIDGenerator.generateUUID();
-
-                SegVerticle.updateUUID(SegVerticle.getJdbcClient(), projectID, filesCollection.get(i), uuid, i + 1);
+            
+                AnnotationVerticle.updateUUID(SegVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
     }

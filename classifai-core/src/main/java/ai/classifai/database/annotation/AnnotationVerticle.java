@@ -29,13 +29,14 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.ResultSet;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,42 +48,43 @@ import java.util.Map;
 @Slf4j
 public abstract class AnnotationVerticle extends AbstractVerticle implements VerticleServiceable, AnnotationServiceable
 {
-    public void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
+    public void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
         String uuid = message.body().getString(ParamConfig.getUuidParam());
 
-        JsonArray params = new JsonArray().add(uuid).add(projectID);
+        Tuple params = Tuple.of(uuid, projectID);
 
-            jdbcClient.queryWithParams(AnnotationQuery.getRetrieveDataPath(), params, fetch -> {
+        jdbcPool.preparedQuery(query)
+                .execute(params)
+                .onComplete(fetch -> {
 
-                if (fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
-
-                    if (resultSet.getNumRows() == 0)
+                    if (fetch.succeeded())
                     {
-                        String projectName = message.body().getString(ParamConfig.getProjectNameParam());
-                        String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
-                        message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                        RowSet<Row> rowSet = fetch.result();
+
+                        if (rowSet.size() == 0)
+                        {
+                            String projectName = message.body().getString(ParamConfig.getProjectNameParam());
+                            String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
+                            message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                        }
+                        else
+                        {
+                            JsonObject response = ReplyHandler.getOkReply();
+
+                            for(Row row : rowSet){
+                                String imagePath = row.getString(0);
+                                response.put(ParamConfig.getImageSourceParam(), ImageHandler.encodeFileToBase64Binary(new File(imagePath)));
+                                message.replyAndRequest(response);
+                            }
+                        }
                     }
                     else
                     {
-                        JsonObject response = ReplyHandler.getOkReply();
-                        JsonArray row = resultSet.getResults().get(0);
-
-                        String imgSubPath = row.getString(0);
-                        File fileImgPath = getDataFullPath(projectID, imgSubPath);
-
-                        response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
-                        message.reply(response);
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                     }
-                }
-                else
-                {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
+                });
     }
 
     private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
@@ -91,7 +93,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         return new File(projectRootPath + dataSubPath);
     }
 
-    public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
+    public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
     {
         String projectID  = message.body().getString(ParamConfig.getProjectIdParam());
 
@@ -99,7 +101,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         List<String> oriUUIDList = loader.getUuidListFromDatabase();
 
-        message.reply(ReplyHandler.getOkReply());
+        message.replyAndRequest(ReplyHandler.getOkReply());
 
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
@@ -108,68 +110,65 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             final Integer currentLength = i + 1;
             final String UUID = oriUUIDList.get(i);
 
-            JsonArray params = new JsonArray().add(projectID).add(UUID);
+            Tuple params = Tuple.of(projectID, UUID);
 
-            jdbcClient.queryWithParams(AnnotationQuery.getLoadValidProjectUUID(), params, fetch -> {
+            jdbcPool.preparedQuery(query)
+                    .execute(params)
+                    .onComplete(fetch -> {
 
-                if (fetch.succeeded())
-                {
-                    ResultSet resultSet = fetch.result();
-                    JsonArray row = resultSet.getResults().get(0);
-                    String dataPath = row.getString(0);
-                    String dataFullPath = getDataFullPath(projectID, dataPath).getAbsolutePath();
+                        if (fetch.succeeded())
+                        {
+                            RowSet<Row> rowSet = fetch.result();
 
-                    if (ImageHandler.isImageReadable(dataFullPath))
+                            for(Row row : rowSet)
+                            {
+                                String dataPath = row.getString(0);
+
+                                if (ImageHandler.isImageReadable(dataPath))
+                                {
+                                    loader.pushDBValidUUID(UUID);
+                                }
+                            }
+                        }
+                        loader.updateDBLoadingProgress(currentLength);
+                    });
+          }
+    }
+
+    public static void updateUUID(@NonNull JDBCPool jdbcPool, @NonNull String query, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentProcessedLength)
+    {
+        Tuple params = Tuple.of(UUID,                       //uuid
+                                projectID,                  //projectid
+                                file.getAbsolutePath(),     //imgpath
+                                new JsonArray().toString(), //new ArrayList<Integer>()
+                                0,                          //imgdepth
+                                0,                          //imgX
+                                0,                          //imgY
+                                0,                          //imgW
+                                0,                          //imgH
+                                0,                          //filesize
+                                0,
+                                0);
+
+        jdbcPool.preparedQuery(query)
+                .execute(params)
+                .onComplete(fetch -> {
+                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+                    if (fetch.succeeded())
                     {
-                        loader.pushDBValidUUID(UUID);
+                        loader.pushFileSysNewUUIDList(UUID);
+                    }
+                    else
+                    {
+                        log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                     }
 
-                    loader.updateDBLoadingProgress(currentLength);
-                }
-
-            });
-        }
-    }
-
-    public static void updateUUID(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentProcessedLength)
-    {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
-        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
-
-        JsonArray params = new JsonArray()
-                .add(UUID)                          //uuid
-                .add(projectID)                     //projectid
-                .add(dataChildPath)                 //imgpath
-                .add(new JsonArray().toString())    //new ArrayList<Integer>()
-                .add(0)                             //img_depth
-                .add(0)                             //imgX
-                .add(0)                             //imgY
-                .add(0)                             //imgW
-                .add(0)                             //imgH
-                .add(0)                             //file_size
-                .add(0)
-                .add(0);
-
-        jdbcClient.queryWithParams(AnnotationQuery.getCreateData(), params, fetch -> {
-
-            if (fetch.succeeded())
-            {
-                loader.pushFileSysNewUUIDList(UUID);
-            }
-            else
-            {
-                log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-            }
-
-            loader.updateFileSysLoadingProgress(currentProcessedLength);
-        });
+                    loader.updateFileSysLoadingProgress(currentProcessedLength);
+                });
     }
 
 
-
-
-    public static void updateUUIDFromReloading(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file)
+    public static void updateUUIDFromReloading(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -177,22 +176,24 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         String uuid = UUIDGenerator.generateUUID();
 
-        JsonArray params = new JsonArray()
-                .add(uuid) //uuid
-                .add(projectID) //projectid
-                .add(dataSubPath) //imgpath
-                .add(new JsonArray().toString()) //new ArrayList<Integer>()
-                .add(0) //img_depth
-                .add(0) //imgX
-                .add(0) //imgY
-                .add(0) //imgW
-                .add(0) //imgH
-                .add(0) //file_size
-                .add(0)
-                .add(0);
+        Tuple params = Tuple.of(uuid,                     //uuid
+                                projectID,                //projectid
+                                dataSubPath,              //imgpath
+                                newJsonArray().toString(),//new ArrayList<Integer>()
+                                0,                        //img_depth
+                                0,                        //imgX
+                                0,                        //imgY
+                                0,                        //imgW
+                                0,                        //imgH
+                                0,                        //file_size
+                                0,
+                                0);
 
-        jdbcClient.queryWithParams(AnnotationQuery.getCreateData(), params, fetch -> {
 
+        jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
+                .execute(params)
+                .onComplete(fetch -> {
+                  
 
             if (fetch.succeeded())
             {
@@ -207,16 +208,16 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         });
     }
 
-    public static void createUUIDIfNotExist(@NonNull JDBCClient jdbcClient, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+    public static void createUUIDIfNotExist(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        JsonArray params = new JsonArray().add(file.getAbsolutePath()).add(projectID);
+        Tuple params = Tuple.of(file.getAbsolutePath(), projectID);
 
-        jdbcClient.queryWithParams(AnnotationQuery.getRetrieveDataUuid(), params, fetch -> {
-
-            if(fetch.succeeded())
-            {
+        jdbcPool.preparedQuery(AnnotationQuery.getRetrieveDataUuid())
+                .execute(params)
+                .onComplete(fetch -> {
+                  
                 ResultSet resultSet = fetch.result();
 
                 //not exist , create data point
@@ -237,7 +238,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                     loader.getDbListBuffer().remove(uuid);
 
-
                 }
 
                 loader.updateReloadingProgress(currentProcessedLength);
@@ -247,100 +247,78 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
 
 
-    public void deleteProjectUUIDListwithProjectID(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
+    public void deleteProjectUUIDListwithProjectID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
-        JsonArray params = new JsonArray().add(projectID);
+        Tuple params = Tuple.of(projectID);
 
-        jdbcClient.queryWithParams(AnnotationQuery.getDeleteProjectUuidListWithProjectId(), params, fetch -> {
-
-            if (fetch.succeeded())
-            {
-                message.reply(ReplyHandler.getOkReply());
-            }
-            else
-            {
-                log.debug("Failure in deleting uuid list from Annotation Verticle");
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
+        jdbcPool.preparedQuery(query)
+                .execute(params)
+                .onComplete(fetch -> {
+                    if (fetch.succeeded())
+                    {
+                        message.replyAndRequest(ReplyHandler.getOkReply());
+                    }
+                    else
+                    {
+                        log.debug("Failure in deleting uuid list from Annotation Verticle");
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
     }
 
-    public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
+    public void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
     {
         String projectID =  message.body().getString(ParamConfig.getProjectIdParam());
         JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
 
-        List<String> oriUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
-
-        List<String> successUUIDList = new ArrayList<>();
-        List<String> failedUUIDList = new ArrayList<>();
-
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
         List<String> dbUUIDList = loader.getUuidListFromDatabase();
 
-        for (String UUID : oriUUIDList)
-        {
-            if (dbUUIDList.contains(UUID))
-            {
-                JsonArray params = new JsonArray().add(projectID).add(UUID);
+        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
+        String uuidQueryParam = String.join(",", deleteUUIDList);
 
-                successUUIDList.add(UUID);
+        Tuple params = Tuple.of(projectID, uuidQueryParam);
 
-                jdbcClient.queryWithParams(AnnotationQuery.getDeleteProjectUuidList(), params, fetch -> {
-
-                    if (!fetch.succeeded())
+        jdbcPool.preparedQuery(query)
+                .execute(params)
+                .onComplete(fetch -> {
+                    if (fetch.succeeded())
                     {
-                        log.debug("Failure in deleting uuid " + UUID + " in project " + projectID);
+                        if (dbUUIDList.removeAll(deleteUUIDList))
+                        {
+                            loader.setUuidListFromDatabase(dbUUIDList);
+
+                            List<String> sanityUUIDList = loader.getSanityUUIDList();
+                            if (sanityUUIDList.removeAll(deleteUUIDList))
+                            {
+                                loader.setSanityUUIDList(sanityUUIDList);
+                            }
+                            else
+                            {
+                                log.info("Error in removing uuid list");
+                            }
+
+                            //update Portfolio Verticle
+                            PortfolioVerticle.updateFileSystemUUIDList(projectID);
+
+                            message.replyAndRequest(ReplyHandler.getOkReply().put(ParamConfig.getUUIDListParam(), "[]"));
+                        }
+                        else
+                        {
+                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
+                        }
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                     }
                 });
-            }
-            else
-            {
-                failedUUIDList.add(UUID);
-            }
-        }
+   }   
 
-        String deleteUUIDListQuery = AnnotationQuery.getDeleteProjectUuidList() + "(" + String.join(",", successUUIDList) + ")";
-
-        JsonArray params = new JsonArray().add(projectID);
-
-        jdbcClient.queryWithParams(deleteUUIDListQuery, params, fetch -> {
-
-            if (!fetch.succeeded())
-            {
-                log.debug("Failure in deleting uuids in project " + projectID);
-            }
-        });
-
-        if (dbUUIDList.removeAll(successUUIDList))
-        {
-            loader.setUuidListFromDatabase(dbUUIDList);
-
-            List<String> sanityUUIDList = loader.getSanityUUIDList();
-            if (sanityUUIDList.removeAll(successUUIDList))
-            {
-                loader.setSanityUUIDList(sanityUUIDList);
-            }
-            else
-            {
-                log.info("Error in removing uuid list");
-            }
-
-            //update Portfolio Verticle
-            PortfolioVerticle.updateFileSystemUUIDList(projectID);
-
-            message.reply(ReplyHandler.getOkReply().put(ParamConfig.getUuidListParam(), failedUUIDList));
-        }
-        else
-        {
-            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-        }
-    }
-
-    public void updateData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
-    {
+   public void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+   {
         JsonObject requestBody = message.body();
 
         try
@@ -349,95 +327,100 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam()).encode();
 
-            JsonArray params = new JsonArray()
-                    .add(annotationContent)
-                    .add(requestBody.getInteger(ParamConfig.getImgDepth()))
-                    .add(requestBody.getInteger(ParamConfig.getImgXParam()))
-                    .add(requestBody.getInteger(ParamConfig.getImgYParam()))
-                    .add(requestBody.getDouble(ParamConfig.getImgWParam()))
-                    .add(requestBody.getDouble(ParamConfig.getImgHParam()))
-                    .add(requestBody.getInteger(ParamConfig.getFileSizeParam()))
-                    .add(requestBody.getInteger(ParamConfig.getImgOriWParam()))
-                    .add(requestBody.getInteger(ParamConfig.getImgOriHParam()))
-                    .add(requestBody.getString(ParamConfig.getUuidParam()))
-                    .add(projectID);
+            Tuple params = Tuple.of(annotationContent,
+                                    requestBody.getInteger(ParamConfig.getImageDepth()),
+                                    requestBody.getInteger(ParamConfig.getImageXParam()),
+                                    requestBody.getInteger(ParamConfig.getImageYParam()),
+                                    requestBody.getDouble(ParamConfig.getImageWParam()),
+                                    requestBody.getDouble(ParamConfig.getImageHParam()),
+                                    requestBody.getInteger(ParamConfig.getFileSizeParam()),
+                                    requestBody.getInteger(ParamConfig.getImageORIWParam()),
+                                    requestBody.getInteger(ParamConfig.getImageORIHParam()),
+                                    requestBody.getString(ParamConfig.getUUIDParam()),
+                                    projectID);
 
-
-            jdbcClient.queryWithParams(AnnotationQuery.getUpdateData(), params, fetch -> {
-
-                if (fetch.succeeded())
-                {
-                    message.reply(ReplyHandler.getOkReply());
-                }
-                else
-                {
-                    message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                }
-            });
+            jdbcPool.preparedQuery(query)
+                    .execute(params)
+                    .onComplete(fetch -> {
+                        if (fetch.succeeded())
+                        {
+                            message.replyAndRequest(ReplyHandler.getOkReply());
+                        }
+                        else
+                        {
+                            message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                        }
+                    });
         }
         catch (Exception e)
         {
             log.info("AnnotationVerticle: " + message.body().toString());
             String messageInfo = "Error occur when updating data, " + e;
-            message.reply(ReplyHandler.reportBadParamError(messageInfo));
+            message.replyAndRequest(ReplyHandler.reportBadParamError(messageInfo));
         }
     }
 
-    public void retrieveData(Message<JsonObject> message, @NonNull JDBCClient jdbcClient)
+    public void retrieveData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
         String projectID =  message.body().getString(ParamConfig.getProjectIdParam());
         String uuid = message.body().getString(ParamConfig.getUuidParam());
 
-        JsonArray params = new JsonArray().add(uuid).add(projectID);
+        Tuple params = Tuple.of(uuid,projectID);
+        
+        jdbcPool.preparedQuery(query)
+                .execute(params)
+                .onComplete(fetch -> {
 
-        jdbcClient.queryWithParams(AnnotationQuery.getRetrieveData(), params, fetch -> {
-
-            if (fetch.succeeded())
-            {
-                ResultSet resultSet = fetch.result();
-
-                if (resultSet.getNumRows() == 0)
+                if (fetch.succeeded())
                 {
-                    log.info("Project id: " + params.getInteger(1));
+                    RowSet<Row> rowSet = fetch.result();
 
-                    String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
-                    message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                    if (rowSet.size() == 0)
+                    {
+                        log.info("Project id: " + params.getInteger(1));
+
+                        String userDefinedMessage = "Data not found when retrieving for project " + projectName + " with uuid " + uuid;
+                        message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
+                    }
+                    else
+                    {
+                        for(Row row : rowSet)
+                        {
+                             Integer counter = 0;
+                            String dataSubPath = row.getString(counter++);
+                            String dataFullPath = AnnotationVerticle.getDataFullPath(projectID, dataSubPath).getAbsolutePath();
+                            
+
+                            Map<String, String> imgData = ImageHandler.getThumbNail(dataPath);
+
+                            JsonObject response = ReplyHandler.getOkReply();
+
+                            response.put(ParamConfig.getUUIDParam(), uuid);
+                            response.put(ParamConfig.getProjectNameParam(), projectName);
+                            
+                            response.put(ParamConfig.getImagePathParam(), dataFullPath);
+                            response.put(ParamConfig.getAnnotationParam(annotationType), new JsonArray(row.getString(counter++)));
+                            response.put(ParamConfig.getImageDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImageDepth())));
+                            response.put(ParamConfig.getImageXParam(), row.getInteger(counter++));
+                            response.put(ParamConfig.getImageYParam(), row.getInteger(counter++));
+                            response.put(ParamConfig.getImageWParam(), row.getDouble(counter++));
+                            response.put(ParamConfig.getImageHParam(), row.getDouble(counter++));
+                            response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter++));
+                            response.put(ParamConfig.getImageORIWParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIWParam())));
+                            response.put(ParamConfig.getImageORIHParam(), Integer.parseInt(imgData.get(ParamConfig.getImageORIHParam())));
+                            response.put(ParamConfig.getImageThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
+                            message.replyAndRequest(response);
+                        }
+                    }
                 }
                 else
                 {
-                    JsonArray row = resultSet.getResults().get(0);
-
-                    Integer counter = 0;
-                    String dataSubPath = row.getString(counter++);
-                    String dataFullPath = AnnotationVerticle.getDataFullPath(projectID, dataSubPath).getAbsolutePath();
-
-                    Map<String, String> imgData = ImageHandler.getThumbNail(dataFullPath);
-
-                    JsonObject response = ReplyHandler.getOkReply();
-
-                    response.put(ParamConfig.getUuidParam(), uuid);
-                    response.put(ParamConfig.getProjectNameParam(), projectName);
-
-                    response.put(ParamConfig.getImgPathParam(), dataFullPath);
-                    response.put(ParamConfig.getAnnotationParam(), new JsonArray(row.getString(counter++)));
-                    response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-                    response.put(ParamConfig.getImgXParam(), row.getInteger(counter++));
-                    response.put(ParamConfig.getImgYParam(), row.getInteger(counter++));
-                    response.put(ParamConfig.getImgWParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getImgHParam(), row.getDouble(counter++));
-                    response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter));
-                    response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
-                    response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
-                    response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
-                    message.reply(response);
+                    String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
+                    message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                 }
-            }
-            else
-            {
-                String userDefinedMessage = "Failure in data retrieval for project " + projectName + " with uuid " + uuid;
-                message.reply(ReplyHandler.reportUserDefinedError(userDefinedMessage));
-            }
-        });
+              });
     }
+
+
 }

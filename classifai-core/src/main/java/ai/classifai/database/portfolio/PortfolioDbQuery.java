@@ -39,7 +39,7 @@ public class PortfolioDbQuery
 
     @Getter private static final String loadDbProject = "SELECT project_id, project_name, annotation_type, project_path, label_list, uuid_list, is_new FROM Portfolio";
 
-    @Getter private static final String retrieveAllProjectsForAnnotationType =  "SELECT project_name FROM Portfolio WHERE annotation_type = ?";
+    @Getter private static final String retrieveAllProjectsForAnnotationType = "SELECT project_name FROM Portfolio WHERE annotation_type = ? ORDER BY project_name";
 
     //V2
     @Getter private static final String retrieveProjectMetadata = "SELECT project_name, project_path, uuid_list, is_new, is_starred, created_date FROM Portfolio WHERE project_id = ?";

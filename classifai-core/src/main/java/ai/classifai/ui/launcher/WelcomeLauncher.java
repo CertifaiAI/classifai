@@ -47,7 +47,7 @@ import static javax.swing.JOptionPane.showMessageDialog;
 public class WelcomeLauncher extends JFrame
 {
     private static JFrame mainFrame;
-    private static final String BUTTON_PATH = "/console/" ;
+    private static final String BUTTON_PATH = "/console/";
     private static final String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler.jpg";
     private static final String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
     private static final String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
@@ -97,13 +97,14 @@ public class WelcomeLauncher extends JFrame
 
     public static void configure()
     {
-        LookFeelSetter.setLightMode(); //light mode for welcome launcher to prevent around buttons
-
         setUpFrame();
         setRunningStatus(RunningStatus.STARTING);
+
+        LookFeelSetter.setLightMode(); //hack to prevent rim around the button
         setUpOpenButton();
         setUpConverterButton();
         setUpLogButton();
+        LookFeelSetter.setDarkMode(); //hack to prevent rim around the button
 
         setUpBackground();
 
@@ -171,8 +172,6 @@ public class WelcomeLauncher extends JFrame
     {
         if (converterLauncher == null)
         {
-            LookFeelSetter.setDarkMode();
-
             converterLauncher = new ConverterLauncher();
         }
     }

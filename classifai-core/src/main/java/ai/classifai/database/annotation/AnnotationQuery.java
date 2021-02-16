@@ -22,7 +22,6 @@ import lombok.Getter;
  *
  * @author codenamewei
  */
-@Getter
 public class AnnotationQuery
 {
     @Getter private static final String createProject = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, project_id UUID, img_path VARCHAR(2000), annotation CLOB, img_depth INT, " +
@@ -40,7 +39,7 @@ public class AnnotationQuery
 
     @Getter private static final String DeleteProjectUuidListWithProjectId = "DELETE FROM Project WHERE project_id = ?";
 
-    @Getter private static final String deleteProjectUuidList = "DELETE FROM Project WHERE project_id = ? AND uuid = ?";
+    @Getter private static final String deleteProjectUuidList = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
 
     @Getter private static final String retrieveAllProjects = "SELECT * FROM Project";
 

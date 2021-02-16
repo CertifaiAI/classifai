@@ -20,6 +20,7 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.router.EndpointRouter;
+import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -52,9 +53,11 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
-        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
+        if(!ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode(); //to align dark mode for windows
 
         DbOps.configureDatabase();
+
+        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
         Promise<String> portfolioDeployment = Promise.promise();
         vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
@@ -69,7 +72,6 @@ public class MainVerticle extends AbstractVerticle
 
             Promise<String> segDeployment = Promise.promise();
             vertx.deployVerticle(segVerticle, segDeployment);
-
             return segDeployment.future();
 
         }).compose(id_ -> {
@@ -87,7 +89,7 @@ public class MainVerticle extends AbstractVerticle
                 LogoLauncher.print();
 
                 log.info("Classifai started successfully");
-                log.info("Go on and open http://localhost:" + config().getInteger("http.port"));
+                log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
 
                 //docker environment not enabling welcome launcher
                 if (!ParamConfig.isDockerEnv())
