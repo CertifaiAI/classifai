@@ -54,6 +54,8 @@ public class ParamConfig
     @Getter private static final String annotationTypeParam = "annotation_type";
     @Getter private static final String annotationParam = "annotation";
 
+    @Getter private static final String boundingBoxParam = "bnd_box";
+    @Getter private static final String segmentationParam = "polygons";
 
     @Getter private static final String totalUuidParam = "total_uuid";
     @Getter private static final String uuidListParam = "uuid_list";

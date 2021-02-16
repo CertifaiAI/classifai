@@ -325,7 +325,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
    }   
 
-   public void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+   public void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String annotationKey)
    {
         JsonObject requestBody = message.body();
 
@@ -333,7 +333,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         {
             String projectId = requestBody.getString(ParamConfig.getProjectIdParam());
 
-            String annotationContent = requestBody.getJsonArray(ParamConfig.getAnnotationParam()).encode();
+            String annotationContent = requestBody.getJsonArray(annotationKey).encode();
 
             Tuple params = Tuple.of(annotationContent,
                                     requestBody.getInteger(ParamConfig.getImgDepth()),
@@ -368,7 +368,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void queryData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+    public void queryData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String annotationKey)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
         String projectID =  message.body().getString(ParamConfig.getProjectIdParam());
@@ -408,7 +408,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         response.put(ParamConfig.getProjectNameParam(), projectName);
 
                         response.put(ParamConfig.getImgPathParam(), dataFullPath);
-                        response.put(ParamConfig.getAnnotationParam(), new JsonArray(row.getString(counter++)));
+                        response.put(annotationKey, new JsonArray(row.getString(counter++)));
                         response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
                         response.put(ParamConfig.getImgXParam(), row.getInteger(counter++));
                         response.put(ParamConfig.getImgYParam(), row.getInteger(counter++));

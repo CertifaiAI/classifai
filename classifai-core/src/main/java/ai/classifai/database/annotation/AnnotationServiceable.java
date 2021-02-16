@@ -28,13 +28,13 @@ import lombok.NonNull;
  */
 public interface AnnotationServiceable
 {
-    void queryData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
+    void queryData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String annotationKey);
+
+    void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String annotationKey);
 
     void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
     void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
-
-    void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
     void deleteProject(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 

@@ -56,11 +56,11 @@ public class BoundingBoxVerticle extends AnnotationVerticle
 
         if (action.equals(AnnotationQuery.getQueryData()))
         {
-            this.queryData(message, jdbcPool);
+            this.queryData(message, jdbcPool, ParamConfig.getBoundingBoxParam());
         }
         else if (action.equals(AnnotationQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcPool);
+            this.updateData(message, jdbcPool, ParamConfig.getBoundingBoxParam());
         }
         else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
         {
