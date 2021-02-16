@@ -152,6 +152,9 @@ Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.co
 ```
 java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 ```
+#### Installation using Docker
+Classifai can be installed using Docker and supported on window, mac and linux operating system.
+For docker details documentation can be reached [here](https://app.gitbook.com/@skymind/s/classifai/~/drafts/-MTGuv0ulLx_GSJxgvPI/v/dev/product/installation/installation-using-docker).
 
 ## Learn More
 
