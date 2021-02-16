@@ -28,7 +28,7 @@ import lombok.NonNull;
  */
 public interface AnnotationServiceable
 {
-    void retrieveData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
+    void queryData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
     void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
@@ -36,5 +36,7 @@ public interface AnnotationServiceable
 
     void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
-    void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
+    void deleteProject(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
+
+    void deleteSelectionUuidList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 }

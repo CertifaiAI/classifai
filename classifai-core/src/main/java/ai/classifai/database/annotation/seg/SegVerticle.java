@@ -53,9 +53,9 @@ public class SegVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(AnnotationQuery.getRetrieveData()))
+        if (action.equals(AnnotationQuery.getQueryData()))
         {
-            this.retrieveData(message, jdbcPool);
+            this.queryData(message, jdbcPool);
         }
         else if (action.equals(AnnotationQuery.getUpdateData()))
         {
@@ -69,13 +69,13 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.loadValidProjectUUID(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.getDeleteProjectUuidListWithProjectId()))
+        else if (action.equals(AnnotationQuery.getDeleteProject()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcPool);
+            this.deleteProject(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.getDeleteProjectUuidList()))
+        else if (action.equals(AnnotationQuery.getDeleteSelectionUuidList()))
         {
-            this.deleteProjectUUIDList(message, jdbcPool);
+            this.deleteSelectionUuidList(message, jdbcPool);
         }
         else
         {

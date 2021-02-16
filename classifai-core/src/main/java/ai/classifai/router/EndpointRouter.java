@@ -731,7 +731,7 @@ public class EndpointRouter extends AbstractVerticle
                 .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getThumbnail(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getRetrieveData(), request);
+        getThumbnail(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getQueryData(), request);
     }
 
     /**
@@ -750,7 +750,7 @@ public class EndpointRouter extends AbstractVerticle
                 .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.getRetrieveData(), request);
+        getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.getQueryData(), request);
     }
 
     private void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
@@ -1146,7 +1146,7 @@ public class EndpointRouter extends AbstractVerticle
     private void deleteBndBoxProject(RoutingContext context)
     {
         //delete in Portfolio Table
-        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteProjectUuidListWithProjectId(), AnnotationType.BOUNDINGBOX);
+        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteProject(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -1160,7 +1160,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProject(RoutingContext context)
     {
-        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteProjectUuidListWithProjectId(), AnnotationType.SEGMENTATION);
+        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteProject(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProject(RoutingContext context, String queue, String query,  AnnotationType type)
@@ -1227,7 +1227,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteBndBoxProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteProjectUuidList(), AnnotationType.BOUNDINGBOX);
+        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteSelectionUuidList(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -1241,7 +1241,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void deleteSegProjectUUID(RoutingContext context)
     {
-        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteProjectUuidList(), AnnotationType.SEGMENTATION);
+        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteSelectionUuidList(), AnnotationType.SEGMENTATION);
     }
 
     private void deleteProjectUUID(RoutingContext context, String queue, String query, AnnotationType annotationType)
