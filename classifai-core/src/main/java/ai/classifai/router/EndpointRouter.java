@@ -852,7 +852,7 @@ public class EndpointRouter extends AbstractVerticle
 
             try
             {
-                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                JsonObject jsonObject = h.toJsonObject();
                 jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
                 vertx.eventBus().request(BoundingBoxDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
@@ -893,7 +893,7 @@ public class EndpointRouter extends AbstractVerticle
             DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), SegDbQuery.getUpdateData());
 
             try {
-                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                JsonObject jsonObject = h.toJsonObject();
                 jsonObject.put(ParamConfig.getProjectIdParam(), ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
 
                 vertx.eventBus().request(SegDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
@@ -959,7 +959,7 @@ public class EndpointRouter extends AbstractVerticle
         {
             try
             {
-                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                JsonObject jsonObject = h.toJsonObject();
 
                 jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
@@ -1012,7 +1012,7 @@ public class EndpointRouter extends AbstractVerticle
         {
             try
             {
-                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+                JsonObject jsonObject = h.toJsonObject();
 
                 if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
                 {
@@ -1063,7 +1063,7 @@ public class EndpointRouter extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+            JsonObject jsonObject = h.toJsonObject();
 
             jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
@@ -1254,7 +1254,7 @@ public class EndpointRouter extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            io.vertx.core.json.JsonObject request = ConversionHandler.json2JSONObject(h.toJson());
+            JsonObject request = h.toJsonObject();
 
             JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
 
