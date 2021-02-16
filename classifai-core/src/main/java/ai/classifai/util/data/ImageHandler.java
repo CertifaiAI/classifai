@@ -429,7 +429,7 @@ public class ImageHandler {
         {
             if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
-                BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcClient(), projectID, dataList.get(i), i + 1);
+                BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcPool(), projectID, dataList.get(i), i + 1);
             }
             else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
             {

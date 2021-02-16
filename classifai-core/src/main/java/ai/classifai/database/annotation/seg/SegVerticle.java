@@ -73,7 +73,7 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.deleteProjectUUIDListwithProjectID(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
+        else if (action.equals(AnnotationQuery.getDeleteProjectUuidList()))
         {
             this.deleteProjectUUIDList(message, jdbcPool);
         }
@@ -120,7 +120,7 @@ public class SegVerticle extends AnnotationVerticle
             }
             else
             {
-                jdbcPool.query(SegDbQuery.createProject())
+                jdbcPool.query(SegDbQuery.getCreateProject())
                         .execute()
                         .onComplete(create -> {
                                 if (create.failed())

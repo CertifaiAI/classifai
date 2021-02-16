@@ -47,33 +47,33 @@ public class ParamConfig
     @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
     @Getter private static final String logFilePath = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
 
-    @Getter private static final String projectNameParam = "project_name"; //"projectName";
-    @Getter private static final String projectIdParam = "project_id"; //"projectId";
-    @Getter private static final String projectPathParam = "project_path"; //"projectId";
+    @Getter private static final String projectNameParam = "project_name";
+    @Getter private static final String projectIdParam = "project_id";
+    @Getter private static final String projectPathParam = "project_path";
 
-    @Getter private static final String annotationTypeParam = "annotation_type"; //"annotationType";
+    @Getter private static final String annotationTypeParam = "annotation_type";
     @Getter private static final String annotationParam = "annotation";
 
 
-    @Getter private static final String totalUuidParam = "total_uuid"; //"totalUuid";
-    @Getter private static final String uuidListParam = "uuid_list"; //"uuidList";
-    @Getter private static final String labelListParam = "label_list"; //"labelList";
+    @Getter private static final String totalUuidParam = "total_uuid";
+    @Getter private static final String uuidListParam = "uuid_list";
+    @Getter private static final String labelListParam = "label_list";
 
     @Getter private static final String uuidParam = "uuid";
-    @Getter private static final String imgPathParam = "img_path"; //"imgPath";
+    @Getter private static final String imgPathParam = "img_path";
 
-    @Getter private static final String imgSrcParam = "img_src"; //"imgSrc";
+    @Getter private static final String imgSrcParam = "img_src";
 
-    @Getter private static final String imgXParam = "img_x"; //"imgX";
-    @Getter private static final String imgYParam = "img_y"; //"imgY";
+    @Getter private static final String imgXParam = "img_x";
+    @Getter private static final String imgYParam = "img_y";
 
-    @Getter private static final String imgWParam = "img_w"; //"imgW";
-    @Getter private static final String imgHParam = "img_h"; //"imgH";
-    @Getter private static final String imgOriWParam = "img_ori_w"; //"imgOriW";
-    @Getter private static final String imgOriHParam = "img_ori_h"; //"imgOriH";
+    @Getter private static final String imgWParam = "img_w";
+    @Getter private static final String imgHParam = "img_h";
+    @Getter private static final String imgOriWParam = "img_ori_w";
+    @Getter private static final String imgOriHParam = "img_ori_h";
 
-    @Getter private static final String imgDepth = "img_depth"; //"imgDepth";
-    @Getter private static final String fileSizeParam = "file_size"; //"fileSize";
+    @Getter private static final String imgDepth = "img_depth";
+    @Getter private static final String fileSizeParam = "file_size";
 
     @Getter private static final String fileParam = "file";
     @Getter private static final String folderParam = "folder";
@@ -83,15 +83,15 @@ public class ParamConfig
     @Getter private static final String progressMetadata = "progress";
 
     //v2
-    @Getter private static final String isNewParam = "is_new"; //"isNew";
-    @Getter private static final String isStarredParam = "is_starred"; //"isStarred";
-    @Getter private static final String isLoadedParam = "is_loaded"; //"isLoaded";
-    @Getter private static final String createdDateParam = "created_date"; //"createdDate";
+    @Getter private static final String isNewParam = "is_new";
+    @Getter private static final String isStarredParam = "is_starred";
+    @Getter private static final String isLoadedParam = "is_loaded";
+    @Getter private static final String createdDateParam = "created_date";
 
     @Getter private static final String statusParam = "status";
 
     //keyword to retrieve image thumbnail
-    @Getter private static final String imgThumbnailParam = "img_thumbnail"; //"imgThumbnail";
+    @Getter private static final String imgThumbnailParam = "img_thumbnail";
     @Getter private static final String base64Param = "base64";
 
     //Common name when performing data migration

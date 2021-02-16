@@ -73,7 +73,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.deleteProjectUUIDListwithProjectID(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
+        else if (action.equals(AnnotationQuery.getDeleteProjectUuidList()))
         {
             this.deleteProjectUUIDList(message, jdbcPool);
         }
@@ -119,7 +119,7 @@ public class BoundingBoxVerticle extends AnnotationVerticle
             }
             else
             {
-                jdbcPool.query(BoundingBoxDbQuery.createProject())
+                jdbcPool.query(BoundingBoxDbQuery.getCreateProject())
                         .execute()
                         .onComplete(create -> {
                             if (create.failed())

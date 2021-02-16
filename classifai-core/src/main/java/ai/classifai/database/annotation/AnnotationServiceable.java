@@ -34,7 +34,7 @@ public interface AnnotationServiceable
 
     void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
-    void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query);
+    void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
     void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 }
