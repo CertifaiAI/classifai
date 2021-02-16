@@ -1334,7 +1334,6 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/bndbox/projects/:project_name/export").handler(this::exportV2BndBoxProject);
 
 
-
         //*******************************Segmentation*******************************
 
         router.get("/seg/projects").handler(this::getAllSegProjects);
