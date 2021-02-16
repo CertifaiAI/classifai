@@ -59,7 +59,7 @@ public class ConverterFolderSelector {
                         }
                     };
 
-                    chooser.setCurrentDirectory(ParamConfig.getFileSysRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
                     chooser.setDialogTitle("Select Directory");
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     int res = chooser.showOpenDialog(frame);

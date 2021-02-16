@@ -216,9 +216,9 @@ public class ImageHandler {
 
 
             Map<String, String> imageData = new HashMap<>();
-            imageData.put(ParamConfig.getImageDepth(), Integer.toString(depth));
-            imageData.put(ParamConfig.getImageORIHParam(), Integer.toString(oriHeight));
-            imageData.put(ParamConfig.getImageORIWParam(), Integer.toString(oriWidth));
+            imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
+            imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
+            imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
             imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
             return imageData;
@@ -253,8 +253,6 @@ public class ImageHandler {
 
         return null;
     }
-
-
 
 
     private static boolean isImageFileValid(String file)
@@ -306,9 +304,8 @@ public class ImageHandler {
     public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesCollection)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-        Set<String> uuidSet = new HashSet<>(loader.getSanityUUIDList());
 
-        loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesCollection.size());
 
         Integer annotationTypeInt = loader.getAnnotationType();
@@ -317,20 +314,18 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
-                String uuid = UUIDGenerator.generateUUID(uuidSet);
-                uuidSet.add(uuid);
+                String uuid = UUIDGenerator.generateUUID();
 
-                AnnotationVerticle.updateUUID(BoundingBoxVerticle.getJdbcPool(), AnnotationQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
+                AnnotationVerticle.updateUUID(BoundingBoxVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
             for (int i = 0; i < filesCollection.size(); ++i)
             {
-                String uuid = UUIDGenerator.generateUUID(uuidSet);
-                uuidSet.add(uuid);
-
-                AnnotationVerticle.updateUUID(SegVerticle.getJdbcPool(), AnnotationQuery.createData(), projectID, filesCollection.get(i), uuid, i + 1);
+                String uuid = UUIDGenerator.generateUUID();
+            
+                AnnotationVerticle.updateUUID(SegVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
     }
@@ -350,18 +345,20 @@ public class ImageHandler {
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
         List<File> totalFilelist = new ArrayList<>();
-        Stack<File> folderStack = new Stack<>();
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
         String[] fileExtension = ImageFileType.getImageFileTypes();
-        java.util.List<File> checkFileFormat = FileHandler.processFolder(rootPath, fileExtension);
+        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
 
-        folderStack.push(rootPath);
-
-        if (checkFileFormat.isEmpty())
+        if (dataList.isEmpty())
         {
-            loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
             return;
         }
+
+        Stack<File> folderStack = new Stack<>();
+        folderStack.push(rootPath);
 
         while (folderStack.isEmpty() != true)
         {
@@ -381,9 +378,63 @@ public class ImageHandler {
                     totalFilelist.addAll(files);
                 }
             }
-
         }
 
         saveToDatabase(projectID, totalFilelist);
+    }
+
+    /*
+    search through rootpath and check if list of files exists
+    scenario 1: root file missing
+    scenario 2: files missing - removed from ProjectLoader
+    scenario 3: existing uuids previously missing from current paths, but returns to the original paths
+    scenario 4: adding new files
+    scenario 5: evrything stills the same
+    */
+    public static void recheckProjectRootPath(@NonNull String projectID)
+    {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
+        File rootPath = new File(loader.getProjectPath());
+        //scenario 1
+        if(!rootPath.exists())
+        {
+            loader.setSanityUUIDList(new ArrayList<>());
+            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+
+            log.info("Project home path of " + rootPath.getAbsolutePath() + " is missing.");
+            return;
+        }
+
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
+
+        //Scenario 2 - 1: root path exist but all images missing
+        if(dataList.isEmpty())
+        {
+            loader.getSanityUUIDList().clear();
+            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+            return;
+        }
+
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+
+        loader.setFileSysTotalUUIDSize(dataList.size());
+
+        //scenario 2 - 5
+
+        for(int i = 0; i < dataList.size(); ++i)
+        {
+            if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
+            {
+                BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcClient(), projectID, dataList.get(i), i + 1);
+            }
+            else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
+            {
+                //TODO
+            }
+        }
     }
 }

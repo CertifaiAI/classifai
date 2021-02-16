@@ -81,6 +81,11 @@ public class FileHandler
         return false;
     }
 
+    public static String trimPath(String rootPath, String fullPath)
+    {
+        return fullPath.substring(rootPath.length());
+    }
+
     public static String getAbsolutePath(@NonNull File filePath)
     {
         String fullPath = filePath.getAbsolutePath();

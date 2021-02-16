@@ -20,7 +20,6 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.Promise;
@@ -54,29 +53,29 @@ public class SegVerticle extends AnnotationVerticle
         }
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(SegDbQuery.retrieveData()))
+        if (action.equals(AnnotationQuery.getRetrieveData()))
         {
-            this.retrieveData(message, jdbcPool, SegDbQuery.retrieveData(), AnnotationType.SEGMENTATION);
+            this.retrieveData(message, jdbcPool);
         }
-        else if (action.equals(SegDbQuery.updateData()))
+        else if (action.equals(AnnotationQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcPool, SegDbQuery.updateData(), AnnotationType.SEGMENTATION);
+            this.updateData(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.retrieveDataPath()))
+        else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcPool, AnnotationQuery.retrieveDataPath());
+            this.retrieveDataPath(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.loadValidProjectUUID()))
+        else if (action.equals(AnnotationQuery.getLoadValidProjectUUID()))
         {
-            this.loadValidProjectUUID(message, jdbcPool, AnnotationQuery.loadValidProjectUUID());
+            this.loadValidProjectUUID(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.deleteProjectUUIDListwithProjectID()))
+        else if (action.equals(AnnotationQuery.getDeleteProjectUuidListWithProjectId()))
         {
-            this.deleteProjectUUIDListwithProjectID(message, jdbcPool, AnnotationQuery.deleteProjectUUIDListwithProjectID());
+            this.deleteProjectUUIDListwithProjectID(message, jdbcPool);
         }
         else if (action.equals(AnnotationQuery.deleteProjectUUIDList()))
         {
-            this.deleteProjectUUIDList(message, jdbcPool, AnnotationQuery.deleteProjectUUIDList());
+            this.deleteProjectUUIDList(message, jdbcPool);
         }
         else
         {

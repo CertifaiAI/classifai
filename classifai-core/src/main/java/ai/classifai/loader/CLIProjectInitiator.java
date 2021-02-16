@@ -16,6 +16,7 @@
 package ai.classifai.loader;
 
 import ai.classifai.util.type.AnnotationType;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,33 +28,13 @@ import java.io.File;
  * @author codenamewei
  */
 @Slf4j
+@Builder
+@Getter
 public class CLIProjectInitiator
 {
-    @Getter private String projectName;
-    @Getter private AnnotationType projectType;
+    private AnnotationType projectType;
+    
+    @Builder.Default private String projectName = new NameGenerator().getNewProjectName();
 
-    @Getter private File rootDataPath;
-
-    public CLIProjectInitiator(AnnotationType type, String projectName)
-    {
-        this(type, projectName, null);
-    }
-
-    public CLIProjectInitiator(AnnotationType type)
-    {
-        this(type, "", null);
-    }
-
-    public CLIProjectInitiator(AnnotationType type, File dataPath)
-    {
-        this(type, "", dataPath);
-    }
-
-    public CLIProjectInitiator(AnnotationType type, String name, File dataPath)
-    {
-        projectType = type;
-        projectName = name.equals("") ? new NameGenerator().getNewProjectName() : name;
-
-        rootDataPath = dataPath;
-    }
+    @Builder.Default private File rootDataPath = null;
 }

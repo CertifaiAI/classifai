@@ -1,43 +1,31 @@
 {
-  "modal": {
-    "header": "Classifai Image labelling Tool",
-    "existing": {
-      "header": "From Existing Project",
-      "label": "Project Name : ",
-      "option" : "none",
-      "button": "Submit"
+    "modal": {
+        "header": "Classifai Image labelling Tools",
+        "existing": {
+            "header": "From Existing Project",
+            "label": "Project Name : ",
+            "option": "none",
+            "button": "Submit"
+        },
+        "create": {
+            "header": "Create New Project",
+            "label": "New Project Name : ",
+            "inputPlaceholder": "your new id ....",
+            "subLabel": "Label List File (*.txt): ",
+            "button": "Create"
+        }
     },
-    "create": {
-      "header": "Create New Project",
-      "label": "New Project Name : ",
-      "inputPlaceholder": "your new id ....",
-      "subLabel": "Label List File (*.txt): ",
-      "button": "Create"
+    "loading": "Powered by Skymind",
+    "saveFormat": {
+        "currImg": "Current image",
+        "bulkSaving": "Bulk saving",
+        "pascalVoc": "Pascal VOC",
+        "textOcr": "Text OCR",
+        "label": "Label"
     },
-    "delete":{
-      "header": "Delete Project",
-      "label": "Project Name : ",
-      "button": "Delete",
-      "option": "none"
-    },
-    "delimg":{
-      "header": "Delete Images"
+    "sideNav": {
+        "imgList": "Image List",
+        "labelList": "Label List",
+        "boundBox": "Bounding Box"
     }
-  },
-  "loading": "Powered by Skymind",
-  "saveFormat": {
-    "currImg": "Current image",
-    "bulkSaving": "Bulk saving",
-    "pascalVoc": "Pascal VOC",
-    "textOcr": "Text OCR",
-    "label": "Label"
-  },
-  "sideNav": {
-    "imgList": "Image List",
-    "labelList": "Label List",
-    "boundBox": "Bounding Box"
-  },
-  "deleteswitch":{
-    "selectall" : "Select all"
-  }
 }

@@ -28,12 +28,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UUIDGenerator
 {
-    public static String generateUUID(Set<String> uniqueSet)
+    public static String generateUUID()
     {
-        String newID;
-        do {
-            newID = UUID.randomUUID().toString();
-        } while (uniqueSet.contains(newID));
+        String newID = UUID.randomUUID().toString();
 
         return newID;
     }

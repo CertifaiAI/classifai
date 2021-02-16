@@ -15,7 +15,6 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
@@ -29,13 +28,13 @@ import lombok.NonNull;
  */
 public interface AnnotationServiceable
 {
-    void retrieveData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query, AnnotationType annotationType);
+    void retrieveData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
-    void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query);
+    void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
-    void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query);
+    void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
-    void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query, AnnotationType annotationType);
+    void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query);
 
-    void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String query);
+    void deleteProjectUUIDList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 }

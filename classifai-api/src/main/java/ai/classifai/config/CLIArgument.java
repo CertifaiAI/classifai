@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 
-
 /**
  * Command Line Argument Configuration
  *
@@ -75,7 +74,7 @@ public class CLIArgument
             if (arg.contains("--docker"))
             {
                 isDockerEnv = true;
-                ParamConfig.setIsDockerEnv(true);
+                ParamConfig.setDockerEnv(true);
             }
             else if (arg.contains("--port="))
             {
@@ -163,23 +162,34 @@ public class CLIArgument
 
             if (isProjectNameValid)
             {
-                initiator = new CLIProjectInitiator(type, projectName, new File(dataPath));
+                initiator = CLIProjectInitiator.builder()
+                        .projectName(projectName)
+                        .rootDataPath(new File(dataPath))
+                        .projectType(type)
+                        .build();
             }
             else
             {
-                initiator = new CLIProjectInitiator(type, new File(dataPath));
+                initiator = CLIProjectInitiator.builder()
+                        .rootDataPath(new File(dataPath))
+                        .projectType(type)
+                        .build();
             }
-
         }
         else
         {
             if (isProjectNameValid)
             {
-                initiator = new CLIProjectInitiator(type, projectName);
+                initiator = CLIProjectInitiator.builder()
+                        .projectName(projectName)
+                        .projectType(type)
+                        .build();
             }
             else
             {
-                initiator = new CLIProjectInitiator(type);
+                initiator = CLIProjectInitiator.builder()
+                        .projectType(type)
+                        .build();
             }
 
         }

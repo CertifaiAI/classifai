@@ -74,7 +74,7 @@ public class ToolFileSelector{
                         }
                     };
 
-                    chooser.setCurrentDirectory(ParamConfig.getFileSysRootSearchPath());
+                    chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
                     chooser.setFileFilter(imgfilter);
                     chooser.setDialogTitle("Select Files");
                     chooser.setMultiSelectionEnabled(true);
