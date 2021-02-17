@@ -26,7 +26,6 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;

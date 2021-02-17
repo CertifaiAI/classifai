@@ -544,7 +544,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(fetch -> {
 
-
                     if (fetch.succeeded())
                     {
                         List<JsonObject> result = new ArrayList<>();

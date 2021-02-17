@@ -154,7 +154,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             String dataSubPath = row.getString(0);
                             String dataFullPath = getDataFullPath(projectID, dataSubPath).getAbsolutePath();
 
-                            if (ImageHandler.isImageReadable(dataSubPath))
+                            if (ImageHandler.isImageReadable(dataFullPath))
                             {
                                 loader.pushDBValidUUID(UUID);
                             }
@@ -400,7 +400,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         String dataChildPath = row.getString(counter++);
                         String dataFullPath = AnnotationVerticle.getDataFullPath(projectID, dataChildPath).getAbsolutePath();
 
-                        Map<String, String> imgData = ImageHandler.getThumbNail(dataChildPath);
+                        Map<String, String> imgData = ImageHandler.getThumbNail(dataFullPath);
 
                         JsonObject response = ReplyHandler.getOkReply();
 
