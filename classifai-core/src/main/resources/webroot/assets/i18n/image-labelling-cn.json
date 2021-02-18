@@ -24,40 +24,35 @@
       "header": "删除图片（可多个）"
     },
     "info": {
-      "header": "Keyboard Shortcut Information",
+      "header": "快捷键资讯",
       "shortcut": {
-        "tableHeader": {
-          "no": "No",
-          "shortcutKey": "Shortcut Key",
-          "functionality": "Functionality"
-        },
         "1": {
           "key": "Ctrl + Alt",
-          "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected bounding box using arrow keys (left right up down)<br/>Green Light Off: Go to the next/previous image using left right key"
+          "functionality": "开关青灯<br/><br/>青灯亮: 可用箭头键移动边界框<br/>青灯关: 左右箭头键可切换图像"
         },
         "2": {
           "key": "Ctrl + Shift",
-          "functionality": "Toggle between drawing bounding box and moving image"
+          "functionality": "切换移动图像/画边界框"
         },
         "3": {
           "key": "Ctrl + z",
-          "functionality": "Undo the last action"
+          "functionality": "撤销上一步的操作"
         },
         "4": {
           "key": "Ctrl + c",
-          "functionality": "Copy the selected bounding box"
+          "functionality": "复制所选择边界框"
         },
         "5": {
           "key": "Ctrl + v",
-          "functionality": "Paste the selected bounding box"
+          "functionality": "粘贴所选择边界框"
         },
         "6": {
           "key": "Delete/Backspace",
-          "functionality": "Delete a selected bounding box"
+          "functionality": "删除所选择边界框"
         },
         "7": {
-          "key": "Double click on a selected bounding box in the UI",
-          "functionality": "Choose label for the selected bounding box"
+          "key": "双击所选择边界框",
+          "functionality": "选择边界框标签"
         }
       }
     }

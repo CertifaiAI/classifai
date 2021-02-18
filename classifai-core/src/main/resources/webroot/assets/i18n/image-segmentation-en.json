@@ -26,14 +26,9 @@
       "info": {
         "header": "Keyboard Shortcut Information",
         "shortcut": {
-          "tableHeader": {
-            "no": "No",
-            "shortcutKey": "Shortcut Key",
-            "functionality": "Functionality"
-          },
           "1": {
             "key": "Ctrl + Alt",
-            "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected polygon using arrow keys (left right up down)<br/>Green Light Off: Go to the next/previous image using left right key"
+            "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected polygon using arrow keys<br/>Green Light Off: Go to the next/previous image using left right key"
           },
           "2": {
             "key": "Ctrl + Shift",
@@ -56,7 +51,7 @@
             "functionality": "Delete a selected polygon<br/>Delete the last drawing dot (during drawing new polygon)"
           },
           "7": {
-            "key": "Double click on a selected polygon in the UI",
+            "key": "Double click on a selected polygon",
             "functionality": "Choose label for the selected polygon"
           },
           "8": {

@@ -26,14 +26,9 @@
     "info": {
       "header": "Informasi Kekunci Pintasan",
       "shortcut": {
-        "tableHeader": {
-          "no": "No",
-          "shortcutKey": "Kekunci Pintasan",
-          "functionality": "Kefungsian"
-        },
         "1": {
           "key": "Ctrl + Alt",
-          "functionality": "Hidup/matikan lampu hijau<br/><br/>Lampu Hijau Hidup: Gerakkan poligon yang dipilih dengan menggunakan kekunci anak panah (kiri kanan atas bawah)<br/>Lampu Hijau Mati: Pergi ke gambar berikutnya/sebelumnya dengan menggunakan kekunci kiri atau kanan"
+          "functionality": "Hidup/matikan lampu hijau<br/><br/>Lampu Hijau Hidup: Gerakkan poligon yang dipilih dengan menggunakan kekunci anak panah<br/>Lampu Hijau Mati: Pergi ke gambar berikutnya/sebelumnya dengan menggunakan kekunci kiri atau kanan"
         },
         "2": {
           "key": "Ctrl + Shift",
@@ -56,7 +51,7 @@
           "functionality": "Memadam poligon yang dipilih<br/>Memadam titik lukisan terakhir (semasa melukis poligon baru)"
         },
         "7": {
-          "key": "Klik dua kali pada poligon yang dipilih di dalam antaramuka pengguna",
+          "key": "Klik dua kali pada poligon yang dipilih",
           "functionality": "Memilih/ menukar label untuk poligon yang dipilih"
         },
         "8": {

@@ -26,14 +26,9 @@
     "info": {
       "header": "Keyboard Shortcut Information",
       "shortcut": {
-        "tableHeader": {
-          "no": "No",
-          "shortcutKey": "Shortcut Key",
-          "functionality": "Functionality"
-        },
         "1": {
           "key": "Ctrl + Alt",
-          "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected bounding box using arrow keys (left right up down)<br/>Green Light Off: Go to the next/previous image using left right key"
+          "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected bounding box using arrow keys<br/>Green Light Off: Go to the next/previous image using left right key"
         },
         "2": {
           "key": "Ctrl + Shift",
@@ -56,7 +51,7 @@
           "functionality": "Delete a selected bounding box"
         },
         "7": {
-          "key": "Double click on a selected bounding box in the UI",
+          "key": "Double click on a selected bounding box",
           "functionality": "Choose label for the selected bounding box"
         }
       }
