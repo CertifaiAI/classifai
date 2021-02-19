@@ -1,6 +1,6 @@
 {
   "modal": {
-    "header": "Alatan pelabelan gambar Classifai",
+    "header": "Alatan Pelabelan Imej Classifai",
     "existing": {
       "header": "Daripada Projek Sedia Ada",
       "label": "Nama projek : ",
@@ -12,6 +12,7 @@
       "label": "Nama Projek Baru : ",
       "inputPlaceholder": "id baru anda ....",
       "subLabel": "Fail Senarai Label(*.txt): ",
+      "chooseFile": "Pilih Fail",
       "button": "Reka"
     },
     "delete":{
@@ -28,11 +29,11 @@
       "shortcut": {
         "1": {
           "key": "Ctrl + Alt",
-          "functionality": "Hidup/matikan lampu hijau<br/><br/>Lampu Hijau Hidup: Gerakkan kotak sempadan yang dipilih dengan menggunakan kekunci anak panah<br/>Lampu Hijau Mati: Pergi ke gambar berikutnya/sebelumnya dengan menggunakan kekunci kiri atau kanan"
+          "functionality": "Hidup/matikan lampu hijau<br/><br/>Lampu Hijau Hidup: Gerakkan kotak sempadan yang dipilih dengan menggunakan kekunci anak panah<br/>Lampu Hijau Mati: Pergi ke imej berikutnya/sebelumnya dengan menggunakan kekunci kiri atau kanan"
         },
         "2": {
           "key": "Ctrl + Shift",
-          "functionality": "Beralih antara melukis kotak sempadan dan menggerakkan gambar"
+          "functionality": "Beralih antara melukis kotak sempadan dan menggerakkan imej"
         },
         "3": {
           "key": "Ctrl + z",
@@ -58,6 +59,9 @@
     }
   },
   "loading": "Dikuasakan oleh Skymind",
+  "serverInit": "Memulakan Pelayan",
+  "dataRetrieve": "Mengambil Data",
+  "selectProject": "Sila pilih nama projek yang sedia ada untuk meneruskan.",
   "saveFormat": {
     "currImg": "Simpan imej semasa",
     "bulkSaving": "Simpan secara pukal",
@@ -68,7 +72,17 @@
   "sideNav": {
     "imgList": "Senarai Imej",
     "labelList": "Senarai Label",
-    "boundBox": "Kotak Sempadan"
+    "boundBox": "Kotak Sempadan",
+    "selectFolder": "Pilih Folder",
+    "selectFiles": "Pilih Fail",
+    "moveImage": "Gerakkan Imej",
+    "drawRectangle": "Lukis Segi Empat Tepat",
+    "fitToScreen": "Sesuaikan Dengan Saiz Skrin",
+    "clearBoundBox": "Padam Kotak Sempadan",
+    "next": "Seterusnya",
+    "previous": "Sebelumnya",
+    "showSaveMenu": "Paparkan Menu Simpan",
+    "shortcutKeyInfo": "Info Kekunci Pintasan"
   },
   "deleteswitch":{
     "selectall" : "Pilih semua"

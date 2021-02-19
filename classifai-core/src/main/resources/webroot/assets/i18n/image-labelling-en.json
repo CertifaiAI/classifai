@@ -12,6 +12,7 @@
       "label": "New Project Name : ",
       "inputPlaceholder": "your new id ....",
       "subLabel": "Label List File (*.txt): ",
+      "chooseFile": "Choose File",
       "button": "Create"
     },
     "delete":{
@@ -58,6 +59,9 @@
     }
   },
   "loading": "Powered by Skymind",
+  "serverInit": "Server Initializing",
+  "dataRetrieve": "Data Retrieving",
+  "selectProject": "Please select an existing project name to continue.",
   "saveFormat": {
     "currImg": "Current image",
     "bulkSaving": "Bulk saving",
@@ -68,7 +72,17 @@
   "sideNav": {
     "imgList": "Image List",
     "labelList": "Label List",
-    "boundBox": "Bounding Box"
+    "boundBox": "Bounding Box",
+    "selectFolder": "Select Folder",
+    "selectFiles": "Select Files",
+    "moveImage": "Move Image",
+    "drawRectangle": "Draw Rectangle",
+    "fitToScreen": "Fit To Screen",
+    "clearBoundBox": "Clear Bounding Boxes",
+    "next": "Next",
+    "previous": "Previous",
+    "showSaveMenu": "Show Save Menu",
+    "shortcutKeyInfo": "Shortcut Key Info"
   },
   "deleteswitch":{
     "selectall" : "Select all"

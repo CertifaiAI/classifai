@@ -12,6 +12,7 @@
       "label": "新项目名称 : ",
       "inputPlaceholder": "您的新编号 ....",
       "subLabel": "标签列表文件 (*.txt): ",
+      "chooseFile": "选择文件",
       "button": "创造"
     },
     "delete":{
@@ -47,7 +48,7 @@
           "functionality": "粘贴所选择多边形"
         },
         "6": {
-          "key": "Delete/Backspace",
+          "key": "删除键/退格键",
           "functionality": "删除所选择多边形<br/>删除上一步所画的点 (在画多边形的时候)"
         },
         "7": {
@@ -62,6 +63,9 @@
     }
   },
   "loading": "由Skymind提供支持",
+  "serverInit": "正在初始化服务器",
+  "dataRetrieve": "正在读取档案",
+  "selectProject": "请选择当前项目名称",
   "saveFormat": {
     "currImg": "当前图像",
     "bulkSaving": "大量节省",
@@ -72,7 +76,17 @@
   "sideNav": {
     "imgList": "图片清单",
     "labelList": "标签清单",
-    "polygon": "多边形"
+    "polygon": "多边形",
+     "selectFolder": "选择文件夹",
+    "selectFiles": "选择文件",
+    "moveImage": "移动图像",
+    "drawPolygons": "画多边形",
+    "fitToScreen": "调整到屏幕大小",
+    "clearPolygons": "清除所有多边形",
+    "next": "下一个",
+    "previous": "上一个",
+    "showSaveMenu": "存档菜单",
+    "shortcutKeyInfo": "快捷键资讯"
   },
   "deleteswitch":{
     "selectall" : "全选"
