@@ -22,7 +22,7 @@
     <groupId>ai.classifai</groupId>
     <artifactId>classifai</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <modules>
         <module>classifai-core</module>
