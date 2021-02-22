@@ -31,6 +31,7 @@ import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
@@ -886,7 +887,13 @@ public class EndpointRouter extends AbstractVerticle
         Router router = Router.router(vertx);
 
         //display for content in webroot
-        router.route().handler(StaticHandler.create());
+        //uses no-cache for cache busting, prevent caching old files
+        router.route().handler(ctx -> {
+            MultiMap headers = ctx.response().headers();
+            headers.add("Cache-Control", "no-cache");
+            ctx.next();
+        });
+        router.route().handler(StaticHandler.create().setCachingEnabled(false));
 
         //*******************************Bounding Box*******************************
 
