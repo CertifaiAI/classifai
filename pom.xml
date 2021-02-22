@@ -85,7 +85,7 @@
         <metadata.extractor.version>2.15.0</metadata.extractor.version>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
-        <classifai.release.version>1.1.0</classifai.release.version>
+        <classifai.release.version>1.2.0</classifai.release.version>
         <classifai.release.name>dev</classifai.release.name>
     </properties>
 
