@@ -12,6 +12,7 @@
       "label": "新项目名称 : ",
       "inputPlaceholder": "您的新编号 ....",
       "subLabel": "标签列表文件 (*.txt): ",
+      "chooseFile": "选择文件",
       "button": "创造"
     },
     "delete":{
@@ -22,9 +23,45 @@
     },
     "delimg":{
       "header": "删除图片（可多个）"
+    },
+    "info": {
+      "header": "快捷键资讯",
+      "shortcut": {
+        "1": {
+          "key": "Ctrl + Alt",
+          "functionality": "开关青灯<br/><br/>青灯亮: 可用箭头键移动边界框<br/>青灯关: 左右箭头键可切换图像"
+        },
+        "2": {
+          "key": "Ctrl + Shift",
+          "functionality": "切换移动图像/画边界框"
+        },
+        "3": {
+          "key": "Ctrl + z",
+          "functionality": "撤销上一步的操作"
+        },
+        "4": {
+          "key": "Ctrl + c",
+          "functionality": "复制所选择边界框"
+        },
+        "5": {
+          "key": "Ctrl + v",
+          "functionality": "粘贴所选择边界框"
+        },
+        "6": {
+          "key": "删除键/退格键",
+          "functionality": "删除所选择边界框"
+        },
+        "7": {
+          "key": "双击所选择边界框",
+          "functionality": "选择边界框标签"
+        }
+      }
     }
   },
   "loading": "由Skymind提供支持",
+  "serverInit": "正在初始化服务器",
+  "dataRetrieve": "正在读取档案",
+  "selectProject": "请选择当前项目名称",
   "saveFormat": {
     "currImg": "当前图像",
     "bulkSaving": "大量节省",
@@ -35,7 +72,17 @@
   "sideNav": {
     "imgList": "图片清单",
     "labelList": "标签清单",
-    "boundBox": "边界框"
+    "boundBox": "边界框",
+    "selectFolder": "选择文件夹",
+    "selectFiles": "选择文件",
+    "moveImage": "移动图像",
+    "drawRectangle": "画边界框",
+    "fitToScreen": "调整到屏幕大小",
+    "clearBoundBox": "清除所有边界框",
+    "next": "下一个",
+    "previous": "上一个",
+    "showSaveMenu": "存档菜单",
+    "shortcutKeyInfo": "快捷键资讯"
   },
   "deleteswitch":{
     "selectall" : "全选"

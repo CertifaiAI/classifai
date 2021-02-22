@@ -1,0 +1,11 @@
+{
+  "comingSoon": "Akan Datang",
+  "tabular": "Jadual",
+  "image": "Imej",
+  "video": "Video",
+  "voice": "Suara",
+  "imageOptions": {
+    "boundingBoxes": "Kotak Sempadan",
+    "polygons": "Poligon"
+  }
+}

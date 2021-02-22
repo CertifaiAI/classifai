@@ -12,6 +12,7 @@
       "label": "New Project Name : ",
       "inputPlaceholder": "your new id ....",
       "subLabel": "Label List File (*.txt): ",
+      "chooseFile": "Choose File",
       "button": "Create"
     },
     "delete":{
@@ -22,9 +23,45 @@
     },
     "delimg":{
       "header": "Delete Images"
+    },
+    "info": {
+      "header": "Keyboard Shortcut Information",
+      "shortcut": {
+        "1": {
+          "key": "Ctrl + Alt",
+          "functionality": "Toggle green light on/off<br/><br/>Green Light On: Move a selected bounding box using arrow keys<br/>Green Light Off: Go to the next/previous image using left right key"
+        },
+        "2": {
+          "key": "Ctrl + Shift",
+          "functionality": "Toggle between drawing bounding box and moving image"
+        },
+        "3": {
+          "key": "Ctrl + z",
+          "functionality": "Undo the last action"
+        },
+        "4": {
+          "key": "Ctrl + c",
+          "functionality": "Copy the selected bounding box"
+        },
+        "5": {
+          "key": "Ctrl + v",
+          "functionality": "Paste the selected bounding box"
+        },
+        "6": {
+          "key": "Delete/Backspace",
+          "functionality": "Delete a selected bounding box"
+        },
+        "7": {
+          "key": "Double click on a selected bounding box",
+          "functionality": "Choose label for the selected bounding box"
+        }
+      }
     }
   },
   "loading": "Powered by Skymind",
+  "serverInit": "Server Initializing",
+  "dataRetrieve": "Data Retrieving",
+  "selectProject": "Please select an existing project name to continue.",
   "saveFormat": {
     "currImg": "Current image",
     "bulkSaving": "Bulk saving",
@@ -35,7 +72,17 @@
   "sideNav": {
     "imgList": "Image List",
     "labelList": "Label List",
-    "boundBox": "Bounding Box"
+    "boundBox": "Bounding Box",
+    "selectFolder": "Select Folder",
+    "selectFiles": "Select Files",
+    "moveImage": "Move Image",
+    "drawRectangle": "Draw Rectangle",
+    "fitToScreen": "Fit To Screen",
+    "clearBoundBox": "Clear Bounding Boxes",
+    "next": "Next",
+    "previous": "Previous",
+    "showSaveMenu": "Show Save Menu",
+    "shortcutKeyInfo": "Shortcut Key Info"
   },
   "deleteswitch":{
     "selectall" : "Select all"

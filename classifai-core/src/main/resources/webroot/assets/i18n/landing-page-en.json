@@ -3,5 +3,9 @@
   "tabular": "Tabular",
   "image": "Image",
   "video": "Video",
-  "voice": "Voice"
+  "voice": "Voice",
+  "imageOptions": {
+    "boundingBoxes": "Bounding Boxes",
+    "polygons": "Polygons"
+  }
 }
