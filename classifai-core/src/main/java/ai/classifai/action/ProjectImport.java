@@ -1,11 +1,6 @@
 package ai.classifai.action;
 
-import ai.classifai.action.parser.ParserHelper;
 import ai.classifai.action.parser.PortfolioParser;
-import io.vertx.core.json.JsonObject;
-import org.apache.commons.io.IOUtils;
-
-import java.io.FileReader;
 
 public class ProjectImport
 {

@@ -45,16 +45,6 @@ public class ReplyHandler {
         return ERROR_MESSAGE;
     }
 
-    public static Integer getSuccessfulSignal()
-    {
-        return SUCCESSFUL;
-    }
-
-    public static Integer getFailedSignal()
-    {
-        return FAILED;
-    }
-
     public static JsonObject reportDatabaseQueryError(Throwable cause)
     {
         log.error("Database query error", cause);

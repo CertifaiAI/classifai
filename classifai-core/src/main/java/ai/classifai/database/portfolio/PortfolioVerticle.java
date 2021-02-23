@@ -45,7 +45,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -152,7 +151,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 .isProjectNewlyCreated(Boolean.TRUE)
                                 .build();
 
-                        ProjectHandler.buildProjectLoader(loader);
+                        ProjectHandler.loadProjectLoader(loader);
 
                         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
@@ -205,7 +204,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             .isProjectNewlyCreated(Boolean.TRUE)
                             .build();
 
-                            ProjectHandler.buildProjectLoader(loader);
+                            ProjectHandler.loadProjectLoader(loader);
                             message.replyAndRequest(ReplyHandler.getOkReply());
                         }
                         else
@@ -369,7 +368,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    private void loadProjectLoader()
+    private void configProjectLoaderFromDb()
     {
         portfolioDbPool.query(PortfolioDbQuery.getLoadDbProject())
                 .execute()
@@ -385,39 +384,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         }
                         else
                         {
-                            List<String> projectIDList = new ArrayList<>();
-                            List<String> projectNameList = new ArrayList<>();
-                            List<Integer> annotationTypeList = new ArrayList<>();
-                            List<String> projectPathList = new ArrayList<>();
-                            List<String> labelList = new ArrayList<>();
-                            List<String> uuidsFromDatabaseList = new ArrayList<>();
-                            List<Boolean> isNewList = new ArrayList<>();
-
                             for (Row row : rowSet)
                             {
-                                projectIDList.add(row.getString(0));
-                                projectNameList.add(row.getString(1));
-                                annotationTypeList.add(row.getInteger(2));
-                                projectPathList.add(row.getString(3));
-                                labelList.add(row.getString(4));
-                                uuidsFromDatabaseList.add(row.getString(5));
-                                isNewList.add(row.getBoolean(6));
-                            }
-
-                            for (int i = 0; i < projectIDList.size(); ++i)
-                            {
                                 ProjectLoader loader = new ProjectLoader.Builder()
-                                    .projectID(projectIDList.get(i))
-                                    .projectName(projectNameList.get(i))
-                                    .annotationType(annotationTypeList.get(i))
-                                    .projectPath(projectPathList.get(i))
+                                    .projectID(row.getString(0))
+                                    .projectName(row.getString(1))
+                                    .annotationType(row.getInteger(2))
+                                    .projectPath(row.getString(3))
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
-                                    .isProjectNewlyCreated(isNewList.get(i))
+                                    .isProjectNewlyCreated(row.getBoolean(6))
                                     .build();
 
+                                loader.setLabelList(ConversionHandler.string2StringList(row.getString(4)));
+                                loader.setUuidListFromDatabase(ConversionHandler.string2StringList(row.getString(5)));
 
-                                loader.setUuidListFromDatabase(ConversionHandler.string2StringList(uuidsFromDatabaseList.get(i)));
-                                loader.setLabelList(ConversionHandler.string2StringList(labelList.get(i)));
+                                ProjectHandler.loadProjectLoader(loader);
                             }
                         }
                     }
@@ -556,10 +537,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             String projectPath = row.getString(1);
                             String uuidList = row.getString(2);
 
-                            int total_uuid = ConversionHandler.string2StringList(uuidList).size();
+                            int totalUuid = ConversionHandler.string2StringList(uuidList).size();
 
-                            String projectID = ProjectHandler.getProjectID(projectName, annotationTypeIndex);
-                            Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
+                            String projectUuid = ProjectHandler.getProjectID(projectName, annotationTypeIndex);
+                            Boolean isLoaded = ProjectHandler.getProjectLoader(projectUuid).getIsLoadedFrontEndToggle();
 
                             result.add(new JsonObject()
                                     .put(ParamConfig.getProjectNameParam(), projectName)
@@ -568,7 +549,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .put(ParamConfig.getIsStarredParam(), row.getBoolean(4))
                                     .put(ParamConfig.getIsLoadedParam(), isLoaded)
                                     .put(ParamConfig.getCreatedDateParam(), row.getString(5))
-                                    .put(ParamConfig.getTotalUuidParam(), total_uuid));
+                                    .put(ParamConfig.getTotalUuidParam(), totalUuid));
                         }
 
                         JsonObject response = ReplyHandler.getOkReply();
@@ -706,7 +687,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     //the consumer methods registers an event bus destination handler
                                     vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
-                                    loadProjectLoader();
+                                    configProjectLoaderFromDb();
 
                                     promise.complete();
                                 }

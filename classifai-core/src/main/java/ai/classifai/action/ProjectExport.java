@@ -6,7 +6,6 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.DateTime;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

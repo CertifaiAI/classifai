@@ -17,7 +17,6 @@ package ai.classifai.util.collection;
 
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
 import java.util.UUID;
 
 /**

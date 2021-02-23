@@ -16,13 +16,10 @@
 package ai.classifai.util;
 
 import ai.classifai.loader.CLIProjectInitiator;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -53,7 +50,6 @@ public class ProjectHandler {
     private static Map projectNameSearch;
 
     @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
-
 
     static
     {
@@ -113,7 +109,7 @@ public class ProjectHandler {
         return getProjectID(key);
     }
 
-    public static ProjectLoader buildProjectLoader(ProjectLoader loader)
+    public static void loadProjectLoader(ProjectLoader loader)
     {
         if (!AnnotationHandler.checkSanity(loader.getAnnotationType()))
         {
@@ -126,8 +122,6 @@ public class ProjectHandler {
         projectNameSearch.put(loader.getProjectID(), projectNameWithType);
 
         projectIDLoaderDict.put(loader.getProjectID(), loader);
-
-        return loader;
     }
 
     public static boolean initSelector(String selection)

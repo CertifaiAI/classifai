@@ -16,7 +16,6 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
