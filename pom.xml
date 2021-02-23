@@ -61,6 +61,18 @@
             <id>Daniel</id>
             <name>Daniel Lim Heng Jie</name>
         </developer>
+        <developer>
+            <id>YCCertifai</id>
+            <name>Sum Yin Chuang</name>
+        </developer>
+        <developer>
+            <id>Deven</id>
+            <name>Deven Yantis</name>
+        </developer>
+        <developer>
+            <id>Amal</id>
+            <name>Amal Syahmi Sabudin</name>
+        </developer>
     </developers>
 
     <properties>
