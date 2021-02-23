@@ -887,7 +887,7 @@ public class EndpointRouter extends AbstractVerticle
         Router router = Router.router(vertx);
 
         //display for content in webroot
-        //uses no-cache for cache busting, prevent caching old files
+        //uses no-cache header for cache busting, perform revalidation when fetching static assets
         router.route().handler(ctx -> {
             MultiMap headers = ctx.response().headers();
             headers.add("Cache-Control", "no-cache, max-age=86400");
