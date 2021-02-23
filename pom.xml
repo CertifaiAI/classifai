@@ -22,7 +22,7 @@
     <groupId>ai.classifai</groupId>
     <artifactId>classifai</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <modules>
         <module>classifai-core</module>
@@ -61,6 +61,18 @@
             <id>Daniel</id>
             <name>Daniel Lim Heng Jie</name>
         </developer>
+        <developer>
+            <id>YCCertifai</id>
+            <name>Sum Yin Chuang</name>
+        </developer>
+        <developer>
+            <id>Deven</id>
+            <name>Deven Yantis</name>
+        </developer>
+        <developer>
+            <id>Amal</id>
+            <name>Amal Syahmi Sabudin</name>
+        </developer>
     </developers>
 
     <properties>
@@ -85,7 +97,7 @@
         <metadata.extractor.version>2.15.0</metadata.extractor.version>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
-        <classifai.release.version>1.1.0</classifai.release.version>
+        <classifai.release.version>1.2.0</classifai.release.version>
         <classifai.release.name>dev</classifai.release.name>
     </properties>
 
