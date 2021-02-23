@@ -120,7 +120,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         return getNewAnnotation(projectId, dataSubPath, UUIDGenerator.generateUUID());
     }
 
-    public void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+    public void loadValidProjectUuid(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
     {
         String projectID  = message.body().getString(ParamConfig.getProjectIdParam());
 
@@ -139,7 +139,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             Tuple params = Tuple.of(projectID, UUID);
 
-            jdbcPool.preparedQuery(AnnotationQuery.getLoadValidProjectUUID())
+            jdbcPool.preparedQuery(AnnotationQuery.getLoadValidProjectUuid())
                     .execute(params)
                     .onComplete(fetch -> {
 
@@ -147,14 +147,17 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         {
                             RowSet<Row> rowSet = fetch.result();
 
-                            Row row = rowSet.iterator().next();
-
-                            String dataSubPath = row.getString(0);
-                            String dataFullPath = getDataFullPath(projectID, dataSubPath).getAbsolutePath();
-
-                            if (ImageHandler.isImageReadable(dataFullPath))
+                            if(rowSet.iterator().hasNext())
                             {
-                                loader.pushDBValidUUID(UUID);
+                                Row row = rowSet.iterator().next();
+
+                                String dataSubPath = row.getString(0);
+                                String dataFullPath = getDataFullPath(projectID, dataSubPath).getAbsolutePath();
+
+                                if (ImageHandler.isImageReadable(dataFullPath))
+                                {
+                                    loader.pushDBValidUUID(UUID);
+                                }
                             }
                         }
                         loader.updateDBLoadingProgress(currentLength);
@@ -162,13 +165,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
           }
     }
 
-    public static void updateUUID(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentLength)
+    public static void updateUuid(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentLength)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
+        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
 
-        Tuple params = AnnotationVerticle.getNewAnnotation(projectID, dataChildPath, UUID);
+        Tuple params = AnnotationVerticle.getNewAnnotation(projectID, dataSubPath, UUID);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(params)
@@ -188,7 +191,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     }
 
 
-    public static void updateUUIDFromReloading(@NonNull JDBCPool jdbcPool, @NonNull String projectId, @NonNull File file)
+    public static void createUuidFromReloading(@NonNull JDBCPool jdbcPool, @NonNull String projectId, @NonNull File file)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
@@ -198,15 +201,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         Tuple param = getNewAnnotation(projectId, dataChildPath);
 
-
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(param)
                 .onComplete(fetch -> {
 
                 if (fetch.succeeded())
                 {
-                    loader.getUuidListFromDatabase().add(uuid);
-                    loader.getSanityUUIDList().add(uuid);
+                    loader.uploadNewUuidFromReloading(uuid);
                 }
                 else
                 {
@@ -216,11 +217,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         });
     }
 
-    public static void createUUIDIfNotExist(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+    public static void createUuidIfNotExist(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-        Tuple params = Tuple.of(file.getAbsolutePath(), projectID);
+        String fileSubPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
+
+        Tuple params = Tuple.of(fileSubPath, projectID);
 
         jdbcPool.preparedQuery(AnnotationQuery.getQueryUuid())
                 .execute(params)
@@ -231,7 +234,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 //not exist , create data point
                 if (rowSet.size() == 0)
                 {
-                    updateUUIDFromReloading(jdbcPool, projectID, file);
+                    createUuidFromReloading(jdbcPool, projectID, file);
                 }
                 else
                 {
@@ -239,9 +242,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     String uuid = row.getString(0);
 
                     // if exist remove from Listbuffer to prevent from checking the item again
-                    if(!loader.getSanityUUIDList().contains(uuid))
+                    if(!loader.getSanityUuidList().contains(uuid))
                     {
-                        loader.getSanityUUIDList().add(uuid);
+                        loader.uploadNewUuidFromReloading(uuid);
                     }
 
                     loader.getDbListBuffer().remove(uuid);
@@ -295,11 +298,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         {
                             loader.setUuidListFromDatabase(dbUUIDList);
 
-                            List<String> sanityUUIDList = loader.getSanityUUIDList();
+                            List<String> sanityUUIDList = loader.getSanityUuidList();
 
                             if (sanityUUIDList.removeAll(deleteUUIDList))
                             {
-                                loader.setSanityUUIDList(sanityUUIDList);
+                                loader.setSanityUuidList(sanityUUIDList);
                             }
                             else
                             {

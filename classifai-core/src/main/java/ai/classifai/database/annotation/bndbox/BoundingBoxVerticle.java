@@ -66,9 +66,9 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.retrieveDataPath(message, jdbcPool);
         }
-        else if (action.equals(AnnotationQuery.getLoadValidProjectUUID()))
+        else if (action.equals(AnnotationQuery.getLoadValidProjectUuid()))
         {
-            this.loadValidProjectUUID(message, jdbcPool);
+            this.loadValidProjectUuid(message, jdbcPool);
         }
         else if (action.equals(AnnotationQuery.getDeleteProject()))
         {

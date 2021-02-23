@@ -35,7 +35,7 @@ public class AnnotationQuery
 
     @Getter private static final String retrieveDataPath = "SELECT img_path FROM Project WHERE uuid = ? AND project_id = ?";
 
-    @Getter private static final String loadValidProjectUUID = "SELECT img_path FROM Project WHERE project_id = ? AND uuid = ?";
+    @Getter private static final String loadValidProjectUuid = "SELECT img_path FROM Project WHERE project_id = ? AND uuid = ?";
 
     @Getter private static final String deleteProject = "DELETE FROM Project WHERE project_id = ?";
 

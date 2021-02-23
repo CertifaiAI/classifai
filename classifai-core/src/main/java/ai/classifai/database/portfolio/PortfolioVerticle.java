@@ -652,12 +652,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     
     public void reloadProject(Message<JsonObject> message)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
-
-        ImageHandler.recheckProjectRootPath(projectID);
-
         message.reply(ReplyHandler.getOkReply());
 
+        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
+
+        ImageHandler.refreshProjectRootPath(projectID);
     }
 
     @Override

@@ -18,6 +18,7 @@ package ai.classifai.loader;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,7 +49,7 @@ public class ProjectLoader
     private List<String> labelList = new ArrayList<>();
 
      //a list of unique uuid representing number of data points in one project
-    private List<String> sanityUUIDList = new ArrayList<>();
+    private List<String> sanityUuidList = new ArrayList<>();
     private List<String> uuidListFromDatabase = new ArrayList<>();
     private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
@@ -70,9 +71,10 @@ public class ProjectLoader
 
     //list to iterate through uuid list from existing database to remove if necessary
     private List<String> dbListBuffer = new ArrayList<>();
+    private List<String> reloadAdditionList = new ArrayList<>();
+    private List<String> reloadDeletionList = new ArrayList<>();
 
     private List<Integer> progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
-
 
     private ProjectLoader(Builder build)
     {
@@ -141,7 +143,7 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentUUIDMarker.equals(totalUUIDMaxLen))
         {
-            sanityUUIDList = new ArrayList<>(validUUIDSet);
+            sanityUuidList = new ArrayList<>(validUUIDSet);
 
             validUUIDSet.clear();
 
@@ -180,17 +182,26 @@ public class ProjectLoader
         }
         else
         {
-            sanityUUIDList.addAll(fileSysNewUUIDList);
+            sanityUuidList.addAll(fileSysNewUUIDList);
             uuidListFromDatabase.addAll(fileSysNewUUIDList);
             PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
 
+    public void uploadNewUuidFromReloading(@NonNull String uuid)
+    {
+        if(!uuidListFromDatabase.contains(uuid)) uuidListFromDatabase.add(uuid);
+
+        sanityUuidList.add(uuid);
+        reloadAdditionList.add(uuid);
+    }
+
     public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
     {
         dbListBuffer = new ArrayList<>(uuidListFromDatabase);
-        fileSysNewUUIDList.clear();
+        reloadAdditionList.clear();
+        reloadDeletionList.clear();
 
         currentUUIDMarker = 0;
         totalUUIDMaxLen = 1;
@@ -208,17 +219,14 @@ public class ProjectLoader
         //if done, offload set to list
         if (currentSize.equals(totalUUIDMaxLen))
         {
-            offloadReloadingList();
+            sanityUuidList.removeAll(dbListBuffer);
+            reloadDeletionList = dbListBuffer;
+
+            PortfolioVerticle.updateFileSystemUUIDList(projectID);
+            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
 
-    private void offloadReloadingList()
-    {
-        sanityUUIDList.removeAll(dbListBuffer);
-
-        PortfolioVerticle.updateFileSystemUUIDList(projectID);
-        fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
-    }
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {

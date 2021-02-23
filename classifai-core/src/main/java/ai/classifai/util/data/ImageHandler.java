@@ -315,7 +315,7 @@ public class ImageHandler {
             {
                 String uuid = UUIDGenerator.generateUUID();
 
-                AnnotationVerticle.updateUUID(BoundingBoxVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
+                AnnotationVerticle.updateUuid(BoundingBoxVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -324,7 +324,7 @@ public class ImageHandler {
             {
                 String uuid = UUIDGenerator.generateUUID();
             
-                AnnotationVerticle.updateUUID(SegVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
+                AnnotationVerticle.updateUuid(SegVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
     }
@@ -390,17 +390,18 @@ public class ImageHandler {
     scenario 4: adding new files
     scenario 5: evrything stills the same
     */
-    public static void recheckProjectRootPath(@NonNull String projectID)
+    public static void refreshProjectRootPath(@NonNull String projectID)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
         File rootPath = new File(loader.getProjectPath());
+
         //scenario 1
         if(!rootPath.exists())
         {
-            loader.setSanityUUIDList(new ArrayList<>());
+            loader.setSanityUuidList(new ArrayList<>());
             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
 
             log.info("Project home path of " + rootPath.getAbsolutePath() + " is missing.");
@@ -413,7 +414,7 @@ public class ImageHandler {
         //Scenario 2 - 1: root path exist but all images missing
         if(dataList.isEmpty())
         {
-            loader.getSanityUUIDList().clear();
+            loader.getSanityUuidList().clear();
             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
             return;
         }
@@ -422,13 +423,13 @@ public class ImageHandler {
 
         loader.setFileSysTotalUUIDSize(dataList.size());
 
-        //scenario 2 - 5
+        //scenario 3 - 5
 
         for(int i = 0; i < dataList.size(); ++i)
         {
             if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
-                BoundingBoxVerticle.createUUIDIfNotExist(BoundingBoxVerticle.getJdbcPool(), projectID, dataList.get(i), i + 1);
+                BoundingBoxVerticle.createUuidIfNotExist(BoundingBoxVerticle.getJdbcPool(), projectID, dataList.get(i), i + 1);
             }
             else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
             {

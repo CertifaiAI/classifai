@@ -333,16 +333,15 @@ public class EndpointRouter extends AbstractVerticle
         {
             res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
         }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) | (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
         {
-            List<String> uuidListFromDatabase = loader.getSanityUUIDList();
-
-            res.put(ParamConfig.getUuidListParam(), uuidListFromDatabase);
-
+            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
+            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
         }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE)) {
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        {
             res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + "did not initiated");
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
         }
 
         HTTPResponseHandler.configureOK(context, res);
@@ -419,7 +418,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void loadBndBoxProject(RoutingContext context)
     {
-        loadProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getLoadValidProjectUUID(), AnnotationType.BOUNDINGBOX);
+        loadProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getLoadValidProjectUuid(), AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -433,7 +432,7 @@ public class EndpointRouter extends AbstractVerticle
      */
     private void loadSegProject(RoutingContext context)
     {
-        loadProject(context, SegDbQuery.getQueue(), SegDbQuery.getLoadValidProjectUUID(), AnnotationType.SEGMENTATION);
+        loadProject(context, SegDbQuery.getQueue(), SegDbQuery.getLoadValidProjectUuid(), AnnotationType.SEGMENTATION);
     }
 
     public void loadProject(RoutingContext context, String queue, String query, AnnotationType annotationType)
@@ -545,7 +544,7 @@ public class EndpointRouter extends AbstractVerticle
             jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
 
             jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUUIDList());
+            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
@@ -696,9 +695,10 @@ public class EndpointRouter extends AbstractVerticle
             res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
 
         }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE)) {
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        {
             res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + "did not initiated");
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
         }
 
         HTTPResponseHandler.configureOK(context, res);
@@ -1222,7 +1222,7 @@ public class EndpointRouter extends AbstractVerticle
      * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
      *
      */
-    private void deleteBndBoxProjectUUID(RoutingContext context)
+    private void deleteBndBoxProjectUuid(RoutingContext context)
     {
         deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteSelectionUuidList(), AnnotationType.BOUNDINGBOX);
     }
@@ -1236,7 +1236,7 @@ public class EndpointRouter extends AbstractVerticle
      * DELETE http://localhost:{port}/seg/projects/helloworld/uuids
      *
      */
-    private void deleteSegProjectUUID(RoutingContext context)
+    private void deleteSegProjectUuid(RoutingContext context)
     {
         deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteSelectionUuidList(), AnnotationType.SEGMENTATION);
     }
@@ -1300,7 +1300,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
 
-        router.delete("/bndbox/projects/:project_name/uuids").handler(this::deleteBndBoxProjectUUID);
+        router.delete("/bndbox/projects/:project_name/uuids").handler(this::deleteBndBoxProjectUuid);
 
         router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
 
@@ -1322,7 +1322,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
 
-        router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
+            router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
 
         router.put("/v2/bndbox/projects/:project_name/reload").handler(this::reloadV2BndBoxProject);
 
@@ -1345,7 +1345,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
 
-        router.delete("/seg/projects/:project_name/uuids").handler(this::deleteSegProjectUUID);
+        router.delete("/seg/projects/:project_name/uuids").handler(this::deleteSegProjectUuid);
 
         router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
 

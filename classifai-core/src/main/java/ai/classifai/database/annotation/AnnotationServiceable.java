@@ -34,7 +34,7 @@ public interface AnnotationServiceable
 
     void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
-    void loadValidProjectUUID(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
+    void loadValidProjectUuid(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
     void deleteProject(Message<JsonObject> message, @NonNull JDBCPool jdbcPool);
 
