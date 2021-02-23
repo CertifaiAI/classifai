@@ -890,7 +890,7 @@ public class EndpointRouter extends AbstractVerticle
         //uses no-cache header for cache busting, perform revalidation when fetching static assets
         router.route().handler(ctx -> {
             MultiMap headers = ctx.response().headers();
-            headers.add("Cache-Control", "no-cache, max-age=86400");
+            headers.add("Cache-Control", "no-cache");
             ctx.next();
         });
         router.route().handler(StaticHandler.create());
