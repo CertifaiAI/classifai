@@ -2,34 +2,37 @@
   "modal": {
     "header": "分类图像标签工具",
     "existing": {
-      "header": "来自现有项目",
+      "header": "打开现有项目",
       "label": "项目名称 : ",
-      "option" : "没有",
+      "option" : "没选项",
       "button": "提交"
     },
     "create": {
-      "header": "建立新专案",
+      "header": "建立新项目",
       "label": "新项目名称 : ",
       "inputPlaceholder": "您的新编号 ....",
       "subLabel": "标签列表文件 (*.txt): ",
       "chooseFile": "选择文件",
-      "button": "创造"
+      "button": "创建"
     },
     "delete":{
       "header": "删除现有项目",
       "label": "项目名称 : ",
       "button": "删除",
-      "option": "没选项"
+      "option": "没选项",
+      "success": "已删除",
+      "none": "请选择现有项目进行删除",
+      "null": "数据库没有该图像数据"
     },
     "delimg":{
-      "header": "删除图片（可多个）"
+      "header": "删除图像（可多个）"
     },
     "info": {
       "header": "快捷键资讯",
       "shortcut": {
         "1": {
           "key": "Ctrl + Alt",
-          "functionality": "开关青灯<br/><br/>青灯亮: 可用箭头键移动多边形<br/>青灯关: 左右箭头键可切换图像"
+          "functionality": "开关青灯<br/><br/>点亮: 可用箭头键移动多边形<br/>熄灭: 左右箭头键可切换图像"
         },
         "2": {
           "key": "Ctrl + Shift",
@@ -68,13 +71,13 @@
   "selectProject": "请选择当前项目名称",
   "saveFormat": {
     "currImg": "当前图像",
-    "bulkSaving": "大量节省",
+    "bulkSaving": "集体下载",
     "pascalVoc": "帕斯卡VOC",
     "textOcr": "文本",
     "label": "标签"
   },
   "sideNav": {
-    "imgList": "图片清单",
+    "imgList": "图像清单",
     "labelList": "标签清单",
     "polygon": "多边形",
      "selectFolder": "选择文件夹",
@@ -93,5 +96,38 @@
   },
   "deletebtn":{
     "delete" : "删除"
+  },
+"interval": {
+    "folder": "正在开启文件夹选择框",
+    "file": "正在开启文件选择框",
+    "uploading": "正在读取文件",
+    "updating": "正在更新数据库"
+  },
+  "label": {
+    "exists": "标签已存在"
+  },
+  "alert": {
+    "projectExist": "项目名称已被使用。请选择其他名称",
+    "projectNameEmpty": "项目名称空缺",
+    "onlyLabelDelete": "只剩一个标签，无法删除",
+    "deleteDefault": "default 为占位符标签，无法删除",
+    "usedLabel": "此标签已被使用，无法删除",
+    "duplicatedLabel": "此标签已被使用",
+    "deleteImgFail": "无法删除该图像",
+    "noImgList": "该项目没有图像列表",
+    "noLabelList": "该项目没有图像列表",
+    "notAnySelection": "没有选项"
+  },
+  "progressWindow": {
+    "syncDatabase": "正在与数据库同步",
+    "deleteDatabase": "正在删除数据库资料"
+  },
+  "labellingArea": {
+    "mainLabel": "主标签",
+    "label": "标签",
+    "regionInfo": "区域资讯",
+    "subLabels": "副标签",
+    "add": "添加",
+    "regionAttribute" : "区域属性"
   }
 }

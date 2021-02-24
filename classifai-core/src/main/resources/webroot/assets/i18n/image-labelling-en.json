@@ -19,7 +19,10 @@
       "header": "Delete Project",
       "label": "Project Name : ",
       "button": "Delete",
-      "option": "none"
+      "option": "none",
+      "success": "is successfully deleted!",
+      "none": "none or \"\" is not acceptable",
+      "null": "Selected project is null or undefined"
     },
     "delimg":{
       "header": "Delete Images"
@@ -89,5 +92,31 @@
   },
   "deletebtn":{
     "delete" : "Delete"
+  },
+  "interval": {
+    "folder": "Folder Selection Window is Opened",
+    "file": "File Selection Window is Opened",
+    "uploading": "Uploading Files",
+    "updating": "Database Updating"
+  },
+  "label": {
+    "exists": "Label already exists."
+  },
+  "alert": {
+    "projectExist": "Project exists. Please use another project name.",
+    "projectNameEmpty": "Project name cannot be empty!",
+    "onlyLabelDelete": "The only label is not allow to delete.",
+    "usedLabel": "Some image in project are using this label. Deleting this label are not allow.",
+    "labelTextEmpty": "label text cannot be empty!\nAuto Assign first label!",
+    "deleteImgFail": "delete images request fail.",
+    "noBoundingBox": "There are no bounding box.",
+    "noLabellingProgress": "There are no labeling progress.",
+    "noImgList": "There are no image list.",
+    "noLabelList": "There are no label list.",
+    "notAnySelection": "Not in any selection."
+  },
+  "progressWindow": {
+    "syncDatabase": "Sync Database",
+    "deleteDatabase": "Deleting Database"
   }
 }
