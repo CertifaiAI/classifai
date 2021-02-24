@@ -121,5 +121,12 @@
   "progressWindow": {
     "syncDatabase": "Segerakkan Pangkalan Data",
     "deleteDatabase": "Memadam Pangkalan Data"
+  },
+  "labellingArea": {
+    "mainLabel": "Label Utama",
+    "label": "label",
+    "regionInfo": "Nombor Poligon",
+    "subLabels": "Sub Label",
+    "add": "tambah"
   }
 }

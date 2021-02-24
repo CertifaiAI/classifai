@@ -7,12 +7,5 @@
   "imageOptions": {
     "boundingBoxes": "Kotak Sempadan",
     "polygons": "Poligon"
-  },
-  "labellingArea": {
-    "mainLabel": "Label Utama",
-    "label": "label",
-    "regionInfo": "Nombor Poligon",
-    "subLabels": "Sub Label",
-    "add": "tambah"
   }
 }
