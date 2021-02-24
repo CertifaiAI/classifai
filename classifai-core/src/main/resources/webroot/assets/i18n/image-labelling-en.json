@@ -22,7 +22,7 @@
       "option": "none",
       "success": "is successfully deleted!",
       "none": "none or \"\" is not acceptable",
-      "null": "Select Element is null or undefined"
+      "null": "Selected project is null or undefined"
     },
     "delimg":{
       "header": "Delete Images"

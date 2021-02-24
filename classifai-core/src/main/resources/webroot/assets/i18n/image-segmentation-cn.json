@@ -127,6 +127,7 @@
     "label": "标签",
     "regionInfo": "区域资讯",
     "subLabels": "副标签",
-    "add": "添加"
+    "add": "添加",
+    "regionAttribute" : "区域属性"
   }
 }
