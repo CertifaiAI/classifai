@@ -125,7 +125,7 @@
   "labellingArea": {
     "mainLabel": "主标签",
     "label": "标签",
-    "regionInfo": "多边形编号",
+    "regionInfo": "区域资讯",
     "subLabels": "副标签",
     "add": "添加"
   }
