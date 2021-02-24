@@ -19,7 +19,10 @@
       "header": "Padam Projek",
       "label": "Nama Projek : ",
       "button": "Padam",
-      "option": "tiada"
+      "option": "tiada",
+      "success": "telah berjaya dipadam!",
+      "none": "Sila pilih nama projek untuk dipadam",
+      "null": "Projek tidak ditemui di dalam pangkalan data."
     },
     "delimg":{
       "header": "Padam Imej"
@@ -93,5 +96,30 @@
   },
   "deletebtn":{
     "delete" : "Padam"
+  },
+  "interval": {
+    "folder": "Tetingkap Pemilihan Folder Sedang Dibuka",
+    "file": "Tetingkap Pemilihan Fail Sedang Dibuka",
+    "uploading": "Memuat Naik Fail",
+    "updating": "Mengemaskini Pangkalan Data"
+  },
+  "label": {
+    "exists": "Label telah tersedia."
+  },
+  "alert": {
+    "projectExist": "Projek telah tersedia. Sila guna nama projek yang lain.",
+    "projectNameEmpty": "Nama projek tidak boleh kosong!",
+    "onlyLabelDelete": "Satu-satunya label yang ada tidak boleh dipadam.",
+    "deleteDefault": "Default sebagai pemegang tempat label. Operasi pemadaman tidak dibenarkan.",
+    "usedLabel": "Beberapa imej dalam projek menggunakan label ini. Memadam label ini tidak dibenarkan.",
+    "duplicatedLabel": "Penggunaan nama label yang sama tidak dibenarkan!",
+    "deleteImgFail": "Permintaan hapus gambar gagal.",
+    "noImgList": "Tidak ada senarai imej.",
+    "noLabelList": "Tidak ada senarai label.",
+    "notAnySelection": "Tidak dalam sebarang pilihan."
+  },
+  "progressWindow": {
+    "syncDatabase": "Segerakkan Pangkalan Data",
+    "deleteDatabase": "Memadam Pangkalan Data"
   }
 }

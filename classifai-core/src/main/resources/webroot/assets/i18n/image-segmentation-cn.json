@@ -19,7 +19,10 @@
       "header": "删除现有项目",
       "label": "项目名称 : ",
       "button": "删除",
-      "option": "没选项"
+      "option": "没选项",
+      "success": "已删除",
+      "none": "请选择现有项目进行删除",
+      "null": "数据库没有该图像数据"
     },
     "delimg":{
       "header": "删除图片（可多个）"
@@ -93,5 +96,37 @@
   },
   "deletebtn":{
     "delete" : "删除"
+  },
+"interval": {
+    "folder": "正在开启文件夹选择框",
+    "file": "正在开启文件选择框",
+    "uploading": "正在读取文件",
+    "updating": "正在更新数据库"
+  },
+  "label": {
+    "exists": "标签已存在"
+  },
+  "alert": {
+    "projectExist": "项目名称已被使用。请选择其他名称",
+    "projectNameEmpty": "项目名称空缺",
+    "onlyLabelDelete": "只剩一个标签，无法删除",
+    "deleteDefault": "Default 为默认标签，无法删除",
+    "usedLabel": "此标签已被使用，无法删除",
+    "duplicatedLabel": "此标签已被主标签使用",
+    "deleteImgFail": "无法删除该图像",
+    "noImgList": "该项目没有图像列表",
+    "noLabelList": "该项目没有图像列表",
+    "notAnySelection": "没有选项"
+  },
+  "progressWindow": {
+    "syncDatabase": "正在与数据库同步",
+    "deleteDatabase": "正在删除数据库资料"
+  },
+  "labellingArea": {
+    "mainLabel": "主标签",
+    "label": "标签",
+    "regionInfo": "多边形编号",
+    "subLabels": "副标签",
+    "add": "添加"
   }
 }
