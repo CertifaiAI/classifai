@@ -80,28 +80,46 @@ public class EndpointRouter extends AbstractVerticle
 
     }
 
-    /**
-     * Get a list of all projects under the category of bounding box
-     * PUT http://localhost:{port}/bndbox/projects
-     *
-     */
-    private void getAllBndBoxProjects(RoutingContext context)
+//    /**
+//     * Get a list of all projects under the category of bounding box
+//     * PUT http://localhost:{port}/bndbox/projects
+//     *
+//     */
+//    private void getAllBndBoxProjects(RoutingContext context)
+//    {
+//        getAllProjects(context, AnnotationType.BOUNDINGBOX);
+//    }
+//
+//    /**
+//     * Get a list of all projects under the category of segmentation
+//     * PUT http://localhost:{port}/seg/projects
+//     *
+//     */
+//    private void getAllSegProjects(RoutingContext context)
+//    {
+//        getAllProjects(context, AnnotationType.SEGMENTATION);
+//    }
+
+    private AnnotationType getAnnotationType(String annotation)
     {
-        getAllProjects(context, AnnotationType.BOUNDINGBOX);
+        AnnotationType type = null;
+        log.info("DEVEN: Annotation: " + annotation);
+        if(annotation.equals("bndbox"))
+        {
+            log.info("DEVEN: BOUNDINGBOX");
+            type = AnnotationType.BOUNDINGBOX;
+        }
+        else if(annotation.equals("seg"))
+        {
+            log.info("DEVEN: SEGMENTATION");
+            type = AnnotationType.SEGMENTATION;
+        }
+        return type;
     }
 
-    /**
-     * Get a list of all projects under the category of segmentation
-     * PUT http://localhost:{port}/seg/projects
-     *
-     */
-    private void getAllSegProjects(RoutingContext context)
+    private void getAllProjects(RoutingContext context)
     {
-        getAllProjects(context, AnnotationType.SEGMENTATION);
-    }
-
-    private void getAllProjects(RoutingContext context, AnnotationType type)
-    {
+        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
@@ -122,40 +140,44 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
-    /**
-     * Retrieve metadata of bounding box project
-     *
-     * GET http://localhost:{port}/bndbox/projects/:project_name/meta
-     *
-     */
-    public void getBndBoxProjectMeta(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        getProjectMetadata(context, projectName, AnnotationType.BOUNDINGBOX);
-    }
-
-    /**
-     * Retrieve metadata of segmentation project
-     *
-     * GET http://localhost:{port}/seg/projects/:project_name/meta
-     *
-     */
-    public void getSegProjectMeta(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        getProjectMetadata(context, projectName, AnnotationType.SEGMENTATION);
-    }
+//    /**
+//     * Retrieve metadata of bounding box project
+//     *
+//     * GET http://localhost:{port}/bndbox/projects/:project_name/meta
+//     *
+//     */
+//    public void getBndBoxProjectMeta(RoutingContext context)
+//    {
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//
+//        getProjectMetadata(context, projectName, AnnotationType.BOUNDINGBOX);
+//    }
+//
+//    /**
+//     * Retrieve metadata of segmentation project
+//     *
+//     * GET http://localhost:{port}/seg/projects/:project_name/meta
+//     *
+//     */
+//    public void getSegProjectMeta(RoutingContext context)
+//    {
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//
+//        getProjectMetadata(context, projectName, AnnotationType.SEGMENTATION);
+//    }
 
     /**
      * Retrieve metadata of project
      */
-    private void getProjectMetadata(RoutingContext context, String projectName, AnnotationType annotationType)
+    private void getProjectMetadata(RoutingContext context)
     {
-        log.debug("Get metadata of project: " + projectName + " of annotation type: " + annotationType.name());
+        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, annotationType);
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        log.debug("Get metadata of project: " + projectName + " of annotation type: " + type.name());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
         if(checkIfProjectNull(context, loader, projectName)) return;
 
@@ -192,34 +214,39 @@ public class EndpointRouter extends AbstractVerticle
     }
 
 
-    /**
-     * Get metadata of all bounding box projects
-     * GET http://localhost:{port}/bndbox/projects/meta
-     *
-     */
-    private void getAllBndBoxProjectsMeta(RoutingContext context)
+//    /**
+//     * Get metadata of all bounding box projects
+//     * GET http://localhost:{port}/bndbox/projects/meta
+//     *
+//     */
+//    private void getAllBndBoxProjectsMeta(RoutingContext context)
+//    {
+//        JsonObject request = new JsonObject()
+//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+//
+//        getAllProjectsMeta(context, request, AnnotationType.BOUNDINGBOX);
+//    }
+//
+//    /**
+//     * Get metadata of all segmentation projects
+//     * GET http://localhost:{port}/seg/projects/meta
+//     *
+//     */
+//    private void getAllSegProjectsMeta(RoutingContext context)
+//    {
+//        JsonObject request = new JsonObject()
+//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+//
+//        getAllProjectsMeta(context, request, AnnotationType.SEGMENTATION);
+//    }
+
+    private void getAllProjectsMeta(RoutingContext context)
     {
+        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
-        getAllProjectsMeta(context, request, AnnotationType.BOUNDINGBOX);
-    }
-
-    /**
-     * Get metadata of all segmentation projects
-     * GET http://localhost:{port}/seg/projects/meta
-     *
-     */
-    private void getAllSegProjectsMeta(RoutingContext context)
-    {
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
-
-        getAllProjectsMeta(context, request, AnnotationType.SEGMENTATION);
-    }
-
-    private void getAllProjectsMeta(RoutingContext context, JsonObject request, AnnotationType type)
-    {
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsMetadata());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
@@ -347,44 +374,54 @@ public class EndpointRouter extends AbstractVerticle
         HTTPResponseHandler.configureOK(context, res);
     }
 
-    /**
-     * Create new project under the category of bounding box
-     * PUT http://localhost:{port}/bndbox/newproject/:project_name
-     *
-     * Example:
-     * PUT http://localhost:{port}/bndbox/newproject/helloworld
-     *
-     */
-    private void createV1BndBoxProject(RoutingContext context)
+//    /**
+//     * Create new project under the category of bounding box
+//     * PUT http://localhost:{port}/bndbox/newproject/:project_name
+//     *
+//     * Example:
+//     * PUT http://localhost:{port}/bndbox/newproject/helloworld
+//     *
+//     */
+//    private void createV1BndBoxProject(RoutingContext context)
+//    {
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        JsonObject request = new JsonObject()
+//                .put(ParamConfig.getProjectNameParam(), projectName)
+//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+//
+//        createV1NewProject(context, request, AnnotationType.BOUNDINGBOX);
+//    }
+//
+//    /**
+//     * Create new project under the category of segmentation
+//     * PUT http://localhost:{port}/seg/newproject/:project_name
+//     *
+//     * Example:
+//     * PUT http://localhost:{port}/seg/newproject/helloworld
+//     *
+//     */
+//    private void createV1SegProject(RoutingContext context)
+//    {
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        JsonObject request = new JsonObject()
+//                .put(ParamConfig.getProjectNameParam(), projectName)
+//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+//
+//        createV1NewProject(context, request, AnnotationType.SEGMENTATION);
+//    }
+
+    private void createV1NewProject(RoutingContext context)
     {
+        log.info("DEVEN: Creating new project...");
+        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        log.info("DEVEN: Project name: " + projectName);
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
+        log.info("DEVEN: " + request.toString());
 
-        createV1NewProject(context, request, AnnotationType.BOUNDINGBOX);
-    }
-
-    /**
-     * Create new project under the category of segmentation
-     * PUT http://localhost:{port}/seg/newproject/:project_name
-     *
-     * Example:
-     * PUT http://localhost:{port}/seg/newproject/helloworld
-     *
-     */
-    private void createV1SegProject(RoutingContext context)
-    {
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
-
-        createV1NewProject(context, request, AnnotationType.SEGMENTATION);
-    }
-
-    private void createV1NewProject(RoutingContext context, JsonObject request, AnnotationType annotationType)
-    {
         context.request().bodyHandler(h -> {
 
             DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getCreateNewProject());
@@ -395,13 +432,12 @@ public class EndpointRouter extends AbstractVerticle
                 {
                     JsonObject response = (JsonObject) reply.result().body();
 
-                    if(ReplyHandler.isReplyOk(response) == false)
+                    if(!ReplyHandler.isReplyOk(response))
                     {
-                        String projectName = request.getString(ParamConfig.getProjectNameParam());
-
-                        log.info("Failure in creating new " + annotationType.name() +  " project of name: " + projectName);
+                        log.info("Failure in creating new " + type.name() +  " project of name: " + projectName);
                     }
                     HTTPResponseHandler.configureOK(context, response);
+                    log.info("DEVEN: Success...");
                 }
             });
         });
@@ -1286,15 +1322,26 @@ public class EndpointRouter extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
+        //*******************************Endpoints*******************************
+
+        router.get("/:annotation_type/projects").handler(this::getAllProjects);
+
+        router.get("/:annotation_type/projects/meta").handler(this::getAllProjectsMeta);
+
+        router.get("/:annotation_type/projects/:project_name/meta").handler(this::getProjectMetadata);
+
+        router.put("/:annotation_type/newproject/:project_name").handler(this::createV1NewProject);
+
+
         //*******************************Bounding Box*******************************
 
-        router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
+//        router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
 
-        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMeta);
+//        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMeta);
 
-        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);
+//        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);
 
-        router.put("/bndbox/newproject/:project_name").handler(this::createV1BndBoxProject);
+//        router.put("/bndbox/newproject/:project_name").handler(this::createV1BndBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
 
@@ -1333,13 +1380,13 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Segmentation*******************************
 
-        router.get("/seg/projects").handler(this::getAllSegProjects);
+//        router.get("/seg/projects").handler(this::getAllSegProjects);
 
-        router.get("/seg/projects/meta").handler(this::getAllSegProjectsMeta);
+//        router.get("/seg/projects/meta").handler(this::getAllSegProjectsMeta);
 
-        router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
+//        router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
 
-        router.put("/seg/newproject/:project_name").handler(this::createV1SegProject);
+//        router.put("/seg/newproject/:project_name").handler(this::createV1SegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
@@ -1367,6 +1414,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
 
+
         vertx.createHttpServer()
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
@@ -1382,4 +1430,5 @@ public class EndpointRouter extends AbstractVerticle
                     }
                 });
     }
+
 }
