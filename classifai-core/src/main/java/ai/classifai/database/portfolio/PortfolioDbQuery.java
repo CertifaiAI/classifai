@@ -31,22 +31,20 @@ public class PortfolioDbQuery
 
     @Getter private static final String createNewProject = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    //@Getter private static final String updateProject = "UPDATE Portfolio SET uuid_list = ? WHERE project_id = ?";
-
     @Getter private static final String updateProject = "UPDATE Portfolio SET uuid_version_list = ? WHERE project_id = ?";
 
     @Getter private static final String deleteProject = "DELETE FROM Portfolio WHERE project_id = ?";
 
     @Getter private static final String updateLabelList = "UPDATE Portfolio set label_list = ? WHERE project_id = ?";
 
-    @Getter private static final String loadDbProject = "SELECT project_id, project_name, annotation_type, project_path, label_list, is_new, current_version, version_list, uuid_version_list FROM Portfolio";
+    @Getter private static final String loadDbProject = "SELECT project_id, project_name, annotation_type, project_path, label_list, is_new, is_starred, current_version, version_list, uuid_version_list FROM Portfolio";
 
     @Getter private static final String retrieveAllProjectsForAnnotationType = "SELECT project_name FROM Portfolio WHERE annotation_type = ? ORDER BY project_name";
 
     //V2
-    @Getter private static final String retrieveProjectMetadata = "SELECT project_name, project_path, uuid_list, is_new, is_starred, current_version, version_list FROM Portfolio WHERE project_id = ?";
+    @Getter private static final String retrieveProjectMetadata = "retrieveProjectMetadata";
 
-    @Getter private static final String retrieveAllProjectsMetadata = "SELECT project_name, project_path, uuid_list, is_new, is_starred, current_version, version_list FROM Portfolio WHERE annotation_type = ?";
+    @Getter private static final String retrieveAllProjectsMetadata = "retrieveAllProjectsMetadata";
 
     @Getter private static final String updateIsNewParam = "UPDATE Portfolio SET is_new = ? WHERE project_id = ?";
 

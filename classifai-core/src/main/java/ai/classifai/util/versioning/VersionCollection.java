@@ -154,4 +154,16 @@ public class VersionCollection {
 
         return jsonArray.toString();
     }
+
+    public String toString()
+    {
+        JsonArray jsonArray = new JsonArray();
+
+        for(ProjectVersion version: versionIndexDict.values())
+        {
+            jsonArray.add(version.getJsonObject());
+        }
+
+        return StringHandler.cleanUpRegex(jsonArray.toString(), Arrays.asList("\""));
+    }
 }

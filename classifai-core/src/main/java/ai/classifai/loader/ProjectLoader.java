@@ -43,6 +43,7 @@ public class ProjectLoader
     private String projectPath;
 
     private Boolean isProjectNewlyCreated;
+    private Boolean isProjectStarred;
 
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
@@ -90,6 +91,7 @@ public class ProjectLoader
         this.annotationType = build.annotationType;
         this.projectPath = build.projectPath;
         this.isProjectNewlyCreated = build.isProjectNewlyCreated;
+        this.isProjectStarred = build.isProjectStarred;
         this.loaderStatus = build.loaderStatus;
         this.versionCollector = build.versionCollection;
         this.currentProjectVersion = build.projectVersion;
@@ -259,6 +261,7 @@ public class ProjectLoader
         private String projectPath;
 
         private Boolean isProjectNewlyCreated;
+        private Boolean isProjectStarred;
 
         //Load an existing project from database
         //After loaded once, this value will be always LOADED so retrieving of project from memory than db
@@ -299,6 +302,12 @@ public class ProjectLoader
         public Builder isProjectNewlyCreated(Boolean isProjectNewlyCreated)
         {
             this.isProjectNewlyCreated = isProjectNewlyCreated;
+            return this;
+        }
+
+        public Builder isProjectStarred(Boolean isProjectStarred)
+        {
+            this.isProjectStarred = isProjectStarred;
             return this;
         }
 

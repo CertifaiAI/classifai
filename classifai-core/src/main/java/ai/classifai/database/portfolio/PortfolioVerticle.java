@@ -148,6 +148,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     .annotationType(annotationInt)
                     .projectPath(rootProjectPath)
                     .loaderStatus(LoaderStatus.LOADED)
+                    .isProjectStarred(Boolean.FALSE)
                     .isProjectNewlyCreated(Boolean.TRUE)
                     .currentProjectVersion(projectVersion)
                     .versionCollection(versionCollection)
@@ -411,9 +412,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         {
                             for (Row row : rowSet)
                             {
-                                VersionCollection versionCollector = new VersionCollection(row.getString(7));
-                                ProjectVersion projVersion = versionCollector.getVersionUuidDict().get(row.getString(6));
-                                versionCollector.setUuidDict(row.getString(8));
+                                VersionCollection versionCollector = new VersionCollection(row.getString(8));
+                                ProjectVersion projVersion = versionCollector.getVersionUuidDict().get(row.getString(7));
+                                versionCollector.setUuidDict(row.getString(9));
 
                                 ProjectLoader loader = new ProjectLoader.Builder()
                                     .projectID(row.getString(0))
@@ -422,6 +423,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .projectPath(row.getString(3))
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
                                     .isProjectNewlyCreated(row.getBoolean(5))
+                                    .isProjectStarred(row.getBoolean(6))
                                     .versionCollection(versionCollector)
                                     .currentProjectVersion(projVersion)
                                     .build();
@@ -466,53 +468,31 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     //V2 API
     public void getProjectMetadata(Message<JsonObject> message)
     {
-        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
+        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
 
-        Tuple params = Tuple.of(projectID);
+        List<JsonObject> result = new ArrayList<>();
 
-        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveProjectMetadata())
-                .execute(params)
-                .onComplete(fetch -> {
+        getProjectMetadata(result, projectId);
 
-                    if (fetch.succeeded())
-                    {
-                        List<JsonObject> result = new ArrayList<>();
+        JsonObject response = ReplyHandler.getOkReply();
+        response.put(ParamConfig.getContent(), result);
 
-                        RowSet<Row> rowSet = fetch.result();
+        message.replyAndRequest(response);
+    }
 
-                        for (Row row : rowSet)
-                        {
-                            String projectName = row.getString(0);
-                            String projectPath = row.getString(1);
-                            List<String> uuidList = ConversionHandler.string2StringList(row.getString(2));
-                            Boolean isNew = row.getBoolean(3);
-                            Boolean isStarred = row.getBoolean(4);
-                            Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
-                            String currentUuid = row.getString(5);
-                            String strVersionList = StringHandler.cleanUpRegex(row.getString(6), Arrays.asList("\""));
+    private void getProjectMetadata(@NonNull List<JsonObject> result, @NonNull String projectId)
+    {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
-
-                            result.add(new JsonObject()
-                                    .put(ParamConfig.getProjectNameParam(), projectName)
-                                    .put(ParamConfig.getProjectPathParam(), projectPath)
-                                    .put(ParamConfig.getIsNewParam(), isNew)
-                                    .put(ParamConfig.getIsStarredParam(), isStarred)
-                                    .put(ParamConfig.getIsLoadedParam(), isLoaded)
-                                    .put(ParamConfig.getCurrentVersionUuidParam(), currentUuid)
-                                    .put(ParamConfig.getVersionListParam(), strVersionList)
-                                    .put(ParamConfig.getTotalUuidParam(), uuidList.size()));
-
-                            JsonObject response = ReplyHandler.getOkReply();
-                            response.put(ParamConfig.getContent(), result);
-
-                            message.replyAndRequest(response);
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+        result.add(new JsonObject()
+                .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
+                .put(ParamConfig.getProjectPathParam(), loader.getProjectPath())
+                .put(ParamConfig.getIsNewParam(), loader.getIsProjectNewlyCreated())
+                .put(ParamConfig.getIsStarredParam(), loader.getIsProjectStarred())
+                .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
+                .put(ParamConfig.getCurrentVersionUuidParam(), loader.getCurrentProjectVersion().getVersionUuid())
+                .put(ParamConfig.getVersionListParam(), loader.getVersionCollector().toString())
+                .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDatabase().size()));
     }
 
     //V2 API
@@ -522,39 +502,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         Tuple params = Tuple.of(annotationTypeIndex);
 
-        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsMetadata())
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                 .execute(params)
                 .onComplete(fetch -> {
 
                     if (fetch.succeeded())
                     {
-                        List<JsonObject> result = new ArrayList<>();
-
                         RowSet<Row> rowSet = fetch.result();
+
+                        List<JsonObject> result = new ArrayList<>();
 
                         for (Row row : rowSet)
                         {
                             String projectName = row.getString(0);
-                            String projectPath = row.getString(1);
-                            String uuidList = row.getString(2);
 
-                            int uuidListSize = ConversionHandler.string2StringList(uuidList).size();
-
-                            String projectUuid = ProjectHandler.getProjectID(projectName, annotationTypeIndex);
-                            Boolean isLoaded = ProjectHandler.getProjectLoader(projectUuid).getIsLoadedFrontEndToggle();
-
-                            String currentUuid = row.getString(5);
-                            String strVersionList = StringHandler.cleanUpRegex(row.getString(6), Arrays.asList("\""));
-
-                            result.add(new JsonObject()
-                                    .put(ParamConfig.getProjectNameParam(), projectName)
-                                    .put(ParamConfig.getProjectPathParam(), projectPath)
-                                    .put(ParamConfig.getIsNewParam(), row.getBoolean(3))
-                                    .put(ParamConfig.getIsStarredParam(), row.getBoolean(4))
-                                    .put(ParamConfig.getIsLoadedParam(), isLoaded)
-                                    .put(ParamConfig.getCurrentVersionUuidParam(), currentUuid)
-                                    .put(ParamConfig.getVersionListParam(), strVersionList)
-                                    .put(ParamConfig.getTotalUuidParam(), uuidListSize));
+                            getProjectMetadata(result, ProjectHandler.getProjectID(projectName, annotationTypeIndex));
                         }
 
                         JsonObject response = ReplyHandler.getOkReply();
