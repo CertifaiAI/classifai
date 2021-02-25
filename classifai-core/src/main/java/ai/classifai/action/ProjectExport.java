@@ -3,7 +3,7 @@ package ai.classifai.action;
 import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.DateTime;
+import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;
@@ -22,8 +22,8 @@ public class ProjectExport
     {
         JsonObject jsonObject = new JsonObject()
                 .put("tool", "classifai")
-                .put("version", "2.0.0-alpha")
-                .put("updateddate", DateTime.get());
+                .put("tool version", "2.0.0-alpha")
+                .put("updateddate", new DateTime().toString());
 
 
         return jsonObject;

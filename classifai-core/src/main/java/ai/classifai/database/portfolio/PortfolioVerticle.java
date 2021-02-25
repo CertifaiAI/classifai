@@ -27,7 +27,7 @@ import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.DateTime;
+import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
@@ -39,6 +39,8 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
+import ai.classifai.util.versioning.ProjectVersion;
+import ai.classifai.util.versioning.VersionCollection;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -55,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -135,13 +138,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             Tuple params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, rootPath.getAbsolutePath());
 
-
             portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
                     .execute(params)
                     .onComplete(fetch -> {
 
                     if (fetch.succeeded())
                     {
+                        VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
+
                         ProjectLoader loader = new ProjectLoader.Builder()
                                 .projectID(projectID)
                                 .projectName(projectName)
@@ -149,6 +153,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 .projectPath(rootPath.toString())
                                 .loaderStatus(LoaderStatus.LOADED)
                                 .isProjectNewlyCreated(Boolean.TRUE)
+                                .versionCollection(versionCollection)
                                 .build();
 
                         ProjectHandler.loadProjectLoader(loader);
@@ -195,6 +200,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                         if (fetch.succeeded())
                         {
+                            VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
+
                             ProjectLoader loader = new ProjectLoader.Builder()
                             .projectID(projectID)
                             .projectName(projectName)
@@ -202,6 +209,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             .projectPath("")
                             .loaderStatus(LoaderStatus.LOADED)
                             .isProjectNewlyCreated(Boolean.TRUE)
+                            .versionCollection(versionCollection)
                             .build();
 
                             ProjectHandler.loadProjectLoader(loader);
@@ -386,6 +394,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         {
                             for (Row row : rowSet)
                             {
+                                String strVersionCollection = row.getString(7);
+
+                                VersionCollection versionCollection = new VersionCollection(strVersionCollection);
+
                                 ProjectLoader loader = new ProjectLoader.Builder()
                                     .projectID(row.getString(0))
                                     .projectName(row.getString(1))
@@ -393,6 +405,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .projectPath(row.getString(3))
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
                                     .isProjectNewlyCreated(row.getBoolean(6))
+                                    .versionCollection(versionCollection)
                                     .build();
 
                                 loader.setLabelList(ConversionHandler.string2StringList(row.getString(4)));
@@ -435,6 +448,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         {
                             String rootProjectPath = dataPath == null ? "" : dataPath.getAbsolutePath();
 
+                            VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
+
+
                             ProjectLoader loader = new ProjectLoader.Builder()
                                       .projectID(projectID)
                                       .projectName(projectName)
@@ -442,6 +458,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                       .projectPath(rootProjectPath)
                                       .loaderStatus(LoaderStatus.LOADED)
                                       .isProjectNewlyCreated(Boolean.TRUE)
+                                      .versionCollection(versionCollection)
                                       .build();
 
                             if(dataPath != null)
@@ -489,16 +506,19 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             Boolean isNew = row.getBoolean(3);
                             Boolean isStarred = row.getBoolean(4);
                             Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
-                            String dataTime = row.getString(5);
+                            String currentUuid = row.getString(5);
+                            String strVersionList = StringHandler.cleanUpRegex(row.getString(6), Arrays.asList("\""));
 
-                            //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
+                            new VersionCollection(strVersionList);
+
                             result.add(new JsonObject()
                                     .put(ParamConfig.getProjectNameParam(), projectName)
                                     .put(ParamConfig.getProjectPathParam(), projectPath)
                                     .put(ParamConfig.getIsNewParam(), isNew)
                                     .put(ParamConfig.getIsStarredParam(), isStarred)
                                     .put(ParamConfig.getIsLoadedParam(), isLoaded)
-                                    .put(ParamConfig.getCreatedDateParam(), dataTime)
+                                    .put(ParamConfig.getCurrentVersionUuidParam(), currentUuid)
+                                    .put(ParamConfig.getVersionListParam(), strVersionList)
                                     .put(ParamConfig.getTotalUuidParam(), uuidList.size()));
 
                             JsonObject response = ReplyHandler.getOkReply();
@@ -537,10 +557,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             String projectPath = row.getString(1);
                             String uuidList = row.getString(2);
 
-                            int totalUuid = ConversionHandler.string2StringList(uuidList).size();
+                            int uuidListSize = ConversionHandler.string2StringList(uuidList).size();
 
                             String projectUuid = ProjectHandler.getProjectID(projectName, annotationTypeIndex);
                             Boolean isLoaded = ProjectHandler.getProjectLoader(projectUuid).getIsLoadedFrontEndToggle();
+
+                            String currentUuid = row.getString(5);
+                            String strVersionList = StringHandler.cleanUpRegex(row.getString(6), Arrays.asList("\""));
 
                             result.add(new JsonObject()
                                     .put(ParamConfig.getProjectNameParam(), projectName)
@@ -548,8 +571,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .put(ParamConfig.getIsNewParam(), row.getBoolean(3))
                                     .put(ParamConfig.getIsStarredParam(), row.getBoolean(4))
                                     .put(ParamConfig.getIsLoadedParam(), isLoaded)
-                                    .put(ParamConfig.getCreatedDateParam(), row.getString(5))
-                                    .put(ParamConfig.getTotalUuidParam(), totalUuid));
+                                    .put(ParamConfig.getCurrentVersionUuidParam(), currentUuid)
+                                    .put(ParamConfig.getVersionListParam(), strVersionList)
+                                    .put(ParamConfig.getTotalUuidParam(), uuidListSize));
                         }
 
                         JsonObject response = ReplyHandler.getOkReply();
@@ -629,16 +653,24 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private static Tuple buildNewProject(String projectName, Integer annotationType, String projectID, String projectPath)
     {
-        return Tuple.of(projectID,                   //project_id
-                        projectName,           //project_name
-                        annotationType,              //annotation_type
-                        projectPath,                 //project_path
-                        ParamConfig.getEmptyArray(), //label_list
-                        ParamConfig.getEmptyArray(), //uuid_list
-                        true,                        //is_new
-                        false,                       //is_starred
-                        DateTime.get());             //created_date
+        ProjectVersion version = new ProjectVersion();
+
+        JsonArray versionList = new JsonArray().add(version.getJsonObject()).add(version.getJsonObject());
+
+        System.out.println(versionList.toString());
+
+        return Tuple.of(projectID,                              //project_id
+                        projectName,                      //project_name
+                        annotationType,                         //annotation_type
+                        projectPath,                            //project_path
+                        ParamConfig.getEmptyArray(),            //label_list
+                        ParamConfig.getEmptyArray(),            //uuid_list
+                        true,                                   //is_new
+                        false,                                  //is_starred
+                        version.getVersionUuid(),               //current_version
+                        versionList.toString());                //version_list
     }
+
 
     private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {

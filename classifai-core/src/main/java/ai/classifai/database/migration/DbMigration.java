@@ -20,7 +20,7 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
-import ai.classifai.util.DateTime;
+import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UUIDGenerator;
@@ -362,7 +362,7 @@ public class DbMigration
                         st.setString(5, obj.getJSONArray(ParamConfig.getUuidListParam()).toString());
                         st.setBoolean(6, false);
                         st.setBoolean(7, false);
-                        st.setString(8, DateTime.get()); //changed created date of old projects to current date of migration
+                        st.setString(8, new DateTime().toString()); //changed created date of old projects to current date of migration
 
 
                         st.executeUpdate();

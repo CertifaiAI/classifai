@@ -47,6 +47,8 @@ public class ParamConfig
     @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
     @Getter private static final String logFilePath = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
 
+    @Getter private static final String dateTimeFormat = "yyyy/MM/dd hh:mm:ss a";
+
     @Getter private static final String projectNameParam = "project_name";
     @Getter private static final String projectIdParam = "project_id";
     @Getter private static final String projectPathParam = "project_path";
@@ -60,9 +62,6 @@ public class ParamConfig
     @Getter private static final String totalUuidParam = "total_uuid";
     @Getter private static final String uuidListParam = "uuid_list";
     @Getter private static final String labelListParam = "label_list";
-
-    @Getter private static final String uuidDeletionListParam = "uuid_delete_list";
-    @Getter private static final String uuidAdditionListParam = "uuid_add_list";
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
@@ -105,6 +104,17 @@ public class ParamConfig
     //router endpoint
     @Getter private static final String fileSysParam = "file_sys";
     @Getter private static final String emptyArray = "[]";
+
+    //reload project
+
+    @Getter private static final String uuidDeletionListParam = "uuid_delete_list";
+    @Getter private static final String uuidAdditionListParam = "uuid_add_list";
+
+    //versioning
+    @Getter private static final String currentVersionUuidParam = "current_version_uuid";
+    @Getter private static final String versionListParam = "version_list";
+    @Getter private static final String versionIndexParam = "version_index";
+    @Getter private static final String versionUuidParam = "version_uuid";
 
 
     //output file path

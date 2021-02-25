@@ -17,6 +17,8 @@ package ai.classifai.loader;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.versioning.ProjectVersion;
+import ai.classifai.util.versioning.VersionCollection;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -51,6 +53,8 @@ public class ProjectLoader
      //a list of unique uuid representing number of data points in one project
     private List<String> sanityUuidList = new ArrayList<>();
     private List<String> uuidListFromDatabase = new ArrayList<>();
+
+    VersionCollection versionList;
     private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
     //used when checking for progress in
@@ -76,6 +80,7 @@ public class ProjectLoader
 
     private List<Integer> progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
+
     private ProjectLoader(Builder build)
     {
         this.projectID = build.projectID;
@@ -84,6 +89,7 @@ public class ProjectLoader
         this.projectPath = build.projectPath;
         this.isProjectNewlyCreated = build.isProjectNewlyCreated;
         this.loaderStatus = build.loaderStatus;
+        this.versionList = build.versionCollection;
     }
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
@@ -253,6 +259,8 @@ public class ProjectLoader
         //After loaded once, this value will be always LOADED so retrieving of project from memory than db
         private LoaderStatus loaderStatus;
 
+        private VersionCollection versionCollection;
+
         public ProjectLoader build()
         {
             return new ProjectLoader(this);
@@ -291,6 +299,12 @@ public class ProjectLoader
         public Builder loaderStatus(LoaderStatus loaderStatus)
         {
             this.loaderStatus = loaderStatus;
+            return this;
+        }
+
+        public Builder versionCollection(VersionCollection versionCollection)
+        {
+            this.versionCollection = versionCollection;
             return this;
         }
     }
