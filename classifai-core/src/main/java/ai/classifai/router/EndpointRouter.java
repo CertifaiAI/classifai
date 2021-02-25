@@ -144,9 +144,12 @@ public class EndpointRouter extends AbstractVerticle
                     }
                 });
 
-        // Set vertx for Endpoints
         v1.setVertx(vertx);
+        v1.setFolderSelector(folderSelector);
+        v1.setFileSelector(fileSelector);
+
         v2.setVertx(vertx);
+        v2.setProjectFolderSelector(projectFolderSelector);
     }
 
 }

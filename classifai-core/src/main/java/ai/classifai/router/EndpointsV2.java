@@ -20,9 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointsV2 {
 
-    @Setter
-    private Vertx vertx;
-    public ProjectFolderSelector projectFolderSelector;
+    @Setter private Vertx vertx = null;
+    @Setter public ProjectFolderSelector projectFolderSelector = null;
 
     Utils util = new Utils();
 

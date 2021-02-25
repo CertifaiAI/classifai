@@ -28,9 +28,9 @@ import java.util.List;
 @Slf4j
 public class EndpointsV1 {
 
-    @Setter private Vertx vertx;
-    public ToolFileSelector fileSelector;
-    public ToolFolderSelector folderSelector;
+    @Setter private Vertx vertx = null;
+    @Setter private ToolFileSelector fileSelector = null;
+    @Setter private ToolFolderSelector folderSelector = null;
 
     Utils util = new Utils();
 
@@ -339,14 +339,18 @@ public class EndpointsV1 {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
+        log.info("DEVEN: " + projectName + " " + type);
         if(ParamConfig.isDockerEnv()) log.info("Docker Mode. Choosing file/folder not supported. Use --volume to attach data folder.");
         checkIfDockerEnv(context);
 
+
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        log.info("DEVEN: loader: " + loader);
 
         if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
+        log.info("DEVEN: fileSystemStatus: " + fileSystemStatus);
 
         if(fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
         {
