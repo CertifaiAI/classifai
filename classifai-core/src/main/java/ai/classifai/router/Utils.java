@@ -25,15 +25,13 @@ public class Utils {
     public AnnotationType getAnnotationType(String annotation)
     {
         AnnotationType type = null;
-        log.info("DEVEN: Annotation: " + annotation);
+
         if(annotation.equals("bndbox"))
         {
-            log.info("DEVEN: BOUNDINGBOX");
             type = AnnotationType.BOUNDINGBOX;
         }
         else if(annotation.equals("seg"))
         {
-            log.info("DEVEN: SEGMENTATION");
             type = AnnotationType.SEGMENTATION;
         }
         return type;
