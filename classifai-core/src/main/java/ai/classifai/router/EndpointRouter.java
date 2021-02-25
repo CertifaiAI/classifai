@@ -38,7 +38,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -51,75 +50,247 @@ import java.util.List;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    private ToolFileSelector fileSelector;
-    private ToolFolderSelector folderSelector;
-    private ProjectFolderSelector  projectFolderSelector;
+    public ToolFileSelector fileSelector;
+    public ToolFolderSelector folderSelector;
+    public ProjectFolderSelector  projectFolderSelector;
+
+    Utils util = new Utils();
 
     public EndpointRouter()
     {
-        Thread threadfile = new Thread(){
-            public void run(){
-                fileSelector = new ToolFileSelector();
-            }
-        };
+        Thread threadfile = new Thread(() -> fileSelector = new ToolFileSelector());
         threadfile.start();
 
-        Thread threadfolder = new Thread(){
-            public void run(){
-                folderSelector = new ToolFolderSelector();
-            }
-        };
+        Thread threadfolder = new Thread(() -> folderSelector = new ToolFolderSelector());
         threadfolder.start();
 
-        Thread projectFolder = new Thread(){
-            public void run(){
-                projectFolderSelector = new ProjectFolderSelector();
-            }
-        };
+        Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
         projectFolder.start();
 
     }
 
-//    /**
-//     * Get a list of all projects under the category of bounding box
-//     * PUT http://localhost:{port}/bndbox/projects
-//     *
-//     */
-//    private void getAllBndBoxProjects(RoutingContext context)
-//    {
-//        getAllProjects(context, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Get a list of all projects under the category of segmentation
-//     * PUT http://localhost:{port}/seg/projects
-//     *
-//     */
-//    private void getAllSegProjects(RoutingContext context)
-//    {
-//        getAllProjects(context, AnnotationType.SEGMENTATION);
-//    }
 
-    private AnnotationType getAnnotationType(String annotation)
+    /***
+     * change is_load state of a project to false
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name
+     */
+    public void closeProjectState(RoutingContext context)
     {
-        AnnotationType type = null;
-        log.info("DEVEN: Annotation: " + annotation);
-        if(annotation.equals("bndbox"))
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
         {
-            log.info("DEVEN: BOUNDINGBOX");
-            type = AnnotationType.BOUNDINGBOX;
-        }
-        else if(annotation.equals("seg"))
-        {
-            log.info("DEVEN: SEGMENTATION");
-            type = AnnotationType.SEGMENTATION;
-        }
-        return type;
+            try
+            {
+                JsonObject jsonObject = h.toJsonObject();
+
+                if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
+                {
+                    ProjectHandler.getProjectLoader(projectID).setIsLoadedFrontEndToggle(Boolean.FALSE);
+                }
+                else
+                {
+                    throw new Exception("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
+                }
+
+                HTTPResponseHandler.configureOK(context);
+
+            }
+            catch (Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(e.getMessage()));
+
+            }
+        });
     }
 
-    private void getAllProjects(RoutingContext context)
+    /***
+     * Star a project
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
+     */
+    public void starProject(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            JsonObject jsonObject = h.toJsonObject();
+
+            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
+
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+            {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+    }
+
+    /**
+     * Create new project
+     * PUT http://localhost:{port}/v2/:annotation_type/newproject/:project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/newproject/helloworld
+     *
+     */
+    public void createV2Project(RoutingContext context)
+    {
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        projectFolderSelector.run(projectName, type);
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
+    /**
+     * Reload v2 project
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/reload
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
+     *
+     */
+    public void reloadV2Project(RoutingContext context)
+    {
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
+
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
+
+        DeliveryOptions reloadOpts = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOpts, fetch ->
+        {
+            JsonObject response = (JsonObject) fetch.result().body();
+
+            if (ReplyHandler.isReplyOk(response))
+            {
+                HTTPResponseHandler.configureOK(context);
+
+            } else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
+            }
+        });
+    }
+
+    /**
+     * Get load status of project
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/reloadstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
+     *
+     */
+    public void reloadV2ProjectStatus(RoutingContext context)
+    {
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(util.checkIfProjectNull(context, loader, projectName));
+
+        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+
+        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+
+        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
+        {
+            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+        {
+            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
+            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        {
+            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
+        }
+
+        HTTPResponseHandler.configureOK(context, res);
+    }
+
+    /***
+     * export a project to json
+     *
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/export
+     */
+    public void exportV2Project(RoutingContext context)
+    {
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getProjectIdParam(), projectID)
+                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
+
+            if (reply.succeeded()) {
+
+                JsonObject response = (JsonObject) reply.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
+
+            }
+        });
+
+    }
+
+
+    /**
+     * Get a list of all projects
+     * PUT http://localhost:{port}/:annotation_type/projects
+     *
+     */
+    public void getAllProjects(RoutingContext context)
+    {
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
@@ -140,38 +311,16 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
-//    /**
-//     * Retrieve metadata of bounding box project
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name/meta
-//     *
-//     */
-//    public void getBndBoxProjectMeta(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        getProjectMetadata(context, projectName, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Retrieve metadata of segmentation project
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name/meta
-//     *
-//     */
-//    public void getSegProjectMeta(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        getProjectMetadata(context, projectName, AnnotationType.SEGMENTATION);
-//    }
 
     /**
-     * Retrieve metadata of project
+     * Retrieve specific project metadata
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/meta
+     *
      */
-    private void getProjectMetadata(RoutingContext context)
+    public void getProjectMetadata(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -179,7 +328,7 @@ public class EndpointRouter extends AbstractVerticle
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(checkIfProjectNull(context, loader, projectName)) return;
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         if(loader == null)
         {
@@ -214,35 +363,14 @@ public class EndpointRouter extends AbstractVerticle
     }
 
 
-//    /**
-//     * Get metadata of all bounding box projects
-//     * GET http://localhost:{port}/bndbox/projects/meta
-//     *
-//     */
-//    private void getAllBndBoxProjectsMeta(RoutingContext context)
-//    {
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
-//
-//        getAllProjectsMeta(context, request, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Get metadata of all segmentation projects
-//     * GET http://localhost:{port}/seg/projects/meta
-//     *
-//     */
-//    private void getAllSegProjectsMeta(RoutingContext context)
-//    {
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
-//
-//        getAllProjectsMeta(context, request, AnnotationType.SEGMENTATION);
-//    }
-
-    private void getAllProjectsMeta(RoutingContext context)
+    /**
+     * Get metadata of all projects
+     * GET http://localhost:{port}/:annotation_type/projects/meta
+     *
+     */
+    public void getAllProjectsMeta(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
@@ -264,162 +392,18 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
-
-//    /**
-//     * Create new project under the category of bounding box
-//     * PUT http://localhost:{port}/v2/bndbox/newproject/:project_name
-//     *
-//     * Example:
-//     * PUT http://localhost:{port}/v2/bndbox/newproject/helloworld
-//     *
-//     */
-//    private void createV2BndBoxProject(RoutingContext context)
-//    {
-//        createV2Project(context, AnnotationType.BOUNDINGBOX);
-//    }
-
-    private void createV2Project(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        projectFolderSelector.run(projectName, type);
-
-        HTTPResponseHandler.configureOK(context);
-    }
-
-//    /**
-//     * Reload v2 project
-//     * PUT http://localhost:{port}/v2/bndbox/projects/:project_name/reload
-//     *
-//     * Example:
-//     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
-//     *
-//     */
-//    private void reloadV2BndBoxProject(RoutingContext context)
-//    {
-//        reloadV2Project(context, AnnotationType.BOUNDINGBOX);
-//    }
-
-    private void reloadV2Project(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(checkIfProjectNull(context, loader, projectName)) return;
-
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
-
-        DeliveryOptions reloadOpts = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOpts, fetch ->
-        {
-            JsonObject response = (JsonObject) fetch.result().body();
-
-            if (ReplyHandler.isReplyOk(response))
-            {
-                HTTPResponseHandler.configureOK(context);
-
-            } else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
-            }
-        });
-    }
-
-//    /**
-//     * Get load status of project
-//     * GET http://localhost:{port}/v2/bndbox/projects/:project_name/reloadstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
-//     *
-//     */
-//    private void reloadV2BndBoxProjectStatus(RoutingContext context)
-//    {
-//        reloadV2ProjectStatus(context, AnnotationType.BOUNDINGBOX);
-//    }
-
-    private void reloadV2ProjectStatus(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(checkIfProjectNull(context, loader, projectName));
-
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
-
-        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
-        {
-            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
-        {
-            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
-            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
-        {
-            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
-        }
-
-        HTTPResponseHandler.configureOK(context, res);
-    }
-
-//    /**
-//     * Create new project under the category of bounding box
-//     * PUT http://localhost:{port}/bndbox/newproject/:project_name
-//     *
-//     * Example:
-//     * PUT http://localhost:{port}/bndbox/newproject/helloworld
-//     *
-//     */
-//    private void createV1BndBoxProject(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getProjectNameParam(), projectName)
-//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
-//
-//        createV1NewProject(context, request, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Create new project under the category of segmentation
-//     * PUT http://localhost:{port}/seg/newproject/:project_name
-//     *
-//     * Example:
-//     * PUT http://localhost:{port}/seg/newproject/helloworld
-//     *
-//     */
-//    private void createV1SegProject(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getProjectNameParam(), projectName)
-//                .put(ParamConfig.getAnnotationTypeParam(), AnnotationType.SEGMENTATION.ordinal());
-//
-//        createV1NewProject(context, request, AnnotationType.SEGMENTATION);
-//    }
-
-    private void createV1NewProject(RoutingContext context)
+    /**
+     * Create new project
+     * PUT http://localhost:{port}/:annotation_type/newproject/:project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/seg/newproject/helloworld
+     *
+     */
+    public void createV1NewProject(RoutingContext context)
     {
         log.info("DEVEN: Creating new project...");
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         log.info("DEVEN: Project name: " + projectName);
@@ -449,35 +433,8 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
-//    /**
-//     * Load existing project from the bounding box database
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    private void loadBndBoxProject(RoutingContext context)
-//    {
-//        loadProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getLoadValidProjectUuid(), AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Load existing project from the segmentation database
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/seg/projects/helloworld
-//     *
-//     */
-//    private void loadSegProject(RoutingContext context)
-//    {
-//        loadProject(context, SegDbQuery.getQueue(), SegDbQuery.getLoadValidProjectUuid(), AnnotationType.SEGMENTATION);
-//    }
 
-    private String getDbQuery(AnnotationType type)
+    public String getDbQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -492,7 +449,7 @@ public class EndpointRouter extends AbstractVerticle
         return null;
     }
 
-    private String getValidProjectUuid(AnnotationType type)
+    public String getValidProjectUuidQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -507,12 +464,21 @@ public class EndpointRouter extends AbstractVerticle
         return null;
     }
 
+    /**
+     * Load existing project from the bounding box database
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
     public void loadProject(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = getDbQuery(type);
-        String query = getValidProjectUuid(type);
+        String query = getValidProjectUuidQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -520,7 +486,7 @@ public class EndpointRouter extends AbstractVerticle
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(checkIfProjectNull(context, loader, projectName)) return;
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
 
@@ -561,50 +527,24 @@ public class EndpointRouter extends AbstractVerticle
         }
     }
 
-//    /**
-//     * Get status of loading a project
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name/loadingstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/bndbox/projects/helloworld/loadingstatus
-//     */
-//    private void loadBndBoxProjectStatus(RoutingContext context)
-//    {
-//        loadProjectStatus(context, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Get status of loading a project
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name/loadingstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
-//     */
-//    private void loadSegProjectStatus(RoutingContext context)
-//    {
-//        loadProjectStatus(context, AnnotationType.SEGMENTATION);
-//    }
 
     /**
      * Get status of loading a project
      *
-     * GET http://localhost:{port}/bndbox/projects/:project_name/loadingstatus
-     * GET http://localhost:{port}/seg/projects/:project_name/loadingstatus
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
      *
      * Example:
      * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
      */
-    private void loadProjectStatus(RoutingContext context)
+    public void loadProjectStatus(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if (checkIfProjectNull(context, projectLoader, projectName)) return;
+        if (util.checkIfProjectNull(context, projectLoader, projectName)) return;
 
         LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
 
@@ -637,41 +577,18 @@ public class EndpointRouter extends AbstractVerticle
         }
     }
 
-//    /**
-//     * Open file system (file/folder) for a specific bounding box project
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name/filesys/:file_sys
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/bndbox/projects/helloworld/filesys/file
-//     * GET http://localhost:{port}/bndbox/projects/helloworld/filesys/folder
-//     */
-//    private void selectBndBoxFileSystemType(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        selectFileSystemType(context, projectName, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Open file system (file/folder) for a specific segmentation project
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name/filesys/:file_sys
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/seg/projects/helloworld/filesys/file
-//     * GET http://localhost:{port}/seg/projects/helloworld/filesys/folder
-//     */
-//    private void selectSegFileSystemType(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        selectFileSystemType(context, projectName, AnnotationType.SEGMENTATION);
-//    }
-
-    private void selectFileSystemType(RoutingContext context)
+    /**
+     * Open file system (file/folder) for a specific segmentation project
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesys/:file_sys
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/filesys/file
+     * GET http://localhost:{port}/seg/projects/helloworld/filesys/folder
+     */
+    public void selectFileSystemType(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -681,7 +598,7 @@ public class EndpointRouter extends AbstractVerticle
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(checkIfProjectNull(context, loader, projectName)) return;
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
 
@@ -716,46 +633,17 @@ public class EndpointRouter extends AbstractVerticle
         }
     }
 
-//    /**
-//     * Get file system (file/folder) status for a specific boundingbox project
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name/filesysstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
-//     *
-//     */
-//    private void getBndBoxFileSystemStatus(RoutingContext context)
-//    {
-//        getFileSystemStatus(context, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Get file system (file/folder) status for a specific segmentation project
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name/filesysstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/seg/projects/helloworld/filesysstatus
-//     *
-//     */
-//    private void getSegFileSystemStatus(RoutingContext context)
-//    {
-//        getFileSystemStatus(context, AnnotationType.SEGMENTATION);
-//    }
-
     /**
      * Get file system (file/folder) status for a specific project
-     * GET http://localhost:{port}/bndbox/projects/:project_name/filesysstatus
-     * GET http://localhost:{port}/seg/projects/:project_name/filesysstatus
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesysstatus
      *
      * Example:
      * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
      *
      */
-    private void getFileSystemStatus(RoutingContext context) {
+    public void getFileSystemStatus(RoutingContext context) {
 
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         checkIfDockerEnv(context);
 
@@ -763,7 +651,7 @@ public class EndpointRouter extends AbstractVerticle
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(checkIfProjectNull(context, loader, projectName));
+        if(util.checkIfProjectNull(context, loader, projectName));
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
@@ -789,7 +677,7 @@ public class EndpointRouter extends AbstractVerticle
         HTTPResponseHandler.configureOK(context, res);
     }
 
-    private void checkIfDockerEnv(RoutingContext context)
+    public void checkIfDockerEnv(RoutingContext context)
     {
         if(ParamConfig.isDockerEnv())
         {
@@ -797,45 +685,8 @@ public class EndpointRouter extends AbstractVerticle
         }
     }
 
-//    /**
-//     * Retrieve thumbnail with metadata
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
-//     *
-//     */
-//    private void getBndBoxThumbnail(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID)
-//                .put(ParamConfig.getProjectNameParam(), projectName);
-//
-//        getThumbnail(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getQueryData(), request);
-//    }
-//
-//    /**
-//     * Retrieve thumbnail with metadata
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/thumbnail
-//     *
-//     */
-//    private void getSegThumbnail(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID)
-//                .put(ParamConfig.getProjectNameParam(), projectName);
-//
-//        getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.getQueryData(), request);
-//    }
 
-    private String getQueryData(AnnotationType type)
+    public String getQueryData(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -850,9 +701,15 @@ public class EndpointRouter extends AbstractVerticle
         return null;
     }
 
-    private void getThumbnail(RoutingContext context)
+    /**
+     * Retrieve thumbnail with metadata
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
+     *
+     */
+    public void getThumbnail(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = getDbQuery(type);
         String query = getQueryData(type);
@@ -883,45 +740,8 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
-//    /***
-//     *
-//     * Get Image Source
-//     *
-//     * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/imgsrc
-//     *
-//     */
-//    private void getBndBoxImageSource(RoutingContext context) {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID)
-//                .put(ParamConfig.getProjectNameParam(), projectName);
-//
-//        getImageSource(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getRetrieveDataPath(), request);
-//    }
-//
-//    /***
-//     *
-//     * Get Image Source
-//     *
-//     * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/imgsrc
-//     *
-//     */
-//    private void getSegImageSource(RoutingContext context) {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID);
-//
-//        getImageSource(context, SegDbQuery.getQueue(), SegDbQuery.getRetrieveDataPath(), request);
-//    }
 
-    private String getRetrieveDataPath(AnnotationType type)
+    public String getRetrieveDataPathQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -936,12 +756,19 @@ public class EndpointRouter extends AbstractVerticle
         return null;
     }
 
-    private void getImageSource(RoutingContext context)
+    /***
+     *
+     * Get Image Source
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
+     *
+     */
+    public void getImageSource(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = getDbQuery(type);
-        String query = getRetrieveDataPath(type);
+        String query = getRetrieveDataPathQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -970,100 +797,22 @@ public class EndpointRouter extends AbstractVerticle
     }
 
 
-//    /***
-//     *
-//     * Update bounding box labelling information
-//     *
-//     * PUT http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/update
-//     *
-//     */
-//    private void updateBndBoxData(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
-//
-//        if(checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(h ->
-//        {
-//            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), BoundingBoxDbQuery.getUpdateData());
-//
-//            try
-//            {
-//                JsonObject jsonObject = h.toJsonObject();
-//                jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-//
-//                vertx.eventBus().request(BoundingBoxDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
-//                {
-//                    if (fetch.succeeded()) {
-//                        JsonObject response = (JsonObject) fetch.result().body();
-//
-//                        HTTPResponseHandler.configureOK(context, response);
-//
-//                    } else {
-//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for bounding box project: " + projectName));
-//                    }
-//                });
-//
-//            }catch (Exception e)
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-//            }
-//        });
-//    }
-//
-//    /***
-//     *
-//     * Update segmentation labelling information
-//     *
-//     * PUT http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/update
-//     *
-//     */
-//    private void updateSegData(RoutingContext context)
-//    {
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
-//
-//        if (checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(h ->
-//        {
-//            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), SegDbQuery.getUpdateData());
-//
-//            try
-//            {
-//                JsonObject jsonObject = h.toJsonObject();
-//                jsonObject.put(ParamConfig.getProjectIdParam(), ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal()));
-//
-//                vertx.eventBus().request(SegDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
-//                {
-//                    if (fetch.succeeded()) {
-//                        JsonObject response = (JsonObject) fetch.result().body();
-//
-//                        HTTPResponseHandler.configureOK(context, response);
-//
-//                    } else {
-//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for segmentation project."));
-//                    }
-//                });
-//            } catch (Exception e) {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-//            }
-//        });
-//    }
-
-
-    private void updateData(RoutingContext context)
+    /***
+     *
+     * Update labelling information
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
+     *
+     */
+    public void updateData(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
 
-        if(checkIfProjectNull(context, projectID, projectName)) return;
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -1094,49 +843,22 @@ public class EndpointRouter extends AbstractVerticle
     }
 
 
-//    /***
-//     *
-//     * Update labels
-//     *
-//     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
-//     *
-//     */
-//    private void updateBndBoxLabels(RoutingContext context)
-//    {
-//        updateLabels(context, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//
-//    /***
-//     *
-//     * Update labels
-//     *
-//     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
-//     *
-//     */
-//    private void updateSegLabels(RoutingContext context)
-//    {
-//        updateLabels(context, AnnotationType.SEGMENTATION);
-//    }
-
-
     /***
      *
      * Update labels
      *
-     * PUT http://localhost:{port}/bndbox/projects/:project_name/newlabels
-     * PUT http://localhost:{port}/seg/projects/:project_name/newlabels
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
      *
      */
-    private void updateLabels(RoutingContext context)
+    public void updateLabels(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
 
-        if(checkIfProjectNull(context, projectID, projectName)) return;
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -1163,196 +885,8 @@ public class EndpointRouter extends AbstractVerticle
             }
         });
     }
-//
-//    /***
-//     * change is_load state of a bounding box project to false
-//     *
-//     * PUT http://localhost:{port}/bndbox/projects/:project_name
-//     */
-//    private void closeBndBoxProjectState(RoutingContext context)
-//    {
-//        closeProjectState(context, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /***
-//     * change is_load state of a segmentation project to false
-//     *
-//     * PUT http://localhost:{port}/seg/projects/:project_name
-//     */
-//    private void closeSegProjectState(RoutingContext context)
-//    {
-//        closeProjectState(context, AnnotationType.SEGMENTATION);
-//    }
 
-    private void closeProjectState(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
-
-        if(checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            try
-            {
-                JsonObject jsonObject = h.toJsonObject();
-
-                if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
-                {
-                    ProjectHandler.getProjectLoader(projectID).setIsLoadedFrontEndToggle(Boolean.FALSE);
-                }
-                else
-                {
-                    throw new Exception("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
-                }
-
-                HTTPResponseHandler.configureOK(context);
-
-            }
-            catch (Exception e)
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(e.getMessage()));
-
-            }
-        });
-    }
-
-//    /***
-//     * Star a bounding box project
-//     *
-//     * PUT http://localhost:{port}/bndbox/projects/:projectname/star
-//     */
-//    private void starBndBoxProject(RoutingContext context)
-//    {
-//        starProject(context, AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /***
-//     * Star a segmentation project
-//     *
-//     * PUT http://localhost:{port}/seg/projects/:projectname/star
-//     */
-//    private void starSegProject(RoutingContext context)
-//    {
-//        starProject(context, AnnotationType.SEGMENTATION);
-//    }
-
-    private void starProject(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
-
-        if(checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            JsonObject jsonObject = h.toJsonObject();
-
-            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
-        });
-    }
-
-    private boolean checkIfProjectNull(RoutingContext context, Object project, @NonNull String projectName)
-    {
-        if(project == null)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project not found: " + projectName));
-
-            return true;
-        }
-
-        return false;
-    }
-
-//    /***
-//     * export a project to json
-//     *
-//     * PUT http://localhost:{port}/v2/bndbox/projects/:project_name/export
-//     */
-//    private void exportV2BndBoxProject(RoutingContext context)
-//    {
-//        exportV2Project(context, AnnotationType.BOUNDINGBOX);
-//    }
-
-    private void exportV2Project(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
-
-        if(checkIfProjectNull(context, projectID, projectName)) return;
-
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectID)
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-
-            if (reply.succeeded()) {
-
-                JsonObject response = (JsonObject) reply.result().body();
-
-                HTTPResponseHandler.configureOK(context, response);
-
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
-
-            }
-        });
-
-    }
-
-//    /**
-//     * Delete bounding box project
-//     *
-//     * DELETE http://localhost:{port}/bndbox/projects/:project_name
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    private void deleteBndBoxProject(RoutingContext context)
-//    {
-//        //delete in Portfolio Table
-//        deleteProject(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteProject(), AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Delete Segmentation project
-//     *
-//     * DELETE http://localhost:{port}/seg/projects/:project_name
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/seg/projects/helloworld
-//     *
-//     */
-//    private void deleteSegProject(RoutingContext context)
-//    {
-//        deleteProject(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteProject(), AnnotationType.SEGMENTATION);
-//    }
-
-    private String getDeleteProject(AnnotationType type)
+    public String getDeleteProjectQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -1367,18 +901,27 @@ public class EndpointRouter extends AbstractVerticle
         return null;
     }
 
-    private void deleteProject(RoutingContext context)
+    /**
+     * Delete project
+     *
+     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    public void deleteProject(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = getDbQuery(type);
-        String query = getDeleteProject(type);
+        String query = getDeleteProjectQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
 
-        if(checkIfProjectNull(context, projectID, projectName)) return;
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectID);
@@ -1425,35 +968,7 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
-//    /**
-//     * Delete uuid of a specific bounding box project
-//     *
-//     * DELETE http://localhost:{port}/bndbox/projects/:project_name/uuids
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
-//     *
-//     */
-//    private void deleteBndBoxProjectUuid(RoutingContext context)
-//    {
-//        deleteProjectUUID(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.getDeleteSelectionUuidList(), AnnotationType.BOUNDINGBOX);
-//    }
-//
-//    /**
-//     * Delete uuid of a specific segmentation project
-//     *
-//     * DELETE http://localhost:{port}/seg/projects/:project_name/uuids
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/seg/projects/helloworld/uuids
-//     *
-//     */
-//    private void deleteSegProjectUuid(RoutingContext context)
-//    {
-//        deleteProjectUUID(context, SegDbQuery.getQueue(), SegDbQuery.getDeleteSelectionUuidList(), AnnotationType.SEGMENTATION);
-//    }
-
-    private String getDeleteSelectionUuidList(AnnotationType type)
+    public String getDeleteSelectionUuidListQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -1468,18 +983,27 @@ public class EndpointRouter extends AbstractVerticle
         return null;
     }
 
-    private void deleteProjectUUID(RoutingContext context)
+    /**
+     * Delete uuid of a specific project
+     *
+     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name/uuids
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
+     *
+     */
+    public void deleteProjectUUID(RoutingContext context)
     {
-        AnnotationType type = getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = getDbQuery(type);
-        String query = getDeleteSelectionUuidList(type);
+        String query = getDeleteSelectionUuidListQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
 
-        if(checkIfProjectNull(context, projectID, projectName)) return;
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -1502,6 +1026,8 @@ public class EndpointRouter extends AbstractVerticle
             });
         });
     }
+
+
 
     @Override
     public void stop(Promise<Void> promise) {
@@ -1561,90 +1087,6 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(this::reloadV2ProjectStatus);
 
         router.put("/v2/:annotation_type/projects/:project_name/export").handler(this::exportV2Project);
-
-
-
-        //*******************************Bounding Box*******************************
-
-//        router.get("/bndbox/projects").handler(this::getAllBndBoxProjects);
-
-//        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMeta);
-
-//        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);
-
-//        router.put("/bndbox/newproject/:project_name").handler(this::createV1BndBoxProject);
-
-//        router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
-
-//        router.delete("/bndbox/projects/:project_name").handler(this::deleteBndBoxProject);
-
-//        router.delete("/bndbox/projects/:project_name/uuids").handler(this::deleteBndBoxProjectUuid);
-
-//        router.get("/bndbox/projects/:project_name/loadingstatus").handler(this::loadBndBoxProjectStatus);
-
-//        router.get("/bndbox/projects/:project_name/filesys/:file_sys").handler(this::selectBndBoxFileSystemType);
-
-//        router.get("/bndbox/projects/:project_name/filesysstatus").handler(this::getBndBoxFileSystemStatus);
-
-//        router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxThumbnail);
-
-//        router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
-
-//        router.put("/bndbox/projects/:project_name/uuid/:uuid/update").handler(this::updateBndBoxData);
-
-//        router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
-
-        //v2
-
-//        router.put("/bndbox/projects/:project_name").handler(this::closeBndBoxProjectState);
-
-//        router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
-
-//        router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
-
-//        router.put("/v2/bndbox/projects/:project_name/reload").handler(this::reloadV2BndBoxProject);
-
-//        router.get("/v2/bndbox/projects/:project_name/reloadstatus").handler(this::reloadV2BndBoxProjectStatus);
-
-//        router.put("/v2/bndbox/projects/:project_name/export").handler(this::exportV2BndBoxProject);
-
-
-        //*******************************Segmentation*******************************
-
-//        router.get("/seg/projects").handler(this::getAllSegProjects);
-
-//        router.get("/seg/projects/meta").handler(this::getAllSegProjectsMeta);
-
-//        router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
-
-//        router.put("/seg/newproject/:project_name").handler(this::createV1SegProject);
-
-//        router.get("/seg/projects/:project_name").handler(this::loadSegProject);
-
-//        router.delete("/seg/projects/:project_name").handler(this::deleteSegProject);
-
-//        router.delete("/seg/projects/:project_name/uuids").handler(this::deleteSegProjectUuid);
-
-//        router.get("/seg/projects/:project_name/loadingstatus").handler(this::loadSegProjectStatus);
-
-//        router.get("/seg/projects/:project_name/filesys/:file_sys").handler(this::selectSegFileSystemType);
-
-//        router.get("/seg/projects/:project_name/filesysstatus").handler(this::getSegFileSystemStatus);
-
-//        router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegThumbnail);
-
-//        router.get("/seg/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getSegImageSource);
-
-//        router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
-
-//        router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
-
-        //v2
-
-//        router.put("/seg/projects/:project_name").handler(this::closeSegProjectState);
-
-//        router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
-
 
         vertx.createHttpServer()
                 .requestHandler(router)
