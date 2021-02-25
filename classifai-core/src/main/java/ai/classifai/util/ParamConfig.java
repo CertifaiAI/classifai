@@ -94,6 +94,8 @@ public class ParamConfig
 
     @Getter private static final String statusParam = "status";
 
+    @Getter private static final String uuidVersionListParam = "uuid_version_list";
+
     //keyword to retrieve image thumbnail
     @Getter private static final String imgThumbnailParam = "img_thumbnail";
     @Getter private static final String base64Param = "base64";
@@ -106,7 +108,6 @@ public class ParamConfig
     @Getter private static final String emptyArray = "[]";
 
     //reload project
-
     @Getter private static final String uuidDeletionListParam = "uuid_delete_list";
     @Getter private static final String uuidAdditionListParam = "uuid_add_list";
 

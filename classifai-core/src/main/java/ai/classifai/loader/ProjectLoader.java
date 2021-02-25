@@ -54,7 +54,9 @@ public class ProjectLoader
     private List<String> sanityUuidList = new ArrayList<>();
     private List<String> uuidListFromDatabase = new ArrayList<>();
 
-    VersionCollection versionList;
+    private VersionCollection versionCollector;
+    private ProjectVersion currentProjectVersion;
+
     private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
     //used when checking for progress in
@@ -89,7 +91,10 @@ public class ProjectLoader
         this.projectPath = build.projectPath;
         this.isProjectNewlyCreated = build.isProjectNewlyCreated;
         this.loaderStatus = build.loaderStatus;
-        this.versionList = build.versionCollection;
+        this.versionCollector = build.versionCollection;
+        this.currentProjectVersion = build.projectVersion;
+
+        this.uuidListFromDatabase = versionCollector.getUuidDict().get(currentProjectVersion.getVersionUuid());
     }
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
@@ -260,6 +265,7 @@ public class ProjectLoader
         private LoaderStatus loaderStatus;
 
         private VersionCollection versionCollection;
+        private ProjectVersion projectVersion;
 
         public ProjectLoader build()
         {
@@ -305,6 +311,12 @@ public class ProjectLoader
         public Builder versionCollection(VersionCollection versionCollection)
         {
             this.versionCollection = versionCollection;
+            return this;
+        }
+
+        public Builder currentProjectVersion(ProjectVersion projectVersion)
+        {
+            this.projectVersion = projectVersion;
             return this;
         }
     }

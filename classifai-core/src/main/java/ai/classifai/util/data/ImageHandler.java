@@ -343,7 +343,7 @@ public class ImageHandler {
 
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        List<File> totalFilelist = new ArrayList<>();
+        List<File> totalFileList = new ArrayList<>();
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -374,12 +374,12 @@ public class ImageHandler {
                 else
                 {
                     List<File> files = checkFile(file);
-                    totalFilelist.addAll(files);
+                    totalFileList.addAll(files);
                 }
             }
         }
 
-        saveToDatabase(projectID, totalFilelist);
+        saveToDatabase(projectID, totalFileList);
     }
 
     /*

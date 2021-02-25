@@ -127,16 +127,33 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
     }
 
-    public static void createV2NewProject(@NonNull String projectName, @NonNull Integer annotationType, @NonNull File rootPath)
+    public static void createV2NewProject(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
     {
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationType)) {
-            String annotationName = AnnotationHandler.getType(annotationType).name();
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        {
+            String annotationName = AnnotationHandler.getType(annotationInt).name();
 
             log.info("Create " + annotationName + " project with name: " + projectName);
 
             String projectID = UUIDGenerator.generateUUID();
 
-            Tuple params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, rootPath.getAbsolutePath());
+            ProjectVersion projectVersion = new ProjectVersion();
+            VersionCollection versionCollection = new VersionCollection(Arrays.asList(projectVersion));
+
+            String rootProjectPath = rootPath == null ? "" : rootPath.getAbsolutePath();
+
+            ProjectLoader loader = new ProjectLoader.Builder()
+                    .projectID(projectID)
+                    .projectName(projectName)
+                    .annotationType(annotationInt)
+                    .projectPath(rootProjectPath)
+                    .loaderStatus(LoaderStatus.LOADED)
+                    .isProjectNewlyCreated(Boolean.TRUE)
+                    .currentProjectVersion(projectVersion)
+                    .versionCollection(versionCollection)
+                    .build();
+
+            Tuple params = PortfolioVerticle.buildNewProject(loader);
 
             portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
                     .execute(params)
@@ -144,23 +161,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
-                        VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
-
-                        ProjectLoader loader = new ProjectLoader.Builder()
-                                .projectID(projectID)
-                                .projectName(projectName)
-                                .annotationType(annotationType)
-                                .projectPath(rootPath.toString())
-                                .loaderStatus(LoaderStatus.LOADED)
-                                .isProjectNewlyCreated(Boolean.TRUE)
-                                .versionCollection(versionCollection)
-                                .build();
-
                         ProjectHandler.loadProjectLoader(loader);
 
-                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-
-                        ImageHandler.processFolder(projectID, rootPath);
+                        if(rootPath != null)
+                        {
+                            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+                            ImageHandler.processFolder(projectID, rootPath);
+                        }
 
                         String exportPath = ParserHelper.getProjectExportPath(projectID);
                         if(ProjectExport.exportToFile(new File(exportPath), loader))
@@ -192,7 +199,19 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             String projectID = UUIDGenerator.generateUUID();
 
-            Tuple params = PortfolioVerticle.buildNewProject(projectName, annotationType, projectID, "");
+            VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
+
+            ProjectLoader loader = new ProjectLoader.Builder()
+                    .projectID(projectID)
+                    .projectName(projectName)
+                    .annotationType(annotationType)
+                    .projectPath("")
+                    .loaderStatus(LoaderStatus.LOADED)
+                    .isProjectNewlyCreated(Boolean.TRUE)
+                    .versionCollection(versionCollection)
+                    .build();
+
+            Tuple params = PortfolioVerticle.buildNewProject(loader);
 
             portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
                     .execute(params)
@@ -200,18 +219,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                         if (fetch.succeeded())
                         {
-                            VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
-
-                            ProjectLoader loader = new ProjectLoader.Builder()
-                            .projectID(projectID)
-                            .projectName(projectName)
-                            .annotationType(annotationType)
-                            .projectPath("")
-                            .loaderStatus(LoaderStatus.LOADED)
-                            .isProjectNewlyCreated(Boolean.TRUE)
-                            .versionCollection(versionCollection)
-                            .build();
-
                             ProjectHandler.loadProjectLoader(loader);
                             message.replyAndRequest(ReplyHandler.getOkReply());
                         }
@@ -364,14 +371,24 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<String> uuidList = loader.getUuidListFromDatabase();
 
-        Tuple jsonUpdateBody = Tuple.of(uuidList.toString(), projectID);
+        //badlywritten
+        loader.getVersionCollector().updateUuidList(loader.getCurrentProjectVersion(), uuidList);
 
+        String dbUuidDict = loader.getVersionCollector().getUuidDictObject2Db();
+
+        System.out.println("Database write uuid: " + dbUuidDict);
+
+        Tuple updateUuidListBody = Tuple.of(dbUuidDict, projectID);
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateProject())
-                .execute(jsonUpdateBody)
+                .execute(updateUuidListBody)
                 .onComplete(reply -> {
                     if (!reply.succeeded())
                     {
                         log.info("Update list of uuids to Portfolio Database failed");
+                    }
+                    else
+                    {
+                        System.out.println("Update v2 list of uuids to Portfolio Database success");
                     }
                 });
     }
@@ -394,9 +411,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         {
                             for (Row row : rowSet)
                             {
-                                String strVersionCollection = row.getString(7);
-
-                                VersionCollection versionCollection = new VersionCollection(strVersionCollection);
+                                VersionCollection versionCollector = new VersionCollection(row.getString(7));
+                                ProjectVersion projVersion = versionCollector.getVersionUuidDict().get(row.getString(6));
+                                versionCollector.setUuidDict(row.getString(8));
 
                                 ProjectLoader loader = new ProjectLoader.Builder()
                                     .projectID(row.getString(0))
@@ -404,12 +421,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .annotationType(row.getInteger(2))
                                     .projectPath(row.getString(3))
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
-                                    .isProjectNewlyCreated(row.getBoolean(6))
-                                    .versionCollection(versionCollection)
+                                    .isProjectNewlyCreated(row.getBoolean(5))
+                                    .versionCollection(versionCollector)
+                                    .currentProjectVersion(projVersion)
                                     .build();
 
+
                                 loader.setLabelList(ConversionHandler.string2StringList(row.getString(4)));
-                                loader.setUuidListFromDatabase(ConversionHandler.string2StringList(row.getString(5)));
 
                                 ProjectHandler.loadProjectLoader(loader);
                             }
@@ -433,52 +451,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         Integer annotationInt = initiator.getProjectType().ordinal();
         File dataPath = initiator.getRootDataPath();
 
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
-        {
-            log.info("Create project (from cli) with name: " + projectName + " in " + AnnotationHandler.getType(annotationInt).name() + " project.");
-
-            String projectID = UUIDGenerator.generateUUID();
-            Tuple params = PortfolioVerticle.buildNewProject(projectName, annotationInt, projectID, dataPath.getAbsolutePath());
-
-            portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
-                    .execute(params)
-                    .onComplete(fetch -> {
-
-                        if (fetch.succeeded())
-                        {
-                            String rootProjectPath = dataPath == null ? "" : dataPath.getAbsolutePath();
-
-                            VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
-
-
-                            ProjectLoader loader = new ProjectLoader.Builder()
-                                      .projectID(projectID)
-                                      .projectName(projectName)
-                                      .annotationType(annotationInt)
-                                      .projectPath(rootProjectPath)
-                                      .loaderStatus(LoaderStatus.LOADED)
-                                      .isProjectNewlyCreated(Boolean.TRUE)
-                                      .versionCollection(versionCollection)
-                                      .build();
-
-                            if(dataPath != null)
-                            {
-                                loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-                                ImageHandler.processFolder(projectID, dataPath);
-                            }
-                        }
-                        else
-                        {
-                            log.info("Create project failed. Classifai expect not to work fine in docker mode");
-                        }
-                    });
-        }
-        else
+        if(!ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
             String projectID = ProjectHandler.getProjectID(projectName, annotationInt);
 
             if (dataPath != null) ImageHandler.processFolder(projectID, dataPath);
+
+            return;
         }
+
+        createV2NewProject(projectName, annotationInt, dataPath);
     }
 
     //V2 API
@@ -509,7 +491,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             String currentUuid = row.getString(5);
                             String strVersionList = StringHandler.cleanUpRegex(row.getString(6), Arrays.asList("\""));
 
-                            new VersionCollection(strVersionList);
 
                             result.add(new JsonObject()
                                     .put(ParamConfig.getProjectNameParam(), projectName)
@@ -651,24 +632,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    private static Tuple buildNewProject(String projectName, Integer annotationType, String projectID, String projectPath)
+    private static Tuple buildNewProject(@NonNull ProjectLoader loader)
     {
-        ProjectVersion version = new ProjectVersion();
+        ProjectVersion projVersion = loader.getCurrentProjectVersion();
+        JsonArray versionList = new JsonArray().add(projVersion.getJsonObject());
 
-        JsonArray versionList = new JsonArray().add(version.getJsonObject()).add(version.getJsonObject());
-
-        System.out.println(versionList.toString());
-
-        return Tuple.of(projectID,                              //project_id
-                        projectName,                      //project_name
-                        annotationType,                         //annotation_type
-                        projectPath,                            //project_path
-                        ParamConfig.getEmptyArray(),            //label_list
-                        ParamConfig.getEmptyArray(),            //uuid_list
-                        true,                                   //is_new
-                        false,                                  //is_starred
-                        version.getVersionUuid(),               //current_version
-                        versionList.toString());                //version_list
+        return Tuple.of(loader.getProjectID(),              //project_id
+                loader.getProjectName(),              //project_name
+                loader.getAnnotationType(),                 //annotation_type
+                loader.getProjectPath(),                    //project_path
+                ParamConfig.getEmptyArray(),                //label_list
+                true,                                       //is_new
+                false,                                      //is_starred
+                projVersion.getVersionUuid(),               //current_version
+                versionList.toString(),                     //version_list
+                ParamConfig.getEmptyArray());               //uuid_version_list
     }
 
 

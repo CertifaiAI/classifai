@@ -124,7 +124,6 @@ public class ConversionHandler
     {
         String content = preprocessStringToArray(input);
 
-
         if (content.isEmpty()) return new ArrayList<>();
 
         String delimiter = ", ";
