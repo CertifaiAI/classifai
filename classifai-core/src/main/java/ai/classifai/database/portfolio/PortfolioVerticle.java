@@ -450,6 +450,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             {
                                 VersionCollection versionCollector = new VersionCollection(row.getString(7));
                                 ProjectVersion projVersion = versionCollector.getVersionUuidDict().get(row.getString(6));
+
                                 versionCollector.setUuidDict(row.getString(8));
                                 versionCollector.setLabelDict(row.getString(9));
 
