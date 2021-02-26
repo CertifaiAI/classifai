@@ -27,7 +27,7 @@ public class PortfolioDbQuery
     @Getter private static final String queue = "portfolio.queue";
 
     @Getter private static final String createPortfolioTable = "CREATE TABLE IF NOT EXISTS Portfolio (project_id UUID, project_name VARCHAR(255), annotation_type INT, " +
-            "project_path VARCHAR(255), label_list VARCHAR(10000), is_new BOOLEAN, is_starred BOOLEAN, current_version VARCHAR(200), version_list VARCHAR(5000), uuid_version_list CLOB, PRIMARY KEY (project_id))";
+            "project_path VARCHAR(255), is_new BOOLEAN, is_starred BOOLEAN, current_version VARCHAR(200), version_list VARCHAR(5000), uuid_version_list CLOB, label_version_list CLOB, PRIMARY KEY (project_id))";
 
     @Getter private static final String createNewProject = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -35,9 +35,9 @@ public class PortfolioDbQuery
 
     @Getter private static final String deleteProject = "DELETE FROM Portfolio WHERE project_id = ?";
 
-    @Getter private static final String updateLabelList = "UPDATE Portfolio set label_list = ? WHERE project_id = ?";
+    @Getter private static final String updateLabelList = "UPDATE Portfolio set label_version_list = ? WHERE project_id = ?";
 
-    @Getter private static final String loadDbProject = "SELECT project_id, project_name, annotation_type, project_path, label_list, is_new, is_starred, current_version, version_list, uuid_version_list FROM Portfolio";
+    @Getter private static final String loadDbProject = "SELECT project_id, project_name, annotation_type, project_path, is_new, is_starred, current_version, version_list, uuid_version_list, label_version_list FROM Portfolio";
 
     @Getter private static final String retrieveAllProjectsForAnnotationType = "SELECT project_name FROM Portfolio WHERE annotation_type = ? ORDER BY project_name";
 

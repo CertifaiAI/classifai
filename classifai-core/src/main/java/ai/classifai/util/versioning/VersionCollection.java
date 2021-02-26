@@ -11,16 +11,17 @@ import lombok.NonNull;
 
 import java.util.*;
 
+@Getter
 public class VersionCollection {
 
     //index
     private Map<Integer, ProjectVersion> versionIndexDict = new HashMap<>();
 
     //uuid
-    @Getter private Map<String, ProjectVersion> versionUuidDict = new HashMap<>();
+    private Map<String, ProjectVersion> versionUuidDict = new HashMap<>();
 
     private Map<String, List<String>> labelDict = new HashMap<>();
-    @Getter private Map<String, List<String>> uuidDict = new HashMap<>();
+    private Map<String, List<String>> uuidDict = new HashMap<>();
 
 
     public VersionCollection(@NonNull String strVersionList)
@@ -48,7 +49,6 @@ public class VersionCollection {
 
     private void setVersionCollection(@NonNull String rawVersionIndex, @NonNull String rawVersionUuid, @NonNull String rawDateTime)
     {
-
         Integer versionIndex = Integer.parseInt(rawVersionIndex.substring(ParamConfig.getVersionIndexParam().length() + 1));
         String versionUuid = rawVersionUuid.substring(ParamConfig.getVersionUuidParam().length() + 1);
         DateTime dateTime = new DateTime(rawDateTime.substring(ParamConfig.getCreatedDateParam().length() + 1));
@@ -74,8 +74,20 @@ public class VersionCollection {
         }
     }
 
+    public void setLabelDict(@NonNull String dbString)
+    {
+        getElements(dbString, labelDict);
+    }
+
     public void setUuidDict(@NonNull String dbString)
     {
+        getElements(dbString, uuidDict);
+    }
+
+    public void getElements(@NonNull String dbString, Map<String, List<String>> arrayDict)
+    {
+        if(dbString.length() < 5) return;
+
         String rawDbString = StringHandler.cleanUpRegex(dbString, Arrays.asList("\""));
 
         boolean isMultiple = rawDbString.contains("},{") ? true : false;
@@ -91,26 +103,25 @@ public class VersionCollection {
 
             System.out.println("Version: " + version);
 
-            String strUuidList = rawDbString.substring(versionPartition + 2);
+            String strContentList = rawDbString.substring(versionPartition + 2);
 
-            String[] currentUuidList = strUuidList.split(",");
+            String delimiter = strContentList.contains(", ") ? ", " : ",";
 
-            List<String> uuidList = new ArrayList<>();
+            String[] contentArray = strContentList.split(delimiter);
 
-            for(String uuid : currentUuidList)
+            arrayDict.put(version, Arrays.asList(contentArray));
+
+            for(String item : contentArray)
             {
-                uuidList.add(uuid);
-                System.out.println("Uuid: " + uuid);
+                System.out.println("Label: " + item);
             }
-
-            uuidDict.put(version, uuidList);
 
         }
         else
         {
-            List<String> uuidVersionList = ConversionHandler.string2StringList(rawDbString);
+            List<String> versionList = ConversionHandler.string2StringList(rawDbString);
 
-            for(String buffer : uuidVersionList)
+            for(String buffer : versionList)
             {
                 Integer versionPartition = buffer.indexOf(":");
 
@@ -118,19 +129,16 @@ public class VersionCollection {
 
                 System.out.println("Version: " + version);
 
-                String strUuidList = buffer.substring(versionPartition + 1);
+                String strContentList = buffer.substring(versionPartition + 1);
 
-                List<String> currentUuidList = ConversionHandler.string2StringList(strUuidList);
+                List<String> contentList = ConversionHandler.string2StringList(strContentList);
 
-                List<String> uuidList = new ArrayList<>();
+                arrayDict.put(version, contentList);
 
-                for(String uuid : currentUuidList)
+                for(String item : contentList)
                 {
-                    uuidList.add(uuid);
-                    System.out.println("Uuid: " + uuid);
+                    System.out.println(item);
                 }
-
-                uuidDict.put(version, uuidList);
             }
         }
     }
@@ -151,6 +159,15 @@ public class VersionCollection {
         JsonArray jsonArray = new JsonArray();
 
         uuidDict.forEach((key, value) -> jsonArray.add(new JsonObject().put(key, value.toString())));
+
+        return jsonArray.toString();
+    }
+
+    public String getLabelDictObject2Db()
+    {
+        JsonArray jsonArray = new JsonArray();
+
+        labelDict.forEach((key, value) -> jsonArray.add(new JsonObject().put(key, value.toString())));
 
         return jsonArray.toString();
     }

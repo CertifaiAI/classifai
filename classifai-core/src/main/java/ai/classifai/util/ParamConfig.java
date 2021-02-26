@@ -95,6 +95,7 @@ public class ParamConfig
     @Getter private static final String statusParam = "status";
 
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
+    @Getter private static final String labelVersionListParam = "label_version_list";
 
     //keyword to retrieve image thumbnail
     @Getter private static final String imgThumbnailParam = "img_thumbnail";

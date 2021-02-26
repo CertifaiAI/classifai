@@ -95,8 +95,11 @@ public class ProjectLoader
         this.loaderStatus = build.loaderStatus;
         this.versionCollector = build.versionCollection;
         this.currentProjectVersion = build.projectVersion;
+        this.labelList = build.labelList;
 
+        //FIXME: Badly written
         this.uuidListFromDatabase = versionCollector.getUuidDict().get(currentProjectVersion.getVersionUuid());
+
     }
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
@@ -270,6 +273,8 @@ public class ProjectLoader
         private VersionCollection versionCollection;
         private ProjectVersion projectVersion;
 
+        private List<String> labelList;
+
         public ProjectLoader build()
         {
             return new ProjectLoader(this);
@@ -326,6 +331,12 @@ public class ProjectLoader
         public Builder currentProjectVersion(ProjectVersion projectVersion)
         {
             this.projectVersion = projectVersion;
+            return this;
+        }
+
+        public Builder labelList(List<String> labelList)
+        {
+            this.labelList = labelList;
             return this;
         }
     }
