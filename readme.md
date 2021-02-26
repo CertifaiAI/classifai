@@ -143,12 +143,12 @@ The installation packages and formats are listed below.
 
 | Operating System | Supported Version | Installation package format |
 |:-------------:|:-------------:|:-------------:|
-| [Windows](https://s3.eu-central-1.wasabisys.com/classifai/window_distribution/classifai-win-1.1.1.msi) | 7, 8, 10 | msi|
-| [Mac](https://s3.eu-central-1.wasabisys.com/classifai/mac_distribution/classifai-1.1.1.pkg) | 10 | pkg |
-| Ubuntu | [18 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu18-1.1.1.deb), [20 LTS](https://s3.eu-central-1.wasabisys.com/classifai/ubuntu_distribution/classifai-ubuntu20-1.1.1.deb) | deb |
-| Centos | [7](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos7-1.1.1.rpm), [8](https://s3.eu-central-1.wasabisys.com/classifai/centos_distribution/classifai-centos8-1.1.1.rpm) | rpm |
+| [Windows](https://bit.ly/3aVJay8) | 7, 8, 10 | msi|
+| [Mac](https://bit.ly/3dUipfr) | 10 | pkg |
+| Ubuntu | [18 LTS](https://bit.ly/3dLtrDp), [20 LTS](https://bit.ly/3bDSqWJ) | deb |
+| Centos | [7](https://bit.ly/2ZScTBE), [8](https://bit.ly/3sorUqU) | rpm |
 
-Alternatively, download the [uber jar file](https://s3.eu-central-1.wasabisys.com/classifai/uber_jar/classifai-uberjar-1.1.1.jar) and run with Java JDK/JRE 14.  
+Alternatively, download the [uber jar file](https://bit.ly/3q4PDex) and run with Java JDK/JRE 14.  
 ```
 java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 ```
