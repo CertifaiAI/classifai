@@ -15,32 +15,15 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
-import ai.classifai.database.annotation.seg.SegDbQuery;
-import ai.classifai.database.portfolio.PortfolioDbQuery;
-import ai.classifai.loader.LoaderStatus;
-import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
-import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 /**
  * Endpoint routing for different url requests
