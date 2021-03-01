@@ -35,7 +35,6 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import ai.classifai.util.versioning.ProjectVersion;

@@ -19,6 +19,7 @@ import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.selector.project.ProjectFolderSelector;
+import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -41,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 public class EndpointsV2 {
 
     @Setter private Vertx vertx = null;
-    @Setter public ProjectFolderSelector projectFolderSelector = null;
+    @Setter private ProjectFolderSelector projectFolderSelector = null;
+    @Setter private ProjectImportSelector projectImporter = null;
 
     Util util = new Util();
 
@@ -255,5 +257,12 @@ public class EndpointsV2 {
             }
         });
 
+    }
+
+    public void importProject(RoutingContext context)
+    {
+        projectImporter.run();
+
+        HTTPResponseHandler.configureOK(context);
     }
 }

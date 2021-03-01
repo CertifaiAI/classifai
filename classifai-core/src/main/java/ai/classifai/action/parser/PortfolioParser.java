@@ -15,15 +15,10 @@
  */
 package ai.classifai.action.parser;
 
-import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegVerticle;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.data.StringHandler;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.versioning.ProjectVersion;
 import ai.classifai.util.versioning.VersionCollection;
 import io.vertx.core.json.JsonObject;
