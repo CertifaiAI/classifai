@@ -15,8 +15,6 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
-import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -51,7 +49,7 @@ public class EndpointsV1 {
     @Setter private ToolFileSelector fileSelector = null;
     @Setter private ToolFolderSelector folderSelector = null;
 
-    Utils util = new Utils();
+    Util util = new Util();
 
     /**
      * Get a list of all projects
@@ -80,7 +78,6 @@ public class EndpointsV1 {
             }
         });
     }
-
 
     /**
      * Retrieve specific project metadata
@@ -131,7 +128,6 @@ public class EndpointsV1 {
             }
         });
     }
-
 
     /**
      * Get metadata of all projects
@@ -198,37 +194,6 @@ public class EndpointsV1 {
         });
     }
 
-
-    public String getDbQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getQueue();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getQueue();
-        }
-
-        log.info("DB Query Queue not found: " + type);
-        return null;
-    }
-
-    public String getValidProjectUuidQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getLoadValidProjectUuid();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getLoadValidProjectUuid();
-        }
-
-        log.info("DB Query LoadValidProjectUuid not found: " + type);
-        return null;
-    }
-
     /**
      * Load existing project from the bounding box database
      *
@@ -242,8 +207,8 @@ public class EndpointsV1 {
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = getDbQuery(type);
-        String query = getValidProjectUuidQuery(type);
+        String queue = util.getDbQuery(type);
+        String query = util.getValidProjectUuidQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -354,22 +319,18 @@ public class EndpointsV1 {
     public void selectFileSystemType(RoutingContext context)
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        log.info("DEVEN: annotationType: " + type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        log.info("DEVEN: " + projectName + " " + type);
         if(ParamConfig.isDockerEnv()) log.info("Docker Mode. Choosing file/folder not supported. Use --volume to attach data folder.");
-        checkIfDockerEnv(context);
+        util.checkIfDockerEnv(context);
 
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-        log.info("DEVEN: loader: " + loader);
 
         if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
-        log.info("DEVEN: fileSystemStatus: " + fileSystemStatus);
 
         if(fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
         {
@@ -413,9 +374,8 @@ public class EndpointsV1 {
     public void getFileSystemStatus(RoutingContext context)
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        log.info("DEVEN: annotationType: " + type);
 
-        checkIfDockerEnv(context);
+        util.checkIfDockerEnv(context);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -447,30 +407,6 @@ public class EndpointsV1 {
         HTTPResponseHandler.configureOK(context, res);
     }
 
-    public void checkIfDockerEnv(RoutingContext context)
-    {
-        if(ParamConfig.isDockerEnv())
-        {
-            HTTPResponseHandler.configureOK(context);
-        }
-    }
-
-
-    public String getQueryData(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getQueryData();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getQueryData();
-        }
-
-        log.info("DB Query QueryData not found: " + type);
-        return null;
-    }
-
     /**
      * Retrieve thumbnail with metadata
      *
@@ -481,8 +417,8 @@ public class EndpointsV1 {
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = getDbQuery(type);
-        String query = getQueryData(type);
+        String queue = util.getDbQuery(type);
+        String query = util.getQueryData(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -510,22 +446,6 @@ public class EndpointsV1 {
         });
     }
 
-
-    public String getRetrieveDataPathQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getRetrieveDataPath();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getRetrieveDataPath();
-        }
-
-        log.info("DB Query RetrieveDataPath not found: " + type);
-        return null;
-    }
-
     /***
      *
      * Get Image Source
@@ -537,8 +457,8 @@ public class EndpointsV1 {
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = getDbQuery(type);
-        String query = getRetrieveDataPathQuery(type);
+        String queue = util.getDbQuery(type);
+        String query = util.getRetrieveDataPathQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -566,21 +486,6 @@ public class EndpointsV1 {
         });
     }
 
-    public String getUpdateDatadbQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getUpdateData();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getUpdateData();
-        }
-
-        log.info("DB Query UpdateDatadbQuery not found: " + type);
-        return null;
-    }
-
     /***
      *
      * Update labelling information
@@ -591,8 +496,8 @@ public class EndpointsV1 {
     public void updateData(RoutingContext context)
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        String queue = getDbQuery(type);
-        String UpdateDatadbQuery = getUpdateDatadbQuery(type);
+        String queue = util.getDbQuery(type);
+        String UpdateDatadbQuery = util.getUpdateDatadbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -673,21 +578,6 @@ public class EndpointsV1 {
         });
     }
 
-    public String getDeleteProjectQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getDeleteProject();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getDeleteProject();
-        }
-
-        log.info("DB Query DeleteProject not found: " + type);
-        return null;
-    }
-
     /**
      * Delete project
      *
@@ -701,8 +591,8 @@ public class EndpointsV1 {
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = getDbQuery(type);
-        String query = getDeleteProjectQuery(type);
+        String queue = util.getDbQuery(type);
+        String query = util.getDeleteProjectQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -755,21 +645,6 @@ public class EndpointsV1 {
         });
     }
 
-    public String getDeleteSelectionUuidListQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getDeleteSelectionUuidList();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getDeleteSelectionUuidList();
-        }
-
-        log.info("DB Query DeleteSelectionUuidList not found: " + type);
-        return null;
-    }
-
     /**
      * Delete uuid of a specific project
      *
@@ -783,8 +658,8 @@ public class EndpointsV1 {
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = getDbQuery(type);
-        String query = getDeleteSelectionUuidListQuery(type);
+        String queue = util.getDbQuery(type);
+        String query = util.getDeleteSelectionUuidListQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 

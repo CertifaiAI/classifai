@@ -43,7 +43,7 @@ public class EndpointsV2 {
     @Setter private Vertx vertx = null;
     @Setter public ProjectFolderSelector projectFolderSelector = null;
 
-    Utils util = new Utils();
+    Util util = new Util();
 
     /***
      * change is_load state of a project to false

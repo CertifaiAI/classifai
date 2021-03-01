@@ -122,7 +122,7 @@ public class EndpointRouter extends AbstractVerticle
                         promise.complete();
                     }
                     else {
-                        log.debug("Failure in creating HTTPServer in ServerVerticle. ", r.cause().getMessage());
+                        log.debug("Failure in creating HTTPServer in ServerVerticle. " + r.cause().getMessage());
                         promise.fail(r.cause());
                     }
                 });
