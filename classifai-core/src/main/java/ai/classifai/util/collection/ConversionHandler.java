@@ -70,6 +70,8 @@ public class ConversionHandler
         return value;
     }
 
+
+
     //JSONObject -> .json
     public static void saveJson2File(org.json.simple.JSONObject jsonInput, File outputFilePath)
     {
@@ -122,14 +124,27 @@ public class ConversionHandler
 
         if (content.isEmpty()) return new ArrayList<>();
 
-        String delimiter = content.contains(", ") ? ", " : ",";
+        String delimiter = ", ";
+
+        if(content.contains("],["))
+        {
+            delimiter = "],\\[";
+        }
+        else if(content.contains("},{"))
+        {
+            delimiter = "}.\\{";
+        }
+        else if(content.contains(","))
+        {
+            delimiter = ",";
+        }
 
         return new ArrayList<>(Arrays.asList(content.split(delimiter)));
     }
 
     public static String preprocessStringToArray(String input)
     {
-        if (input.equals("[]") || input.equals("[ ]") || (input.length() == 0))
+        if ( (input.equals("[{") || input.equals("[]") || input.equals("[ ]") || input.length() == 0))
         {
             return "";
         }
@@ -138,16 +153,27 @@ public class ConversionHandler
 
         String content;
 
-        if (input.substring(0, 1).equals("["))
+        if (input.substring(0, 2).equals("[["))
         {
-            content = input.substring(1);
-            content = content.substring(0, input.length() - 2);
-
+            content = input.substring(2);
+            content = content.substring(0, content.length() - 2);
+        }
+        else if (input.substring(0, 2).equals("[{"))
+        {
+            content = input.substring(2);
+            content = content.substring(0, content.length() - 2);
         }
         else if (input.substring(0, 2).equals("[ "))
         {
             content = input.substring(2);
-            content = content.substring(0, input.length() - 3);
+            content = content.substring(0, content.length() - 2);
+        }
+
+        else if (input.substring(0, 1).equals("["))
+        {
+            content = input.substring(1);
+            content = content.substring(0, content.length() - 1);
+
         }
         else
         {

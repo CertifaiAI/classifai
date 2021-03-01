@@ -18,7 +18,6 @@ package ai.classifai.util.data;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
@@ -315,7 +314,7 @@ public class ImageHandler {
             {
                 String uuid = UUIDGenerator.generateUUID();
 
-                AnnotationVerticle.updateUuid(BoundingBoxVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
+                AnnotationVerticle.updateUuid(projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -324,7 +323,7 @@ public class ImageHandler {
             {
                 String uuid = UUIDGenerator.generateUUID();
             
-                AnnotationVerticle.updateUuid(SegVerticle.getJdbcPool(), projectID, filesCollection.get(i), uuid, i + 1);
+                AnnotationVerticle.updateUuid(projectID, filesCollection.get(i), uuid, i + 1);
             }
         }
     }
@@ -343,7 +342,7 @@ public class ImageHandler {
 
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        List<File> totalFilelist = new ArrayList<>();
+        List<File> totalFileList = new ArrayList<>();
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -374,12 +373,12 @@ public class ImageHandler {
                 else
                 {
                     List<File> files = checkFile(file);
-                    totalFilelist.addAll(files);
+                    totalFileList.addAll(files);
                 }
             }
         }
 
-        saveToDatabase(projectID, totalFilelist);
+        saveToDatabase(projectID, totalFileList);
     }
 
     /*
@@ -429,7 +428,7 @@ public class ImageHandler {
         {
             if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
-                BoundingBoxVerticle.createUuidIfNotExist(BoundingBoxVerticle.getJdbcPool(), projectID, dataList.get(i), i + 1);
+                BoundingBoxVerticle.createUuidIfNotExist(projectID, dataList.get(i), i + 1);
             }
             else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
             {

@@ -15,6 +15,9 @@
  */
 package ai.classifai.util.type;
 
+import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.database.annotation.seg.SegVerticle;
+import io.vertx.jdbcclient.JDBCPool;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,24 +47,11 @@ public class AnnotationHandler
         }
     }
 
-
-    public static boolean checkSanity(String annotationType)
+    public static JDBCPool getJDBCPool(Integer annotationTypeInt)
     {
-        if (annotationType.equals(AnnotationType.BOUNDINGBOX.name()))
-        {
-            return true;
-        }
-        else if (annotationType.equals(AnnotationType.SEGMENTATION.name()))
-        {
-            return true;
-        }
-        //ADD WHEN HAVE NEW ANNOTATION TYPE
-        else
-        {
-            printFailedMessage();
-            return false;
-        }
+        return (AnnotationType.BOUNDINGBOX.ordinal() == annotationTypeInt) ? BoundingBoxVerticle.getJdbcPool() : SegVerticle.getJdbcPool();
     }
+
 
     public static AnnotationType getType(String type)
     {
