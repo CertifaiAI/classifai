@@ -1,28 +1,31 @@
 package ai.classifai.action;
 
 import ai.classifai.action.parser.PortfolioParser;
+import io.vertx.core.json.JsonObject;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
+import java.io.File;
+import java.io.FileReader;
+
+@Slf4j
 public class ProjectImport
 {
-    private PortfolioParser portfolio;
-
-    public boolean importFromFile()
+    public static void importProjectFile(@NonNull File jsonFile)
     {
-        //String filePath = ParserHelper.getFilePath();
-
         try
         {
-            //String jsonStr = IOUtils.toString(new FileReader(filePath));
-            //JsonObject jsonObject = new JsonObject(jsonStr);
+            String jsonStr = IOUtils.toString(new FileReader(jsonFile));
+
+            JsonObject jsonObject = new JsonObject(jsonStr);
+
+            PortfolioParser.parseIn(jsonObject);
 
         }
         catch(Exception e)
         {
-            System.out.println(e);
+            log.info("Error in importing project. ", e);
         }
-
-
-
-        return true;
     }
 }

@@ -12,9 +12,11 @@ import lombok.NonNull;
 public class ProjectVersion
 {
     Integer versionIndex;
-    String versionUuid;
-    DateTime dateTime;
 
+    //key identifier
+    String versionUuid;
+
+    DateTime dateTime;
 
     public ProjectVersion(@NonNull Integer currentIndex, @NonNull String currentVersionUuid, @NonNull DateTime currentDateTime)
     {

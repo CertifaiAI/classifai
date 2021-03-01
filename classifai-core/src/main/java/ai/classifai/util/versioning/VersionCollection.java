@@ -101,8 +101,6 @@ public class VersionCollection {
 
             String version = rawDbString.substring(0, versionPartition);
 
-            System.out.println("Version: " + version);
-
             String strContentList = rawDbString.substring(versionPartition + 2);
 
             String delimiter = strContentList.contains(", ") ? ", " : ",";
@@ -110,11 +108,6 @@ public class VersionCollection {
             String[] contentArray = strContentList.split(delimiter);
 
             arrayDict.put(version, Arrays.asList(contentArray));
-
-            for(String item : contentArray)
-            {
-                System.out.println("Label: " + item);
-            }
 
         }
         else
@@ -127,18 +120,11 @@ public class VersionCollection {
 
                 String version = buffer.substring(0, versionPartition);
 
-                System.out.println("Version: " + version);
-
                 String strContentList = buffer.substring(versionPartition + 1);
 
                 List<String> contentList = ConversionHandler.string2StringList(strContentList);
 
                 arrayDict.put(version, contentList);
-
-                for(String item : contentList)
-                {
-                    System.out.println(item);
-                }
             }
         }
     }

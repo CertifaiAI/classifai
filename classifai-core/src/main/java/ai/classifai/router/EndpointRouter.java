@@ -23,6 +23,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
@@ -54,6 +55,7 @@ public class EndpointRouter extends AbstractVerticle
     private ToolFileSelector fileSelector;
     private ToolFolderSelector folderSelector;
     private ProjectFolderSelector  projectFolderSelector;
+    private ProjectImportSelector projectImporter;
 
     public EndpointRouter()
     {
@@ -76,8 +78,16 @@ public class EndpointRouter extends AbstractVerticle
                 projectFolderSelector = new ProjectFolderSelector();
             }
         };
+
         projectFolder.start();
 
+        Thread projectImport = new Thread(){
+            public void run(){
+                projectImporter = new ProjectImportSelector();
+            }
+        };
+
+       projectImport.start();
     }
 
     /**
@@ -1108,8 +1118,7 @@ public class EndpointRouter extends AbstractVerticle
         if(checkIfProjectNull(context, projectID, projectName)) return;
 
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectID)
-                .put(ParamConfig.getAnnotationTypeParam(), annotationType.ordinal());
+                .put(ParamConfig.getProjectIdParam(), projectID);
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
 
@@ -1271,6 +1280,13 @@ public class EndpointRouter extends AbstractVerticle
         });
     }
 
+    private void importProject(RoutingContext context)
+    {
+        projectImporter.run();
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
     @Override
     public void stop(Promise<Void> promise) {
         log.debug("Endpoint Router Verticle stopping...");
@@ -1317,19 +1333,17 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
         //v2
-
         router.put("/bndbox/projects/:project_name").handler(this::closeBndBoxProjectState);
 
         router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
 
-            router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
+        router.put("/v2/bndbox/newproject/:project_name").handler(this::createV2BndBoxProject);
 
         router.put("/v2/bndbox/projects/:project_name/reload").handler(this::reloadV2BndBoxProject);
 
         router.get("/v2/bndbox/projects/:project_name/reloadstatus").handler(this::reloadV2BndBoxProjectStatus);
 
         router.put("/v2/bndbox/projects/:project_name/export").handler(this::exportV2BndBoxProject);
-
 
         //*******************************Segmentation*******************************
 
@@ -1366,6 +1380,11 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/seg/projects/:project_name").handler(this::closeSegProjectState);
 
         router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
+
+        //*******************************General*******************************
+
+        router.put("/v2/newproject").handler(this::importProject);
+
 
         vertx.createHttpServer()
                 .requestHandler(router)

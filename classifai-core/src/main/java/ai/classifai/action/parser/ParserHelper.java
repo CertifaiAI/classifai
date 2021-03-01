@@ -10,8 +10,6 @@ import java.io.File;
 
 public class ParserHelper
 {
-    @Getter private static final String projectFile = System.getProperty("user.home") + File.separator + "classifai.json";
-
     public static BoundingBoxParser buildBndBoxParser(JsonObject jsonObject)
     {
         BoundingBoxParser bndBox = BoundingBoxParser.builder()

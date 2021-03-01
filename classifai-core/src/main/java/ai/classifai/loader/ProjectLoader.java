@@ -42,18 +42,18 @@ public class ProjectLoader
     private Integer annotationType;
     private String projectPath;
 
-    private Boolean isProjectNewlyCreated;
+    private Boolean isProjectNew;
     private Boolean isProjectStarred;
 
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private LoaderStatus loaderStatus;
     
-    private List<String> labelList = new ArrayList<>();
+    private List<String> labelList;
 
      //a list of unique uuid representing number of data points in one project
     private List<String> sanityUuidList = new ArrayList<>();
-    private List<String> uuidListFromDatabase = new ArrayList<>();
+    private List<String> uuidListFromDb;
 
     private VersionCollection versionCollector;
     private ProjectVersion currentProjectVersion;
@@ -83,23 +83,28 @@ public class ProjectLoader
 
     private List<Integer> progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
-
     private ProjectLoader(Builder build)
     {
         this.projectID = build.projectID;
         this.projectName = build.projectName;
         this.annotationType = build.annotationType;
         this.projectPath = build.projectPath;
-        this.isProjectNewlyCreated = build.isProjectNewlyCreated;
+        this.isProjectNew = build.isProjectNew;
         this.isProjectStarred = build.isProjectStarred;
         this.loaderStatus = build.loaderStatus;
-        this.versionCollector = build.versionCollection;
-        this.currentProjectVersion = build.projectVersion;
 
-        //FIXME: Badly written
-        this.labelList = versionCollector.getLabelDict().get(currentProjectVersion.getVersionUuid());
-        this.uuidListFromDatabase = versionCollector.getUuidDict().get(currentProjectVersion.getVersionUuid());
+        if((build.versionCollection != null) && (build.projectVersion != null))
+        {
+            this.versionCollector = build.versionCollection;
+            this.currentProjectVersion = build.projectVersion;
 
+            String versionUuid = currentProjectVersion.getVersionUuid();
+            this.labelList = versionCollector.getLabelDict().get(versionUuid);
+            this.uuidListFromDb = versionCollector.getUuidDict().get(versionUuid);
+
+            //FIXME: FILTER SANITY LIST
+            //MARK LOADED
+        }
     }
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
@@ -117,7 +122,7 @@ public class ProjectLoader
 
     public void toggleFrontEndLoaderParam()
     {
-        if (isProjectNewlyCreated)
+        if (isProjectNew)
         {
             //update database to be old project
             PortfolioVerticle.updateIsNewParam(projectID);
@@ -199,7 +204,7 @@ public class ProjectLoader
         else
         {
             sanityUuidList.addAll(fileSysNewUUIDList);
-            uuidListFromDatabase.addAll(fileSysNewUUIDList);
+            uuidListFromDb.addAll(fileSysNewUUIDList);
             PortfolioVerticle.updateFileSystemUUIDList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
@@ -207,7 +212,7 @@ public class ProjectLoader
 
     public void uploadNewUuidFromReloading(@NonNull String uuid)
     {
-        if(!uuidListFromDatabase.contains(uuid)) uuidListFromDatabase.add(uuid);
+        if(!uuidListFromDb.contains(uuid)) uuidListFromDb.add(uuid);
 
         sanityUuidList.add(uuid);
         reloadAdditionList.add(uuid);
@@ -215,7 +220,7 @@ public class ProjectLoader
 
     public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
     {
-        dbListBuffer = new ArrayList<>(uuidListFromDatabase);
+        dbListBuffer = new ArrayList<>(uuidListFromDb);
         reloadAdditionList.clear();
         reloadDeletionList.clear();
 
@@ -263,15 +268,15 @@ public class ProjectLoader
         private Integer annotationType;
         private String projectPath;
 
-        private Boolean isProjectNewlyCreated;
+        private Boolean isProjectNew;
         private Boolean isProjectStarred;
 
         //Load an existing project from database
         //After loaded once, this value will be always LOADED so retrieving of project from memory than db
         private LoaderStatus loaderStatus;
 
-        private VersionCollection versionCollection;
-        private ProjectVersion projectVersion;
+        private VersionCollection versionCollection = null;
+        private ProjectVersion projectVersion = null;
 
         public ProjectLoader build()
         {
@@ -302,9 +307,9 @@ public class ProjectLoader
            return this;
         }
 
-        public Builder isProjectNewlyCreated(Boolean isProjectNewlyCreated)
+        public Builder isProjectNew(Boolean isProjectNew)
         {
-            this.isProjectNewlyCreated = isProjectNewlyCreated;
+            this.isProjectNew = isProjectNew;
             return this;
         }
 

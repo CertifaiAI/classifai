@@ -1,10 +1,6 @@
 package ai.classifai.action;
 
-import ai.classifai.action.parser.AnnotationParser;
-import ai.classifai.action.parser.PortfolioParser;
-import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.datetime.DateTime;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;
 import lombok.NonNull;
@@ -18,7 +14,7 @@ import java.io.IOException;
 @Slf4j
 public class ProjectExport
 {
-    private static JsonObject getDefaultJsonObject()
+    public static JsonObject getDefaultJsonObject()
     {
         JsonObject jsonObject = new JsonObject()
                 .put("tool", "classifai")
@@ -29,40 +25,13 @@ public class ProjectExport
         return jsonObject;
     }
 
-    public static boolean exportToFile(@NonNull File jsonPath, ProjectLoader loader)
+    public static boolean exportToFile(@NonNull File jsonPath, @NonNull JsonObject jsonObject)
     {
-        JsonObject compiledOutput = getDefaultJsonObject();
 
-        return saveToFile(jsonPath, compiledOutput);
-    }
-
-
-    public static boolean exportToFile(@NonNull File jsonPath, JsonArray portfolioJsonArray, JsonArray annotationJsonArray)
-    {
-        JsonObject compiledOutput = getDefaultJsonObject();
-
-        if(portfolioJsonArray != null)
-        {
-            compiledOutput = PortfolioParser.get(compiledOutput, portfolioJsonArray);
-        }
-
-        if(annotationJsonArray != null)
-        {
-            compiledOutput = AnnotationParser.get(compiledOutput, annotationJsonArray);
-        }
-
-        return saveToFile(jsonPath, compiledOutput);
-
-        //false if file not created
-    }
-
-
-    private static boolean saveToFile(@NonNull File jsonPath, JsonObject jsonObj)
-    {
         try {
             FileWriter file = new FileWriter(jsonPath);
 
-            file.write(jsonObj.encodePrettily());
+            file.write(jsonObject.encodePrettily());
 
             file.close();
 
@@ -77,4 +46,6 @@ public class ProjectExport
 
         return true;
     }
+
+
 }
