@@ -143,12 +143,12 @@ The installation packages and formats are listed below.
 
 | Operating System | Supported Version | Installation package format |
 |:-------------:|:-------------:|:-------------:|
-| [Windows](https://bit.ly/3aVJay8) | 7, 8, 10 | msi|
-| [Mac](https://bit.ly/3dUipfr) | 10 | pkg |
-| Ubuntu | [18 LTS](https://bit.ly/3dLtrDp), [20 LTS](https://bit.ly/3bDSqWJ) | deb |
-| Centos | [7](https://bit.ly/2ZScTBE), [8](https://bit.ly/3sorUqU) | rpm |
+| [Windows](https://bit.ly/3bRDaFE) | 7, 8, 10 | msi|
+| [Mac](https://bit.ly/3kwqN5X) | 10 | pkg |
+| Ubuntu | [18 LTS](https://bit.ly/3bNYD2j), [20 LTS](https://bit.ly/3sDN9FE) | deb |
+| Centos | [7](https://bit.ly/3dVJOxu), [8](https://bit.ly/2ZW8VIi) | rpm |
 
-Alternatively, download the [uber jar file](https://bit.ly/3q4PDex) and run with Java JDK/JRE 14.  
+Alternatively, download the [uber jar file](https://bit.ly/3r88MNY) and run with Java JDK/JRE 14.  
 ```
 java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 ```
