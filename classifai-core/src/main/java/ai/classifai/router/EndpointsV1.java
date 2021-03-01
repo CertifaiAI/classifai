@@ -566,6 +566,20 @@ public class EndpointsV1 {
         });
     }
 
+    public String getUpdateDatadbQuery(AnnotationType type)
+    {
+        if(type.equals(AnnotationType.BOUNDINGBOX))
+        {
+            return BoundingBoxDbQuery.getUpdateData();
+        }
+        else if(type.equals(AnnotationType.SEGMENTATION))
+        {
+            return SegDbQuery.getUpdateData();
+        }
+
+        log.info("DB Query UpdateDatadbQuery not found: " + type);
+        return null;
+    }
 
     /***
      *
@@ -577,6 +591,8 @@ public class EndpointsV1 {
     public void updateData(RoutingContext context)
     {
         AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        String queue = getDbQuery(type);
+        String UpdateDatadbQuery = getUpdateDatadbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -586,14 +602,15 @@ public class EndpointsV1 {
 
         context.request().bodyHandler(h ->
         {
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), BoundingBoxDbQuery.getUpdateData());
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), UpdateDatadbQuery);
+
 
             try
             {
                 JsonObject jsonObject = h.toJsonObject();
                 jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
-                vertx.eventBus().request(BoundingBoxDbQuery.getQueue(), jsonObject, updateOptions, fetch ->
+                vertx.eventBus().request(queue, jsonObject, updateOptions, fetch ->
                 {
                     if (fetch.succeeded()) {
                         JsonObject response = (JsonObject) fetch.result().body();
