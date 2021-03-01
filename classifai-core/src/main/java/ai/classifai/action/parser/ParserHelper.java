@@ -3,7 +3,6 @@ package ai.classifai.action.parser;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ProjectHandler;
 import io.vertx.core.json.JsonObject;
-import lombok.Getter;
 import lombok.NonNull;
 
 import java.io.File;

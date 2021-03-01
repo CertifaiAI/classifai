@@ -33,6 +33,7 @@ import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,7 +49,9 @@ import java.util.Map;
 @Slf4j
 public abstract class AnnotationVerticle extends AbstractVerticle implements VerticleServiceable, AnnotationServiceable
 {
-    public void retrieveDataPath(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+    @Getter protected static JDBCPool jdbcPool;
+
+    public void retrieveDataPath(Message<JsonObject> message)
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
         String uuid = message.body().getString(ParamConfig.getUuidParam());
@@ -120,7 +123,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         return getNewAnnotation(projectId, dataSubPath, UUIDGenerator.generateUUID());
     }
 
-    public static void loadValidProjectUuid(@NonNull JDBCPool jdbcPool, @NonNull String projectId)
+    public static void loadValidProjectUuid(@NonNull String projectId)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
@@ -161,16 +164,16 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void loadValidProjectUuid(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+    public void loadValidProjectUuid(Message<JsonObject> message)
     {
         String projectId  = message.body().getString(ParamConfig.getProjectIdParam());
 
         message.replyAndRequest(ReplyHandler.getOkReply());
 
-        loadValidProjectUuid(jdbcPool, projectId);
+        loadValidProjectUuid(projectId);
     }
 
-    public static void updateUuid(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentLength)
+    public static void updateUuid(@NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentLength)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -196,7 +199,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     }
 
 
-    public static void createUuidFromReloading(@NonNull JDBCPool jdbcPool, @NonNull String projectId, @NonNull File file)
+    public static void createUuidFromReloading(@NonNull String projectId, @NonNull File file)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
@@ -222,7 +225,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         });
     }
 
-    public static void createUuidIfNotExist(@NonNull JDBCPool jdbcPool, @NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+    public static void createUuidIfNotExist(@NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -239,7 +242,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 //not exist , create data point
                 if (rowSet.size() == 0)
                 {
-                    createUuidFromReloading(jdbcPool, projectID, file);
+                    createUuidFromReloading(projectID, file);
                 }
                 else
                 {
@@ -260,7 +263,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             });
     }
 
-    public void deleteProject(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+    public void deleteProject(Message<JsonObject> message)
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
@@ -281,7 +284,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteSelectionUuidList(Message<JsonObject> message, @NonNull JDBCPool jdbcPool)
+    public void deleteSelectionUuidList(Message<JsonObject> message)
     {
         String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
         JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
@@ -331,7 +334,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
    }   
 
-   public void updateData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String annotationKey)
+   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
    {
         JsonObject requestBody = message.body();
 
@@ -374,7 +377,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void queryData(Message<JsonObject> message, @NonNull JDBCPool jdbcPool, @NonNull String annotationKey)
+    public void queryData(Message<JsonObject> message, @NonNull String annotationKey)
     {
         String projectName =  message.body().getString(ParamConfig.getProjectNameParam());
         String projectID =  message.body().getString(ParamConfig.getProjectIdParam());

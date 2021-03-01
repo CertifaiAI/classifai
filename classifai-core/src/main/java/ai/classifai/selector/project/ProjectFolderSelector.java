@@ -17,7 +17,6 @@ package ai.classifai.selector.project;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;

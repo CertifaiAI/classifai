@@ -27,8 +27,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -39,8 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SegVerticle extends AnnotationVerticle
 {
-    @Getter @Setter static JDBCPool jdbcPool;
-
     public void onMessage(Message<JsonObject> message)
     {
         if (!message.headers().contains(ParamConfig.getActionKeyword()))
@@ -55,27 +51,27 @@ public class SegVerticle extends AnnotationVerticle
 
         if (action.equals(AnnotationQuery.getQueryData()))
         {
-            this.queryData(message, jdbcPool, ParamConfig.getSegmentationParam());
+            this.queryData(message, ParamConfig.getSegmentationParam());
         }
         else if (action.equals(AnnotationQuery.getUpdateData()))
         {
-            this.updateData(message, jdbcPool, ParamConfig.getSegmentationParam());
+            this.updateData(message, ParamConfig.getSegmentationParam());
         }
         else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
         {
-            this.retrieveDataPath(message, jdbcPool);
+            this.retrieveDataPath(message);
         }
         else if (action.equals(AnnotationQuery.getLoadValidProjectUuid()))
         {
-            this.loadValidProjectUuid(message, jdbcPool);
+            this.loadValidProjectUuid(message);
         }
         else if (action.equals(AnnotationQuery.getDeleteProject()))
         {
-            this.deleteProject(message, jdbcPool);
+            this.deleteProject(message);
         }
         else if (action.equals(AnnotationQuery.getDeleteSelectionUuidList()))
         {
-            this.deleteSelectionUuidList(message, jdbcPool);
+            this.deleteSelectionUuidList(message);
         }
         else
         {
@@ -108,7 +104,7 @@ public class SegVerticle extends AnnotationVerticle
     {
         H2 h2 = DbConfig.getH2();
 
-        setJdbcPool(createJDBCPool(vertx, h2));
+        jdbcPool = createJDBCPool(vertx, h2);
 
         jdbcPool.getConnection(ar -> {
 

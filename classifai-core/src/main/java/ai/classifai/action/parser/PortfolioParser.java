@@ -1,7 +1,5 @@
 package ai.classifai.action.parser;
 
-import ai.classifai.database.annotation.AnnotationQuery;
-import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.LoaderStatus;
@@ -12,8 +10,8 @@ import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.versioning.ProjectVersion;
 import ai.classifai.util.versioning.VersionCollection;
-import io.vertx.sqlclient.Row;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Row;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -78,11 +76,11 @@ public class PortfolioParser
 
         if(loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
-            BoundingBoxVerticle.loadValidProjectUuid(BoundingBoxVerticle.getJdbcPool(), loader.getProjectID());
+            BoundingBoxVerticle.loadValidProjectUuid(loader.getProjectID());
         }
         else
         {
-            SegVerticle.loadValidProjectUuid(BoundingBoxVerticle.getJdbcPool(), loader.getProjectID());
+            SegVerticle.loadValidProjectUuid(loader.getProjectID());
         }
 
         log.info("Import project " + loader.getProjectName() + " success!");

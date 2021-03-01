@@ -1,8 +1,8 @@
 package ai.classifai.util.versioning;
 
-import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
