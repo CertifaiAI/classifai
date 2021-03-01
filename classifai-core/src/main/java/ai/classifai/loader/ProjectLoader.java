@@ -101,9 +101,6 @@ public class ProjectLoader
             String versionUuid = currentProjectVersion.getVersionUuid();
             this.labelList = versionCollector.getLabelDict().get(versionUuid);
             this.uuidListFromDb = versionCollector.getUuidDict().get(versionUuid);
-
-            //FIXME: FILTER SANITY LIST
-            //MARK LOADED
         }
     }
 

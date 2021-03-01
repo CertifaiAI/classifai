@@ -13,7 +13,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package ai.classifai.database.portfolio;
 
 import ai.classifai.action.ProjectExport;
@@ -25,6 +24,7 @@ import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
@@ -35,6 +35,7 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import ai.classifai.util.versioning.ProjectVersion;
@@ -47,6 +48,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
@@ -176,6 +178,41 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
     }
 
+    public static void loadV2NewProject(@NonNull JsonObject jsonObject)
+    {
+        ProjectLoader loader = PortfolioParser.parseIn(jsonObject);
+
+        while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
+        {
+            String newProjName = new NameGenerator().getNewProjectName();
+            loader.setProjectName(newProjName);
+            loader.setProjectID(UUIDGenerator.generateUUID());
+            log.info("Project name overlapped. Rename project as " + newProjName);
+        }
+
+        Tuple params = PortfolioVerticle.buildNewProject(loader);
+
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
+                .execute(params)
+                .onComplete(fetch -> {
+
+                    if (fetch.succeeded())
+                    {
+                        ProjectHandler.loadProjectLoader(loader);
+
+                        AnnotationParser.parseIn(loader, jsonObject);
+                    }
+                    else
+                    {
+                        log.debug("Create project failed from database");
+                    }
+                });
+
+        log.info("Import project " + loader.getProjectName() + " success!");
+
+
+    }
+
     //v1 create new project
     public void createV1NewProject(Message<JsonObject> message)
     {
@@ -301,12 +338,15 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         if(projectRowSet.size() == 0)
                                         {
                                             log.debug("Export project annotation retrieve 0 rows. Project not found from project database");
-                                            return;
+                                        }
+                                        else {
+
+                                            RowIterator<Row> projectRowIterator = projectRowSet.iterator();
+
+                                            AnnotationParser.parseOut(projectRowIterator, jsonResponse);
+
                                         }
 
-                                        Row annotationRow = projectRowSet.iterator().next();
-
-                                        AnnotationParser.parseOut(annotationRow, jsonResponse);
 
                                         ProjectExport.exportToFile(new File(exportPath), jsonResponse);
 
@@ -382,8 +422,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<String> uuidList = loader.getUuidListFromDb();
 
-        //FIXME: badlywritten
-        loader.getVersionCollector().updateUuidList(loader.getCurrentProjectVersion(), uuidList);
+        VersionCollection versionCollector = loader.getVersionCollector();
+        versionCollector.updateUuidList(loader.getCurrentProjectVersion(), uuidList);
 
         String dbUuidDict = loader.getVersionCollector().getUuidDictObject2Db();
 
@@ -657,7 +697,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         H2 h2 = DbConfig.getH2();
 
-        setPortfolioDbPool(createJDBCPool(vertx, h2));
+        portfolioDbPool = createJDBCPool(vertx, h2);
 
         portfolioDbPool.getConnection(ar -> {
 

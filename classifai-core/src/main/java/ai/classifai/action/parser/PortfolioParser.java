@@ -1,7 +1,23 @@
+/*
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.action.parser;
 
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
@@ -21,7 +37,7 @@ import java.util.Arrays;
 
 
 /***
- * Parsing project in and out classifai with configuration file
+ * Parsing Portfolio Table in and out classifai with configuration file
  *
  * @author codenamewei
  */
@@ -45,7 +61,7 @@ public class PortfolioParser
         jsonObject.put(ParamConfig.getLabelVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(9), Arrays.asList("\"")));
     }
 
-    public static void parseIn(@NonNull JsonObject jsonObject)
+    public static ProjectLoader parseIn(@NonNull JsonObject jsonObject)
     {
         VersionCollection versionCollector = new VersionCollection(jsonObject.getString(ParamConfig.getVersionListParam()));
         ProjectVersion projVersion = versionCollector.getVersionUuidDict().get(jsonObject.getString(ParamConfig.getCurrentVersionUuidParam()));
@@ -53,7 +69,7 @@ public class PortfolioParser
         versionCollector.setUuidDict(jsonObject.getString(ParamConfig.getUuidVersionListParam()));
         versionCollector.setLabelDict(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
 
-        ProjectLoader loader = new ProjectLoader.Builder()
+        return new ProjectLoader.Builder()
                                 .projectID(jsonObject.getString(ParamConfig.getProjectIdParam()))
                                 .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))
                                 .annotationType(jsonObject.getInteger(ParamConfig.getAnnotationTypeParam()))
@@ -69,20 +85,6 @@ public class PortfolioParser
 
                                 .build();
 
-        ProjectHandler.loadProjectLoader(loader);
 
-        //Check sanity of uuidList
-        loader.setLoaderStatus(LoaderStatus.LOADING);
-
-        if(loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
-        {
-            BoundingBoxVerticle.loadValidProjectUuid(loader.getProjectID());
-        }
-        else
-        {
-            SegVerticle.loadValidProjectUuid(loader.getProjectID());
-        }
-
-        log.info("Import project " + loader.getProjectName() + " success!");
     }
 }
