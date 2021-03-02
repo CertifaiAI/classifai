@@ -19,6 +19,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * keywords for export use
+ *
+ * @author codenamewei
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ActionConfig

@@ -15,6 +15,8 @@
  */
 package ai.classifai.action;
 
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;
@@ -65,6 +67,14 @@ public class ProjectExport
 
         return true;
     }
+
+    public static String getProjectExportPath(@NonNull String projectId)
+    {
+        ProjectLoader loader = (ProjectLoader) ProjectHandler.getProjectLoader(projectId);
+
+        return loader.getProjectPath() + File.separator + loader.getProjectName() + ".json";
+    }
+
 
 
 }

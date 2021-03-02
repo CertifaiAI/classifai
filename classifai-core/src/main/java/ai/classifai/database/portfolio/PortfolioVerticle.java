@@ -17,7 +17,6 @@ package ai.classifai.database.portfolio;
 
 import ai.classifai.action.ProjectExport;
 import ai.classifai.action.parser.AnnotationParser;
-import ai.classifai.action.parser.ParserHelper;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
@@ -322,7 +321,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         PortfolioParser.parseOut(portfolioRow, jsonResponse);
 
                         //export
-                        String exportPath = ParserHelper.getProjectExportPath(projectID);
+                        String exportPath = ProjectExport.getProjectExportPath(projectID);
 
                         JDBCPool client = AnnotationHandler.getJDBCPool(jsonResponse.getInteger(ParamConfig.getAnnotationTypeParam()));
 
