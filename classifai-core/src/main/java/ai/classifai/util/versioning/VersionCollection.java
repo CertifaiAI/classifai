@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.util.versioning;
 
 import ai.classifai.util.ParamConfig;
@@ -26,7 +41,7 @@ public class VersionCollection {
 
     public VersionCollection(@NonNull String strVersionList)
     {
-        strVersionList = StringHandler.cleanUpRegex(strVersionList, Arrays.asList("\""));
+        strVersionList = StringHandler.cleanUpRegex(strVersionList);
 
         boolean isMultiple = strVersionList.contains("},{") ? true : false;
 
@@ -88,7 +103,7 @@ public class VersionCollection {
     {
         if(dbString.length() < 5) return;
 
-        String rawDbString = StringHandler.cleanUpRegex(dbString, Arrays.asList("\""));
+        String rawDbString = StringHandler.cleanUpRegex(dbString);
 
         boolean isMultiple = rawDbString.contains("},{") ? true : false;
 
@@ -167,6 +182,6 @@ public class VersionCollection {
             jsonArray.add(version.getJsonObject());
         }
 
-        return StringHandler.cleanUpRegex(jsonArray.toString(), Arrays.asList("\""));
+        return StringHandler.cleanUpRegex(jsonArray.toString());
     }
 }

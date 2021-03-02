@@ -103,9 +103,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     private static Tuple getNewAnnotation(@NonNull String projectId, @NonNull String dataSubPath, @NonNull String UUID)
     {
-        return Tuple.of(UUID,    //uuid
+        return Tuple.of(UUID,                            //uuid
                 projectId,                         //project_id
                 dataSubPath,                             //img_path
+                new JsonArray().toString(),              //version_list
                 new JsonArray().toString(),              //new ArrayList<Integer>()
                 0,                                       //img_depth
                 0,                                       //img_X
@@ -151,7 +152,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 Row row = rowSet.iterator().next();
 
                                 String dataSubPath = row.getString(0);
-                                String dataFullPath = getDataFullPath(projectId, dataSubPath).getAbsolutePath();
+                                File dataFullPath = getDataFullPath(projectId, dataSubPath);
 
                                 if (ImageHandler.isImageReadable(dataFullPath))
                                 {
@@ -173,13 +174,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         loadValidProjectUuid(projectId);
     }
 
-    public static void updateUuid(@NonNull String projectID, @NonNull File file, @NonNull String UUID, @NonNull Integer currentLength)
+    public static void writeUuidToDb(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
 
-        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
+        String UUID = UUIDGenerator.generateUUID();
 
-        Tuple params = AnnotationVerticle.getNewAnnotation(projectID, dataSubPath, UUID);
+        Tuple params = AnnotationVerticle.getNewAnnotation(loader.getProjectID(), dataSubPath, UUID);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(params)
@@ -191,77 +192,104 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     }
                     else
                     {
-                        log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+                        log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                     }
-
                     loader.updateFileSysLoadingProgress(currentLength);
                 });
     }
 
 
-    public static void createUuidFromReloading(@NonNull String projectId, @NonNull File file)
+    private static void writeUuidToDbFromReloadingRootPath(@NonNull ProjectLoader loader, @NonNull String dataChildPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-
-        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
-
         String uuid = UUIDGenerator.generateUUID();
 
-        Tuple param = getNewAnnotation(projectId, dataChildPath);
+        Tuple param = getNewAnnotation(loader.getProjectID(), dataChildPath);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(param)
                 .onComplete(fetch -> {
 
-                if (fetch.succeeded())
-                {
-                    loader.uploadNewUuidFromReloading(uuid);
-                }
-                else
-                {
-                    log.error("Push data point with path " + file.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-                }
+                    if (fetch.succeeded())
+                    {
+                        loader.uploadNewUuidFromReloadingRootPath(uuid);
+                    }
+                    else
+                    {
+                        String dataFullPath = loader.getProjectPath() + dataChildPath;
+                        log.error("Push data point with path " + dataFullPath + " failed: " + fetch.cause().getMessage());
+                    }
+                });
+    }
+    public static void writeUuidToDbFromImportingConfigFile(@NonNull Tuple param, @NonNull ProjectLoader loader)
+    {
+        jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
+                .execute(param)
+                .onComplete(fetch -> {
 
-        });
+                    if (fetch.succeeded())
+                    {
+                        String childPath = param.getString(2);
+
+                        File currentImagePath = new File(loader.getProjectPath() + childPath);
+
+                        if(ImageHandler.isImageReadable(currentImagePath))
+                        {
+                            String uuid = param.getString(0);
+                            loader.uploadSanityUuidFromImportingConfigFile(uuid);
+                        }
+                    }
+                    else
+                    {
+                        log.error("Push data point from config file failed" + fetch.cause().getMessage());
+                    }
+                });
     }
 
-    public static void createUuidIfNotExist(@NonNull String projectID, @NonNull File file, @NonNull Integer currentProcessedLength)
+
+    public static void createUuidIfNotExist(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentProcessedLength)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        String projectId = loader.getProjectID();
 
-        String fileSubPath = FileHandler.trimPath(loader.getProjectPath(), file.getAbsolutePath());
+        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
 
-        Tuple params = Tuple.of(fileSubPath, projectID);
+        Tuple params = Tuple.of(dataChildPath, projectId);
 
         jdbcPool.preparedQuery(AnnotationQuery.getQueryUuid())
                 .execute(params)
                 .onComplete(fetch -> {
-                  
-                RowSet<Row> rowSet = fetch.result();
 
-                //not exist , create data point
-                if (rowSet.size() == 0)
-                {
-                    createUuidFromReloading(projectID, file);
-                }
-                else
-                {
-                    Row row = rowSet.iterator().next();
-                    String uuid = row.getString(0);
+                    RowSet<Row> rowSet = fetch.result();
 
-                    // if exist remove from Listbuffer to prevent from checking the item again
-                    if(!loader.getSanityUuidList().contains(uuid))
+                    //not exist , create data point
+                    if (rowSet.size() == 0)
                     {
-                        loader.uploadNewUuidFromReloading(uuid);
+                        if(ImageHandler.isImageReadable(dataFullPath))
+                        {
+                            writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
+                        }
+
+                    }
+                    else
+                    {
+                        Row row = rowSet.iterator().next();
+                        String uuid = row.getString(0);
+
+                        // if exist remove from Listbuffer to prevent from checking the item again
+                        if(!loader.getSanityUuidList().contains(uuid))
+                        {
+                            loader.uploadNewUuidFromReloadingRootPath(uuid);
+                        }
+
+                        loader.getDbListBuffer().remove(uuid);
                     }
 
-                    loader.getDbListBuffer().remove(uuid);
+                    loader.updateReloadingProgress(currentProcessedLength);
+                });
 
-                }
 
-                loader.updateReloadingProgress(currentProcessedLength);
-            });
     }
+
+
 
     public void deleteProject(Message<JsonObject> message)
     {
@@ -332,7 +360,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                     }
                 });
-   }   
+   }
+
 
    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
    {
@@ -356,6 +385,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     requestBody.getString(ParamConfig.getUuidParam()),
                                     projectId);
 
+
             jdbcPool.preparedQuery(AnnotationQuery.getUpdateData())
                     .execute(params)
                     .onComplete(fetch -> {
@@ -371,7 +401,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
         catch (Exception e)
         {
-            log.info("AnnotationVerticle: " + message.body().toString());
             String messageInfo = "Error occur when updating data, " + e;
             message.replyAndRequest(ReplyHandler.reportBadParamError(messageInfo));
         }
@@ -404,9 +433,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         Row row = rowSet.iterator().next();
 
-
-                        Integer counter = 0;
-                        String dataChildPath = row.getString(counter++);
+                        String dataChildPath = row.getString(0);
                         String dataFullPath = AnnotationVerticle.getDataFullPath(projectID, dataChildPath).getAbsolutePath();
 
                         Map<String, String> imgData = ImageHandler.getThumbNail(dataFullPath);
@@ -417,13 +444,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         response.put(ParamConfig.getProjectNameParam(), projectName);
 
                         response.put(ParamConfig.getImgPathParam(), dataFullPath);
-                        response.put(annotationKey, new JsonArray(row.getString(counter++)));
+                        response.put(annotationKey, new JsonArray(row.getString(1)));
                         response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-                        response.put(ParamConfig.getImgXParam(), row.getInteger(counter++));
-                        response.put(ParamConfig.getImgYParam(), row.getInteger(counter++));
-                        response.put(ParamConfig.getImgWParam(), row.getDouble(counter++));
-                        response.put(ParamConfig.getImgHParam(), row.getDouble(counter++));
-                        response.put(ParamConfig.getFileSizeParam(), row.getInteger(counter++));
+                        response.put(ParamConfig.getImgXParam(), row.getInteger(2));
+                        response.put(ParamConfig.getImgYParam(), row.getInteger(3));
+                        response.put(ParamConfig.getImgWParam(), row.getDouble(4));
+                        response.put(ParamConfig.getImgHParam(), row.getDouble(5));
+                        response.put(ParamConfig.getFileSizeParam(), Long.parseLong(imgData.get(ParamConfig.getFileSizeParam())));
                         response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
                         response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
                         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));

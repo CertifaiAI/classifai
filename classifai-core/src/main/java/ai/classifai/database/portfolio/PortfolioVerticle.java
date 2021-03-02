@@ -35,7 +35,6 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import ai.classifai.util.versioning.ProjectVersion;
@@ -178,9 +177,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
     }
 
-    public static void loadV2NewProject(@NonNull JsonObject jsonObject)
+    public static void loadV2NewProject(@NonNull JsonObject inputJsonObject)
     {
-        ProjectLoader loader = PortfolioParser.parseIn(jsonObject);
+        ProjectLoader loader = PortfolioParser.parseIn(inputJsonObject);
 
         while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
         {
@@ -200,7 +199,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     {
                         ProjectHandler.loadProjectLoader(loader);
 
-                        AnnotationParser.parseIn(loader, jsonObject);
+                        AnnotationParser.parseIn(loader, inputJsonObject.getJsonObject(ParamConfig.getProjectContentParam()));
                     }
                     else
                     {
@@ -327,6 +326,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                         JDBCPool client = AnnotationHandler.getJDBCPool(jsonResponse.getInteger(ParamConfig.getAnnotationTypeParam()));
 
+                        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
                         client.preparedQuery(AnnotationQuery.getExportProject())
                                 .execute(params)
                                 .onComplete(annotationFetch ->{
@@ -343,8 +344,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                             RowIterator<Row> projectRowIterator = projectRowSet.iterator();
 
-                                            AnnotationParser.parseOut(projectRowIterator, jsonResponse);
-
+                                            AnnotationParser.parseOut(loader, projectRowIterator, jsonResponse);
                                         }
 
 
@@ -354,7 +354,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                     }
                                 });
-
                     }
                     else
                     {
@@ -433,7 +432,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .onComplete(reply -> {
                     if (reply.succeeded())
                     {
-                        System.out.println("Update v2 list of uuids to Portfolio Database success");
                         loader.setUuidListFromDb(uuidList);
                     }
                     else

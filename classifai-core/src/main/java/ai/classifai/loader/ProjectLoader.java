@@ -207,12 +207,17 @@ public class ProjectLoader
         }
     }
 
-    public void uploadNewUuidFromReloading(@NonNull String uuid)
+    public void uploadNewUuidFromReloadingRootPath(@NonNull String uuid)
     {
         if(!uuidListFromDb.contains(uuid)) uuidListFromDb.add(uuid);
 
         sanityUuidList.add(uuid);
         reloadAdditionList.add(uuid);
+    }
+
+    public void uploadSanityUuidFromImportingConfigFile(@NonNull String uuid)
+    {
+        sanityUuidList.add(uuid);
     }
 
     public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
