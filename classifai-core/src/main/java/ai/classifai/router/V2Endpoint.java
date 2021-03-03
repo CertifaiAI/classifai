@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author devenyantis
  */
 @Slf4j
-public class EndpointsV2 {
+public class V2Endpoint {
 
     @Setter private Vertx vertx = null;
     @Setter private ProjectFolderSelector projectFolderSelector = null;
@@ -55,7 +55,7 @@ public class EndpointsV2 {
      */
     public void closeProjectState(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -95,7 +95,7 @@ public class EndpointsV2 {
      */
     public void starProject(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -132,7 +132,7 @@ public class EndpointsV2 {
      */
     public void createV2Project(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -151,7 +151,7 @@ public class EndpointsV2 {
      */
     public void reloadV2Project(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -192,7 +192,7 @@ public class EndpointsV2 {
      */
     public void reloadV2ProjectStatus(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -229,7 +229,7 @@ public class EndpointsV2 {
      */
     public void exportV2Project(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());

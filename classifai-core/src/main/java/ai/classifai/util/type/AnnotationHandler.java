@@ -52,6 +52,21 @@ public class AnnotationHandler
         return (AnnotationType.BOUNDINGBOX.ordinal() == annotationTypeInt) ? BoundingBoxVerticle.getJdbcPool() : SegVerticle.getJdbcPool();
     }
 
+    public static AnnotationType getTypeFromEndpoint(String annotation)
+    {
+        AnnotationType type = null;
+
+        if(annotation.equals("bndbox"))
+        {
+            type = AnnotationType.BOUNDINGBOX;
+        }
+        else if(annotation.equals("seg"))
+        {
+            type = AnnotationType.SEGMENTATION;
+        }
+        return type;
+    }
+
 
     public static AnnotationType getType(String type)
     {

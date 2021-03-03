@@ -39,8 +39,8 @@ public class EndpointRouter extends AbstractVerticle
     private ProjectFolderSelector  projectFolderSelector;
     private ProjectImportSelector projectImporter;
 
-    EndpointsV1 v1 = new EndpointsV1();
-    EndpointsV2 v2 = new EndpointsV2();
+    V1Endpoint v1 = new V1Endpoint();
+    V2Endpoint v2 = new V2Endpoint();
 
     public EndpointRouter()
     {

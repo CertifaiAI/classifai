@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -46,7 +46,7 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
-public class EndpointsV1 {
+public class V1Endpoint {
 
     @Setter private Vertx vertx = null;
     @Setter private ToolFileSelector fileSelector = null;
@@ -61,7 +61,7 @@ public class EndpointsV1 {
      */
     public void getAllProjects(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
@@ -90,7 +90,7 @@ public class EndpointsV1 {
      */
     public void getProjectMetadata(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -139,7 +139,7 @@ public class EndpointsV1 {
      */
     public void getAllProjectsMeta(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
@@ -171,7 +171,7 @@ public class EndpointsV1 {
      */
     public void createV1NewProject(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -208,7 +208,7 @@ public class EndpointsV1 {
      */
     public void loadProject(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
 
@@ -270,7 +270,7 @@ public class EndpointsV1 {
      */
     public void loadProjectStatus(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -320,7 +320,7 @@ public class EndpointsV1 {
      */
     public void selectFileSystemType(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -375,7 +375,7 @@ public class EndpointsV1 {
      */
     public void getFileSystemStatus(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         util.checkIfDockerEnv(context);
 
@@ -417,7 +417,7 @@ public class EndpointsV1 {
      */
     public void getThumbnail(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
 
@@ -456,7 +456,7 @@ public class EndpointsV1 {
      */
     public void getImageSource(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
 
@@ -495,7 +495,7 @@ public class EndpointsV1 {
      */
     public void updateData(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         String queue = util.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
@@ -542,7 +542,7 @@ public class EndpointsV1 {
      */
     public void updateLabels(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -587,7 +587,7 @@ public class EndpointsV1 {
      */
     public void deleteProject(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
 
@@ -646,7 +646,7 @@ public class EndpointsV1 {
      */
     public void deleteProjectUUID(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
 

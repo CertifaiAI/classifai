@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -67,116 +67,6 @@ public class Util {
         log.info("DB Query Queue not found: " + type);
         return null;
     }
-
-    /*
-
-    public AnnotationType getAnnotationType(String annotation)
-    {
-        AnnotationType type = null;
-
-        if(annotation.equals("bndbox"))
-        {
-            type = AnnotationType.BOUNDINGBOX;
-        }
-        else if(annotation.equals("seg"))
-        {
-            type = AnnotationType.SEGMENTATION;
-        }
-        return type;
-    }
-
-    public String getValidProjectUuidQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getLoadValidProjectUuid();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getLoadValidProjectUuid();
-        }
-
-        log.info("DB Query LoadValidProjectUuid not found: " + type);
-        return null;
-    }
-
-
-    public String getQueryData(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getQueryData();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getQueryData();
-        }
-
-        log.info("DB Query QueryData not found: " + type);
-        return null;
-    }
-
-
-    public String getRetrieveDataPathQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getRetrieveDataPath();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getRetrieveDataPath();
-        }
-
-        log.info("DB Query RetrieveDataPath not found: " + type);
-        return null;
-    }
-
-    public String getUpdateDataQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getUpdateData();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getUpdateData();
-        }
-
-        log.info("DB Query UpdateDatadbQuery not found: " + type);
-        return null;
-    }
-
-    public String getDeleteProjectQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getDeleteProject();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getDeleteProject();
-        }
-
-        log.info("DB Query DeleteProject not found: " + type);
-        return null;
-    }
-
-    public String getDeleteSelectionUuidListQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getDeleteSelectionUuidList();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getDeleteSelectionUuidList();
-        }
-
-        log.info("DB Query DeleteSelectionUuidList not found: " + type);
-        return null;
-    }
-    */
 
 
 }
