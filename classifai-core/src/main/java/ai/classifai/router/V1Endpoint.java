@@ -383,7 +383,7 @@ public class V1Endpoint {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName));
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
