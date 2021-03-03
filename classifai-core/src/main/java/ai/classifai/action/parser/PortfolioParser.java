@@ -28,8 +28,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-
 
 /***
  * Parsing Portfolio Table in and out classifai with configuration file
@@ -51,9 +49,9 @@ public class PortfolioParser
         jsonObject.put(ParamConfig.getIsStarredParam(), inputRow.getBoolean(5));
 
         jsonObject.put(ParamConfig.getCurrentVersionUuidParam(), inputRow.getString(6));
-        jsonObject.put(ParamConfig.getVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(7), Arrays.asList("\"")));
-        jsonObject.put(ParamConfig.getUuidVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(8), Arrays.asList("\"")));
-        jsonObject.put(ParamConfig.getLabelVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(9), Arrays.asList("\"")));
+        jsonObject.put(ParamConfig.getVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(7)));
+        jsonObject.put(ParamConfig.getUuidVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(8)));
+        jsonObject.put(ParamConfig.getLabelVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(9)));
     }
 
     public static ProjectLoader parseIn(@NonNull JsonObject jsonObject)
@@ -79,7 +77,5 @@ public class PortfolioParser
                                 .versionCollection(versionCollector)
 
                                 .build();
-
-
     }
 }

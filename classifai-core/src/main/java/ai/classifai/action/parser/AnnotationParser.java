@@ -15,15 +15,20 @@
  */
 package ai.classifai.action.parser;
 
+import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
+import io.vertx.sqlclient.Tuple;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -34,31 +39,45 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationParser
 {
-    public static void parseOut(@NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    /*
+   public String toString()
+    {
+        JsonArray jsonArray = new JsonArray();
+
+        for(ProjectVersion version: versionIndexDict.values())
+        {
+            jsonArray.add(version.getJsonObject());
+        }
+
+        return StringHandler.cleanUpRegex(jsonArray.toString(), Arrays.asList("\""));
+    }
+    */
+
+    public static void parseOut(@NonNull ProjectLoader loader, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
     {
         JsonObject content = new JsonObject();
 
         while(rowIterator.hasNext())
         {
             Row row = rowIterator.next();
-            JsonObject item = new JsonObject();
+            JsonArray item = new JsonArray().add(row.getString(2))      //annotation
+                                            .add(row.getInteger(4))     //img_x
+                                            .add(row.getInteger(5))     //img_y
+                                            .add(row.getInteger(6))     //img_w
+                                            .add(row.getInteger(7));    //img_h
 
-            item.put(ParamConfig.getUuidParam(), row.getString(0));
-            item.put(ParamConfig.getImgPathParam(), row.getString(2));
-            item.put(ParamConfig.getAnnotationParam(), row.getString(3));
+            JsonObject versionBody = new JsonObject().put(loader.getCurrentProjectVersion().getVersionUuid(), item);
 
-            item.put(ParamConfig.getImgDepth(), row.getInteger(4));
-            item.put(ParamConfig.getImgXParam(), row.getInteger(5));
-            item.put(ParamConfig.getImgYParam(), row.getInteger(6));
+            JsonObject versionList = new JsonObject()
+                    .put(ParamConfig.getImgPathParam(), row.getString(1))
+                    .put(ParamConfig.getImgDepth(), row.getInteger(3))
+                    .put(ParamConfig.getFileSizeParam(), row.getInteger(8))
+                    .put(ParamConfig.getImgOriWParam(), row.getInteger(9))
+                    .put(ParamConfig.getImgOriHParam(), row.getInteger(10))
+                    .put(ParamConfig.getVersionListParam(), versionBody);
 
-            item.put(ParamConfig.getImgWParam(), row.getInteger(7));
-            item.put(ParamConfig.getImgHParam(), row.getInteger(8));
-            item.put(ParamConfig.getFileSizeParam(), row.getInteger(9));
-
-            item.put(ParamConfig.getImgOriWParam(), row.getInteger(10));
-            item.put(ParamConfig.getImgOriHParam(), row.getInteger(11));
-
-            content.put(row.getString(0), item);
+            //uuid, version, content
+            content.put(row.getString(0), versionList);
         }
 
         jsonObject.put(ParamConfig.getProjectContentParam(), content);
@@ -66,11 +85,38 @@ public class AnnotationParser
     }
 
 
-    public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject jsonObject)
+    public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)
     {
         String projectId = loader.getProjectID();
 
+        String thisVersionUuid = loader.getCurrentProjectVersion().getVersionUuid();
 
+        List<String> uuidListFromDb = loader.getUuidListFromDb();
+
+        for(String uuid : uuidListFromDb)
+        {
+            JsonObject uuidBody = contentJsonBody.getJsonObject(uuid);
+
+            JsonObject versionJsonBody = uuidBody.getJsonObject(ParamConfig.getVersionListParam());
+            JsonArray currentVersionBody = versionJsonBody.getJsonArray(thisVersionUuid);
+
+            Tuple params = Tuple.of(uuid,                                        //uuid
+                    projectId,                                             //project_id
+                    uuidBody.getString(ParamConfig.getImgPathParam()),           //child_path
+                    null,                                                        //version_list FIXME
+                    currentVersionBody.getString(0),                        //annotation
+                    uuidBody.getInteger(ParamConfig.getImgDepth()),              //img_depth
+                    currentVersionBody.getString(1),                        //img_X
+                    currentVersionBody.getString(2),                        //img_Y
+                    currentVersionBody.getString(3),                        //img_W
+                    currentVersionBody.getString(4),                        //img_H
+                    uuidBody.getInteger(ParamConfig.getFileSizeParam()),         //file_size
+                    uuidBody.getInteger(ParamConfig.getImgOriWParam()),          //img_ori_w
+                    uuidBody.getInteger(ParamConfig.getImgOriHParam()));         //img_ori_w
+
+
+            AnnotationVerticle.writeUuidToDbFromImportingConfigFile(params, loader);
+        }
 
     }
 }

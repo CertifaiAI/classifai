@@ -118,7 +118,6 @@ public class ParamConfig
     @Getter private static final String versionIndexParam = "version_index";
     @Getter private static final String versionUuidParam = "version_uuid";
 
-
     //output file path
     @Getter private static final String projectJsonPathParam = "project_config_path";
 

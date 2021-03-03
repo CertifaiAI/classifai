@@ -24,6 +24,11 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.FileReader;
 
+/**
+ * Import of project from configuration file
+ *
+ * @author codenamewei
+ */
 @Slf4j
 public class ProjectImport
 {

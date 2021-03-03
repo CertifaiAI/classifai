@@ -16,13 +16,12 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
+import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.collection.UUIDGenerator;
 import ai.classifai.util.type.AnnotationType;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
@@ -92,13 +91,11 @@ public class ImageHandler {
         }
     }
 
-    public static boolean isImageReadable(String imagePath)
+    public static boolean isImageReadable(File dataFullPath)
     {
-        File file = new File(imagePath);
-
-        if ((file.exists() == false) && (file.length() < 5)) //length() stands for file size
+        if ((dataFullPath.exists() == false) && (dataFullPath.length() < 5)) //length() stands for file size
         {
-            log.info(imagePath + " not found. Check if the data is in the corresponding path. ");
+            log.info(dataFullPath + " not found. Check if the data is in the corresponding path. ");
 
             return false;
         }
@@ -217,6 +214,7 @@ public class ImageHandler {
             imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
             imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
             imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
+            imageData.put(ParamConfig.getFileSizeParam(), Long.toString(file.length()));
             imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
             return imageData;
@@ -299,31 +297,27 @@ public class ImageHandler {
     }
 
 
-    public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesCollection)
+    public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesFullPath)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
-        loader.setFileSysTotalUUIDSize(filesCollection.size());
+        loader.setFileSysTotalUUIDSize(filesFullPath.size());
 
         Integer annotationTypeInt = loader.getAnnotationType();
 
         if (annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
-            for (int i = 0; i < filesCollection.size(); ++i)
+            for (int i = 0; i < filesFullPath.size(); ++i)
             {
-                String uuid = UUIDGenerator.generateUUID();
-
-                AnnotationVerticle.updateUuid(projectID, filesCollection.get(i), uuid, i + 1);
+                BoundingBoxVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
             }
         }
         else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
-            for (int i = 0; i < filesCollection.size(); ++i)
+            for (int i = 0; i < filesFullPath.size(); ++i)
             {
-                String uuid = UUIDGenerator.generateUUID();
-            
-                AnnotationVerticle.updateUuid(projectID, filesCollection.get(i), uuid, i + 1);
+                SegVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
             }
         }
     }
@@ -408,10 +402,10 @@ public class ImageHandler {
         }
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
-        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
+        List<File> dataFullPathList = FileHandler.processFolder(rootPath, fileExtension);
 
         //Scenario 2 - 1: root path exist but all images missing
-        if(dataList.isEmpty())
+        if(dataFullPathList.isEmpty())
         {
             loader.getSanityUuidList().clear();
             loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
@@ -420,19 +414,20 @@ public class ImageHandler {
 
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
 
-        loader.setFileSysTotalUUIDSize(dataList.size());
+        loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
 
-        for(int i = 0; i < dataList.size(); ++i)
+        for(int i = 0; i < dataFullPathList.size(); ++i)
         {
             if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
             {
-                BoundingBoxVerticle.createUuidIfNotExist(projectID, dataList.get(i), i + 1);
+                BoundingBoxVerticle.createUuidIfNotExist(loader, dataFullPathList.get(i), i + 1);
             }
             else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
             {
-                //TODO
+                SegVerticle.createUuidIfNotExist(loader, dataFullPathList.get(i), i + 1);
+
             }
         }
     }

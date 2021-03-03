@@ -2,12 +2,18 @@ package ai.classifai.util.data;
 
 import lombok.NonNull;
 
-import java.util.List;
-
 public class StringHandler
 {
-    public static String cleanUpRegex(@NonNull String input, List<String> regexList)
+    public static String cleanUpRegex(@NonNull String input)
     {
+        return input.replace("\"", "");
+    }
+
+    /*
+    public static String cleanUpRegex(@NonNull String input, @Nullable List<String> regexList)
+    {
+        if (regexList == null) regexList = Arrays.asList("\"");
+
         String output = input;
 
         for(String regex : regexList)
@@ -17,4 +23,5 @@ public class StringHandler
 
         return output;
     }
+     */
 }
