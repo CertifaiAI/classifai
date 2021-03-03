@@ -15,6 +15,7 @@
  */
 package ai.classifai.router;
 
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -26,6 +27,7 @@ import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -59,7 +61,7 @@ public class EndpointsV1 {
      */
     public void getAllProjects(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
@@ -88,7 +90,7 @@ public class EndpointsV1 {
      */
     public void getProjectMetadata(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -137,7 +139,7 @@ public class EndpointsV1 {
      */
     public void getAllProjectsMeta(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
@@ -169,7 +171,7 @@ public class EndpointsV1 {
      */
     public void createV1NewProject(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -206,10 +208,9 @@ public class EndpointsV1 {
      */
     public void loadProject(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
-        String query = util.getValidProjectUuidQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -230,7 +231,7 @@ public class EndpointsV1 {
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
 
-            DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+            DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getLoadValidProjectUuid());
 
             //start checking uuid if it's path is still exist
             vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
@@ -269,7 +270,7 @@ public class EndpointsV1 {
      */
     public void loadProjectStatus(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -319,7 +320,7 @@ public class EndpointsV1 {
      */
     public void selectFileSystemType(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -374,7 +375,7 @@ public class EndpointsV1 {
      */
     public void getFileSystemStatus(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         util.checkIfDockerEnv(context);
 
@@ -392,7 +393,7 @@ public class EndpointsV1 {
         {
             res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
         }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) | (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
         {
             List<String> newAddedUUIDList = loader.getFileSysNewUUIDList();
 
@@ -416,10 +417,9 @@ public class EndpointsV1 {
      */
     public void getThumbnail(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
-        String query = util.getQueryData(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -429,7 +429,7 @@ public class EndpointsV1 {
                 .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getQueryData());
 
         vertx.eventBus().request(queue, request, thumbnailOptions, fetch -> {
 
@@ -456,10 +456,9 @@ public class EndpointsV1 {
      */
     public void getImageSource(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
-        String query = util.getRetrieveDataPathQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -470,7 +469,7 @@ public class EndpointsV1 {
                 .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRetrieveDataPath());
 
         vertx.eventBus().request(queue, request, imgSrcOptions, fetch -> {
 
@@ -496,9 +495,8 @@ public class EndpointsV1 {
      */
     public void updateData(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         String queue = util.getDbQuery(type);
-        String UpdateDatadbQuery = util.getUpdateDatadbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -508,8 +506,7 @@ public class EndpointsV1 {
 
         context.request().bodyHandler(h ->
         {
-            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), UpdateDatadbQuery);
-
+            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getUpdateData());
 
             try
             {
@@ -545,7 +542,7 @@ public class EndpointsV1 {
      */
     public void updateLabels(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -590,10 +587,9 @@ public class EndpointsV1 {
      */
     public void deleteProject(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
-        String query = util.getDeleteProjectQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -606,42 +602,35 @@ public class EndpointsV1 {
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getDeleteProject());
 
+        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
+
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
             if(reply.succeeded())
             {
                 JsonObject response = (JsonObject) reply.result().body();
 
-                if(ReplyHandler.isReplyOk(response))
-                {
+                if(ReplyHandler.isReplyOk(response)) {
                     //delete in respective Table
-                    DeliveryOptions deleteListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+                    DeliveryOptions deleteListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getDeleteProject());
 
                     vertx.eventBus().request(queue, request, deleteListOptions, fetch -> {
 
-                        if (fetch.succeeded())
-                        {
+                        if (fetch.succeeded()) {
                             JsonObject replyResponse = (JsonObject) fetch.result().body();
 
                             //delete in Project Handler
                             ProjectHandler.deleteProjectWithID(projectID);
                             HTTPResponseHandler.configureOK(context, replyResponse);
-                        }
-                        else
-                        {
-                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in delete project name: " + projectName + " for " + type.name()));
+                        } else {
+                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
                         }
                     });
                 }
-                else
-                {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in delete project name: " + projectName + " for " + type.name() + " from " + type.name() + " Database"));
-                }
-
             }
             else
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in delete project name: " + projectName + " for " + type.name()  + " from Portfolio Database"));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage  + " from Portfolio Database"));
             }
         });
     }
@@ -657,10 +646,9 @@ public class EndpointsV1 {
      */
     public void deleteProjectUUID(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String queue = util.getDbQuery(type);
-        String query = util.getDeleteSelectionUuidListQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -676,7 +664,7 @@ public class EndpointsV1 {
 
             request.put(ParamConfig.getProjectIdParam(), projectID).put(ParamConfig.getUuidListParam(), uuidListArray);
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getDeleteSelectionUuidList());
 
             vertx.eventBus().request(queue, request, options, reply ->
             {

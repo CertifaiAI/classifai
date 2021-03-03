@@ -64,6 +64,17 @@ public class EndpointRouter extends AbstractVerticle
         //add action before stopped if necessary
     }
 
+    private void configureVersionVertx()
+    {
+        v1.setVertx(vertx);
+        v1.setFolderSelector(folderSelector);
+        v1.setFileSelector(fileSelector);
+
+        v2.setVertx(vertx);
+        v2.setProjectFolderSelector(projectFolderSelector);
+        v2.setProjectImporter(projectImporter);
+    }
+
     @Override
     public void start(Promise<Void> promise)
     {
@@ -72,7 +83,9 @@ public class EndpointRouter extends AbstractVerticle
         //display for content in webroot
         router.route().handler(StaticHandler.create());
 
-        //*******************************Endpoints*******************************
+        final String projectEndpoint = "/:annotation_type/projects/:project_name";
+
+        //*******************************V1 Endpoints*******************************
 
         router.get("/:annotation_type/projects").handler(v1::getAllProjects);
 
@@ -82,9 +95,9 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/:annotation_type/newproject/:project_name").handler(v1::createV1NewProject);
 
-        router.get("/:annotation_type/projects/:project_name").handler(v1::loadProject);
+        router.get(projectEndpoint).handler(v1::loadProject);
 
-        router.delete("/:annotation_type/projects/:project_name").handler(v1::deleteProject);
+        router.delete(projectEndpoint).handler(v1::deleteProject);
 
         router.delete("/:annotation_type/projects/:project_name/uuids").handler(v1::deleteProjectUUID);
 
@@ -102,9 +115,11 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/:annotation_type/projects/:project_name/newlabels").handler(v1::updateLabels);
 
-        // V2
+        //*******************************V2 Endpoints*******************************
 
-        router.put("/:annotation_type/projects/:project_name").handler(v2::closeProjectState);
+        router.put("/v2/newproject").handler(v2::importProject);
+
+        router.put(projectEndpoint).handler(v2::closeProjectState);
 
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 
@@ -116,10 +131,6 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/:annotation_type/projects/:project_name/export").handler(v2::exportV2Project);
 
-        //*******************************General*******************************
-
-        router.put("/v2/newproject").handler(v2::importProject);
-
 
         vertx.createHttpServer()
                 .requestHandler(router)
@@ -128,6 +139,7 @@ public class EndpointRouter extends AbstractVerticle
 
                     if (r.succeeded())
                     {
+                        configureVersionVertx();
                         promise.complete();
                     }
                     else {
@@ -135,13 +147,5 @@ public class EndpointRouter extends AbstractVerticle
                         promise.fail(r.cause());
                     }
                 });
-
-        v1.setVertx(vertx);
-        v1.setFolderSelector(folderSelector);
-        v1.setFileSelector(fileSelector);
-
-        v2.setVertx(vertx);
-        v2.setProjectFolderSelector(projectFolderSelector);
-        v2.setProjectImporter(projectImporter);
     }
 }

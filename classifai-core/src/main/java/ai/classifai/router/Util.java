@@ -45,21 +45,6 @@ public class Util {
         return false;
     }
 
-    public AnnotationType getAnnotationType(String annotation)
-    {
-        AnnotationType type = null;
-
-        if(annotation.equals("bndbox"))
-        {
-            type = AnnotationType.BOUNDINGBOX;
-        }
-        else if(annotation.equals("seg"))
-        {
-            type = AnnotationType.SEGMENTATION;
-        }
-        return type;
-    }
-
     public void checkIfDockerEnv(RoutingContext context)
     {
         if(ParamConfig.isDockerEnv())
@@ -83,6 +68,23 @@ public class Util {
         return null;
     }
 
+    /*
+
+    public AnnotationType getAnnotationType(String annotation)
+    {
+        AnnotationType type = null;
+
+        if(annotation.equals("bndbox"))
+        {
+            type = AnnotationType.BOUNDINGBOX;
+        }
+        else if(annotation.equals("seg"))
+        {
+            type = AnnotationType.SEGMENTATION;
+        }
+        return type;
+    }
+
     public String getValidProjectUuidQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
@@ -97,6 +99,7 @@ public class Util {
         log.info("DB Query LoadValidProjectUuid not found: " + type);
         return null;
     }
+
 
     public String getQueryData(AnnotationType type)
     {
@@ -113,6 +116,7 @@ public class Util {
         return null;
     }
 
+
     public String getRetrieveDataPathQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
@@ -128,7 +132,7 @@ public class Util {
         return null;
     }
 
-    public String getUpdateDatadbQuery(AnnotationType type)
+    public String getUpdateDataQuery(AnnotationType type)
     {
         if(type.equals(AnnotationType.BOUNDINGBOX))
         {
@@ -172,7 +176,7 @@ public class Util {
         log.info("DB Query DeleteSelectionUuidList not found: " + type);
         return null;
     }
-
+    */
 
 
 }

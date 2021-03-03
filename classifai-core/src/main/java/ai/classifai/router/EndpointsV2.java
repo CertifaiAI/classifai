@@ -25,6 +25,7 @@ import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -54,7 +55,7 @@ public class EndpointsV2 {
      */
     public void closeProjectState(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -73,7 +74,7 @@ public class EndpointsV2 {
                 }
                 else
                 {
-                    throw new Exception("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
+                    throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
                 }
 
                 HTTPResponseHandler.configureOK(context);
@@ -94,7 +95,7 @@ public class EndpointsV2 {
      */
     public void starProject(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
@@ -131,7 +132,7 @@ public class EndpointsV2 {
      */
     public void createV2Project(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -150,7 +151,7 @@ public class EndpointsV2 {
      */
     public void reloadV2Project(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -191,13 +192,13 @@ public class EndpointsV2 {
      */
     public void reloadV2ProjectStatus(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName));
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
@@ -228,7 +229,7 @@ public class EndpointsV2 {
      */
     public void exportV2Project(RoutingContext context)
     {
-        AnnotationType type = util.getAnnotationType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationHandler.getType(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
