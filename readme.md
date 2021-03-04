@@ -31,7 +31,7 @@ It supports the labelling of various data types with multi labelled outputs form
 
 Try it online : \
 <a href="https://classifai.vercel.app/#/">
-    <img src="metadata/click-me-button.png" />
+    <img src="metadata/click-me-button.png" width="90"/>
 </a>
 
 Figure below show how Classifai fits in the machine learning workflow. \
