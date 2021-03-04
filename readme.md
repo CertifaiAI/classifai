@@ -30,7 +30,7 @@ Data Annotation Platform for AI Training
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
 
 Try it online : \
-<a href="https://classifai.vercel.app/#/" target="_blank">
+<a href="https://classifai.vercel.app/#/">
     <img src="metadata/click-here-button.png" width="90"/>
 </a>
 
