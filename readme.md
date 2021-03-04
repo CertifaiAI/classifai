@@ -26,10 +26,13 @@
 Data Annotation Platform for AI Training
 </h3>
 
-[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/0)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/0)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/1)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/1)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/2)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/2)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/3)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/3)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/4)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/4)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/5)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/5)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/6)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/6)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/7)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/7)
-
 **Classifai** is one of the most comprehensive open-source data annotation platform.  
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
+
+**Try it online**: \
+<a href="https://classifai.vercel.app/#/">
+    <img src="metadata/click-here-button.png" width="90"/>
+</a>
 
 Figure below show how Classifai fits in the machine learning workflow. \
 It enables the labelling of raw data imported from data source. \
