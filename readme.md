@@ -30,7 +30,9 @@ Data Annotation Platform for AI Training
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
 
 Try it online : \
-<button name="button" onclick="https://classifai.vercel.app/#/">Click me</button>
+<a href="https://classifai.vercel.app/#/">
+    <img src="./metadata/click-me-button.png">
+</a>
 
 Figure below show how Classifai fits in the machine learning workflow. \
 It enables the labelling of raw data imported from data source. \
