@@ -89,6 +89,11 @@ public class VersionCollection {
         }
     }
 
+    public VersionCollection(@NonNull ProjectVersion projVersion)
+    {
+        this(Arrays.asList(projVersion));
+    }
+
     public void setLabelDict(@NonNull String dbString)
     {
         getElements(dbString, labelDict);

@@ -249,7 +249,6 @@ public class V2Endpoint {
                 JsonObject response = (JsonObject) reply.result().body();
 
                 HTTPResponseHandler.configureOK(context, response);
-
             }
             else
             {

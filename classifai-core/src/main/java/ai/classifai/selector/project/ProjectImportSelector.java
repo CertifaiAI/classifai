@@ -4,6 +4,8 @@ import ai.classifai.action.ProjectImport;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -75,7 +77,7 @@ public class ProjectImportSelector
                     }
                     else
                     {
-                        //TODO
+                        log.debug("Operation of import project aborted");
                     }
                 }
             });

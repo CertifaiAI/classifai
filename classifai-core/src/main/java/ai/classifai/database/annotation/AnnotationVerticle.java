@@ -235,6 +235,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         if(ImageHandler.isImageReadable(currentImagePath))
                         {
                             String uuid = param.getString(0);
+
                             loader.uploadSanityUuidFromImportingConfigFile(uuid);
                         }
                     }
@@ -346,7 +347,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             }
 
                             //update Portfolio Verticle
-                            PortfolioVerticle.updateFileSystemUUIDList(projectId);
+                            PortfolioVerticle.updateFileSystemUuidList(projectId);
 
                             message.replyAndRequest(ReplyHandler.getOkReply());
                         }

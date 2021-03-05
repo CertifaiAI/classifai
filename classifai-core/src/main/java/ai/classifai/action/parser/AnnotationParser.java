@@ -100,10 +100,14 @@ public class AnnotationParser
             JsonObject versionJsonBody = uuidBody.getJsonObject(ParamConfig.getVersionListParam());
             JsonArray currentVersionBody = versionJsonBody.getJsonArray(thisVersionUuid);
 
+            JsonObject buffer = uuidBody.getJsonObject(ParamConfig.getVersionListParam());
+            System.out.println("Version List Param: " + buffer);
+
+
             Tuple params = Tuple.of(uuid,                                        //uuid
                     projectId,                                             //project_id
                     uuidBody.getString(ParamConfig.getImgPathParam()),           //child_path
-                    null,                                                        //version_list FIXME
+                    null,       //version_list
                     currentVersionBody.getString(0),                        //annotation
                     uuidBody.getInteger(ParamConfig.getImgDepth()),              //img_depth
                     currentVersionBody.getString(1),                        //img_X

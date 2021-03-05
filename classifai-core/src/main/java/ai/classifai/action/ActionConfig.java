@@ -31,4 +31,8 @@ public class ActionConfig
     @Getter private static final String toolParam = "tool";
     @Getter private static final String toolVersionParam = "tool_version";
     @Getter private static final String updatedDateParam = "updated_date";
+
+
+    //output file path
+    @Getter private static final String projectConfigPathParam = "project_config_path";
 }

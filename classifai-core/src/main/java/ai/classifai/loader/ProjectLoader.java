@@ -53,7 +53,7 @@ public class ProjectLoader
 
      //a list of unique uuid representing number of data points in one project
     private List<String> sanityUuidList = new ArrayList<>();
-    private List<String> uuidListFromDb;
+    private List<String> uuidListFromDb = new ArrayList<>();
 
     private VersionCollection versionCollector;
     private ProjectVersion currentProjectVersion;
@@ -202,7 +202,7 @@ public class ProjectLoader
         {
             sanityUuidList.addAll(fileSysNewUUIDList);
             uuidListFromDb.addAll(fileSysNewUUIDList);
-            PortfolioVerticle.updateFileSystemUUIDList(projectID);
+            PortfolioVerticle.updateFileSystemUuidList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
@@ -245,7 +245,7 @@ public class ProjectLoader
             sanityUuidList.removeAll(dbListBuffer);
             reloadDeletionList = dbListBuffer;
 
-            PortfolioVerticle.updateFileSystemUUIDList(projectID);
+            PortfolioVerticle.updateFileSystemUuidList(projectID);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }

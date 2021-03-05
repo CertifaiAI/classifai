@@ -41,7 +41,8 @@ public class PortfolioDbQuery
 
     @Getter private static final String retrieveAllProjectsForAnnotationType = "SELECT project_name FROM Portfolio WHERE annotation_type = ? ORDER BY project_name";
 
-    //V2
+    //*******************************V2*******************************
+
     @Getter private static final String retrieveProjectMetadata = "retrieveProjectMetadata";
 
     @Getter private static final String retrieveAllProjectsMetadata = "retrieveAllProjectsMetadata";

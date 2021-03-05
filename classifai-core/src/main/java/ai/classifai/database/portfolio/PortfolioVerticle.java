@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.portfolio;
 
+import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.action.parser.PortfolioParser;
@@ -55,7 +56,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -98,7 +98,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.deleteProject(message);
         }
-        //v2
+        //*******************************V2*******************************
+
         else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
         {
             this.getProjectMetadata(message);
@@ -135,8 +136,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             String projectID = UUIDGenerator.generateUUID();
 
-            ProjectVersion projectVersion = new ProjectVersion();
-            VersionCollection versionCollection = new VersionCollection(Arrays.asList(projectVersion));
+            ProjectVersion projVersion = new ProjectVersion();
+            VersionCollection versionCollection = new VersionCollection(projVersion);
 
             String rootProjectPath = rootPath == null ? "" : rootPath.getAbsolutePath();
 
@@ -148,7 +149,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     .loaderStatus(LoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
-                    .currentProjectVersion(projectVersion)
+                    .currentProjectVersion(projVersion)
                     .versionCollection(versionCollection)
                     .build();
 
@@ -176,9 +177,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
     }
 
-    public static void loadV2NewProject(@NonNull JsonObject inputJsonObject)
+    public static void loadProjectFromImportingConfigFile(@NonNull JsonObject input)
     {
-        ProjectLoader loader = PortfolioParser.parseIn(inputJsonObject);
+        ProjectLoader loader = PortfolioParser.parseIn(input);
 
         while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
         {
@@ -188,54 +189,113 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             log.info("Project name overlapped. Rename project as " + newProjName);
         }
 
+        ProjectHandler.loadProjectLoader(loader);
+
+        //save each uuid to project table and keep track in projectloader
+        JsonObject contentJsonObject = input.getJsonObject(ParamConfig.getProjectContentParam());
+        AnnotationParser.parseIn(loader, contentJsonObject);
+
+        //save the .updateFileSystemUuidList(loader.getProjectID());
+
+
+        /*
         Tuple params = PortfolioVerticle.buildNewProject(loader);
 
+
+        ProjectHandler.loadProjectLoader(loader);
+        //craete an empty project without uuid_list
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
                 .execute(params)
                 .onComplete(fetch -> {
 
                     if (fetch.succeeded())
                     {
-                        ProjectHandler.loadProjectLoader(loader);
+                        AnnotationParser.parseIn(loader, input.getJsonObject(ParamConfig.getProjectContentParam()));
 
-                        AnnotationParser.parseIn(loader, inputJsonObject.getJsonObject(ParamConfig.getProjectContentParam()));
+                        //write to database on the uuid_version_list
+                        PortfolioVerticle.updateFileSystemUuidList(loader.getProjectID());
+
+                        log.info("Import project " + loader.getProjectName() + " success!");
                     }
                     else
                     {
-                        log.debug("Create project failed from database");
+                        log.info("Failed to import project " + loader.getProjectName() + " from configuration file");
                     }
                 });
 
-        log.info("Import project " + loader.getProjectName() + " success!");
-
-
+         */
     }
+    /**
+     public static void loadProjectFromImportingConfigFile(@NonNull JsonObject input)
+     {
+     ProjectLoader loader = PortfolioParser.parseIn(input);
 
-    //v1 create new project
+     while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
+     {
+     String newProjName = new NameGenerator().getNewProjectName();
+     loader.setProjectName(newProjName);
+     loader.setProjectID(UUIDGenerator.generateUUID());
+     log.info("Project name overlapped. Rename project as " + newProjName);
+     }
+
+     Tuple params = PortfolioVerticle.buildNewProject(loader);
+
+     //craete an empty project without uuid_list
+     portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
+     .execute(params)
+     .onComplete(fetch -> {
+
+     if (fetch.succeeded())
+     {
+     ProjectHandler.loadProjectLoader(loader);
+
+     AnnotationParser.parseIn(loader, input.getJsonObject(ParamConfig.getProjectContentParam()));
+
+     //write to database on the uuid_version_list
+     PortfolioVerticle.updateFileSystemUuidList(loader.getProjectID());
+
+     log.info("Import project " + loader.getProjectName() + " success!");
+     }
+     else
+     {
+     log.info("Failed to import project " + loader.getProjectName() + " from configuration file");
+     }
+     });
+     }
+     */
+
+    /**
+     * v1 create new project
+     * @param message
+     */
+    @Deprecated
     public void createV1NewProject(Message<JsonObject> message)
     {
         JsonObject request = message.body();
 
         String projectName = request.getString(ParamConfig.getProjectNameParam());
-        Integer annotationType = request.getInteger(ParamConfig.getAnnotationTypeParam());
+        Integer annotationInt = request.getInteger(ParamConfig.getAnnotationTypeParam());
 
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationType))
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
-            String annotationName = AnnotationHandler.getType(annotationType).name();
+            String annotationName = AnnotationHandler.getType(annotationInt).name();
 
             log.info("Create " + annotationName + " project with name: " + projectName);
 
             String projectID = UUIDGenerator.generateUUID();
 
-            VersionCollection versionCollection = new VersionCollection(Arrays.asList(new ProjectVersion()));
+            ProjectVersion projVersion = new ProjectVersion();
+            VersionCollection versionCollection = new VersionCollection(projVersion);
 
             ProjectLoader loader = new ProjectLoader.Builder()
                     .projectID(projectID)
                     .projectName(projectName)
-                    .annotationType(annotationType)
+                    .annotationType(annotationInt)
                     .projectPath("")
                     .loaderStatus(LoaderStatus.LOADED)
+                    .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
+                    .currentProjectVersion(projVersion)
                     .versionCollection(versionCollection)
                     .build();
 
@@ -339,18 +399,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         {
                                             log.debug("Export project annotation retrieve 0 rows. Project not found from project database");
                                         }
-                                        else {
+                                        else
+                                        {
 
                                             RowIterator<Row> projectRowIterator = projectRowSet.iterator();
 
                                             AnnotationParser.parseOut(loader, projectRowIterator, jsonResponse);
                                         }
-
-
                                         ProjectExport.exportToFile(new File(exportPath), jsonResponse);
 
-                                        message.reply(ReplyHandler.getOkReply().put(ParamConfig.getProjectJsonPathParam(), exportPath));
-
+                                        message.reply(ReplyHandler.getOkReply().put(ActionConfig.getProjectConfigPathParam(), exportPath));
                                     }
                                 });
                     }
@@ -414,7 +472,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    public static void updateFileSystemUUIDList(@NonNull String projectID)
+    public static void updateFileSystemUuidList(@NonNull String projectID)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -426,14 +484,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         String dbUuidDict = loader.getVersionCollector().getUuidDictObject2Db();
 
         Tuple updateUuidListBody = Tuple.of(dbUuidDict, projectID);
+
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateProject())
                 .execute(updateUuidListBody)
                 .onComplete(reply -> {
-                    if (reply.succeeded())
-                    {
-                        loader.setUuidListFromDb(uuidList);
-                    }
-                    else
+                    if (!reply.succeeded())
                     {
                         log.info("Update list of uuids to Portfolio Database failed");
                     }
@@ -511,7 +566,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         createV2NewProject(projName, annotationInt, dataPath);
     }
 
-    //V2 API
     public void getProjectMetadata(Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
@@ -542,7 +596,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDb().size()));
     }
 
-    //V2 API
+    /**
+     * V2 get all available project metadata
+     * @param message
+     */
     public void getAllProjectsMetadata(Message<JsonObject> message)
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
@@ -658,7 +715,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 ParamConfig.getEmptyArray());               //label_version_list
 
     }
-
 
     private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {

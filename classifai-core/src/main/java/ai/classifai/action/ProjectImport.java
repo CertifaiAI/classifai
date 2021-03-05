@@ -17,6 +17,8 @@ package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import io.vertx.core.json.JsonObject;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -30,6 +32,7 @@ import java.io.FileReader;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectImport
 {
     public static void importProjectFile(@NonNull File jsonFile)
@@ -40,7 +43,7 @@ public class ProjectImport
 
             JsonObject inputJsonObject = new JsonObject(jsonStr);
 
-            PortfolioVerticle.loadV2NewProject(inputJsonObject);
+            PortfolioVerticle.loadProjectFromImportingConfigFile(inputJsonObject);
 
         }
         catch(Exception e)
