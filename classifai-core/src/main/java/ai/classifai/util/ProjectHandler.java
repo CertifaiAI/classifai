@@ -102,7 +102,7 @@ public class ProjectHandler {
         }
     }
 
-    public static String getProjectID(String projectName, Integer annotationType)
+    public static String getProjectId(String projectName, Integer annotationType)
     {
         Pair key = new ImmutablePair(projectName, annotationType);
 
@@ -118,10 +118,10 @@ public class ProjectHandler {
 
         Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
 
-        projectIDSearch.put(projectNameWithType, loader.getProjectID());
-        projectNameSearch.put(loader.getProjectID(), projectNameWithType);
+        projectIDSearch.put(projectNameWithType, loader.getProjectId());
+        projectNameSearch.put(loader.getProjectId(), projectNameWithType);
 
-        projectIDLoaderDict.put(loader.getProjectID(), loader);
+        projectIDLoaderDict.put(loader.getProjectId(), loader);
     }
 
     public static boolean initSelector(String selection)

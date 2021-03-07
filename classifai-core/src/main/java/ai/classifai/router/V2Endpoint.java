@@ -58,7 +58,7 @@ public class V2Endpoint {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
         if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -98,7 +98,7 @@ public class V2Endpoint {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
         if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -130,7 +130,7 @@ public class V2Endpoint {
      * PUT http://localhost:{port}/v2/bndbox/newproject/helloworld
      *
      */
-    public void createV2Project(RoutingContext context)
+    public void createProject(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
@@ -149,7 +149,7 @@ public class V2Endpoint {
      * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
      *
      */
-    public void reloadV2Project(RoutingContext context)
+    public void reloadProject(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
@@ -163,7 +163,7 @@ public class V2Endpoint {
 
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
 
         DeliveryOptions reloadOpts = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
 
@@ -190,7 +190,7 @@ public class V2Endpoint {
      * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
      *
      */
-    public void reloadV2ProjectStatus(RoutingContext context)
+    public void reloadProjectStatus(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
@@ -223,21 +223,21 @@ public class V2Endpoint {
     }
 
     /***
-     * export a project to json
+     * export a project to configuration file
      *
      * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/export
      */
-    public void exportV2Project(RoutingContext context)
+    public void exportProject(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+        if(util.checkIfProjectNull(context, projectId, projectName)) return;
 
         JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectID)
+                .put(ParamConfig.getProjectIdParam(), projectId)
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());

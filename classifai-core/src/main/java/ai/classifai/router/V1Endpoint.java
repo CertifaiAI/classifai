@@ -105,7 +105,7 @@ public class V1Endpoint {
             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving metadata of project: " + projectName));
         }
 
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), Objects.requireNonNull(loader).getProjectID());
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), Objects.requireNonNull(loader).getProjectId());
 
         //load label list
         DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveProjectMetadata());
@@ -229,7 +229,7 @@ public class V1Endpoint {
         {
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
-            JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectID());
+            JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
 
             DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getLoadValidProjectUuid());
 
@@ -351,7 +351,7 @@ public class V1Endpoint {
                 return;
             }
 
-            String currentProjectID = loader.getProjectID();
+            String currentProjectID = loader.getProjectId();
 
             if (fileType.equals(ParamConfig.getFileParam()))
             {
@@ -422,7 +422,7 @@ public class V1Endpoint {
         String queue = util.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
         JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
@@ -461,7 +461,7 @@ public class V1Endpoint {
         String queue = util.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
         JsonObject request = new JsonObject()
@@ -500,7 +500,7 @@ public class V1Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
         if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -546,7 +546,7 @@ public class V1Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
         if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -593,7 +593,7 @@ public class V1Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
         if(util.checkIfProjectNull(context, projectID, projectName)) return;
 
@@ -652,7 +652,7 @@ public class V1Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        String projectID = ProjectHandler.getProjectID(projectName, type.ordinal());
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
         if(util.checkIfProjectNull(context, projectID, projectName)) return;
 

@@ -17,8 +17,8 @@ package ai.classifai.loader;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.versioning.Version;
 import ai.classifai.util.versioning.ProjectVersion;
-import ai.classifai.util.versioning.VersionCollection;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -36,7 +36,7 @@ import java.util.*;
 @Setter
 public class ProjectLoader
 {
-    private String projectID;
+    private String projectId;
     private String projectName;
 
     private Integer annotationType;
@@ -55,8 +55,7 @@ public class ProjectLoader
     private List<String> sanityUuidList = new ArrayList<>();
     private List<String> uuidListFromDb = new ArrayList<>();
 
-    private VersionCollection versionCollector;
-    private ProjectVersion currentProjectVersion;
+    private ProjectVersion projectVersion = null;
 
     private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
@@ -85,7 +84,7 @@ public class ProjectLoader
 
     private ProjectLoader(Builder build)
     {
-        this.projectID = build.projectID;
+        this.projectId = build.projectId;
         this.projectName = build.projectName;
         this.annotationType = build.annotationType;
         this.projectPath = build.projectPath;
@@ -93,15 +92,13 @@ public class ProjectLoader
         this.isProjectStarred = build.isProjectStarred;
         this.loaderStatus = build.loaderStatus;
 
-        if((build.versionCollection != null) && (build.projectVersion != null))
-        {
-            this.versionCollector = build.versionCollection;
-            this.currentProjectVersion = build.projectVersion;
 
-            String versionUuid = currentProjectVersion.getVersionUuid();
-            this.labelList = versionCollector.getLabelDict().get(versionUuid);
-            this.uuidListFromDb = versionCollector.getUuidDict().get(versionUuid);
-        }
+        this.projectVersion = build.projectVersion;
+
+        this.uuidListFromDb = projectVersion.getCurrentUuidList();
+        this.sanityUuidList = uuidListFromDb;
+
+        this.labelList = projectVersion.getCurrentLabelList();
     }
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
@@ -122,7 +119,7 @@ public class ProjectLoader
         if (isProjectNew)
         {
             //update database to be old project
-            PortfolioVerticle.updateIsNewParam(projectID);
+            PortfolioVerticle.updateIsNewParam(projectId);
         }
 
         isLoadedFrontEndToggle = Boolean.TRUE;
@@ -179,6 +176,8 @@ public class ProjectLoader
         fileSysNewUUIDList.add(uuid);
     }
 
+
+    @Deprecated
     //updating project from file system
     public void updateFileSysLoadingProgress(Integer currentSize)
     {
@@ -192,6 +191,34 @@ public class ProjectLoader
         }
     }
 
+    public void updateProjectFolderLoadingProgress(Integer currentSize)
+    {
+        currentUUIDMarker = currentSize;
+        progressUpdate.set(0, currentUUIDMarker);
+
+        //if done, offload set to list
+        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        {
+            if (fileSysNewUUIDList.isEmpty())
+            {
+                fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
+            }
+            else
+            {
+                sanityUuidList.addAll(fileSysNewUUIDList);
+                uuidListFromDb.addAll(fileSysNewUUIDList);
+
+                projectVersion.setCurrentVersionUuidList(fileSysNewUUIDList);
+
+                PortfolioVerticle.createNewProject(projectId);
+
+                fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
+            }
+        }
+    }
+
+
+    @Deprecated
     private void offloadFileSysNewList2List()
     {
         if (fileSysNewUUIDList.isEmpty())
@@ -202,7 +229,7 @@ public class ProjectLoader
         {
             sanityUuidList.addAll(fileSysNewUUIDList);
             uuidListFromDb.addAll(fileSysNewUUIDList);
-            PortfolioVerticle.updateFileSystemUuidList(projectID);
+            PortfolioVerticle.updateFileSystemUuidList(projectId);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
@@ -245,7 +272,7 @@ public class ProjectLoader
             sanityUuidList.removeAll(dbListBuffer);
             reloadDeletionList = dbListBuffer;
 
-            PortfolioVerticle.updateFileSystemUuidList(projectID);
+            PortfolioVerticle.updateFileSystemUuidList(projectId);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
@@ -264,7 +291,7 @@ public class ProjectLoader
 
     public static class Builder
     {
-        private String projectID;
+        private String projectId;
         private String projectName;
 
         private Integer annotationType;
@@ -277,17 +304,17 @@ public class ProjectLoader
         //After loaded once, this value will be always LOADED so retrieving of project from memory than db
         private LoaderStatus loaderStatus;
 
-        private VersionCollection versionCollection = null;
         private ProjectVersion projectVersion = null;
+        private Version currentVersion = null;
 
         public ProjectLoader build()
         {
             return new ProjectLoader(this);
         }
 
-        public Builder projectID(String projectID)
+        public Builder projectId(String projectId)
         {
-            this.projectID = projectID;
+            this.projectId = projectId;
             return this;
         }
 
@@ -327,15 +354,12 @@ public class ProjectLoader
             return this;
         }
 
-        public Builder versionCollection(VersionCollection versionCollection)
-        {
-            this.versionCollection = versionCollection;
-            return this;
-        }
-
-        public Builder currentProjectVersion(ProjectVersion projectVersion)
+        public Builder projectVersion(ProjectVersion projectVersion)
         {
             this.projectVersion = projectVersion;
+            this.currentVersion = projectVersion.getCurrentVersion();
+
+
             return this;
         }
 

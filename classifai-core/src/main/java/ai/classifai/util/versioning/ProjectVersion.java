@@ -15,44 +15,186 @@
  */
 package ai.classifai.util.versioning;
 
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.UUIDGenerator;
-import ai.classifai.util.datetime.DateTime;
+import ai.classifai.action.ActionOps;
+
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.*;
+
+/**
+ * Project Version
+ *
+ * which stores uuid list and label list per version
+ */
 @Getter
+@Setter
+@Slf4j
 public class ProjectVersion
 {
-    Integer versionIndex;
 
-    //key identifier
-    String versionUuid;
+    //project version uuid <> version (uuid, datetime)
+    private Map<String, Version> versionUuidDict = new HashMap<>();
 
-    DateTime dateTime;
+    //project version uuid <> uuid list
+    private Map<String, List<String>> uuidDict = new HashMap<>();
 
-    public ProjectVersion(@NonNull Integer currentIndex, @NonNull String currentVersionUuid, @NonNull DateTime currentDateTime)
+    //project version uuid <> label list
+    private Map<String, List<String>> labelDict = new HashMap<>();
+
+    private Version currentVersion = null;
+
+    public ProjectVersion(boolean createCurrentVersion)
     {
-        versionIndex = currentIndex;
-        versionUuid = currentVersionUuid;
-        dateTime = currentDateTime;
-    }
+        if(createCurrentVersion)
+        {
+            currentVersion = new Version();
 
-    public ProjectVersion(Integer index)
-    {
-        this(index, UUIDGenerator.generateUUID(), new DateTime());
+            setVersion(currentVersion);
+        }
     }
 
     public ProjectVersion()
     {
-        this(1);
+        this(true);
     }
 
-    public JsonObject getJsonObject()
+    public void setVersion(@NonNull Version version)
     {
-        return new JsonObject().put(ParamConfig.getVersionIndexParam(), versionIndex)
-                        .put(ParamConfig.getVersionUuidParam(), versionUuid)
-                        .put(ParamConfig.getCreatedDateParam(), dateTime.toString());
+        versionUuidDict.put(version.getVersionUuid(), version);
+
+        uuidDict.put(version.getVersionUuid(), new ArrayList<>());
+        labelDict.put(version.getVersionUuid(), new ArrayList<>());
     }
+
+    /**
+     * Set currrent version based on uuid
+     *
+     * @param versionUuid
+     */
+    public void setCurrentVersion(@NonNull String versionUuid)
+    {
+        if(versionUuidDict.containsKey(versionUuid))
+        {
+            currentVersion = versionUuidDict.get(versionUuid);
+        }
+        else
+        {
+            log.debug("Version to set does not exist in the dictionary of Project Version");
+        }
+    }
+
+    public void setCurrentVersionUuidList(@NonNull List<String> uuidList)
+    {
+        uuidDict.put(currentVersion.getVersionUuid(), uuidList);
+    }
+
+    public String getUuidVersionDbFormat()
+    {
+        //[{version_uuid : [data_uuid, data_uuid, data_uuid]},{version_uuid : [data_uuid, data_uuid, data_uuid]}]
+        return getDictDbFormat(uuidDict);
+
+    }
+
+    public List<String> getCurrentUuidList()
+    {
+        return uuidDict.get(currentVersion.getVersionUuid());
+    }
+
+
+    public List<String> getCurrentLabelList()
+    {
+        return labelDict.get(currentVersion.getVersionUuid());
+    }
+
+
+    public String getLabelVersionDbFormat()
+    {
+        return getDictDbFormat(labelDict);
+    }
+
+    private String getDictDbFormat(Map<String, List<String>> dict)
+    {
+        JsonArray arr = new JsonArray();
+
+        dict.forEach((key, value) ->
+        {
+            JsonObject item = new JsonObject().put(key, value.toString());
+            arr.add(ActionOps.encode(item));
+        });
+
+        return ActionOps.encode(arr);
+    }
+
+    public String getDbFormat()
+    {
+        JsonArray versionList = new JsonArray();
+
+        for(Version version : versionUuidDict.values())
+        {
+            versionList.add(version.getJsonObject());
+        }
+
+        return ActionOps.removeDoubleQuote(versionList.encode());
+    }
+
+    /*
+
+
+    public void updateUuidList(@NonNull Version version, @NonNull List<String> uuidList)
+    {
+        uuidDict.put(version.getVersionUuid(), uuidList);
+    }
+
+
+    public ProjectVersion(@NonNull List<Version> versionList)
+    {
+        for (Version version : versionList)
+        {
+            setVersion(version);
+        }
+    }
+
+    private void setVersionCollection(@NonNull String rawVersionUuid, @NonNull String rawDateTime)
+    {
+        String versionUuid = rawVersionUuid.substring(ParamConfig.getVersionUuidParam().length() + 1);
+        DateTime dateTime = new DateTime(rawDateTime.substring(ParamConfig.getCreatedDateParam().length() + 1));
+
+        Version version = new Version(versionUuid, dateTime);
+
+        versionUuidDict.put(versionUuid, version);
+
+        uuidDict.put(versionUuid, new ArrayList<>());
+        labelDict.put(versionUuid, new ArrayList<>());
+    }
+
+    public void updateLabelList(@NonNull Version version, @NonNull List<String> labelList)
+    {
+        labelDict.put(version.getVersionUuid(), labelList);
+    }
+
+
+    public String getUuidDictObject2Db()
+    {
+        JsonArray jsonArray = new JsonArray();
+
+        uuidDict.forEach((key, value) -> jsonArray.add(new JsonObject().put(key, value.toString())));
+
+        return jsonArray.toString();
+    }
+
+    public String getLabelDictObject2Db()
+    {
+        JsonArray jsonArray = new JsonArray();
+
+        labelDict.forEach((key, value) -> jsonArray.add(new JsonObject().put(key, value.toString())));
+
+        return jsonArray.toString();
+    }
+     */
+
 }

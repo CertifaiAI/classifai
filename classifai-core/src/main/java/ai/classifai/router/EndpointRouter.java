@@ -36,7 +36,7 @@ public class EndpointRouter extends AbstractVerticle
 {
     private ToolFileSelector fileSelector;
     private ToolFolderSelector folderSelector;
-    private ProjectFolderSelector  projectFolderSelector;
+    private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
 
     V1Endpoint v1 = new V1Endpoint();
@@ -123,13 +123,13 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 
-        router.put("/v2/:annotation_type/newproject/:project_name").handler(v2::createV2Project);
+        router.put("/v2/:annotation_type/newproject/:project_name").handler(v2::createProject);
 
-        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadV2Project);
+        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
 
-        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadV2ProjectStatus);
+        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 
-        router.put("/v2/:annotation_type/projects/:project_name/export").handler(v2::exportV2Project);
+        router.put("/v2/:annotation_type/projects/:project_name/export").handler(v2::exportProject);
 
 
         vertx.createHttpServer()

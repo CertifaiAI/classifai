@@ -20,6 +20,7 @@ import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,44 +35,43 @@ import java.io.IOException;
  */
 @Builder
 @Slf4j
+@NoArgsConstructor
 public class ProjectExport
 {
-    public static JsonObject getDefaultJsonObject()
+    public JsonObject getConfigSkeletonStructure()
     {
         JsonObject jsonObject = new JsonObject()
-                .put(ActionConfig.getToolParam(), "classifai")
+                .put(ActionConfig.getToolParam(), "classifai")          //FIXME: dont hardcode
                 .put(ActionConfig.getToolVersionParam(), "2.0.0-alpha") //FIXME: dont hardcode
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
-
 
         return jsonObject;
     }
 
-    public static boolean exportToFile(@NonNull File jsonPath, @NonNull JsonObject jsonObject)
+    public String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
     {
-        try {
-            FileWriter file = new FileWriter(jsonPath);
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+
+        //Configuration file of json format
+        String configPath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".json";
+
+        try
+        {
+            FileWriter file = new FileWriter(configPath);
 
             file.write(jsonObject.encodePrettily());
 
             file.close();
 
+            log.info("Project configuration file saved at: " + configPath);
         }
         catch (IOException e)
         {
-            e.printStackTrace();
-            return false;
+            String errorMessage = "Path cannot be provided due to failed configuration: " + e;
+
+            return errorMessage;
         }
 
-        log.info("Project configuration file saved at: " + jsonPath);
-
-        return true;
-    }
-
-    public static String getProjectExportPath(@NonNull String projectId)
-    {
-        ProjectLoader loader = (ProjectLoader) ProjectHandler.getProjectLoader(projectId);
-
-        return loader.getProjectPath() + File.separator + loader.getProjectName() + ".json";
+        return configPath;
     }
 }

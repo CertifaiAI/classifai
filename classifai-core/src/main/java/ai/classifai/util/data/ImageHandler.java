@@ -16,6 +16,7 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.ProjectLoader;
@@ -296,7 +297,7 @@ public class ImageHandler {
         return verifiedFilesList;
     }
 
-
+    @Deprecated
     public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesFullPath)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
@@ -304,23 +305,26 @@ public class ImageHandler {
         loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesFullPath.size());
 
-        Integer annotationTypeInt = loader.getAnnotationType();
-
-        if (annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
+        for (int i = 0; i < filesFullPath.size(); ++i)
         {
-            for (int i = 0; i < filesFullPath.size(); ++i)
-            {
-                BoundingBoxVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
-            }
-        }
-        else if (annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
-        {
-            for (int i = 0; i < filesFullPath.size(); ++i)
-            {
-                SegVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
-            }
+            AnnotationVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
         }
     }
+
+    public static void saveToProjectTable(@NonNull String projectID, @NonNull List<File> filesFullPath)
+    {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        loader.setFileSysTotalUUIDSize(filesFullPath.size());
+
+        for (int i = 0; i < filesFullPath.size(); ++i)
+        {
+            AnnotationVerticle.writeUuidToProjectTable(loader, filesFullPath.get(i), i + 1);
+        }
+    }
+
+    @Deprecated
     public static void processFile(@NonNull String projectID, @NonNull List<File> filesInput)
     {
         List<File> validatedFilesList = new ArrayList<>();
@@ -334,6 +338,7 @@ public class ImageHandler {
         saveToDatabase(projectID, validatedFilesList);
     }
 
+    @Deprecated
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
         List<File> totalFileList = new ArrayList<>();
@@ -373,6 +378,47 @@ public class ImageHandler {
         }
 
         saveToDatabase(projectID, totalFileList);
+    }
+
+    public static void iterateFolder(@NonNull String projectID, @NonNull File rootPath)
+    {
+        List<File> totalFileList = new ArrayList<>();
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
+
+        if (dataList.isEmpty())
+        {
+            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            return;
+        }
+
+        Stack<File> folderStack = new Stack<>();
+        folderStack.push(rootPath);
+
+        while (folderStack.isEmpty() != true)
+        {
+            File currentFolderPath = folderStack.pop();
+
+            File[] folderList = currentFolderPath.listFiles();
+
+            for (File file : folderList)
+            {
+                if (file.isDirectory())
+                {
+                    folderStack.push(file);
+                }
+                else
+                {
+                    List<File> files = checkFile(file);
+                    totalFileList.addAll(files);
+                }
+            }
+        }
+
+        saveToProjectTable(projectID, totalFileList);
     }
 
     /*

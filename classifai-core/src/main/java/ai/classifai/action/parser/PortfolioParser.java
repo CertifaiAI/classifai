@@ -15,18 +15,21 @@
  */
 package ai.classifai.action.parser;
 
+import ai.classifai.action.ActionOps;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.data.StringHandler;
+import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.versioning.ProjectVersion;
-import ai.classifai.util.versioning.VersionCollection;
+import ai.classifai.util.versioning.Version;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
 
 
 /***
@@ -38,44 +41,75 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PortfolioParser
 {
-    public static void parseOut(@NonNull Row inputRow, @NonNull JsonObject jsonObject)
+    /**
+     * Extracting portfolio content and parse to JsonObject, preparing for saving
+     * @param row
+     * @param jsonObject
+     */
+    public static void parseOut(@NonNull Row row, @NonNull JsonObject jsonObject)
     {
-        jsonObject.put(ParamConfig.getProjectIdParam(), inputRow.getString(0));
-        jsonObject.put(ParamConfig.getProjectNameParam(), inputRow.getString(1));
-        jsonObject.put(ParamConfig.getAnnotationTypeParam(), inputRow.getInteger(2));
+        String annotationName = AnnotationHandler.getType(row.getInteger(2)).name();
 
-        jsonObject.put(ParamConfig.getProjectPathParam(), inputRow.getString(3));
-        jsonObject.put(ParamConfig.getIsNewParam(), inputRow.getBoolean(4));
-        jsonObject.put(ParamConfig.getIsStarredParam(), inputRow.getBoolean(5));
+        jsonObject.put(ParamConfig.getProjectIdParam(), row.getString(0));                                  //project_id
+        jsonObject.put(ParamConfig.getProjectNameParam(), row.getString(1));                                //project_name
+        jsonObject.put(ParamConfig.getAnnotationTypeParam(), annotationName);                                    //annotation_type (in string)
 
-        jsonObject.put(ParamConfig.getCurrentVersionUuidParam(), inputRow.getString(6));
-        jsonObject.put(ParamConfig.getVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(7)));
-        jsonObject.put(ParamConfig.getUuidVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(8)));
-        jsonObject.put(ParamConfig.getLabelVersionListParam(), StringHandler.cleanUpRegex(inputRow.getString(9)));
+        jsonObject.put(ParamConfig.getProjectPathParam(), row.getString(3));                                //project_path
+        jsonObject.put(ParamConfig.getIsNewParam(), row.getBoolean(4));                                     //is_new
+        jsonObject.put(ParamConfig.getIsStarredParam(), row.getBoolean(5));                                 //is_starred
+
+        jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(6));                             //current version
+        jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(7));                             //project version
+        jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(8));                            //uuid_version_list
+
+        jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(9));                           //label_version_list
     }
 
     public static ProjectLoader parseIn(@NonNull JsonObject jsonObject)
     {
-        VersionCollection versionCollector = new VersionCollection(jsonObject.getString(ParamConfig.getVersionListParam()));
-        ProjectVersion projVersion = versionCollector.getVersionUuidDict().get(jsonObject.getString(ParamConfig.getCurrentVersionUuidParam()));
+        //annotation_type (string -> int)
+        String annotation = jsonObject.getString(ParamConfig.getAnnotationTypeParam());
+        int annotationInt = AnnotationHandler.getType(annotation).ordinal();
 
-        versionCollector.setUuidDict(jsonObject.getString(ParamConfig.getUuidVersionListParam()));
-        versionCollector.setLabelDict(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
+        ProjectVersion project = loadProjectVersion(jsonObject.getString(ParamConfig.getProjectVersionParam()));
+
+        Version currentVersion = new Version(jsonObject.getString(ParamConfig.getCurrentVersionParam()));
+        project.setCurrentVersion(currentVersion.getVersionUuid());
+
+        Map uuidDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getUuidVersionListParam()));
+        project.setUuidDict(uuidDict);                                                                          //uuid_version_list
+
+        Map labelDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
+        project.setLabelDict(labelDict);                                                                        //label_version_list
 
         return new ProjectLoader.Builder()
-                                .projectID(jsonObject.getString(ParamConfig.getProjectIdParam()))
-                                .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))
-                                .annotationType(jsonObject.getInteger(ParamConfig.getAnnotationTypeParam()))
+                                .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
+                                .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
+                                .annotationType(annotationInt)                                                  //annotation_type
 
-                                .projectPath(jsonObject.getString(ParamConfig.getProjectPathParam()))
-                                .isProjectNew(jsonObject.getBoolean(ParamConfig.getIsNewParam()))
-                                .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))
+                                .projectPath(jsonObject.getString(ParamConfig.getProjectPathParam()))           //project_path
+                                .isProjectNew(jsonObject.getBoolean(ParamConfig.getIsNewParam()))               //is_new
+                                .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))       //is_starred
 
                                 .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
 
-                                .currentProjectVersion(projVersion)
-                                .versionCollection(versionCollector)
-
+                                .projectVersion(project)                                                        //project version
                                 .build();
+    }
+
+    private static ProjectVersion loadProjectVersion(@NonNull String input)
+    {
+        ProjectVersion project = new ProjectVersion(false);
+
+        String[] strVersionArrays = ActionOps.getArrayOfJsonObject(input);
+
+        for(String strVersion : strVersionArrays)
+        {
+            Version version = new Version(strVersion);
+
+            project.setVersion(version);
+        }
+
+        return project;
     }
 }

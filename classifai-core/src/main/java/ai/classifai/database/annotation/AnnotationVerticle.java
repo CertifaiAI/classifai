@@ -174,13 +174,39 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         loadValidProjectUuid(projectId);
     }
 
+
+    public static void writeUuidToProjectTable(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
+    {
+        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
+
+        String UUID = UUIDGenerator.generateUUID();
+
+        Tuple params = AnnotationVerticle.getNewAnnotation(loader.getProjectId(), dataSubPath, UUID);
+
+        jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
+                .execute(params)
+                .onComplete(fetch -> {
+
+                    if (fetch.succeeded())
+                    {
+                        loader.pushFileSysNewUUIDList(UUID);
+                    }
+                    else
+                    {
+                        log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
+                    }
+                    loader.updateProjectFolderLoadingProgress(currentLength);
+                });
+    }
+
+    @Deprecated
     public static void writeUuidToDb(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
     {
         String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
 
         String UUID = UUIDGenerator.generateUUID();
 
-        Tuple params = AnnotationVerticle.getNewAnnotation(loader.getProjectID(), dataSubPath, UUID);
+        Tuple params = AnnotationVerticle.getNewAnnotation(loader.getProjectId(), dataSubPath, UUID);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(params)
@@ -203,7 +229,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String uuid = UUIDGenerator.generateUUID();
 
-        Tuple param = getNewAnnotation(loader.getProjectID(), dataChildPath);
+        Tuple param = getNewAnnotation(loader.getProjectId(), dataChildPath);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(param)
@@ -249,7 +275,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public static void createUuidIfNotExist(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentProcessedLength)
     {
-        String projectId = loader.getProjectID();
+        String projectId = loader.getProjectId();
 
         String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
 

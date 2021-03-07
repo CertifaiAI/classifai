@@ -20,6 +20,7 @@ import ai.classifai.database.annotation.seg.SegVerticle;
 import io.vertx.jdbcclient.JDBCPool;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Locale;
@@ -27,22 +28,23 @@ import java.util.Locale;
 /**
  * Check for annotation type
  *
+ * Reminder to add here when have new annotation method
+ *
  * @author codenamewei
  */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationHandler
 {
-    public static boolean checkSanity(Integer annotationTypeInt)
+    public static boolean checkSanity(@NonNull Integer annotationTypeInt)
     {
         if (annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
             return true;
         }
-        //ADD WHEN HAVE NEW ANNOTATION TYPE
         else
         {
-            printFailedMessage();
+            log.debug("Annotation unmatched in AnnotationType. AnnotationType only accepts [boundingbox/segmentation]");
             return false;
         }
     }
@@ -52,7 +54,8 @@ public class AnnotationHandler
         return (AnnotationType.BOUNDINGBOX.ordinal() == annotationTypeInt) ? BoundingBoxVerticle.getJdbcPool() : SegVerticle.getJdbcPool();
     }
 
-    public static AnnotationType getTypeFromEndpoint(String annotation)
+
+    public static AnnotationType getTypeFromEndpoint(@NonNull String annotation)
     {
         AnnotationType type = null;
 
@@ -68,7 +71,7 @@ public class AnnotationHandler
     }
 
 
-    public static AnnotationType getType(String type)
+    public static AnnotationType getType(@NonNull String type)
     {
         type = type.toUpperCase(Locale.ROOT);
 
@@ -86,7 +89,7 @@ public class AnnotationHandler
         return null;
     }
 
-    public static AnnotationType getType(Integer type)
+    public static AnnotationType getType(@NonNull Integer type)
     {
         if (type.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {
@@ -102,10 +105,5 @@ public class AnnotationHandler
         return null;
     }
 
-
-    private static void printFailedMessage()
-    {
-        log.debug("Annotation unmatched in AnnotationType. AnnotationType only accepts [boundingbox/segmentation]");
-    }
 
 }

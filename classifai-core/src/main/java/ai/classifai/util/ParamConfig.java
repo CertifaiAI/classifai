@@ -113,9 +113,11 @@ public class ParamConfig
     @Getter private static final String uuidAdditionListParam = "uuid_add_list";
 
     //versioning
-    @Getter private static final String currentVersionUuidParam = "current_version_uuid";
-    @Getter private static final String versionListParam = "version_list";
-    @Getter private static final String versionIndexParam = "version_index";
+    //@Getter private static final String currentVersionUuidParam = "current_version_uuid";
+    @Getter private static final String currentVersionParam = "current_version";
+    @Getter private static final String projectVersionParam = "project_version";
+    //@Getter private static final String versionIndexParam = "version_index";
     @Getter private static final String versionUuidParam = "version_uuid";
+    @Getter private static final String nextVersionUuidParam = "next_version_uuid";
 
 }

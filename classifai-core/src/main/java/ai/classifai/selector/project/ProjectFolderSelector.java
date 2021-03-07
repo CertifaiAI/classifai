@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -16,13 +16,18 @@
 package ai.classifai.selector.project;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.loader.LoaderStatus;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import ai.classifai.util.versioning.ProjectVersion;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +35,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.Locale;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -37,7 +43,7 @@ import java.io.File;
  * @author codenamewei
  */
 @Slf4j
-public class ProjectFolderSelector{
+public class ProjectFolderSelector {
 
     private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
@@ -85,13 +91,15 @@ public class ProjectFolderSelector{
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        File rootFolder =  chooser.getSelectedFile().getAbsoluteFile();
+                        File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
-                        if ((rootFolder != null) && (rootFolder.exists()))
+                        if ((projectPath != null) && (projectPath.exists()))
                         {
                             log.debug("Proceed with creating project");
 
-                            PortfolioVerticle.createV2NewProject(projectName, annotationType.ordinal(), rootFolder);
+                            ProjectLoader loader = configureLoader(projectName, annotationType.ordinal(), projectPath);
+
+                            initFolderIteration(loader);
                         }
                     }
                     else
@@ -106,6 +114,43 @@ public class ProjectFolderSelector{
             log.info("ProjectFolderSelector failed to open", e);
         }
 
+    }
+
+    private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
+    {
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        {
+            String annotationName = AnnotationHandler.getType(annotationInt).name();
+
+            log.debug("Creating " + annotationName.toLowerCase(Locale.ROOT) + " project with name: " + projectName);
+
+            String projectID = UUIDGenerator.generateUUID();
+
+            String rootProjectPath = rootPath.getAbsolutePath();
+
+            ProjectLoader loader = new ProjectLoader.Builder()
+                    .projectId(projectID)
+                    .projectName(projectName)
+                    .annotationType(annotationInt)
+                    .projectPath(rootProjectPath)
+                    .loaderStatus(LoaderStatus.LOADED)
+                    .isProjectStarred(Boolean.FALSE)
+                    .isProjectNew(Boolean.TRUE)
+                    .projectVersion(new ProjectVersion())
+                    .build();
+
+            ProjectHandler.loadProjectLoader(loader);
+
+            return loader;
+        }
+
+        return null;
+    }
+
+    private void initFolderIteration(@NonNull ProjectLoader loader)
+    {
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+        ImageHandler.iterateFolder(loader.getProjectId(), new File(loader.getProjectPath()));
     }
 
 }

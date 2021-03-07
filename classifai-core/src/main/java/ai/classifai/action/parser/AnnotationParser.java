@@ -39,6 +39,42 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationParser
 {
+
+    public static void parseOut(@NonNull ProjectLoader loader, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    {
+        JsonObject content = new JsonObject();
+
+        while(rowIterator.hasNext())
+        {
+            Row row = rowIterator.next();
+            JsonArray item = new JsonArray().add(row.getString(2))      //annotation
+                    .add(row.getInteger(4))     //img_x
+                    .add(row.getInteger(5))     //img_y
+                    .add(row.getInteger(6))     //img_w
+                    .add(row.getInteger(7));    //img_h
+
+
+            /*
+            JsonObject versionBody = new JsonObject().put(loader.getCurrentVersion().getVersionUuid(), item);
+
+            JsonObject versionList = new JsonObject()
+                    .put(ParamConfig.getImgPathParam(), row.getString(1))
+                    .put(ParamConfig.getImgDepth(), row.getInteger(3))
+                    .put(ParamConfig.getFileSizeParam(), row.getInteger(8))
+                    .put(ParamConfig.getImgOriWParam(), row.getInteger(9))
+                    .put(ParamConfig.getImgOriHParam(), row.getInteger(10))
+                    .put(ParamConfig.getVersionListParam(), versionBody);
+
+
+            //uuid, version, content
+            content.put(row.getString(0), versionList);
+
+            */
+        }
+
+        jsonObject.put(ParamConfig.getProjectContentParam(), content);
+
+    }
     /*
    public String toString()
     {
@@ -51,7 +87,7 @@ public class AnnotationParser
 
         return StringHandler.cleanUpRegex(jsonArray.toString(), Arrays.asList("\""));
     }
-    */
+
 
     public static void parseOut(@NonNull ProjectLoader loader, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
     {
@@ -66,7 +102,7 @@ public class AnnotationParser
                                             .add(row.getInteger(6))     //img_w
                                             .add(row.getInteger(7));    //img_h
 
-            JsonObject versionBody = new JsonObject().put(loader.getCurrentProjectVersion().getVersionUuid(), item);
+            JsonObject versionBody = new JsonObject().put(loader.getCurrentVersion().getVersionUuid(), item);
 
             JsonObject versionList = new JsonObject()
                     .put(ParamConfig.getImgPathParam(), row.getString(1))
@@ -87,9 +123,9 @@ public class AnnotationParser
 
     public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)
     {
-        String projectId = loader.getProjectID();
+        String projectId = loader.getProjectId();
 
-        String thisVersionUuid = loader.getCurrentProjectVersion().getVersionUuid();
+        String thisVersionUuid = loader.getCurrentVersion().getVersionUuid();
 
         List<String> uuidListFromDb = loader.getUuidListFromDb();
 
@@ -107,7 +143,7 @@ public class AnnotationParser
             Tuple params = Tuple.of(uuid,                                        //uuid
                     projectId,                                             //project_id
                     uuidBody.getString(ParamConfig.getImgPathParam()),           //child_path
-                    null,       //version_list
+                    null,                                                        //version
                     currentVersionBody.getString(0),                        //annotation
                     uuidBody.getInteger(ParamConfig.getImgDepth()),              //img_depth
                     currentVersionBody.getString(1),                        //img_X
@@ -123,4 +159,5 @@ public class AnnotationParser
         }
 
     }
+    */
 }
