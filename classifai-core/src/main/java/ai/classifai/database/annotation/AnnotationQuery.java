@@ -30,7 +30,7 @@ public class AnnotationQuery
 
     @Getter private static final String queryData = "query data";
 
-    @Getter private static final String updateData = "UPDATE Project SET version_list, img_depth = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String updateData = "UPDATE Project SET version_list = ?, img_depth = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
 
     @Getter private static final String createData = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 

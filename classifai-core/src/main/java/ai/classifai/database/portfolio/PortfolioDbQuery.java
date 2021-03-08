@@ -37,8 +37,6 @@ public class PortfolioDbQuery
 
     @Getter private static final String updateLabelList = "UPDATE Portfolio set label_project_version = ? WHERE project_id = ?";
 
-    @Getter private static final String loadDbProject = "SELECT project_id, project_name, annotation_type, project_path, is_new, is_starred, current_version, project_version, uuid_project_version, label_project_version FROM Portfolio";
-
     @Getter private static final String retrieveAllProjectsForAnnotationType = "SELECT project_name FROM Portfolio WHERE annotation_type = ? ORDER BY project_name";
 
     //*******************************V2*******************************

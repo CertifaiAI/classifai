@@ -16,12 +16,14 @@
 package ai.classifai.database.portfolio;
 
 import ai.classifai.action.ActionConfig;
+import ai.classifai.action.ActionOps;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationQuery;
+import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
@@ -57,6 +59,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * General database processing to get high level infos of each created project
@@ -493,7 +496,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private void configProjectLoaderFromDb()
     {
-        portfolioDbPool.query(PortfolioDbQuery.getLoadDbProject())
+        portfolioDbPool.query(PortfolioDbQuery.getRetrieveAllProjects())
                 .execute()
                 .onComplete(projectNameFetch -> {
 
@@ -503,28 +506,33 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         
                         if (rowSet.size() == 0)
                         {
-                            log.debug("Project ID List is empty.");
+                            log.debug("No projects founds.");
                         }
                         else
                         {
                             for (Row row : rowSet)
                             {
-                                //rojectVersion project = new ProjectVersion(row.getString(7));
-                                //Version projVersion = VersionCollector.getVersionUuidDict().get(row.getString(6));
 
-                                //FIXME how can this be better
-                                //VersionCollector.setUuidDict(row.getString(8));
-                                //VersionCollector.setLabelDict(row.getString(9));
+                                Version currentVersion = new Version(row.getString(6));
+
+                                ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(7));     //project_version
+                                project.setCurrentVersion(currentVersion.getVersionUuid());
+
+                                Map uuidDict = ActionOps.getKeyWithArray(row.getString(8));
+                                project.setUuidDict(uuidDict);                                                         //uuid_version_list
+
+                                Map labelDict = ActionOps.getKeyWithArray(row.getString(9));
+                                project.setLabelDict(labelDict);                                                       //label_version_list
 
                                 ProjectLoader loader = new ProjectLoader.Builder()
-                                    .projectId(row.getString(0))
-                                    .projectName(row.getString(1))
-                                    .annotationType(row.getInteger(2))
-                                    .projectPath(row.getString(3))
+                                    .projectId(row.getString(0))                                                   //project_id
+                                    .projectName(row.getString(1))                                                 //project_name
+                                    .annotationType(row.getInteger(2))                                             //annotation_type
+                                    .projectPath(row.getString(3))                                                 //project_path
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
-                                    .isProjectNew(row.getBoolean(4))
-                                    .isProjectStarred(row.getBoolean(5))
-                                    //.projectVersion(project)
+                                    .isProjectNew(row.getBoolean(4))                                               //is_new
+                                    .isProjectStarred(row.getBoolean(5))                                           //is_starred
+                                    .projectVersion(project)                                                           //project_version
                                     .build();
 
 

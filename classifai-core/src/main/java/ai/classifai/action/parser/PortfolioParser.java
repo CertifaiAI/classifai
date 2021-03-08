@@ -94,11 +94,11 @@ public class PortfolioParser
 
                                 .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
 
-                                .projectVersion(project)                                                        //project version
+                                .projectVersion(project)                                                        //project_version
                                 .build();
     }
 
-    private static ProjectVersion loadProjectVersion(@NonNull String input)
+    public static ProjectVersion loadProjectVersion(@NonNull String input)
     {
         ProjectVersion project = new ProjectVersion(false);
 
