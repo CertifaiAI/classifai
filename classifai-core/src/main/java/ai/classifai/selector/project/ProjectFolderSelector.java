@@ -23,11 +23,11 @@ import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import ai.classifai.util.versioning.ProjectVersion;
+import ai.classifai.database.versioning.ProjectVersion;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -124,7 +124,7 @@ public class ProjectFolderSelector {
 
             log.debug("Creating " + annotationName.toLowerCase(Locale.ROOT) + " project with name: " + projectName);
 
-            String projectID = UUIDGenerator.generateUUID();
+            String projectID = UuidGenerator.generateUuid();
 
             String rootProjectPath = rootPath.getAbsolutePath();
 
@@ -150,6 +150,7 @@ public class ProjectFolderSelector {
     private void initFolderIteration(@NonNull ProjectLoader loader)
     {
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
         ImageHandler.iterateFolder(loader.getProjectId(), new File(loader.getProjectPath()));
     }
 

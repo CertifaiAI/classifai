@@ -26,19 +26,18 @@ import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
-import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
-import ai.classifai.util.versioning.Version;
-import ai.classifai.util.versioning.ProjectVersion;
+import ai.classifai.database.versioning.ProjectVersion;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -158,14 +157,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             String newProjName = new NameGenerator().getNewProjectName();
             loader.setProjectName(newProjName);
-            loader.setProjectId(UUIDGenerator.generateUUID());
+            loader.setProjectId(UuidGenerator.generateUuid());
             log.info("Project name overlapped. Rename project as " + newProjName);
         }
-
         ProjectHandler.loadProjectLoader(loader);
 
         //load project table first
-        //AnnotationParser.parseIn(loader, input.getJsonObject(ParamConfig.getProjectContentParam()));
+        JsonObject contentJsonObject = input.getJsonObject(ParamConfig.getProjectContentParam());
+        AnnotationParser.parseIn(loader, contentJsonObject);
 
         //load portfolio table last
         Tuple params = PortfolioVerticle.buildNewProject(loader);
@@ -184,9 +183,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 });
 
-        //save each uuid to project table and keep track in projectloader
-        //JsonObject contentJsonObject = input.getJsonObject(ParamConfig.getProjectContentParam());
-        //AnnotationParser.parseIn(loader, contentJsonObject);
 
         //save the .updateFileSystemUuidList(loader.getProjectId());
 
@@ -273,7 +269,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             log.info("Create " + annotationName + " project with name: " + projectName);
 
             //ProjectId is redundant
-            String projectID = UUIDGenerator.generateUUID();
+            String projectID = UuidGenerator.generateUuid();
 
             ProjectVersion project = new ProjectVersion();
 
@@ -376,8 +372,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                         PortfolioParser.parseOut(portfolioRow, configContent);
 
+                        AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
+
                         //export project table relevant
-                        JDBCPool client = AnnotationHandler.getJDBCPool(configContent.getInteger(ParamConfig.getAnnotationTypeParam()));
+                        JDBCPool client = AnnotationHandler.getJDBCPool(type.ordinal());
 
                         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
@@ -398,7 +396,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                             RowIterator<Row> projectRowIterator = projectRowSet.iterator();
 
-                                            AnnotationParser.parseOut(loader, projectRowIterator, configContent);
+                                            AnnotationParser.parseOut(projectRowIterator, configContent);
                                         }
 
                                         //export to configuration file
@@ -475,7 +473,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         List<String> uuidList = loader.getUuidListFromDb();
 
         /*
-        ProjectVersion projVersion = loader.getVersionCollector();
+        loader.getProjectVersion().setCurrentVersionUuidList(uuidList);
         projVersion.updateUuidList(loader.getCurrentVersion(), uuidList);
 
         String dbUuidDict = loader.getVersionCollector().getUuidDictObject2Db();
@@ -490,8 +488,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         log.info("Update list of uuids to Portfolio Database failed");
                     }
                 });
-
-         */
+        */
     }
 
     private void configProjectLoaderFromDb()

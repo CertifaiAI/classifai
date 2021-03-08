@@ -22,7 +22,7 @@ import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
-import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.type.database.RelationalDb;
@@ -233,7 +233,7 @@ public class DbMigration
                 Integer projectIDInt = rs.getInt(1);
                 List<Integer> UUIDIntList = ConversionHandler.string2IntegerList(rs.getString(6));
 
-                String projectID = UUIDGenerator.generateUUID();
+                String projectID = UuidGenerator.generateUuid();
 
                 projectIDDict.put(projectIDInt, projectID);
 
@@ -241,7 +241,7 @@ public class DbMigration
 
                 for (Integer uuidInt: UUIDIntList)
                 {
-                    String uuid = UUIDGenerator.generateUUID();
+                    String uuid = UuidGenerator.generateUuid();
 
                     uuidMap.put(uuidInt, uuid);
 

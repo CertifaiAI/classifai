@@ -20,6 +20,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import java.util.Map;
  *
  * @author codenamewei
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ActionOps
 {
@@ -118,7 +120,7 @@ public class ActionOps
         {
             if(!eachJsonObject.contains(COLON_SEPARATOR))
             {
-                System.out.println("jsonObject separator ill-defined. No colon separator");
+                log.info("jsonObject separator ill-defined. No colon separator");
                 break;
             }
 

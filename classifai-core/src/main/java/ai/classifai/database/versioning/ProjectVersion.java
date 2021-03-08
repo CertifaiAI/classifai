@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.versioning;
+package ai.classifai.database.versioning;
 
 import ai.classifai.action.ActionOps;
 
@@ -36,7 +36,6 @@ import java.util.*;
 @Slf4j
 public class ProjectVersion
 {
-
     //project version uuid <> version (uuid, datetime)
     private Map<String, Version> versionUuidDict = new HashMap<>();
 

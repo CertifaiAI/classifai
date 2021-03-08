@@ -18,7 +18,9 @@ package ai.classifai.util;
 import ai.classifai.database.DbConfig;
 import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.OS;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,13 +32,9 @@ import java.io.File;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ParamConfig
 {
-    private ParamConfig()
-    {
-        log.debug("Parameters LUT");
-    }
-
     @Setter @Getter private static Integer hostingPort = 9999;
     @Setter @Getter private static boolean isDockerEnv = false;
 
@@ -94,6 +92,8 @@ public class ParamConfig
 
     @Getter private static final String statusParam = "status";
 
+    @Getter private static final String versionListParam = "version_list";
+
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
     @Getter private static final String labelVersionListParam = "label_version_list";
 
@@ -113,10 +113,9 @@ public class ParamConfig
     @Getter private static final String uuidAdditionListParam = "uuid_add_list";
 
     //versioning
-    //@Getter private static final String currentVersionUuidParam = "current_version_uuid";
     @Getter private static final String currentVersionParam = "current_version";
     @Getter private static final String projectVersionParam = "project_version";
-    //@Getter private static final String versionIndexParam = "version_index";
+
     @Getter private static final String versionUuidParam = "version_uuid";
     @Getter private static final String nextVersionUuidParam = "next_version_uuid";
 

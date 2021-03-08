@@ -426,8 +426,7 @@ public class V1Endpoint {
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
         JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
-                .put(ParamConfig.getProjectIdParam(), projectID)
-                .put(ParamConfig.getProjectNameParam(), projectName);
+                .put(ParamConfig.getProjectIdParam(), projectID);
 
         DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getQueryData());
 

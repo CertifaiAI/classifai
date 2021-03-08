@@ -16,9 +16,9 @@
 package ai.classifai.loader;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.versioning.Annotation;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.util.versioning.Version;
-import ai.classifai.util.versioning.ProjectVersion;
+import ai.classifai.database.versioning.ProjectVersion;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -51,11 +51,16 @@ public class ProjectLoader
     
     private List<String> labelList;
 
-     //a list of unique uuid representing number of data points in one project
-    private List<String> sanityUuidList = new ArrayList<>();
-    private List<String> uuidListFromDb = new ArrayList<>();
+    //a list of unique uuid representing number of data points in one project
+    private List<String> sanityUuidList;
+    private List<String> uuidListFromDb;
 
-    private ProjectVersion projectVersion = null;
+    private ProjectVersion projectVersion;
+
+
+    //key: data point uuid
+    //value: annotation
+    private Map<String, Annotation> uuidDict = new HashMap<>();
 
     private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
@@ -92,13 +97,14 @@ public class ProjectLoader
         this.isProjectStarred = build.isProjectStarred;
         this.loaderStatus = build.loaderStatus;
 
-
         this.projectVersion = build.projectVersion;
 
         this.uuidListFromDb = projectVersion.getCurrentUuidList();
         this.sanityUuidList = uuidListFromDb;
 
         this.labelList = projectVersion.getCurrentLabelList();
+
+        this.sanityUuidList = new ArrayList<>();
     }
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
@@ -112,6 +118,11 @@ public class ProjectLoader
         progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
         fileSystemStatus = currentFileSystemStatus;
+    }
+
+    public String getCurrentVersionUuid()
+    {
+        return projectVersion.getCurrentVersion().getVersionUuid();
     }
 
     public void toggleFrontEndLoaderParam()
@@ -176,8 +187,6 @@ public class ProjectLoader
         fileSysNewUUIDList.add(uuid);
     }
 
-
-    @Deprecated
     //updating project from file system
     public void updateFileSysLoadingProgress(Integer currentSize)
     {
@@ -190,6 +199,7 @@ public class ProjectLoader
             offloadFileSysNewList2List();
         }
     }
+
 
     public void updateProjectFolderLoadingProgress(Integer currentSize)
     {
@@ -229,6 +239,7 @@ public class ProjectLoader
         {
             sanityUuidList.addAll(fileSysNewUUIDList);
             uuidListFromDb.addAll(fileSysNewUUIDList);
+
             PortfolioVerticle.updateFileSystemUuidList(projectId);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
@@ -242,7 +253,7 @@ public class ProjectLoader
         reloadAdditionList.add(uuid);
     }
 
-    public void uploadSanityUuidFromImportingConfigFile(@NonNull String uuid)
+    public void uploadSanityUuidFromConfigFile(@NonNull String uuid)
     {
         sanityUuidList.add(uuid);
     }
@@ -305,7 +316,6 @@ public class ProjectLoader
         private LoaderStatus loaderStatus;
 
         private ProjectVersion projectVersion = null;
-        private Version currentVersion = null;
 
         public ProjectLoader build()
         {
@@ -357,8 +367,6 @@ public class ProjectLoader
         public Builder projectVersion(ProjectVersion projectVersion)
         {
             this.projectVersion = projectVersion;
-            this.currentVersion = projectVersion.getCurrentVersion();
-
 
             return this;
         }

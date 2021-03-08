@@ -25,9 +25,9 @@ import java.util.UUID;
  * @author YCCertifai
  */
 @NoArgsConstructor
-public class UUIDGenerator
+public class UuidGenerator
 {
-    public static String generateUUID()
+    public static String generateUuid()
     {
         String newID = UUID.randomUUID().toString();
 

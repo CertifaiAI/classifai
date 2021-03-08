@@ -24,14 +24,15 @@ import lombok.Getter;
  */
 public class AnnotationQuery
 {
-    @Getter private static final String createProject = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, project_id UUID, img_path VARCHAR(2000), version_list CLOB, annotation CLOB, img_depth INT, " +
-            "img_x INT, img_y INT, img_w DOUBLE, img_h DOUBLE, file_size INT, img_ori_w INT, img_ori_h INT, PRIMARY KEY(uuid, project_id))";
 
-    @Getter private static final String queryData = "SELECT img_path, annotation, img_x, img_y, img_w, img_h from Project WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String createProject = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, project_id UUID, img_path VARCHAR(2000), version_list CLOB, img_depth INT, " +
+            "file_size INT, img_ori_w INT, img_ori_h INT, PRIMARY KEY(uuid, project_id))";
 
-    @Getter private static final String updateData = "UPDATE Project SET annotation = ?, img_depth = ?,  img_x = ?, img_y = ?, img_w = ?, img_h = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String queryData = "query data";
 
-    @Getter private static final String createData = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    @Getter private static final String updateData = "UPDATE Project SET version_list, img_depth = ?, file_size = ?, img_ori_w = ?, img_ori_h = ? WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String createData = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     @Getter private static final String retrieveDataPath = "SELECT img_path FROM Project WHERE uuid = ? AND project_id = ?";
 
@@ -46,6 +47,6 @@ public class AnnotationQuery
     //v2
     @Getter private static final String queryUuid = "SELECT uuid FROM Project WHERE img_path = ? AND project_id = ?";
 
-    @Getter private static final String exportProject = "SELECT uuid, img_path, annotation, img_depth, img_x, img_y, img_w, img_h, file_size, img_ori_w, img_ori_h FROM Project WHERE project_id = ?";
+    @Getter private static final String exportProject = "SELECT uuid, img_path, version_list, img_depth, file_size, img_ori_w, img_ori_h FROM Project WHERE project_id = ?";
 
 }

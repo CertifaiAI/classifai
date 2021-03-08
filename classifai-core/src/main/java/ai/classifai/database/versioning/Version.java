@@ -13,11 +13,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.versioning;
+package ai.classifai.database.versioning;
 
 import ai.classifai.action.ActionOps;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.UUIDGenerator;
+import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public class Version
     }
     public Version()
     {
-        this(UUIDGenerator.generateUUID(), new DateTime());
+        this(UuidGenerator.generateUuid(), new DateTime());
     }
 
     public Version(@NonNull String strVersion)

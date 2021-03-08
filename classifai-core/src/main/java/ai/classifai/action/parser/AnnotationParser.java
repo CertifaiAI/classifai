@@ -15,20 +15,23 @@
  */
 package ai.classifai.action.parser;
 
+import ai.classifai.action.ActionOps;
 import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.versioning.Annotation;
+import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.Tuple;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -39,125 +42,83 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationParser
 {
-
-    public static void parseOut(@NonNull ProjectLoader loader, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    public static void parseOut(@NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
     {
         JsonObject content = new JsonObject();
 
         while(rowIterator.hasNext())
         {
             Row row = rowIterator.next();
-            JsonArray item = new JsonArray().add(row.getString(2))      //annotation
-                    .add(row.getInteger(4))     //img_x
-                    .add(row.getInteger(5))     //img_y
-                    .add(row.getInteger(6))     //img_w
-                    .add(row.getInteger(7));    //img_h
 
-
-            /*
-            JsonObject versionBody = new JsonObject().put(loader.getCurrentVersion().getVersionUuid(), item);
-
-            JsonObject versionList = new JsonObject()
-                    .put(ParamConfig.getImgPathParam(), row.getString(1))
-                    .put(ParamConfig.getImgDepth(), row.getInteger(3))
-                    .put(ParamConfig.getFileSizeParam(), row.getInteger(8))
-                    .put(ParamConfig.getImgOriWParam(), row.getInteger(9))
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(10))
-                    .put(ParamConfig.getVersionListParam(), versionBody);
+            JsonObject annotationJsonObject = new JsonObject()
+                    .put(ParamConfig.getImgPathParam(), row.getString(1))       //img_path
+                    .put(ParamConfig.getVersionListParam(), row.getString(2))   //version_list
+                    .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
+                    .put(ParamConfig.getFileSizeParam(), row.getInteger(4))     //file_size
+                    .put(ParamConfig.getImgOriWParam(), row.getInteger(5))      //img_ori_w
+                    .put(ParamConfig.getImgOriHParam(), row.getInteger(6));     //img_ori_h
 
 
             //uuid, version, content
-            content.put(row.getString(0), versionList);
-
-            */
+            content.put(row.getString(0), annotationJsonObject);
         }
 
         jsonObject.put(ParamConfig.getProjectContentParam(), content);
 
     }
-    /*
-   public String toString()
-    {
-        JsonArray jsonArray = new JsonArray();
-
-        for(ProjectVersion version: versionIndexDict.values())
-        {
-            jsonArray.add(version.getJsonObject());
-        }
-
-        return StringHandler.cleanUpRegex(jsonArray.toString(), Arrays.asList("\""));
-    }
-
-
-    public static void parseOut(@NonNull ProjectLoader loader, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
-    {
-        JsonObject content = new JsonObject();
-
-        while(rowIterator.hasNext())
-        {
-            Row row = rowIterator.next();
-            JsonArray item = new JsonArray().add(row.getString(2))      //annotation
-                                            .add(row.getInteger(4))     //img_x
-                                            .add(row.getInteger(5))     //img_y
-                                            .add(row.getInteger(6))     //img_w
-                                            .add(row.getInteger(7));    //img_h
-
-            JsonObject versionBody = new JsonObject().put(loader.getCurrentVersion().getVersionUuid(), item);
-
-            JsonObject versionList = new JsonObject()
-                    .put(ParamConfig.getImgPathParam(), row.getString(1))
-                    .put(ParamConfig.getImgDepth(), row.getInteger(3))
-                    .put(ParamConfig.getFileSizeParam(), row.getInteger(8))
-                    .put(ParamConfig.getImgOriWParam(), row.getInteger(9))
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(10))
-                    .put(ParamConfig.getVersionListParam(), versionBody);
-
-            //uuid, version, content
-            content.put(row.getString(0), versionList);
-        }
-
-        jsonObject.put(ParamConfig.getProjectContentParam(), content);
-
-    }
-
 
     public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)
     {
         String projectId = loader.getProjectId();
 
-        String thisVersionUuid = loader.getCurrentVersion().getVersionUuid();
-
         List<String> uuidListFromDb = loader.getUuidListFromDb();
 
         for(String uuid : uuidListFromDb)
         {
-            JsonObject uuidBody = contentJsonBody.getJsonObject(uuid);
+            JsonObject jsonObject = contentJsonBody.getJsonObject(uuid);
 
-            JsonObject versionJsonBody = uuidBody.getJsonObject(ParamConfig.getVersionListParam());
-            JsonArray currentVersionBody = versionJsonBody.getJsonArray(thisVersionUuid);
+            String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
 
-            JsonObject buffer = uuidBody.getJsonObject(ParamConfig.getVersionListParam());
-            System.out.println("Version List Param: " + buffer);
+            String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
+
+            String[] strAnnotationVersion = ActionOps.getArrayOfJsonObject(versionList);
+
+            Annotation annotation = Annotation.builder()
+                    .uuid(uuid)
+                    .projectId(projectId)
+                    .imgPath(subPath)
+                    .annotationDict(buildAnnotationDict(strAnnotationVersion))
+                    .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
+                    .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
+                    .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
+                    .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
+                    .build();
+
+            loader.getUuidDict().put(uuid, annotation);
+
+            AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+        }
+    }
 
 
-            Tuple params = Tuple.of(uuid,                                        //uuid
-                    projectId,                                             //project_id
-                    uuidBody.getString(ParamConfig.getImgPathParam()),           //child_path
-                    null,                                                        //version
-                    currentVersionBody.getString(0),                        //annotation
-                    uuidBody.getInteger(ParamConfig.getImgDepth()),              //img_depth
-                    currentVersionBody.getString(1),                        //img_X
-                    currentVersionBody.getString(2),                        //img_Y
-                    currentVersionBody.getString(3),                        //img_W
-                    currentVersionBody.getString(4),                        //img_H
-                    uuidBody.getInteger(ParamConfig.getFileSizeParam()),         //file_size
-                    uuidBody.getInteger(ParamConfig.getImgOriWParam()),          //img_ori_w
-                    uuidBody.getInteger(ParamConfig.getImgOriHParam()));         //img_ori_w
+    private static Map<String, AnnotationVersion> buildAnnotationDict(String[] annotationVersion)
+    {
+        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
 
+        for(String item : annotationVersion)
+        {
+            int colonIndex = item.indexOf(":");
 
-            AnnotationVerticle.writeUuidToDbFromImportingConfigFile(params, loader);
+            String key = item.substring(0, colonIndex);
+            String value = item.substring(colonIndex + 1);
+
+            JsonObject jsonObject = ActionOps.getKeyWithItem(value);
+
+            AnnotationVersion version = new AnnotationVersion(jsonObject);
+
+            annotationDict.put(key, version);
         }
 
+        return annotationDict;
     }
-    */
 }

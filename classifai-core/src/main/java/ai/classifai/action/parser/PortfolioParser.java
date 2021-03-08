@@ -20,8 +20,8 @@ import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.versioning.ProjectVersion;
-import ai.classifai.util.versioning.Version;
+import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.database.versioning.Version;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import lombok.AccessLevel;
@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -52,7 +53,7 @@ public class PortfolioParser
 
         jsonObject.put(ParamConfig.getProjectIdParam(), row.getString(0));                                  //project_id
         jsonObject.put(ParamConfig.getProjectNameParam(), row.getString(1));                                //project_name
-        jsonObject.put(ParamConfig.getAnnotationTypeParam(), annotationName);                                    //annotation_type (in string)
+        jsonObject.put(ParamConfig.getAnnotationTypeParam(), annotationName.toLowerCase(Locale.ROOT));           //annotation_type (in string)
 
         jsonObject.put(ParamConfig.getProjectPathParam(), row.getString(3));                                //project_path
         jsonObject.put(ParamConfig.getIsNewParam(), row.getBoolean(4));                                     //is_new

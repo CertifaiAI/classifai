@@ -320,7 +320,7 @@ public class ImageHandler {
 
         for (int i = 0; i < filesFullPath.size(); ++i)
         {
-            AnnotationVerticle.writeUuidToProjectTable(loader, filesFullPath.get(i), i + 1);
+            AnnotationVerticle.saveDataPoint(loader, filesFullPath.get(i).getAbsolutePath(), i + 1);
         }
     }
 
@@ -466,15 +466,7 @@ public class ImageHandler {
 
         for(int i = 0; i < dataFullPathList.size(); ++i)
         {
-            if (loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()))
-            {
-                BoundingBoxVerticle.createUuidIfNotExist(loader, dataFullPathList.get(i), i + 1);
-            }
-            else if (loader.getAnnotationType().equals(AnnotationType.SEGMENTATION.ordinal()))
-            {
-                SegVerticle.createUuidIfNotExist(loader, dataFullPathList.get(i), i + 1);
-
-            }
+            AnnotationVerticle.createUuidIfNotExist(loader, dataFullPathList.get(i), i + 1);
         }
     }
 }
