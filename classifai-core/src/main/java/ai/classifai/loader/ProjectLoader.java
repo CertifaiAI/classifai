@@ -59,8 +59,6 @@ public class ProjectLoader
     @Builder.Default private List<String> sanityUuidList = new ArrayList<>();
     @Builder.Default private List<String> uuidListFromDb = new ArrayList<>();
 
-
-
     //key: data point uuid
     //value: annotation
     @Builder.Default private Map<String, Annotation> uuidDict = new HashMap<>();
@@ -171,6 +169,7 @@ public class ProjectLoader
     }
 
     //updating project from file system
+    @Deprecated
     public void updateFileSysLoadingProgress(Integer currentSize)
     {
         currentUuidMarker = currentSize;

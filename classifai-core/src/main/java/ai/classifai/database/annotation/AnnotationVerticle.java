@@ -452,7 +452,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             String currentVersionUuid = loader.getCurrentVersionUuid();
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
 
-            //FIXME version.setAnnotation(ActionOps.removeBackSlash(requestBody.getJsonArray(annotationKey).encode()));
+            version.setAnnotation(ActionOps.removeDoubleQuote(requestBody.getJsonArray(annotationKey).encode()));
             version.setImgX(requestBody.getInteger(ParamConfig.getImgXParam()));
             version.setImgY(requestBody.getInteger(ParamConfig.getImgYParam()));
             version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));
