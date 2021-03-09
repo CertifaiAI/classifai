@@ -119,4 +119,8 @@ public class ParamConfig
     @Getter private static final String versionUuidParam = "version_uuid";
     @Getter private static final String nextVersionUuidParam = "next_version_uuid";
 
+    //hash
+    @Getter private static final String checkSumParam = "checksum";
+
+
 }

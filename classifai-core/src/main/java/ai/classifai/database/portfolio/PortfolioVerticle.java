@@ -44,7 +44,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -282,7 +281,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         Tuple params = Tuple.of(projectId);
 
-
         //export portfolio table relevant
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getExportProject())
                 .execute(params)
@@ -303,6 +301,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         JsonObject configContent = exporter.getConfigSkeletonStructure();
 
                         PortfolioParser.parseOut(portfolioRow, configContent);
+
+                        String projectPath = configContent.getString(ParamConfig.getProjectPathParam());
 
                         AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
 
@@ -326,7 +326,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                             RowIterator<Row> projectRowIterator = projectRowSet.iterator();
 
-                                            AnnotationParser.parseOut(projectRowIterator, configContent);
+                                            AnnotationParser.parseOut(projectPath, projectRowIterator, configContent);
                                         }
 
                                         //export to configuration file

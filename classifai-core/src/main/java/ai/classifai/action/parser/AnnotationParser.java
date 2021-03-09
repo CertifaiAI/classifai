@@ -20,6 +20,7 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
@@ -29,6 +30,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,7 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationParser
 {
-    public static void parseOut(@NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    public static void parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
     {
         JsonObject content = new JsonObject();
 
@@ -50,7 +52,12 @@ public class AnnotationParser
         {
             Row row = rowIterator.next();
 
+            String fullPath = projectPath + row.getString(1);
+
+            String hash = Hash.getHash256String(new File(fullPath));
+
             JsonObject annotationJsonObject = new JsonObject()
+                    .put(ParamConfig.getCheckSumParam(), hash)
                     .put(ParamConfig.getImgPathParam(), row.getString(1))       //img_path
                     .put(ParamConfig.getVersionListParam(), row.getString(2))   //version_list
                     .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
@@ -79,24 +86,36 @@ public class AnnotationParser
 
             String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
 
-            String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
+            String fullPath = loader.getProjectPath() + subPath;
+            String currentHash = Hash.getHash256String(new File(fullPath));
 
-            String[] strAnnotationVersion = ActionOps.getArrayOfJsonObject(versionList);
+            String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
 
-            Annotation annotation = Annotation.builder()
-                    .uuid(uuid)
-                    .projectId(projectId)
-                    .imgPath(subPath)
-                    .annotationDict(buildAnnotationDict(strAnnotationVersion))
-                    .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
-                    .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
-                    .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
-                    .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
-                    .build();
+            if(fileHash.equals(currentHash))
+            {
+                String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
 
-            loader.getUuidDict().put(uuid, annotation);
+                String[] strAnnotationVersion = ActionOps.getArrayOfJsonObject(versionList);
 
-            AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+                Annotation annotation = Annotation.builder()
+                        .uuid(uuid)
+                        .projectId(projectId)
+                        .imgPath(subPath)
+                        .annotationDict(buildAnnotationDict(strAnnotationVersion))
+                        .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
+                        .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
+                        .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
+                        .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
+                        .build();
+
+                loader.getUuidDict().put(uuid, annotation);
+
+                AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+            }
+            else
+            {
+                log.debug("Hash not same for " + fullPath);
+            }
         }
     }
 
