@@ -395,7 +395,7 @@ public class V1Endpoint {
         }
         else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
         {
-            List<String> newAddedUUIDList = loader.getFileSysNewUUIDList();
+            List<String> newAddedUUIDList = loader.getFileSysNewUuidList();
 
             res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
 

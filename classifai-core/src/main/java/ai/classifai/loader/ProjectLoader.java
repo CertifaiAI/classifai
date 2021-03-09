@@ -19,6 +19,7 @@ import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.database.versioning.ProjectVersion;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -34,6 +35,7 @@ import java.util.*;
 @Slf4j
 @Getter
 @Setter
+@Builder
 public class ProjectLoader
 {
     private String projectId;
@@ -48,74 +50,55 @@ public class ProjectLoader
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private LoaderStatus loaderStatus;
-    
-    private List<String> labelList;
-
-    //a list of unique uuid representing number of data points in one project
-    private List<String> sanityUuidList;
-    private List<String> uuidListFromDb;
 
     private ProjectVersion projectVersion;
+
+    @Builder.Default private List<String> labelList = new ArrayList<>();
+
+    //a list of unique uuid representing number of data points in one project
+    @Builder.Default private List<String> sanityUuidList = new ArrayList<>();
+    @Builder.Default private List<String> uuidListFromDb = new ArrayList<>();
+
 
 
     //key: data point uuid
     //value: annotation
-    private Map<String, Annotation> uuidDict = new HashMap<>();
+    @Builder.Default private Map<String, Annotation> uuidDict = new HashMap<>();
 
-    private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
+    @Builder.Default private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 
     //used when checking for progress in
     //(1) validity of database data point
     //(2) adding new data point through file/folder
-    private Integer currentUUIDMarker = 0;
-    private Integer totalUUIDMaxLen = 1;
+    @Builder.Default private Integer currentUuidMarker = 0;
+    @Builder.Default private Integer totalUuidMaxLen = 1;
 
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
-    private Set<String> validUUIDSet = new LinkedHashSet<>();
+    @Builder.Default private Set<String> validUUIDSet = new LinkedHashSet<>();
 
     //Status when dealing with file/folder opener
-    private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
 
     //list to send the new added datapoints as thumbnails to front end
-    private List<String> fileSysNewUUIDList = new ArrayList<>();
+    @Builder.Default private List<String> fileSysNewUuidList = new ArrayList<>();
 
     //list to iterate through uuid list from existing database to remove if necessary
-    private List<String> dbListBuffer = new ArrayList<>();
-    private List<String> reloadAdditionList = new ArrayList<>();
-    private List<String> reloadDeletionList = new ArrayList<>();
+    @Builder.Default private List<String> dbListBuffer = new ArrayList<>();
+    @Builder.Default private List<String> reloadAdditionList = new ArrayList<>();
+    @Builder.Default private List<String> reloadDeletionList = new ArrayList<>();
 
-    private List<Integer> progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
-
-    private ProjectLoader(Builder build)
-    {
-        this.projectId = build.projectId;
-        this.projectName = build.projectName;
-        this.annotationType = build.annotationType;
-        this.projectPath = build.projectPath;
-        this.isProjectNew = build.isProjectNew;
-        this.isProjectStarred = build.isProjectStarred;
-        this.loaderStatus = build.loaderStatus;
-
-        this.projectVersion = build.projectVersion;
-
-        this.uuidListFromDb = projectVersion.getCurrentUuidList();
-        this.sanityUuidList = uuidListFromDb;
-
-        this.labelList = projectVersion.getCurrentLabelList();
-
-        this.sanityUuidList = new ArrayList<>();
-    }
+    @Builder.Default private List<Integer> progressUpdate = Arrays.asList(0, 1);
 
     public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
     {
         validUUIDSet.clear();
-        fileSysNewUUIDList.clear();
+        fileSysNewUuidList.clear();
 
-        currentUUIDMarker = 0;
-        totalUUIDMaxLen = 1;
+        currentUuidMarker = 0;
+        totalUuidMaxLen = 1;
 
-        progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
+        progressUpdate = new ArrayList<>(Arrays.asList(currentUuidMarker, totalUuidMaxLen));
 
         fileSystemStatus = currentFileSystemStatus;
     }
@@ -141,21 +124,21 @@ public class ProjectLoader
     {
         List<Integer> progressBar = new ArrayList<>();
 
-        progressBar.add(currentUUIDMarker);
-        progressBar.add(totalUUIDMaxLen);
+        progressBar.add(currentUuidMarker);
+        progressBar.add(totalUuidMaxLen);
 
         return progressBar;
     }
 
     public void setDbOriUUIDSize(Integer totalUUIDSizeBuffer)
     {
-        totalUUIDMaxLen = totalUUIDSizeBuffer;
+        totalUuidMaxLen = totalUUIDSizeBuffer;
 
-        if (totalUUIDMaxLen.equals(0))
+        if (totalUuidMaxLen.equals(0))
         {
             loaderStatus = LoaderStatus.LOADED;
         }
-        else if (totalUUIDMaxLen.compareTo(0) < 0)
+        else if (totalUuidMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
             loaderStatus = LoaderStatus.ERROR;
@@ -164,10 +147,10 @@ public class ProjectLoader
 
     public void updateDBLoadingProgress(Integer currentSize)
     {
-        currentUUIDMarker = currentSize;
+        currentUuidMarker = currentSize;
 
         //if done, offload set to list
-        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        if (currentUuidMarker.equals(totalUuidMaxLen))
         {
             sanityUuidList = new ArrayList<>(validUUIDSet);
 
@@ -184,41 +167,41 @@ public class ProjectLoader
 
     public void pushFileSysNewUUIDList(String uuid)
     {
-        fileSysNewUUIDList.add(uuid);
+        fileSysNewUuidList.add(uuid);
     }
 
     //updating project from file system
     public void updateFileSysLoadingProgress(Integer currentSize)
     {
-        currentUUIDMarker = currentSize;
-        progressUpdate.set(0, currentUUIDMarker);
+        currentUuidMarker = currentSize;
+        progressUpdate.set(0, currentUuidMarker);
 
         //if done, offload set to list
-        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        if (currentUuidMarker.equals(totalUuidMaxLen))
         {
             offloadFileSysNewList2List();
         }
     }
 
 
-    public void updateProjectFolderLoadingProgress(Integer currentSize)
+    public void updateLoadingProgress(Integer currentSize)
     {
-        currentUUIDMarker = currentSize;
-        progressUpdate.set(0, currentUUIDMarker);
+        currentUuidMarker = currentSize;
+        progressUpdate.set(0, currentUuidMarker);
 
         //if done, offload set to list
-        if (currentUUIDMarker.equals(totalUUIDMaxLen))
+        if (currentUuidMarker.equals(totalUuidMaxLen))
         {
-            if (fileSysNewUUIDList.isEmpty())
+            if (fileSysNewUuidList.isEmpty())
             {
                 fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
             }
             else
             {
-                sanityUuidList.addAll(fileSysNewUUIDList);
-                uuidListFromDb.addAll(fileSysNewUUIDList);
+                sanityUuidList.addAll(fileSysNewUuidList);
+                uuidListFromDb.addAll(fileSysNewUuidList);
 
-                projectVersion.setCurrentVersionUuidList(fileSysNewUUIDList);
+                projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
 
                 PortfolioVerticle.createNewProject(projectId);
 
@@ -227,25 +210,24 @@ public class ProjectLoader
         }
     }
 
-
     @Deprecated
     private void offloadFileSysNewList2List()
     {
-        if (fileSysNewUUIDList.isEmpty())
+        if (fileSysNewUuidList.isEmpty())
         {
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
         }
         else
         {
-            sanityUuidList.addAll(fileSysNewUUIDList);
-            uuidListFromDb.addAll(fileSysNewUUIDList);
+            sanityUuidList.addAll(fileSysNewUuidList);
+            uuidListFromDb.addAll(fileSysNewUuidList);
 
             PortfolioVerticle.updateFileSystemUuidList(projectId);
             fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
 
-    public void uploadNewUuidFromReloadingRootPath(@NonNull String uuid)
+    public void uploadUuidFromRootPath(@NonNull String uuid)
     {
         if(!uuidListFromDb.contains(uuid)) uuidListFromDb.add(uuid);
 
@@ -264,10 +246,10 @@ public class ProjectLoader
         reloadAdditionList.clear();
         reloadDeletionList.clear();
 
-        currentUUIDMarker = 0;
-        totalUUIDMaxLen = 1;
+        currentUuidMarker = 0;
+        totalUuidMaxLen = 1;
 
-        progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
+        progressUpdate = new ArrayList<>(Arrays.asList(currentUuidMarker, totalUuidMaxLen));
 
         fileSystemStatus = currentFileSystemStatus;
     }
@@ -278,7 +260,7 @@ public class ProjectLoader
         progressUpdate.set(0, currentSize);
 
         //if done, offload set to list
-        if (currentSize.equals(totalUUIDMaxLen))
+        if (currentSize.equals(totalUuidMaxLen))
         {
             sanityUuidList.removeAll(dbListBuffer);
             reloadDeletionList = dbListBuffer;
@@ -291,8 +273,8 @@ public class ProjectLoader
 
     public void setFileSysTotalUUIDSize(Integer totalUUIDSizeBuffer)
     {
-        totalUUIDMaxLen = totalUUIDSizeBuffer;
-        progressUpdate = Arrays.asList(new Integer[]{0, totalUUIDMaxLen});
+        totalUuidMaxLen = totalUUIDSizeBuffer;
+        progressUpdate = Arrays.asList(new Integer[]{0, totalUuidMaxLen});
     }
 
     public void setFileSystemStatus(FileSystemStatus status)
@@ -300,76 +282,4 @@ public class ProjectLoader
         fileSystemStatus = status;
     }
 
-    public static class Builder
-    {
-        private String projectId;
-        private String projectName;
-
-        private Integer annotationType;
-        private String projectPath;
-
-        private Boolean isProjectNew;
-        private Boolean isProjectStarred;
-
-        //Load an existing project from database
-        //After loaded once, this value will be always LOADED so retrieving of project from memory than db
-        private LoaderStatus loaderStatus;
-
-        private ProjectVersion projectVersion = null;
-
-        public ProjectLoader build()
-        {
-            return new ProjectLoader(this);
-        }
-
-        public Builder projectId(String projectId)
-        {
-            this.projectId = projectId;
-            return this;
-        }
-
-        public Builder projectName(String projectName)
-        {
-            this.projectName = projectName;
-            return this;
-        }
-
-        public Builder annotationType(Integer annotationType)
-        {
-            this.annotationType = annotationType;
-            return this;
-        }
-
-        public Builder projectPath(String projectPath)
-        {
-            this.projectPath = projectPath;
-           return this;
-        }
-
-        public Builder isProjectNew(Boolean isProjectNew)
-        {
-            this.isProjectNew = isProjectNew;
-            return this;
-        }
-
-        public Builder isProjectStarred(Boolean isProjectStarred)
-        {
-            this.isProjectStarred = isProjectStarred;
-            return this;
-        }
-
-        public Builder loaderStatus(LoaderStatus loaderStatus)
-        {
-            this.loaderStatus = loaderStatus;
-            return this;
-        }
-
-        public Builder projectVersion(ProjectVersion projectVersion)
-        {
-            this.projectVersion = projectVersion;
-
-            return this;
-        }
-
-    }
 }

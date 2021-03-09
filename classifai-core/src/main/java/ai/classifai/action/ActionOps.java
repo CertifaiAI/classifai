@@ -42,6 +42,9 @@ public class ActionOps
 
     private static final String COMMA_SEPARATOR = ",";
 
+    private static final String BACKSLASH = "\\";
+    private static final String QUOTATION = "\"";
+
     /**
      * Remove quotation mark "
      *
@@ -50,7 +53,7 @@ public class ActionOps
      */
     public static String removeDoubleQuote(@NonNull String input)
     {
-        return input.replace("\"", REPLACEMENT);
+        return input.replace(QUOTATION, REPLACEMENT);
     }
 
     private static String removeBracket(@NonNull String input)
@@ -66,6 +69,11 @@ public class ActionOps
     public static String removeOuterBrackets(@NonNull String input)
     {
         return removeBracket(removeSquareBracket(input));
+    }
+
+    public static String removeBackSlash(@NonNull String input)
+    {
+        return input.replace(BACKSLASH, REPLACEMENT);
     }
 
     public static Map<String, List<String>> getKeyWithArray(@NonNull String input)

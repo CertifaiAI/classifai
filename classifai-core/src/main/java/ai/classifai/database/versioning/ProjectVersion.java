@@ -92,6 +92,11 @@ public class ProjectVersion
         uuidDict.put(currentVersion.getVersionUuid(), uuidList);
     }
 
+    public void setCurrentVersionLabelList(@NonNull List<String> labelList)
+    {
+        labelDict.put(currentVersion.getVersionUuid(), labelList);
+    }
+
     public String getUuidVersionDbFormat()
     {
         //[{version_uuid : [data_uuid, data_uuid, data_uuid]},{version_uuid : [data_uuid, data_uuid, data_uuid]}]
@@ -103,7 +108,6 @@ public class ProjectVersion
     {
         return uuidDict.get(currentVersion.getVersionUuid());
     }
-
 
     public List<String> getCurrentLabelList()
     {
@@ -140,60 +144,5 @@ public class ProjectVersion
 
         return ActionOps.removeDoubleQuote(versionList.encode());
     }
-
-    /*
-
-
-    public void updateUuidList(@NonNull Version version, @NonNull List<String> uuidList)
-    {
-        uuidDict.put(version.getVersionUuid(), uuidList);
-    }
-
-
-    public ProjectVersion(@NonNull List<Version> versionList)
-    {
-        for (Version version : versionList)
-        {
-            setVersion(version);
-        }
-    }
-
-    private void setVersionCollection(@NonNull String rawVersionUuid, @NonNull String rawDateTime)
-    {
-        String versionUuid = rawVersionUuid.substring(ParamConfig.getVersionUuidParam().length() + 1);
-        DateTime dateTime = new DateTime(rawDateTime.substring(ParamConfig.getCreatedDateParam().length() + 1));
-
-        Version version = new Version(versionUuid, dateTime);
-
-        versionUuidDict.put(versionUuid, version);
-
-        uuidDict.put(versionUuid, new ArrayList<>());
-        labelDict.put(versionUuid, new ArrayList<>());
-    }
-
-    public void updateLabelList(@NonNull Version version, @NonNull List<String> labelList)
-    {
-        labelDict.put(version.getVersionUuid(), labelList);
-    }
-
-
-    public String getUuidDictObject2Db()
-    {
-        JsonArray jsonArray = new JsonArray();
-
-        uuidDict.forEach((key, value) -> jsonArray.add(new JsonObject().put(key, value.toString())));
-
-        return jsonArray.toString();
-    }
-
-    public String getLabelDictObject2Db()
-    {
-        JsonArray jsonArray = new JsonArray();
-
-        labelDict.forEach((key, value) -> jsonArray.add(new JsonObject().put(key, value.toString())));
-
-        return jsonArray.toString();
-    }
-     */
 
 }

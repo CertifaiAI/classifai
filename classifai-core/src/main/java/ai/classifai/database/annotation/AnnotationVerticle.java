@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
+import ai.classifai.action.ActionOps;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.AnnotationVersion;
@@ -182,7 +183,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                     }
-                    loader.updateProjectFolderLoadingProgress(currentLength);
+                    loader.updateLoadingProgress(currentLength);
                 });
     }
 
@@ -248,7 +249,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         log.error("Push data point with path " + dataFullPath + " failed: " + fetch.cause().getMessage());
                     }
 
-                    loader.updateProjectFolderLoadingProgress(currentLength);
+                    loader.updateLoadingProgress(currentLength);
                 });
     }
 
@@ -273,7 +274,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                     if (fetch.succeeded())
                     {
-                        loader.uploadNewUuidFromReloadingRootPath(uuid);
+                        loader.uploadUuidFromRootPath(uuid);
                     }
                     else
                     {
@@ -340,7 +341,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         // if exist remove from Listbuffer to prevent from checking the item again
                         if(!loader.getSanityUuidList().contains(uuid))
                         {
-                            loader.uploadNewUuidFromReloadingRootPath(uuid);
+                            loader.uploadUuidFromRootPath(uuid);
                         }
 
                         loader.getDbListBuffer().remove(uuid);
@@ -451,7 +452,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             String currentVersionUuid = loader.getCurrentVersionUuid();
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
 
-            version.setAnnotation(requestBody.getJsonArray(annotationKey).encode());
+            //FIXME version.setAnnotation(ActionOps.removeBackSlash(requestBody.getJsonArray(annotationKey).encode()));
             version.setImgX(requestBody.getInteger(ParamConfig.getImgXParam()));
             version.setImgY(requestBody.getInteger(ParamConfig.getImgYParam()));
             version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));

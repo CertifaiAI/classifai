@@ -15,6 +15,7 @@
  */
 package ai.classifai.util;
 
+import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.type.AnnotationHandler;
@@ -122,6 +123,12 @@ public class ProjectHandler {
         projectNameSearch.put(loader.getProjectId(), projectNameWithType);
 
         projectIDLoaderDict.put(loader.getProjectId(), loader);
+
+        ProjectVersion project = loader.getProjectVersion();
+
+        project.setCurrentVersionUuidList(loader.getUuidListFromDb());
+        project.setCurrentVersionLabelList(loader.getLabelList());
+
     }
 
     public static boolean initSelector(String selection)

@@ -128,7 +128,7 @@ public class ProjectFolderSelector {
 
             String rootProjectPath = rootPath.getAbsolutePath();
 
-            ProjectLoader loader = new ProjectLoader.Builder()
+            ProjectLoader loader = ProjectLoader.builder()
                     .projectId(projectID)
                     .projectName(projectName)
                     .annotationType(annotationInt)

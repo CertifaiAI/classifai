@@ -83,7 +83,7 @@ public class PortfolioParser
         Map labelDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
         project.setLabelDict(labelDict);                                                                        //label_version_list
 
-        return new ProjectLoader.Builder()
+        return ProjectLoader.builder()
                                 .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
                                 .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
                                 .annotationType(annotationInt)                                                  //annotation_type

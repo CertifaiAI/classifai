@@ -163,6 +163,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             loader.setProjectId(UuidGenerator.generateUuid());
             log.info("Project name overlapped. Rename project as " + newProjName);
         }
+
         ProjectHandler.loadProjectLoader(loader);
 
         //load project table first
@@ -186,72 +187,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 });
 
-
-        //save the .updateFileSystemUuidList(loader.getProjectId());
-
-
-        /*
-        Tuple params = PortfolioVerticle.buildNewProject(loader);
-
-        portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
-                .execute(params)
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        AnnotationParser.parseIn(loader, input.getJsonObject(ParamConfig.getProjectContentParam()));
-
-                        //write to database on the uuid_Version_list
-                        PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
-
-                        log.info("Import project " + loader.getProjectName() + " success!");
-                    }
-                    else
-                    {
-                        log.info("Failed to import project " + loader.getProjectName() + " from configuration file");
-                    }
-                });
-
-         */
     }
-    /**
-     public static void loadProjectFromImportingConfigFile(@NonNull JsonObject input)
-     {
-     ProjectLoader loader = PortfolioParser.parseIn(input);
-
-     while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
-     {
-     String newProjName = new NameGenerator().getNewProjectName();
-     loader.setProjectName(newProjName);
-     loader.setProjectID(UUIDGenerator.generateUUID());
-     log.info("Project name overlapped. Rename project as " + newProjName);
-     }
-
-     Tuple params = PortfolioVerticle.buildNewProject(loader);
-
-     //craete an empty project without uuid_list
-     portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
-     .execute(params)
-     .onComplete(fetch -> {
-
-     if (fetch.succeeded())
-     {
-     ProjectHandler.loadProjectLoader(loader);
-
-     AnnotationParser.parseIn(loader, input.getJsonObject(ParamConfig.getProjectContentParam()));
-
-     //write to database on the uuid_Version_list
-     PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
-
-     log.info("Import project " + loader.getProjectName() + " success!");
-     }
-     else
-     {
-     log.info("Failed to import project " + loader.getProjectName() + " from configuration file");
-     }
-     });
-     }
-     */
 
     /**
      * v1 create new project
@@ -271,13 +207,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             log.info("Create " + annotationName + " project with name: " + projectName);
 
-            //ProjectId is redundant
-            String projectID = UuidGenerator.generateUuid();
-
             ProjectVersion project = new ProjectVersion();
 
-            ProjectLoader loader = new ProjectLoader.Builder()
-                    .projectId(projectID)
+            ProjectLoader loader = ProjectLoader.builder()
+                    .projectId(UuidGenerator.generateUuid())
                     .projectName(projectName)
                     .annotationType(annotationInt)
                     .projectPath("")
@@ -314,34 +247,30 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     public void updateLabelList(Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray labelListArray = message.body().getJsonArray(ParamConfig.getLabelListParam());
-
-        List<String> labelList = ConversionHandler.jsonArray2StringList(labelListArray);
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
-        //Badly written, fix this;
-        /*
-        loader.getVersionCollector().updateLabelList(loader.getCurrentVersion(), labelList);
-        loader.setLabelList(labelList);
+        List<String> labelList = loader.getLabelList();
 
-        Tuple params = Tuple.of(loader.getProjectVersion().getLabelDictObject2Db(), projectId);
+        ProjectVersion project = loader.getProjectVersion();
+
+        project.setCurrentVersionLabelList(labelList);
+
+        Tuple updateUuidListBody = Tuple.of(project.getLabelVersionDbFormat(), projectId);
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateLabelList())
-                .execute(params)
-                .onComplete(fetch ->{
-
-                    if (fetch.succeeded())
+                .execute(updateUuidListBody)
+                .onComplete(reply -> {
+                    if (reply.succeeded())
                     {
                         message.replyAndRequest(ReplyHandler.getOkReply());
                     }
                     else
                     {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                        log.info("Update list of uuids to Portfolio Database failed");
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(reply.cause()));
                     }
                 });
-
-         */
     }
 
 
@@ -379,8 +308,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                         //export project table relevant
                         JDBCPool client = AnnotationHandler.getJDBCPool(type.ordinal());
-
-                        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
                         client.preparedQuery(AnnotationQuery.getExportProject())
                                 .execute(params)
@@ -475,13 +402,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<String> uuidList = loader.getUuidListFromDb();
 
-        /*
-        loader.getProjectVersion().setCurrentVersionUuidList(uuidList);
-        projVersion.updateUuidList(loader.getCurrentVersion(), uuidList);
+        ProjectVersion project = loader.getProjectVersion();
 
-        String dbUuidDict = loader.getVersionCollector().getUuidDictObject2Db();
+        project.setCurrentVersionUuidList(uuidList);
 
-        Tuple updateUuidListBody = Tuple.of(dbUuidDict, projectID);
+        Tuple updateUuidListBody = Tuple.of(project.getUuidVersionDbFormat(), projectID);
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateProject())
                 .execute(updateUuidListBody)
@@ -491,7 +416,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         log.info("Update list of uuids to Portfolio Database failed");
                     }
                 });
-        */
     }
 
     private void configProjectLoaderFromDb()
@@ -524,7 +448,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 Map labelDict = ActionOps.getKeyWithArray(row.getString(9));
                                 project.setLabelDict(labelDict);                                                       //label_version_list
 
-                                ProjectLoader loader = new ProjectLoader.Builder()
+                                ProjectLoader loader = ProjectLoader.builder()
                                     .projectId(row.getString(0))                                                   //project_id
                                     .projectName(row.getString(1))                                                 //project_name
                                     .annotationType(row.getInteger(2))                                             //annotation_type
@@ -567,7 +491,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             return;
         }
 
-        //createNewProject(projName, annotationInt, dataPath);
     }
 
     public void getProjectMetadata(Message<JsonObject> message)
@@ -588,17 +511,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
+        Version currentVersion = loader.getProjectVersion().getCurrentVersion();
+
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
                 .put(ParamConfig.getProjectPathParam(), loader.getProjectPath())
                 .put(ParamConfig.getIsNewParam(), loader.getIsProjectNew())
                 .put(ParamConfig.getIsStarredParam(), loader.getIsProjectStarred())
                 .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
-                /*
-                .put(ParamConfig.getCreatedDateParam(), loader.getCurrentVersion().getDateTime().toString())
-                .put(ParamConfig.getCurrentVersionUuidParam(), loader.getCurrentVersion().getVersionUuid())
-                .put(ParamConfig.getVersionListParam(), loader.getVersionCollector().toString())
-                */
+                .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
+                .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDb().size()));
     }
 
@@ -706,26 +628,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private static Tuple buildNewProject(@NonNull ProjectLoader loader)
     {
-        //Version list
+        //version list
         ProjectVersion project = loader.getProjectVersion();
-
-        System.out.println("1: " + loader.getProjectId());
-
-        System.out.println("2: " + loader.getProjectName());
-
-        System.out.println("3: " + loader.getAnnotationType());
-        System.out.println("4: " + loader.getProjectPath());
-        System.out.println("5: " + loader.getIsProjectNew());
-        System.out.println("6: " + loader.getIsProjectStarred());
-
-        System.out.println("7: " + project.getCurrentVersion().getDbFormat());
-
-        System.out.println("8: " + project.getDbFormat());
-
-        System.out.println("9: " + project.getUuidVersionDbFormat());
-
-        System.out.println("10: " + project.getLabelVersionDbFormat());
-
 
         return Tuple.of(loader.getProjectId(),              //project_id
                 loader.getProjectName(),                    //project_name
