@@ -508,7 +508,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
 
         response.put(ParamConfig.getImgPathParam(), dataFullPath);
-        response.put(annotationKey, version.getAnnotation());
+        response.put(annotationKey, version.getAnnotationJsonArray());
         response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
         response.put(ParamConfig.getImgXParam(), version.getImgX());
         response.put(ParamConfig.getImgYParam(), version.getImgY());

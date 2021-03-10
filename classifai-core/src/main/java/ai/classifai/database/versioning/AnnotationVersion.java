@@ -17,6 +17,7 @@ package ai.classifai.database.versioning;
 
 import ai.classifai.action.ActionOps;
 import ai.classifai.util.ParamConfig;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,7 @@ import lombok.Setter;
 public class AnnotationVersion
 {
     String annotation = ParamConfig.getEmptyArray();
+
     Integer imgX = 0;
     Integer imgY = 0;
     Integer imgW = 0;
@@ -81,6 +83,11 @@ public class AnnotationVersion
     private Integer getValueFromString(@NonNull String input, @NonNull Integer start, @NonNull Integer end)
     {
         return Integer.parseInt(input.substring(start, end));
+    }
+
+    public JsonArray getAnnotationJsonArray()
+    {
+        return new JsonArray(annotation);
     }
 
     private JsonObject getJsonObject()
