@@ -61,7 +61,7 @@ public class ProjectLoader
 
     //key: data point uuid
     //value: annotation
-    @Builder.Default private Map<String, Annotation> uuidDict = new HashMap<>();
+    @Builder.Default private Map<String, Annotation> uuidAnnotationDict = new HashMap<>();
 
     @Builder.Default private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
 

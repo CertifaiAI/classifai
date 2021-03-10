@@ -42,12 +42,13 @@ public class ProjectVersion
     private Map<String, Version> versionUuidDict = new HashMap<>();
 
     //project version uuid <> uuid list
-    private Map<String, List<String>> uuidDict = new HashMap<>();
+    private Map<String, List<String>> uuidListDict = new HashMap<>();
 
     //project version uuid <> label list
-    private Map<String, List<String>> labelDict = new HashMap<>();
+    private Map<String, List<String>> labelListDict = new HashMap<>();
 
     private Version currentVersion = null;
+
 
     public ProjectVersion(boolean createCurrentVersion)
     {
@@ -68,8 +69,8 @@ public class ProjectVersion
     {
         versionUuidDict.put(version.getVersionUuid(), version);
 
-        uuidDict.put(version.getVersionUuid(), new ArrayList<>());
-        labelDict.put(version.getVersionUuid(), new ArrayList<>());
+        uuidListDict.put(version.getVersionUuid(), new ArrayList<>());
+        labelListDict.put(version.getVersionUuid(), new ArrayList<>());
     }
 
     /**
@@ -91,35 +92,35 @@ public class ProjectVersion
 
     public void setCurrentVersionUuidList(@NonNull List<String> uuidList)
     {
-        uuidDict.put(currentVersion.getVersionUuid(), uuidList);
+        uuidListDict.put(currentVersion.getVersionUuid(), uuidList);
     }
 
     public void setCurrentVersionLabelList(@NonNull List<String> labelList)
     {
-        labelDict.put(currentVersion.getVersionUuid(), labelList);
+        labelListDict.put(currentVersion.getVersionUuid(), labelList);
     }
 
     public String getUuidVersionDbFormat()
     {
         //[{version_uuid : [data_uuid, data_uuid, data_uuid]},{version_uuid : [data_uuid, data_uuid, data_uuid]}]
-        return getDictDbFormat(uuidDict);
+        return getDictDbFormat(uuidListDict);
 
     }
 
     public List<String> getCurrentUuidList()
     {
-        return uuidDict.get(currentVersion.getVersionUuid());
+        return uuidListDict.get(currentVersion.getVersionUuid());
     }
 
     public List<String> getCurrentLabelList()
     {
-        return labelDict.get(currentVersion.getVersionUuid());
+        return labelListDict.get(currentVersion.getVersionUuid());
     }
 
 
     public String getLabelVersionDbFormat()
     {
-        return getDictDbFormat(labelDict);
+        return getDictDbFormat(labelListDict);
     }
 
     private String getDictDbFormat(Map<String, List<String>> dict)

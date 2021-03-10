@@ -78,10 +78,10 @@ public class PortfolioParser
         project.setCurrentVersion(currentVersion.getVersionUuid());
 
         Map uuidDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getUuidVersionListParam()));
-        project.setUuidDict(uuidDict);                                                                          //uuid_version_list
+        project.setUuidListDict(uuidDict);                                                                          //uuid_version_list
 
         Map labelDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
-        project.setLabelDict(labelDict);                                                                        //label_version_list
+        project.setLabelListDict(labelDict);                                                                        //label_version_list
 
         return ProjectLoader.builder()
                                 .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id

@@ -126,8 +126,10 @@ public class ProjectHandler {
 
         ProjectVersion project = loader.getProjectVersion();
 
-        project.setCurrentVersionUuidList(loader.getUuidListFromDb());
-        project.setCurrentVersionLabelList(loader.getLabelList());
+        loader.getUuidListFromDb().addAll(project.getCurrentUuidList());
+        loader.getSanityUuidList().addAll(project.getCurrentUuidList());
+
+        loader.getLabelList().addAll(project.getCurrentLabelList());
 
     }
 

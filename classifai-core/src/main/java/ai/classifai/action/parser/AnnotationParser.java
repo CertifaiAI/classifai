@@ -110,7 +110,7 @@ public class AnnotationParser
                         .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
                         .build();
 
-                loader.getUuidDict().put(uuid, annotation);
+                loader.getUuidAnnotationDict().put(uuid, annotation);
 
                 AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
             }
@@ -121,8 +121,7 @@ public class AnnotationParser
         }
     }
 
-
-    private static Map<String, AnnotationVersion> buildAnnotationDict(String strVersionList)
+    public static Map<String, AnnotationVersion> buildAnnotationDict(String strVersionList)
     {
         Map<String, AnnotationVersion> annotationDict = new HashMap<>();
 

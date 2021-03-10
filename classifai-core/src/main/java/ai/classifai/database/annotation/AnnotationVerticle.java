@@ -29,12 +29,14 @@ import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
@@ -170,7 +172,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
-        loader.getUuidDict().put(uuid, annotation);
+        loader.getUuidAnnotationDict().put(uuid, annotation);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
@@ -202,7 +204,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
-        loader.getUuidDict().put(uuid, annotation);
+        loader.getUuidAnnotationDict().put(uuid, annotation);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
@@ -234,7 +236,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
-        loader.getUuidDict().put(uuid, annotation);
+        loader.getUuidAnnotationDict().put(uuid, annotation);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
@@ -253,6 +255,66 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
+    public static void configProjectLoaderFromDb(@NonNull ProjectLoader loader)
+    {
+        //export project table relevant
+        JDBCPool client = AnnotationHandler.getJDBCPool(loader.getAnnotationType());
+
+        Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
+
+        client.preparedQuery(AnnotationQuery.getExtractProject())
+                .execute(Tuple.of(loader.getProjectId()))
+                .onComplete(annotationFetch ->{
+
+                    if (annotationFetch.succeeded())
+                    {
+                        RowSet<Row> projectRowSet = annotationFetch.result();
+
+                        if(projectRowSet.size() == 0)
+                        {
+                            log.debug("Extract project annotation retrieve 0 rows. Project not found from project database");
+                        }
+                        else
+                        {
+                            RowIterator<Row> rowIterator = projectRowSet.iterator();
+
+                            while(rowIterator.hasNext())
+                            {
+                                Row row = rowIterator.next();
+
+                                String fullPath = loader.getProjectPath() + row.getString(1);
+
+                                if(ImageHandler.isImageReadable(new File(fullPath)))
+                                {
+                                    Map<String, AnnotationVersion> annotationDict = AnnotationParser.buildAnnotationDict(row.getString(2));
+
+                                    Annotation annotation = Annotation.builder()
+                                            .uuid(row.getString(0))         //uuid
+                                            .projectId(loader.getProjectId())   //project_id
+                                            .imgPath(row.getString(1))      //img_path
+                                            .annotationDict(annotationDict)     //version_list
+                                            .imgDepth(row.getInteger(3))    //img_depth
+                                            .fileSize(row.getInteger(4))    //file_size
+                                            .imgOriW(row.getInteger(5))     //img_ori_w
+                                            .imgOriH(row.getInteger(6))     //img_ori_h
+                                            .build();
+
+                                    uuidAnnotationDict.put(row.getString(0), annotation);
+                                }
+                                else
+                                {
+                                    //remove uuid which is not readable
+                                    loader.getSanityUuidList().remove(row.getString(0));
+                                }
+
+                            }
+
+
+                        }
+                    }
+                });
+    }
+
 
     private static void writeUuidToDbFromReloadingRootPath(@NonNull ProjectLoader loader, @NonNull String dataSubPath)
     {
@@ -266,7 +328,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .build();
 
         //put annotation in ProjectLoader
-        loader.getUuidDict().put(uuid, annotation);
+        loader.getUuidAnnotationDict().put(uuid, annotation);
 
         jdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
@@ -435,7 +497,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             String uuid = requestBody.getString(ParamConfig.getUuidParam());
 
             ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-            Annotation annotation = loader.getUuidDict().get(uuid);
+            Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
             Integer imgDepth = requestBody.getInteger(ParamConfig.getImgDepth());
             annotation.setImgDepth(imgDepth);
@@ -494,7 +556,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
-        Annotation annotation = loader.getUuidDict().get(uuid);
+        Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
         AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
 

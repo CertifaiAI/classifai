@@ -23,6 +23,7 @@ import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationQuery;
+import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.CLIProjectInitiator;
@@ -309,7 +310,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         //export project table relevant
                         JDBCPool client = AnnotationHandler.getJDBCPool(type.ordinal());
 
-                        client.preparedQuery(AnnotationQuery.getExportProject())
+                        client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)
                                 .onComplete(annotationFetch ->{
 
@@ -436,17 +437,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         {
                             for (Row row : rowSet)
                             {
-
                                 Version currentVersion = new Version(row.getString(6));
 
                                 ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(7));     //project_version
                                 project.setCurrentVersion(currentVersion.getVersionUuid());
 
                                 Map uuidDict = ActionOps.getKeyWithArray(row.getString(8));
-                                project.setUuidDict(uuidDict);                                                         //uuid_version_list
+                                project.setUuidListDict(uuidDict);                                                      //uuid_version_list
 
                                 Map labelDict = ActionOps.getKeyWithArray(row.getString(9));
-                                project.setLabelDict(labelDict);                                                       //label_version_list
+                                project.setLabelListDict(labelDict);                                                    //label_version_list
 
                                 ProjectLoader loader = ProjectLoader.builder()
                                     .projectId(row.getString(0))                                                   //project_id
@@ -458,6 +458,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .isProjectStarred(row.getBoolean(5))                                           //is_starred
                                     .projectVersion(project)                                                           //project_version
                                     .build();
+
+                                //load each data points
+                                AnnotationVerticle.configProjectLoaderFromDb(loader);
 
 
                                 ProjectHandler.loadProjectLoader(loader);
