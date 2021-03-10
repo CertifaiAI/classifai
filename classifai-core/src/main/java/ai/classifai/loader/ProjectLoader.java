@@ -17,8 +17,8 @@ package ai.classifai.loader;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

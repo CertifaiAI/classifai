@@ -16,12 +16,12 @@
 package ai.classifai.action.parser;
 
 import ai.classifai.action.ActionOps;
+import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.database.versioning.Version;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import lombok.AccessLevel;

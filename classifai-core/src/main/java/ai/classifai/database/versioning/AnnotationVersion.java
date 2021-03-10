@@ -18,10 +18,10 @@ package ai.classifai.database.versioning;
 import ai.classifai.action.ActionOps;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
-import lombok.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Unit for annotation versionings

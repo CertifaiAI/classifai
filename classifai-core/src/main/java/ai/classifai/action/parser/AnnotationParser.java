@@ -31,7 +31,10 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -133,11 +136,7 @@ public class AnnotationParser
 
             String version = thisVersionTrimmed.substring(0, separator);
 
-            System.out.println("Version: " + version);
-
             String strAnnotationVersion = thisVersionTrimmed.substring(separator + 1);
-
-            System.out.println("strAnnotationVersion: " + strAnnotationVersion);
 
             AnnotationVersion annotationVersion = new AnnotationVersion(strAnnotationVersion);
 

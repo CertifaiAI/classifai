@@ -17,13 +17,10 @@ package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
-import ai.classifai.util.type.AnnotationType;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;

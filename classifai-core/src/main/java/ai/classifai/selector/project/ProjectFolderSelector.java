@@ -16,6 +16,7 @@
 package ai.classifai.selector.project;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
@@ -27,7 +28,6 @@ import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import ai.classifai.database.versioning.ProjectVersion;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
