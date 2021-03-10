@@ -510,16 +510,20 @@ public class V1Endpoint {
             try
             {
                 JsonObject jsonObject = h.toJsonObject();
+
                 jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
 
                 vertx.eventBus().request(queue, jsonObject, updateOptions, fetch ->
                 {
-                    if (fetch.succeeded()) {
+                    if (fetch.succeeded())
+                    {
                         JsonObject response = (JsonObject) fetch.result().body();
 
                         HTTPResponseHandler.configureOK(context, response);
 
-                    } else {
+                    }
+                    else
+                    {
                         HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for " + type + " project: " + projectName));
                     }
                 });

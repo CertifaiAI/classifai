@@ -31,9 +31,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -78,11 +76,14 @@ public class AnnotationParser
     {
         String projectId = loader.getProjectId();
 
-        List<String> uuidListFromDb = loader.getUuidListFromDb();
+        Iterator<Map.Entry<String, Object>> iterator = contentJsonBody.iterator();
 
-        for(String uuid : uuidListFromDb)
+        while(iterator.hasNext())
         {
-            JsonObject jsonObject = contentJsonBody.getJsonObject(uuid);
+            Map.Entry<String, Object> item = iterator.next();
+            String uuid = item.getKey();
+
+            JsonObject jsonObject = (JsonObject) item.getValue();
 
             String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
 
@@ -95,13 +96,11 @@ public class AnnotationParser
             {
                 String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
 
-                String[] strAnnotationVersion = ActionOps.getArrayOfJsonObject(versionList);
-
                 Annotation annotation = Annotation.builder()
                         .uuid(uuid)
                         .projectId(projectId)
                         .imgPath(subPath)
-                        .annotationDict(buildAnnotationDict(strAnnotationVersion))
+                        .annotationDict(buildAnnotationDict(versionList))
                         .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
                         .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
                         .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
@@ -120,24 +119,47 @@ public class AnnotationParser
     }
 
 
-    private static Map<String, AnnotationVersion> buildAnnotationDict(String[] annotationVersion)
+    private static Map<String, AnnotationVersion> buildAnnotationDict(String strVersionList)
     {
         Map<String, AnnotationVersion> annotationDict = new HashMap<>();
 
-        for(String item : annotationVersion)
+        String[] versions = ActionOps.getArrayOfJsonObject(strVersionList);
+
+        for(String thisVersion : versions)
         {
-            int colonIndex = item.indexOf(":");
+            String thisVersionTrimmed = ActionOps.removeOuterBrackets(thisVersion);
 
-            String key = item.substring(0, colonIndex);
-            String value = item.substring(colonIndex + 1);
+            Integer separator = thisVersionTrimmed.indexOf(":");
 
-            JsonObject jsonObject = ActionOps.getKeyWithItem(value);
+            String version = thisVersionTrimmed.substring(0, separator);
 
-            AnnotationVersion version = new AnnotationVersion(jsonObject);
+            System.out.println("Version: " + version);
 
-            annotationDict.put(key, version);
+            String strAnnotationVersion = thisVersionTrimmed.substring(separator + 1);
+
+            System.out.println("strAnnotationVersion: " + strAnnotationVersion);
+
+            AnnotationVersion annotationVersion = new AnnotationVersion(strAnnotationVersion);
+
+            annotationDict.put(version, annotationVersion);
         }
 
         return annotationDict;
     }
+
+    //build empty annotationDict
+    public static Map<String, AnnotationVersion> buildAnnotationDict(@NonNull ProjectLoader loader)
+    {
+        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
+
+        Set<String> versionUuidList = loader.getProjectVersion().getVersionUuidDict().keySet();
+
+        for(String versionUuid : versionUuidList)
+        {
+            annotationDict.put(versionUuid, new AnnotationVersion());
+        }
+
+        return annotationDict;
+    }
+
 }

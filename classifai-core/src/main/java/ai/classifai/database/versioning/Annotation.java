@@ -43,8 +43,7 @@ public class Annotation
     private String imgPath;                                                 //img_path
 
     //project version uuid <> annotation
-    @Builder.Default private Map<String, AnnotationVersion> annotationDict
-        = new HashMap<>();                                                  //version_list
+    private Map<String, AnnotationVersion> annotationDict;                  //version_list
 
     @Builder.Default private Integer imgDepth = 0;                          //img_depth
     @Builder.Default private Integer fileSize = 0;                          //file_size
@@ -52,14 +51,7 @@ public class Annotation
     @Builder.Default private Integer imgOriW = 0;                           //img_ori_w
     @Builder.Default private Integer imgOriH = 0;                           //img_ori_h
 
-    //constructor takes string
-    //need annotation parser
-    //two scenarios to use it
-    //from db (annotation clob)
-    //from config file
-
-    //How to speed up the generation of string, cause just change this version
-    private String getAnnotationDictDbFormat()
+    public String getAnnotationDictDbFormat()
     {
         JsonArray response = new JsonArray();
 
@@ -88,9 +80,3 @@ public class Annotation
     }
 
 }
-
-
-//when update: update data -> update Annotation Version -> getDbFormat -> update database
-//when start classifai: annotation -> parse into Annotation Version
-//when retrieve data: take from Annotation Version
-//Where does annotation version sits?

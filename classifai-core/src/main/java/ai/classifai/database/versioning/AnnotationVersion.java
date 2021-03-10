@@ -37,15 +37,50 @@ public class AnnotationVersion
     Integer imgW = 0;
     Integer imgH = 0;
 
-    public AnnotationVersion(@NonNull JsonObject jsonObject)
+    /**
+     * Constructor
+     *
+     * @param strAnnotationVersion {annotation:[],img_x:0,img_y:0,img_w:0,img_h:0}}]
+     */
+    public AnnotationVersion(@NonNull String strAnnotationVersion)
     {
-        annotation = jsonObject.getString(ParamConfig.getAnnotationParam());
+        String trimmedString = ActionOps.removeOuterBrackets(strAnnotationVersion);
 
-        imgX = Integer.parseInt(jsonObject.getString(ParamConfig.getImgXParam()));
-        imgY = Integer.parseInt(jsonObject.getString(ParamConfig.getImgYParam()));
+        Integer annotationStart = ParamConfig.getAnnotationParam().length() + 1;
+        Integer annotationEnd = trimmedString.indexOf(ParamConfig.getImgXParam()) - 1;
 
-        imgW = Integer.parseInt(jsonObject.getString(ParamConfig.getImgWParam()));
-        imgH = Integer.parseInt(jsonObject.getString(ParamConfig.getImgHParam()));
+        //annotation
+        annotation = trimmedString.substring(annotationStart,  annotationEnd);
+
+        Integer imgXStart = annotationEnd + ParamConfig.getImgXParam().length() + 2;
+        Integer imgXEnd = trimmedString.indexOf(ParamConfig.getImgYParam()) - 1;
+
+        //imgX
+        imgX = getValueFromString(trimmedString, imgXStart, imgXEnd);
+
+        Integer imgYStart = imgXEnd + ParamConfig.getImgYParam().length() + 2;
+        Integer imgYEnd = trimmedString.indexOf(ParamConfig.getImgWParam()) - 1;
+
+        //imgY
+        imgY = getValueFromString(trimmedString, imgYStart, imgYEnd);
+
+        Integer imgWStart = imgYEnd + ParamConfig.getImgWParam().length() + 2;
+        Integer imgWEnd = trimmedString.indexOf(ParamConfig.getImgHParam()) - 1;
+
+        //imgW
+        imgW = getValueFromString(trimmedString, imgWStart, imgWEnd);
+
+        Integer imgHStart = imgWEnd + ParamConfig.getImgHParam().length() + 2;
+        Integer imgHEnd = trimmedString.length() - 1;
+
+        //imgH
+        imgH = (imgHStart == imgHEnd) ? getValueFromString(trimmedString, imgHStart, trimmedString.length()) : getValueFromString(trimmedString, imgHStart, imgHEnd);
+
+    }
+
+    private Integer getValueFromString(@NonNull String input, @NonNull Integer start, @NonNull Integer end)
+    {
+        return Integer.parseInt(input.substring(start, end));
     }
 
     private JsonObject getJsonObject()

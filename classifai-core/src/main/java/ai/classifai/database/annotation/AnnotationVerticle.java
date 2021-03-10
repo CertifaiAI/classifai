@@ -16,6 +16,7 @@
 package ai.classifai.database.annotation;
 
 import ai.classifai.action.ActionOps;
+import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.AnnotationVersion;
@@ -41,7 +42,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -167,6 +167,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
                 .uuid(uuid)
+                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
         loader.getUuidDict().put(uuid, annotation);
@@ -187,7 +188,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-
+    @Deprecated
     public static void writeUuidToDb(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
     {
         String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
@@ -198,6 +199,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
                 .uuid(uuid)
+                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
         loader.getUuidDict().put(uuid, annotation);
@@ -214,6 +216,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
                     }
+
                     loader.updateFileSysLoadingProgress(currentLength);
                 });
     }
@@ -224,14 +227,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         String uuid = UuidGenerator.generateUuid();
 
-        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
-        annotationDict.put(loader.getCurrentVersionUuid(), new AnnotationVersion()); //load in first version
-
         Annotation annotation = Annotation.builder()
                 .uuid(uuid)
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
-                .annotationDict(annotationDict)
+                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
         loader.getUuidDict().put(uuid, annotation);
@@ -258,11 +258,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String uuid = UuidGenerator.generateUuid();
 
-
         Annotation annotation = Annotation.builder()
                 .uuid(uuid)
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
+                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
                 .build();
 
         //put annotation in ProjectLoader
@@ -450,6 +450,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             annotation.setImgOriH(imgOriH);
 
             String currentVersionUuid = loader.getCurrentVersionUuid();
+
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
 
             version.setAnnotation(ActionOps.removeDoubleQuote(requestBody.getJsonArray(annotationKey).encode()));
@@ -458,14 +459,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));
             version.setImgH(requestBody.getInteger(ParamConfig.getImgHParam()));
 
-            Tuple params = Tuple.of(version.getDbFormat(),
+            Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
                                     imgDepth,
                                     fileSize,
                                     imgOriW,
                                     imgOriH,
                                     uuid,
                                     projectId);
-
 
             jdbcPool.preparedQuery(AnnotationQuery.getUpdateData())
                     .execute(params)
@@ -508,7 +508,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
 
         response.put(ParamConfig.getImgPathParam(), dataFullPath);
-        response.put(annotationKey, new JsonArray(version.getAnnotation())); //FIXME
+        response.put(annotationKey, version.getAnnotation());
         response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
         response.put(ParamConfig.getImgXParam(), version.getImgX());
         response.put(ParamConfig.getImgYParam(), version.getImgY());

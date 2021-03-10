@@ -165,9 +165,9 @@ public class V2Endpoint {
 
         JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
 
-        DeliveryOptions reloadOpts = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
+        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
 
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOpts, fetch ->
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
         {
             JsonObject response = (JsonObject) fetch.result().body();
 
