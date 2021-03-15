@@ -42,6 +42,8 @@ public class EndpointRouter extends AbstractVerticle
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
 
+    CloudEndpoint cloud = new CloudEndpoint();
+
     public EndpointRouter()
     {
         Thread threadfile = new Thread(() -> fileSelector = new ToolFileSelector());
@@ -130,6 +132,12 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 
         router.put("/v2/:annotation_type/projects/:project_name/export").handler(v2::exportProject);
+
+        //*******************************Cloud*******************************
+
+        router.put("/v2/newcloudproject/s3").handler(cloud::createCloudProject);
+
+
 
 
         vertx.createHttpServer()

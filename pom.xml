@@ -28,6 +28,7 @@
         <module>classifai-core</module>
         <module>classifai-api</module>
         <module>classifai-uberjar</module>
+        <module>classifai-cloud</module>
         <!--<module>classifai-test</module>-->
     </modules>
 
@@ -84,6 +85,8 @@
         <logback.version>1.2.3</logback.version>
         <org.json.version>20201115</org.json.version>
         <google.json.version>1.1.1</google.json.version>
+        <aws.java.sdk.version>2.16.18</aws.java.sdk.version>
+        <aws.lambda.java.version>1.2.1</aws.lambda.java.version>
         <commons.collections4.version>4.1</commons.collections4.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
@@ -188,6 +191,29 @@
                 <groupId>com.googlecode.json-simple</groupId>
                 <artifactId>json-simple</artifactId>
                 <version>${google.json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>s3</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>software.amazon.awssdk</groupId>
+                        <artifactId>netty-nio-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>software.amazon.awssdk</groupId>
+                        <artifactId>apache-client</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>url-connection-client</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-lambda-java-core</artifactId>
+                <version>${aws.lambda.java.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
