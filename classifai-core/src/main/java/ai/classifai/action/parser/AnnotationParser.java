@@ -121,26 +121,22 @@ public class AnnotationParser
         }
     }
 
+    //version of a project <> AnnotationVersion
     public static Map<String, AnnotationVersion> buildAnnotationDict(String strVersionList)
     {
         Map<String, AnnotationVersion> annotationDict = new HashMap<>();
 
-        String[] versions = ActionOps.getArrayOfJsonObject(strVersionList);
+        String thisVersionTrimmed = ActionOps.removeOuterBrackets(strVersionList);
 
-        for(String thisVersion : versions)
-        {
-            String thisVersionTrimmed = ActionOps.removeOuterBrackets(thisVersion);
+        Integer separator = thisVersionTrimmed.indexOf(":");
 
-            Integer separator = thisVersionTrimmed.indexOf(":");
+        String version = thisVersionTrimmed.substring(0, separator);
 
-            String version = thisVersionTrimmed.substring(0, separator);
+        String strAnnotationVersion = thisVersionTrimmed.substring(separator + 1);
 
-            String strAnnotationVersion = thisVersionTrimmed.substring(separator + 1);
+        AnnotationVersion annotationVersion = new AnnotationVersion(strAnnotationVersion);
 
-            AnnotationVersion annotationVersion = new AnnotationVersion(strAnnotationVersion);
-
-            annotationDict.put(version, annotationVersion);
-        }
+        annotationDict.put(version, annotationVersion);
 
         return annotationDict;
     }
