@@ -70,10 +70,6 @@ public class AnnotationParser
                     String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
 
                     thisAnnotation.put(key, value);
-
-                    System.out.println("Key 0: " + key);
-                    System.out.println("Value 0: " + value);
-
                 }
                 else if(key.equals(DISTANCE_TO_IMG_PARAM))
                 {
@@ -87,9 +83,6 @@ public class AnnotationParser
                             .put(X_PARAM, Double.parseDouble((String) valueBuffer.getValue(X_PARAM)))
                             .put(Y_PARAM, Double.parseDouble((String) valueBuffer.getValue(Y_PARAM)));
 
-                    System.out.println("Distance X: " + valueJsonObject.getDouble(X_PARAM));
-                    System.out.println("Distance Y: " + valueJsonObject.getDouble(Y_PARAM));
-
                     thisAnnotation.put(key, valueJsonObject);
                 }
                 else if(key.equals(LABEL_PARAM))
@@ -97,8 +90,6 @@ public class AnnotationParser
                     String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
                     thisAnnotation.put(key, value);
 
-                    System.out.println("Key 1: " + key);
-                    System.out.println("Value 1: " + value);
                 }
                 else if(key.equals(ID_PARAM))
                 {
@@ -106,18 +97,12 @@ public class AnnotationParser
 
                     thisAnnotation.put(key, Long.parseLong(value));
 
-                    System.out.println("Key 3: " + key);
-                    System.out.println("Value 3: " + value);
-
                 }
                 else
                 {
                     String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
 
                     thisAnnotation.put(key, Integer.parseInt(value));
-
-                    System.out.println("Key 2: " + key);
-                    System.out.println("Value 2: " + value);
                 }
 
                 if(valueEndIndex == -1)
