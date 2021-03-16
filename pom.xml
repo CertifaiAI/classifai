@@ -102,7 +102,7 @@
         <dependencies>
             <dependency>
                 <groupId>ai.classifai</groupId>
-                <artifactId>classifai-uberjay</artifactId>
+                <artifactId>classifai-uberjar</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
@@ -113,6 +113,11 @@
             <dependency>
                 <groupId>ai.classifai</groupId>
                 <artifactId>classifai-api</artifactId>
+                <version>${classifai.release.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ai.classifai</groupId>
+                <artifactId>classifai-cloud</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>

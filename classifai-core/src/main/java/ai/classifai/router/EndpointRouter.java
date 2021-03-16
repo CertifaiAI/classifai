@@ -15,6 +15,7 @@
  */
 package ai.classifai.router;
 
+import ai.classifai.CloudEndpoint;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;

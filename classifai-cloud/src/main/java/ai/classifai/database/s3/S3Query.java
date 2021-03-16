@@ -1,4 +1,4 @@
-package ai.classifai.database;
+package ai.classifai.database.s3;
 
 import lombok.Getter;
 
