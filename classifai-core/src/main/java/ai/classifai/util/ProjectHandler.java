@@ -130,7 +130,6 @@ public class ProjectHandler {
         loader.getSanityUuidList().addAll(project.getCurrentUuidList());
 
         loader.getLabelList().addAll(project.getCurrentLabelList());
-
     }
 
     public static boolean initSelector(String selection)
