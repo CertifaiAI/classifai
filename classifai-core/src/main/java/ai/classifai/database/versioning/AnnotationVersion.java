@@ -76,10 +76,9 @@ public class AnnotationVersion
         imgW = getValueFromString(trimmedString, imgWStart, imgWEnd);
 
         Integer imgHStart = imgWEnd + ParamConfig.getImgHParam().length() + 2;
-        Integer imgHEnd = trimmedString.length() - 1;
 
         //imgH
-        imgH = (imgHStart == imgHEnd) ? getValueFromString(trimmedString, imgHStart, trimmedString.length()) : getValueFromString(trimmedString, imgHStart, imgHEnd);
+        imgH = getValueFromString(trimmedString, imgHStart, trimmedString.length());
 
     }
 
