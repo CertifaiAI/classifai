@@ -1,4 +1,4 @@
-package ai.classifai.router;
+package ai.classifai;
 
 import io.vertx.ext.web.RoutingContext;
 import lombok.NoArgsConstructor;

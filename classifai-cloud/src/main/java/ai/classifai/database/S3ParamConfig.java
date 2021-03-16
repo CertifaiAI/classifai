@@ -1,4 +1,4 @@
-package src.main.java.ai.classifai.database;
+package ai.classifai.database;
 
 import lombok.AccessLevel;
 import lombok.Getter;
