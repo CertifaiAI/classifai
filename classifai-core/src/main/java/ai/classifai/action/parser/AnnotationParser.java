@@ -102,7 +102,15 @@ public class AnnotationParser
                 {
                     String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
 
-                    thisAnnotation.put(key, Integer.parseInt(value));
+                    if(key.equals(LINE_WIDTH_PARAM))
+                    {
+                        thisAnnotation.put(key, Integer.parseInt(value));
+                    }
+                    else
+                    {
+                        thisAnnotation.put(key, Double.parseDouble(value));
+
+                    }
                 }
 
                 if(valueEndIndex == -1)

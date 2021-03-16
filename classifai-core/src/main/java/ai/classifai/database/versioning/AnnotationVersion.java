@@ -33,7 +33,6 @@ import lombok.Setter;
 @Setter
 public class AnnotationVersion
 {
-    //String annotation = ParamConfig.getEmptyArray();
     JsonArray annotation = new JsonArray();
 
     Integer imgX = 0;
@@ -48,6 +47,8 @@ public class AnnotationVersion
      */
     public AnnotationVersion(@NonNull String strAnnotationVersion)
     {
+        System.out.println("strAnnotationVersion: " + strAnnotationVersion);
+
         String trimmedString = ActionOps.removeOuterBrackets(strAnnotationVersion);
 
         Integer annotationStart = ParamConfig.getAnnotationParam().length() + 1;
@@ -103,6 +104,8 @@ public class AnnotationVersion
 
     public String getDbFormat()
     {
+        System.out.println("getDbFormat: " + ActionOps.removeDoubleQuote(getJsonObject().encode()));
+
         return ActionOps.removeDoubleQuote(getJsonObject().encode());
     }
 }
