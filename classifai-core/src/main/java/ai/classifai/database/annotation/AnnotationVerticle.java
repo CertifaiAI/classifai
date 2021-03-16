@@ -557,20 +557,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
-        if(loader.getCurrentVersionUuid() == null)
-        {
-            System.out.println("loader.getCurrentVersionUuid() is null");
-        }
-        else
-        {
-            System.out.println("loader.getCurrentVersionUuid(): " + loader.getCurrentVersionUuid());
-        }
-
-        if(annotation.getAnnotationDict() == null)
-        {
-            System.out.println("annotation.getAnnotationDict(): is null");
-        }
-
         AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
 
         String dataFullPath = loader.getProjectPath() + annotation.getImgPath();

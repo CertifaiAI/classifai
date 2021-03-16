@@ -47,8 +47,6 @@ public class AnnotationVersion
      */
     public AnnotationVersion(@NonNull String strAnnotationVersion)
     {
-        System.out.println("strAnnotationVersion: " + strAnnotationVersion);
-
         String trimmedString = ActionOps.removeOuterBrackets(strAnnotationVersion);
 
         Integer annotationStart = ParamConfig.getAnnotationParam().length() + 1;
