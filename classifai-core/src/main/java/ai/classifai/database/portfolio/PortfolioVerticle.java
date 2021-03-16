@@ -18,8 +18,8 @@ package ai.classifai.database.portfolio;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
 import ai.classifai.action.ProjectExport;
-import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.action.parser.PortfolioParser;
+import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationQuery;
@@ -168,7 +168,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         //load project table first
         JsonObject contentJsonObject = input.getJsonObject(ParamConfig.getProjectContentParam());
-        AnnotationParser.parseIn(loader, contentJsonObject);
+        ProjectParser.parseIn(loader, contentJsonObject);
 
         //load portfolio table last
         Tuple params = PortfolioVerticle.buildNewProject(loader);
@@ -327,7 +327,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                             RowIterator<Row> projectRowIterator = projectRowSet.iterator();
 
-                                            AnnotationParser.parseOut(projectPath, projectRowIterator, configContent);
+                                            ProjectParser.parseOut(projectPath, projectRowIterator, configContent);
                                         }
 
                                         //export to configuration file
