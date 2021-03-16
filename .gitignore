@@ -34,3 +34,6 @@ target/
 
 #log file
 classifai.log
+
+#distro folder
+classifai-distro
