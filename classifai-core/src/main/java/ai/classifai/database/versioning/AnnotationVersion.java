@@ -102,8 +102,6 @@ public class AnnotationVersion
 
     public String getDbFormat()
     {
-        System.out.println("getDbFormat: " + ActionOps.removeDoubleQuote(getJsonObject().encode()));
-
         return ActionOps.removeDoubleQuote(getJsonObject().encode());
     }
 }
