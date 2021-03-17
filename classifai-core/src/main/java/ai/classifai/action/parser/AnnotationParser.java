@@ -53,9 +53,7 @@ public class AnnotationParser
 
         for(String strAnnotation : annotationList)
         {
-            JsonObject singleAnnotation = new JsonObject();
-
-            parseAnnotationContent(strAnnotation, singleAnnotation);
+            JsonObject singleAnnotation = parseAnnotationContent(strAnnotation);
 
             allAnnotation.add(singleAnnotation);
         }
@@ -63,8 +61,10 @@ public class AnnotationParser
         return allAnnotation;
     }
 
-    private static void parseAnnotationContent(@NonNull String strAnnotation, @NonNull JsonObject singleAnnotation)
+    private static JsonObject parseAnnotationContent(@NonNull String strAnnotation)
     {
+        JsonObject singleAnnotation = new JsonObject();
+
         while(strAnnotation.length() > 0)
         {
             int keyEndIndex = strAnnotation.indexOf(":");
@@ -134,6 +134,8 @@ public class AnnotationParser
                 strAnnotation = strAnnotation.substring(valueEndIndex + 1);
             }
         }
+
+        return singleAnnotation;
     }
 
     /**
