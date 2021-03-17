@@ -20,6 +20,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Tuple;
@@ -84,8 +85,6 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
                     .projectVersion(project)
                     .build();
 
-
-
             ProjectHandler.loadProjectLoader(loader);
 
             PortfolioVerticle.createNewProject(loader.getProjectId());
@@ -121,9 +120,8 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
         return Tuple.of(input.getString(CloudParamConfig.getCloudIdParam()),         //cloud_id
                         projectId,                                                   //project_id
                         input.getString(CloudParamConfig.getAccessKeyParam()),       //access_key
-                        input.getString(CloudParamConfig.getSecretAccessKeyParam()),//secret_access_key
+                        input.getString(CloudParamConfig.getSecretAccessKeyParam()), //secret_access_key
                         input.getJsonArray(CloudParamConfig.getBucketListParam()));  //bucket_list
-
     }
 
     private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
@@ -146,7 +144,7 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
     }
 
     //obtain a JDBC pool connection,
-    //Performs a SQL query to create the portfolio table unless existed
+    //Performs a SQL query to create the s3 table unless existed
     @Override
     public void start(Promise<Void> promise)
     {
@@ -157,7 +155,7 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
         s3TablePool.getConnection(ar -> {
 
             if (ar.succeeded()) {
-                s3TablePool.query(PortfolioDbQuery.getCreatePortfolioTable())
+                s3TablePool.query(S3Query.getCreateS3CredentialTable())
                         .execute()
                         .onComplete(create -> {
                             if (create.succeeded()) {

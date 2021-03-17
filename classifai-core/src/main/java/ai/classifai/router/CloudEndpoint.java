@@ -1,9 +1,7 @@
 package ai.classifai.router;
 
-import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.database.s3.S3Query;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
@@ -19,8 +17,6 @@ import lombok.Setter;
 public class CloudEndpoint
 {
     @Setter private Vertx vertx = null;
-
-    Util util = new Util();
 
     /**
      * PUT http://localhost:{port}/v2/:annotation_type/s3/newproject/:project_name
@@ -61,7 +57,8 @@ public class CloudEndpoint
                     {
                         HTTPResponseHandler.configureOK(context);
 
-                    } else
+                    }
+                    else
                     {
                         HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName));
                     }

@@ -1,31 +1,57 @@
 {
-    "modal": {
-        "header": "分类图像标签工具",
-        "existing": {
-            "header": "来自现有项目",
-            "label": "项目名称 : ",
-            "option": "没有",
-            "button": "提交"
-        },
-        "create": {
-            "header": "建立新专案",
-            "label": "新项目名称 : ",
-            "inputPlaceholder": "您的新编号 ....",
-            "subLabel": "标签列表文件 (*.txt): ",
-            "button": "创造"
-        }
+    "pageHeader": {
+        "home": "主页",
+        "datasetManagement": "资料集管理",
+        "revision": "修订",
+        "addUser": "添加用户",
+        "profile": "用户资料"
     },
-    "loading": "由Skymind提供支持",
-    "saveFormat": {
-        "currImg": "当前图像",
-        "bulkSaving": "大量节省",
-        "pascalVoc": "帕斯卡VOC",
-        "textOcr": "文本",
-        "label": "标签"
+    "labellingInfo": {
+        "previous": "上一个",
+        "next": "下一个",
+        "undo": "撤销",
+        "redo": "重做"
     },
-    "sideNav": {
-        "imgList": "图片清单",
-        "labelList": "标签清单",
-        "boundBox": "边界框"
+    "leftSideBar": {
+        "pointer": "鼠标",
+        "rectangularBB": "边界框",
+        "polygon": "多边形",
+        "eraser": "橡皮",
+        "fitCenter": "调整到屏幕大小",
+        "save": "存档"
+    },
+    "rightSideBar": {
+        "folderOrFiles": "文件夹 / 文件",
+        "label": "标签",
+        "annotation": "标注",
+        "statistic": "数据"
+    },
+    "labellingProject": {
+        "project": "项目",
+        "label": "标签",
+        "enterLabel": "输入标签",
+        "annotation": "标注",
+        "delete": "删除",
+        "labelNotExist": "没有此标签，按下回车键以添加标签"
+    },
+    "searchLabel": {
+        "labelNotExist": "没有此标签",
+        "enterToAdd": "按回车键添加"
+    },
+    "labellingArea": {
+        "mainLabel": "主标签",
+        "label": "标签",
+        "regionInfo": "区域资讯",
+        "subLabel": "副标签",
+        "add": "添加",
+        "addedSubLabel": "添加副标签",
+        "mainRegionInfo": "主标签资讯",
+        "subRegionInfo": "副标签资讯"
+    },
+    "footer": {
+        "size": "容量",
+        "image": "格式",
+        "dimension": "尺寸",
+        "copyToClipboard": "复制"
     }
 }

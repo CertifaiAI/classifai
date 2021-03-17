@@ -1,0 +1,40 @@
+{
+    "createNewProject": "建立新项目",
+    "newProjectName": "新项目名称 : ",
+    "projectNameExist": "* 项目名称已被使用。请选择其他名称",
+    "projectNameRequired": "* 项目名称空缺",
+    "labelListFile": "标签列表文件 (*.txt): ",
+    "createButton": "创建",
+    "cancelButton": "取消",
+    "menuName": {
+        "newProject": "创建新项目",
+        "myProject": "我的项目",
+        "starred": "书签",
+        "recent": "最新",
+        "trash": "已删除"
+    },
+    "datasetHeader": {
+        "datasetManagement": "资料集管理"
+    },
+    "pageHeader": {
+        "home": "主页",
+        "datasetManagement": "资料集管理",
+        "revision": "修订",
+        "addUser": "添加用户",
+        "profile": "用户资料"
+    },
+    "datasetCard": {
+        "fetchingProject": "正在读取档案...",
+        "pleaseWait": "请稍等...缓冲处理中",
+        "uploading": "正在读取",
+        "new": "最新",
+        "available": "可开启",
+        "notAvailable": "不可开启",
+        "uploadFolder": "上载文件夹",
+        "uploadPhotos": "上载图像",
+        "created": "已创建:",
+        "totalPhoto": "图像总数:",
+        "noProject": "没有项目",
+        "createNew": "开始新的项目吧！"
+    }
+}

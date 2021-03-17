@@ -1,0 +1,40 @@
+{
+    "createNewProject": "Create New Project",
+    "newProjectName": "New Project Name:",
+    "projectNameExist": "* Project name already exist! Try other name",
+    "projectNameRequired": "* Project name is required",
+    "labelListFile": "Label list file (*.txt):",
+    "createButton": "Create",
+    "cancelButton": "Cancel",
+    "menuName": {
+        "newProject": "New Project",
+        "myProject": "My Project",
+        "starred": "Starred",
+        "recent": "Recent",
+        "trash": "Trash"
+    },
+    "datasetHeader": {
+        "datasetManagement": "Dataset Management"
+    },
+    "pageHeader": {
+        "home": "Home",
+        "datasetManagement": "Dataset Management",
+        "revision": "Revision",
+        "addUser": "Add user",
+        "profile": "Profile"
+    },
+    "datasetCard": {
+        "fetchingProject": "Fetching your project...",
+        "pleaseWait": "Please wait... while we prepare the dishes",
+        "uploading": "Uploading",
+        "new": "New",
+        "available": "Available",
+        "notAvailable": "Not Available",
+        "uploadFolder": "Upload Folder",
+        "uploadPhotos": "Upload Photo(s)",
+        "created": "Created:",
+        "totalPhoto": "Total Photo:",
+        "noProject": "Wait a minute... there's no project",
+        "createNew": "Gear up and start creating new project!"
+    }
+}
