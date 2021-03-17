@@ -47,88 +47,96 @@ public class AnnotationParser
     {
         if(annotation.length() < 3) return new JsonArray();
 
-        JsonObject thisAnnotation = new JsonObject();
+        JsonArray allAnnotation = new JsonArray();
 
         String[] annotationList = ActionOps.splitStringByJsonSplitter(annotation);
 
         for(String strAnnotation : annotationList)
         {
-            while(strAnnotation.length() > 0)
-            {
-                int keyEndIndex = strAnnotation.indexOf(":");
+            JsonObject singleAnnotation = parseAnnotationContent(strAnnotation);
 
-                String key = strAnnotation.substring(0, keyEndIndex);
-
-                int valueEndIndex = strAnnotation.indexOf(getAnnotationSplitter(key));
-
-                keyEndIndex += 1;//shift substring to one index after colon
-
-                if(key.equals(COLOR_PARAM))
-                {
-                    valueEndIndex += 1;
-
-                    String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
-
-                    thisAnnotation.put(key, value);
-                }
-                else if(key.equals(DISTANCE_TO_IMG_PARAM))
-                {
-                    valueEndIndex += 1;
-
-                    String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
-
-                    JsonObject valueBuffer = ActionOps.getKeyWithItem(value);
-
-                    JsonObject valueJsonObject = new JsonObject()
-                            .put(X_PARAM, Double.parseDouble((String) valueBuffer.getValue(X_PARAM)))
-                            .put(Y_PARAM, Double.parseDouble((String) valueBuffer.getValue(Y_PARAM)));
-
-                    thisAnnotation.put(key, valueJsonObject);
-                }
-                else if(key.equals(LABEL_PARAM))
-                {
-                    String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
-                    thisAnnotation.put(key, value);
-
-                }
-                else if(key.equals(ID_PARAM))
-                {
-                    String value = strAnnotation.substring(keyEndIndex);
-
-                    thisAnnotation.put(key, Long.parseLong(value));
-
-                }
-                else
-                {
-                    String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
-
-                    if(key.equals(LINE_WIDTH_PARAM))
-                    {
-                        thisAnnotation.put(key, Integer.parseInt(value));
-                    }
-                    else
-                    {
-                        thisAnnotation.put(key, Double.parseDouble(value));
-
-                    }
-                }
-
-                if(valueEndIndex == -1)
-                {
-                    break;
-                }
-                else
-                {
-                    strAnnotation = strAnnotation.substring(valueEndIndex + 1);
-                }
-
-            }
-
+            allAnnotation.add(singleAnnotation);
         }
 
-        return new JsonArray().add(thisAnnotation);
+        return allAnnotation;
     }
 
+    private static JsonObject parseAnnotationContent(@NonNull String strAnnotation)
+    {
+        JsonObject singleAnnotation = new JsonObject();
+
+        while(strAnnotation.length() > 0)
+        {
+            int keyEndIndex = strAnnotation.indexOf(":");
+
+            String key = strAnnotation.substring(0, keyEndIndex);
+
+            int valueEndIndex = strAnnotation.indexOf(getAnnotationSplitter(key));
+
+            keyEndIndex += 1;//shift substring to one index after colon
+
+            if(key.equals(COLOR_PARAM))
+            {
+                valueEndIndex += 1;
+
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+
+                singleAnnotation.put(key, value);
+            }
+            else if(key.equals(DISTANCE_TO_IMG_PARAM))
+            {
+                valueEndIndex += 1;
+
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+
+                JsonObject valueBuffer = ActionOps.getKeyWithItem(value);
+
+                JsonObject valueJsonObject = new JsonObject()
+                        .put(X_PARAM, Double.parseDouble((String) valueBuffer.getValue(X_PARAM)))
+                        .put(Y_PARAM, Double.parseDouble((String) valueBuffer.getValue(Y_PARAM)));
+
+                singleAnnotation.put(key, valueJsonObject);
+            }
+            else if(key.equals(LABEL_PARAM))
+            {
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+                singleAnnotation.put(key, value);
+
+            }
+            else if(key.equals(ID_PARAM))
+            {
+                String value = strAnnotation.substring(keyEndIndex);
+
+                singleAnnotation.put(key, Long.parseLong(value));
+
+            }
+            else
+            {
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+
+                if(key.equals(LINE_WIDTH_PARAM))
+                {
+                    singleAnnotation.put(key, Integer.parseInt(value));
+                }
+                else
+                {
+                    singleAnnotation.put(key, Double.parseDouble(value));
+
+                }
+            }
+
+            if(valueEndIndex == -1)
+            {
+                break;
+            }
+            else
+            {
+                strAnnotation = strAnnotation.substring(valueEndIndex + 1);
+            }
+        }
+
+        return singleAnnotation;
+    }
 
     /**
      * Customize function to split annotation content
