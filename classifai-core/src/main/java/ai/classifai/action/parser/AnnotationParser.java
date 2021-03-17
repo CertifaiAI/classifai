@@ -22,6 +22,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationParser
 {
@@ -47,12 +50,13 @@ public class AnnotationParser
     {
         if(annotation.length() < 3) return new JsonArray();
 
-        JsonObject thisAnnotation = new JsonObject();
+        JsonArray allAnnotation = new JsonArray();
 
         String[] annotationList = ActionOps.splitStringByJsonSplitter(annotation);
 
         for(String strAnnotation : annotationList)
         {
+            JsonObject thisAnnotation = new JsonObject();
             while(strAnnotation.length() > 0)
             {
                 int keyEndIndex = strAnnotation.indexOf(":");
@@ -121,12 +125,10 @@ public class AnnotationParser
                 {
                     strAnnotation = strAnnotation.substring(valueEndIndex + 1);
                 }
-
             }
-
+            allAnnotation.add(thisAnnotation);
         }
-
-        return new JsonArray().add(thisAnnotation);
+        return allAnnotation;
     }
 
 

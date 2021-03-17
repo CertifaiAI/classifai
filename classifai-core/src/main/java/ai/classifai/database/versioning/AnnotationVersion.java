@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Unit for annotation versionings
@@ -31,6 +32,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Slf4j
 public class AnnotationVersion
 {
     JsonArray annotation = new JsonArray();
@@ -55,7 +57,9 @@ public class AnnotationVersion
         //annotation
         String strAnnotation = trimmedString.substring(annotationStart,  annotationEnd);
 
+        log.debug("Start parsing annotation");
         annotation = AnnotationParser.buildAnnotation(strAnnotation);
+        log.debug("Done parsing annotation");
 
         Integer imgXStart = annotationEnd + ParamConfig.getImgXParam().length() + 2;
         Integer imgXEnd = trimmedString.indexOf(ParamConfig.getImgYParam()) - 1;
