@@ -640,6 +640,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 loader.getProjectPath(),                    //project_path
                 loader.getIsProjectNew(),                   //is_new
                 loader.getIsProjectStarred(),               //is_starred
+                loader.getIsCloud(),                        //is_cloud
                 project.getCurrentVersion().getDbFormat(),  //current_version
                 project.getDbFormat(),                      //version_list
                 project.getUuidVersionDbFormat(),           //uuid_version_list

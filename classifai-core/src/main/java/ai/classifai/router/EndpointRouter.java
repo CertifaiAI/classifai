@@ -15,7 +15,6 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.CloudEndpoint;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
@@ -76,6 +75,8 @@ public class EndpointRouter extends AbstractVerticle
         v2.setVertx(vertx);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
+
+        cloud.setVertx(vertx);
     }
 
     @Override
@@ -136,8 +137,7 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Cloud*******************************
 
-        router.put("/v2/newcloudproject/s3").handler(cloud::createCloudProject);
-
+        router.put("/v2/:annotation_type/s3/newproject/:project_name").handler(cloud::createS3CloudProject);
 
 
 

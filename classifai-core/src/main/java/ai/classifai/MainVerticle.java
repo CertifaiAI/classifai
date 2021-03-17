@@ -19,6 +19,7 @@ import ai.classifai.database.DbOps;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.s3.S3Verticle;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
@@ -40,6 +41,7 @@ public class MainVerticle extends AbstractVerticle
     private static PortfolioVerticle portfolioVerticle;
     private static BoundingBoxVerticle boundingBoxVerticle;
     private static SegVerticle segVerticle;
+    private static S3Verticle s3Verticle;
     private static EndpointRouter serverVerticle;
 
     static
@@ -47,6 +49,7 @@ public class MainVerticle extends AbstractVerticle
         portfolioVerticle = new PortfolioVerticle();
         boundingBoxVerticle = new BoundingBoxVerticle();
         segVerticle = new SegVerticle();
+        s3Verticle = new S3Verticle();
         serverVerticle = new EndpointRouter();
     }
 
@@ -79,6 +82,12 @@ public class MainVerticle extends AbstractVerticle
             Promise<String> serverDeployment = Promise.promise();
             vertx.deployVerticle(serverVerticle, serverDeployment);
             return serverDeployment.future();
+
+        }).compose(id_ -> {
+
+            Promise<String> s3Deployment = Promise.promise();
+            vertx.deployVerticle(s3Verticle, s3Deployment);
+            return s3Deployment.future();
 
         }).onComplete(ar -> {
 
@@ -121,6 +130,7 @@ public class MainVerticle extends AbstractVerticle
             boundingBoxVerticle.stop(Promise.promise());
             segVerticle.stop(Promise.promise());
             serverVerticle.stop(Promise.promise());
+            s3Verticle.stop(Promise.promise());
         }
         catch (Exception e)
         {

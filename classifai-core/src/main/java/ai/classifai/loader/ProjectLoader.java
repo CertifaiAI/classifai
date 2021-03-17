@@ -64,6 +64,7 @@ public class ProjectLoader
     @Builder.Default private Map<String, Annotation> uuidAnnotationDict = new HashMap<>();
 
     @Builder.Default private Boolean isLoadedFrontEndToggle = Boolean.FALSE;
+    @Builder.Default private Boolean isCloud = Boolean.FALSE;
 
     //used when checking for progress in
     //(1) validity of database data point
