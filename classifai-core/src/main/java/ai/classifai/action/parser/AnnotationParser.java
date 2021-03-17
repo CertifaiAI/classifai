@@ -56,7 +56,7 @@ public class AnnotationParser
 
         for(String strAnnotation : annotationList)
         {
-            JsonObject thisAnnotation = new JsonObject();
+            JsonObject singleAnnotation = new JsonObject();
             while(strAnnotation.length() > 0)
             {
                 int keyEndIndex = strAnnotation.indexOf(":");
@@ -73,7 +73,7 @@ public class AnnotationParser
 
                     String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
 
-                    thisAnnotation.put(key, value);
+                    singleAnnotation.put(key, value);
                 }
                 else if(key.equals(DISTANCE_TO_IMG_PARAM))
                 {
@@ -87,19 +87,19 @@ public class AnnotationParser
                             .put(X_PARAM, Double.parseDouble((String) valueBuffer.getValue(X_PARAM)))
                             .put(Y_PARAM, Double.parseDouble((String) valueBuffer.getValue(Y_PARAM)));
 
-                    thisAnnotation.put(key, valueJsonObject);
+                    singleAnnotation.put(key, valueJsonObject);
                 }
                 else if(key.equals(LABEL_PARAM))
                 {
                     String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
-                    thisAnnotation.put(key, value);
+                    singleAnnotation.put(key, value);
 
                 }
                 else if(key.equals(ID_PARAM))
                 {
                     String value = strAnnotation.substring(keyEndIndex);
 
-                    thisAnnotation.put(key, Long.parseLong(value));
+                    singleAnnotation.put(key, Long.parseLong(value));
 
                 }
                 else
@@ -108,11 +108,11 @@ public class AnnotationParser
 
                     if(key.equals(LINE_WIDTH_PARAM))
                     {
-                        thisAnnotation.put(key, Integer.parseInt(value));
+                        singleAnnotation.put(key, Integer.parseInt(value));
                     }
                     else
                     {
-                        thisAnnotation.put(key, Double.parseDouble(value));
+                        singleAnnotation.put(key, Double.parseDouble(value));
 
                     }
                 }
@@ -126,7 +126,7 @@ public class AnnotationParser
                     strAnnotation = strAnnotation.substring(valueEndIndex + 1);
                 }
             }
-            allAnnotation.add(thisAnnotation);
+            allAnnotation.add(singleAnnotation);
         }
         return allAnnotation;
     }
