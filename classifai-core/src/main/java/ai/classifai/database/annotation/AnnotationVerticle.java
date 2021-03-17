@@ -15,8 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.action.ActionOps;
-import ai.classifai.action.parser.AnnotationParser;
+import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
@@ -169,7 +168,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
                 .uuid(uuid)
-                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
+                .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
 
         loader.getUuidAnnotationDict().put(uuid, annotation);
@@ -201,7 +200,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
                 .uuid(uuid)
-                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
+                .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
 
         loader.getUuidAnnotationDict().put(uuid, annotation);
@@ -233,7 +232,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .uuid(uuid)
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
-                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
+                .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
 
         loader.getUuidAnnotationDict().put(uuid, annotation);
@@ -286,7 +285,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                                 if(ImageHandler.isImageReadable(new File(fullPath)))
                                 {
-                                    Map<String, AnnotationVersion> annotationDict = AnnotationParser.buildAnnotationDict(row.getString(2));
+                                    Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(row.getString(2));
 
                                     Annotation annotation = Annotation.builder()
                                             .uuid(row.getString(0))         //uuid
@@ -324,7 +323,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .uuid(uuid)
                 .projectId(loader.getProjectId())
                 .imgPath(dataSubPath)
-                .annotationDict(AnnotationParser.buildAnnotationDict(loader))
+                .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
 
         //put annotation in ProjectLoader
@@ -515,7 +514,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
 
-            version.setAnnotation(ActionOps.removeDoubleQuote(requestBody.getJsonArray(annotationKey).encode()));
+            version.setAnnotation(requestBody.getJsonArray(annotationKey));
             version.setImgX(requestBody.getInteger(ParamConfig.getImgXParam()));
             version.setImgY(requestBody.getInteger(ParamConfig.getImgYParam()));
             version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));
@@ -570,7 +569,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
 
         response.put(ParamConfig.getImgPathParam(), dataFullPath);
-        response.put(annotationKey, version.getAnnotationJsonArray());
+        response.put(annotationKey, version.getAnnotation());
         response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
         response.put(ParamConfig.getImgXParam(), version.getImgX());
         response.put(ParamConfig.getImgYParam(), version.getImgY());

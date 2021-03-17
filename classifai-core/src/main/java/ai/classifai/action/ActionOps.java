@@ -88,10 +88,11 @@ public class ActionOps
         return lookUpTable;
     }
 
-    public static String[] getArrayOfJsonObject(@NonNull String input)
+    public static String[] splitStringByJsonSplitter(@NonNull String input)
     {
         return removeOuterBrackets(input).split(JSON_OBJECT_SPLITTER);
     }
+
 
     public static String encode(@NonNull Object object)
     {

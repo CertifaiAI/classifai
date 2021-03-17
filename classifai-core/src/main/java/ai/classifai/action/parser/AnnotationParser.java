@@ -16,148 +16,153 @@
 package ai.classifai.action.parser;
 
 import ai.classifai.action.ActionOps;
-import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
-import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.Hash;
-import ai.classifai.util.ParamConfig;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-/***
- * Parsing Project Table in and out classifai with configuration file
- *
- * @author codenamewei
- */
-@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationParser
 {
-    public static void parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    private static final String COLOR_PARAM = "color";
+
+    private static final String DISTANCE_TO_IMG_PARAM = "distancetoImg";
+
+    private static final String X_PARAM = "x";
+    private static final String Y_PARAM = "y";
+
+    private static final String X1_PARAM = "x1";
+    private static final String Y1_PARAM = "y1";
+
+    private static final String X2_PARAM = "x2";
+    private static final String Y2_PARAM = "y2";
+
+    private static final String LABEL_PARAM = "label";
+    private static final String ID_PARAM = "id";
+
+    private static final String LINE_WIDTH_PARAM = "lineWidth";
+
+    public static JsonArray buildAnnotation(@NonNull String annotation)
     {
-        JsonObject content = new JsonObject();
+        if(annotation.length() < 3) return new JsonArray();
 
-        while(rowIterator.hasNext())
+        JsonArray allAnnotation = new JsonArray();
+
+        String[] annotationList = ActionOps.splitStringByJsonSplitter(annotation);
+
+        for(String strAnnotation : annotationList)
         {
-            Row row = rowIterator.next();
+            JsonObject singleAnnotation = parseAnnotationContent(strAnnotation);
 
-            String fullPath = projectPath + row.getString(1);
-
-            String hash = Hash.getHash256String(new File(fullPath));
-
-            JsonObject annotationJsonObject = new JsonObject()
-                    .put(ParamConfig.getCheckSumParam(), hash)
-                    .put(ParamConfig.getImgPathParam(), row.getString(1))       //img_path
-                    .put(ParamConfig.getVersionListParam(), row.getString(2))   //version_list
-                    .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
-                    .put(ParamConfig.getFileSizeParam(), row.getInteger(4))     //file_size
-                    .put(ParamConfig.getImgOriWParam(), row.getInteger(5))      //img_ori_w
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(6));     //img_ori_h
-
-
-            //uuid, version, content
-            content.put(row.getString(0), annotationJsonObject);
+            allAnnotation.add(singleAnnotation);
         }
 
-        jsonObject.put(ParamConfig.getProjectContentParam(), content);
-
+        return allAnnotation;
     }
 
-    public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)
+    private static JsonObject parseAnnotationContent(@NonNull String strAnnotation)
     {
-        String projectId = loader.getProjectId();
+        JsonObject singleAnnotation = new JsonObject();
 
-        Iterator<Map.Entry<String, Object>> iterator = contentJsonBody.iterator();
-
-        while(iterator.hasNext())
+        while(strAnnotation.length() > 0)
         {
-            Map.Entry<String, Object> item = iterator.next();
-            String uuid = item.getKey();
+            int keyEndIndex = strAnnotation.indexOf(":");
 
-            JsonObject jsonObject = (JsonObject) item.getValue();
+            String key = strAnnotation.substring(0, keyEndIndex);
 
-            String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
+            int valueEndIndex = strAnnotation.indexOf(getAnnotationSplitter(key));
 
-            String fullPath = loader.getProjectPath() + subPath;
-            String currentHash = Hash.getHash256String(new File(fullPath));
+            keyEndIndex += 1;//shift substring to one index after colon
 
-            String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
-
-            if(fileHash.equals(currentHash))
+            if(key.equals(COLOR_PARAM))
             {
-                String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
+                valueEndIndex += 1;
 
-                Annotation annotation = Annotation.builder()
-                        .uuid(uuid)
-                        .projectId(projectId)
-                        .imgPath(subPath)
-                        .annotationDict(buildAnnotationDict(versionList))
-                        .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
-                        .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
-                        .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
-                        .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
-                        .build();
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
 
-                loader.getUuidAnnotationDict().put(uuid, annotation);
+                singleAnnotation.put(key, value);
+            }
+            else if(key.equals(DISTANCE_TO_IMG_PARAM))
+            {
+                valueEndIndex += 1;
 
-                AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+
+                JsonObject valueBuffer = ActionOps.getKeyWithItem(value);
+
+                JsonObject valueJsonObject = new JsonObject()
+                        .put(X_PARAM, Double.parseDouble((String) valueBuffer.getValue(X_PARAM)))
+                        .put(Y_PARAM, Double.parseDouble((String) valueBuffer.getValue(Y_PARAM)));
+
+                singleAnnotation.put(key, valueJsonObject);
+            }
+            else if(key.equals(LABEL_PARAM))
+            {
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+                singleAnnotation.put(key, value);
+
+            }
+            else if(key.equals(ID_PARAM))
+            {
+                String value = strAnnotation.substring(keyEndIndex);
+
+                singleAnnotation.put(key, Long.parseLong(value));
+
             }
             else
             {
-                log.debug("Hash not same for " + fullPath);
+                String value = strAnnotation.substring(keyEndIndex, valueEndIndex);
+
+                if(key.equals(LINE_WIDTH_PARAM))
+                {
+                    singleAnnotation.put(key, Integer.parseInt(value));
+                }
+                else
+                {
+                    singleAnnotation.put(key, Double.parseDouble(value));
+
+                }
+            }
+
+            if(valueEndIndex == -1)
+            {
+                break;
+            }
+            else
+            {
+                strAnnotation = strAnnotation.substring(valueEndIndex + 1);
             }
         }
+
+        return singleAnnotation;
     }
 
-    public static Map<String, AnnotationVersion> buildAnnotationDict(String strVersionList)
+    /**
+     * Customize function to split annotation content
+     * @param key
+     * @return
+     */
+    private static String getAnnotationSplitter(@NonNull String key)
     {
-        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
-
-        String[] versions = ActionOps.getArrayOfJsonObject(strVersionList);
-
-        for(String thisVersion : versions)
+        if(key.equals(X1_PARAM) || key.equals(X2_PARAM) || key.equals(Y1_PARAM) || key.equals(Y2_PARAM)
+            || key.equals(LINE_WIDTH_PARAM) || key.equals(LABEL_PARAM))
         {
-            String thisVersionTrimmed = ActionOps.removeOuterBrackets(thisVersion);
-
-            Integer separator = thisVersionTrimmed.indexOf(":");
-
-            String version = thisVersionTrimmed.substring(0, separator);
-
-            String strAnnotationVersion = thisVersionTrimmed.substring(separator + 1);
-
-            AnnotationVersion annotationVersion = new AnnotationVersion(strAnnotationVersion);
-
-            annotationDict.put(version, annotationVersion);
+            return ",";
+        }
+        else if(key.equals(ID_PARAM))
+        {
+            return "END OF LINE";
+        }
+        else if(key.equals(COLOR_PARAM))
+        {
+            return "),";
+        }
+        else if(key.equals(DISTANCE_TO_IMG_PARAM))
+        {
+            return "},";
         }
 
-        return annotationDict;
+        return "";
     }
-
-    //build empty annotationDict
-    public static Map<String, AnnotationVersion> buildAnnotationDict(@NonNull ProjectLoader loader)
-    {
-        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
-
-        Set<String> versionUuidList = loader.getProjectVersion().getVersionUuidDict().keySet();
-
-        for(String versionUuid : versionUuidList)
-        {
-            annotationDict.put(versionUuid, new AnnotationVersion());
-        }
-
-        return annotationDict;
-    }
-
 }

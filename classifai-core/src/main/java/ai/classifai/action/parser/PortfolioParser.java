@@ -102,7 +102,7 @@ public class PortfolioParser
     {
         ProjectVersion project = new ProjectVersion(false);
 
-        String[] strVersionArrays = ActionOps.getArrayOfJsonObject(input);
+        String[] strVersionArrays = ActionOps.splitStringByJsonSplitter(input);
 
         for(String strVersion : strVersionArrays)
         {

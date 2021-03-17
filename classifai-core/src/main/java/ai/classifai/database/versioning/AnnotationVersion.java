@@ -16,6 +16,7 @@
 package ai.classifai.database.versioning;
 
 import ai.classifai.action.ActionOps;
+import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -23,6 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Unit for annotation versionings
@@ -30,9 +32,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Slf4j
 public class AnnotationVersion
 {
-    String annotation = ParamConfig.getEmptyArray();
+    JsonArray annotation = new JsonArray();
 
     Integer imgX = 0;
     Integer imgY = 0;
@@ -52,7 +55,11 @@ public class AnnotationVersion
         Integer annotationEnd = trimmedString.indexOf(ParamConfig.getImgXParam()) - 1;
 
         //annotation
-        annotation = trimmedString.substring(annotationStart,  annotationEnd);
+        String strAnnotation = trimmedString.substring(annotationStart,  annotationEnd);
+
+        log.debug("Start parsing annotation");
+        annotation = AnnotationParser.buildAnnotation(strAnnotation);
+        log.debug("Done parsing annotation");
 
         Integer imgXStart = annotationEnd + ParamConfig.getImgXParam().length() + 2;
         Integer imgXEnd = trimmedString.indexOf(ParamConfig.getImgYParam()) - 1;
@@ -73,21 +80,15 @@ public class AnnotationVersion
         imgW = getValueFromString(trimmedString, imgWStart, imgWEnd);
 
         Integer imgHStart = imgWEnd + ParamConfig.getImgHParam().length() + 2;
-        Integer imgHEnd = trimmedString.length() - 1;
 
         //imgH
-        imgH = (imgHStart == imgHEnd) ? getValueFromString(trimmedString, imgHStart, trimmedString.length()) : getValueFromString(trimmedString, imgHStart, imgHEnd);
+        imgH = getValueFromString(trimmedString, imgHStart, trimmedString.length());
 
     }
 
     private Integer getValueFromString(@NonNull String input, @NonNull Integer start, @NonNull Integer end)
     {
         return Integer.parseInt(input.substring(start, end));
-    }
-
-    public JsonArray getAnnotationJsonArray()
-    {
-        return new JsonArray(annotation);
     }
 
     private JsonObject getJsonObject()
