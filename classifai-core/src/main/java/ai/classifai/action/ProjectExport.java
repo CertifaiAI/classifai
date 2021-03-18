@@ -41,8 +41,8 @@ public class ProjectExport
     public JsonObject getConfigSkeletonStructure()
     {
         JsonObject jsonObject = new JsonObject()
-                .put(ActionConfig.getToolParam(), "classifai")          //FIXME: dont hardcode
-                .put(ActionConfig.getToolVersionParam(), "2.0.0-alpha") //FIXME: dont hardcode
+                .put(ActionConfig.getToolParam(), "classifai")
+                .put(ActionConfig.getToolVersionParam(), getClass().getPackage().getImplementationVersion())
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
 
         return jsonObject;
