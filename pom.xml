@@ -71,7 +71,6 @@
 
     <properties>
         <vertx.version>4.0.2</vertx.version>
-        <junit.version>4.13.1</junit.version>
         <lombok.version>1.18.16</lombok.version>
         <slf4j.version>1.7.30</slf4j.version>
         <hsqldb.version>2.5.1</hsqldb.version>
@@ -82,6 +81,8 @@
         <flatlaf.version>0.46</flatlaf.version>
         <commons.io.version>2.8.0</commons.io.version>
         <pdfbox.version>2.0.22</pdfbox.version>
+        <junit5.version>5.7.1</junit5.version>
+        <junit.version>4.13.1</junit.version>
         <logback.version>1.2.3</logback.version>
         <org.json.version>20201115</org.json.version>
         <google.json.version>1.1.1</google.json.version>
@@ -90,6 +91,7 @@
         <commons.collections4.version>4.1</commons.collections4.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <apache.commons.version>3.8.1</apache.commons.version>
         <metadata.extractor.version>2.15.0</metadata.extractor.version>
         <maven.compiler.source>14</maven.compiler.source>
@@ -150,6 +152,12 @@
                 <groupId>com.formdev</groupId>
                 <artifactId>flatlaf</artifactId>
                 <version>${flatlaf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit5.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -290,6 +298,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>${maven-shade-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
