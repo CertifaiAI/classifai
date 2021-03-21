@@ -137,8 +137,7 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************Cloud*******************************
 
-        router.put("/v2/:annotation_type/s3/newproject/:project_name").handler(cloud::createS3CloudProject);
-
+        router.put("/v2/:annotation_type/wasabi/newproject/:project_name").handler(cloud::createWasabiCloudProject);
 
 
         vertx.createHttpServer()

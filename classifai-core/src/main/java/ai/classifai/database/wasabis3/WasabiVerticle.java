@@ -1,26 +1,24 @@
-package ai.classifai.database.s3;
+package ai.classifai.database.wasabis3;
 
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
-import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.PasswordHash;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Tuple;
@@ -29,15 +27,14 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * S3 Ops
+ * Wasabi S3 Verticle
  *
  * @author codenamewei
  */
 @Slf4j
-public class S3Verticle extends AbstractVerticle implements VerticleServiceable
+public class WasabiVerticle extends AbstractVerticle implements VerticleServiceable
 {
-    @Setter
-    private static JDBCPool s3TablePool;
+    @Setter private static JDBCPool wasabiTablePool;
 
     @Override
     public void onMessage(Message<JsonObject> message)
@@ -54,13 +51,13 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
 
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(S3Query.getCreateS3Project()))
+        if (action.equals(WasabiQuery.getWriteCredential()))
         {
-            this.createS3Project(message);
+            this.writeWasabiCredential(message);
         }
     }
 
-    private static void createS3Project(Message<JsonObject> message)
+    private static void writeWasabiCredential(Message<JsonObject> message)
     {
         JsonObject request = message.body();
 
@@ -69,7 +66,7 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
 
         if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
-            log.info("Create s3 project with name: " + projectName);
+            log.info("Create Wasabi S3 project with name: " + projectName);
 
             ProjectVersion project = new ProjectVersion();
 
@@ -87,22 +84,23 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
 
             ProjectHandler.loadProjectLoader(loader);
 
+            //potential threat on not waiting for the reply before proceed
             PortfolioVerticle.createNewProject(loader.getProjectId());
 
-            Tuple s3Tuple = buildS3Tuple(request, loader.getProjectId());
+            Tuple wasabiTuple = buildWasabiTuple(request, loader.getProjectId());
 
-            s3TablePool.preparedQuery(S3Query.getCreateS3Project())
-                    .execute(s3Tuple)
+            wasabiTablePool.preparedQuery(WasabiQuery.getWriteCredential())
+                    .execute(wasabiTuple)
                     .onComplete(fetch -> {
                         if(fetch.succeeded())
                         {
-                            log.info("Save credential in s3 success");
+                            log.info("Save credential in wasabi table success");
 
                             message.replyAndRequest(ReplyHandler.getOkReply());
                         }
                         else
                         {
-                            String errorMessage = "Create s3 credential in table failed";
+                            String errorMessage = "Create credential in wasabi table failed";
                             log.debug(errorMessage);
                             message.replyAndRequest(ReplyHandler.reportUserDefinedError(errorMessage));
                         }
@@ -115,19 +113,28 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
         }
     }
 
-    private static Tuple buildS3Tuple(@NonNull JsonObject input, @NonNull String projectId)
+    private static Tuple buildWasabiTuple(@NonNull JsonObject input, @NonNull String projectId)
     {
+        PasswordHash passwordHash = new PasswordHash();
+
+        String accessKey = input.getString(CloudParamConfig.getAccessKeyParam());
+        String hashedAccessKey = passwordHash.encrypt(accessKey);
+
+        String secretAccessKey = input.getString(CloudParamConfig.getSecretAccessKeyParam());
+        String hashedSecretAccessKey = passwordHash.encrypt(secretAccessKey);
+
         return Tuple.of(input.getString(CloudParamConfig.getCloudIdParam()),         //cloud_id
                         projectId,                                                   //project_id
-                        input.getString(CloudParamConfig.getAccessKeyParam()),       //access_key
-                        input.getString(CloudParamConfig.getSecretAccessKeyParam()), //secret_access_key
-                        input.getJsonArray(CloudParamConfig.getBucketListParam()));  //bucket_list
+                        hashedAccessKey,                                             //access_key
+                        hashedSecretAccessKey,                                       //secret_access_key
+                        input.getString(CloudParamConfig.getBucketParam()));         //bucket
+
     }
 
     private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {
         return JDBCPool.pool(vertx, new JsonObject()
-                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getS3Key()))
+                .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getWasabiKey()))
                 .put("driver_class", db.getDriver())
                 .put("user", db.getUser())
                 .put("password", db.getPassword())
@@ -138,42 +145,45 @@ public class S3Verticle extends AbstractVerticle implements VerticleServiceable
     @Override
     public void stop(Promise<Void> promise)
     {
-        s3TablePool.close();
+        wasabiTablePool.close();
 
-        log.info("Portfolio Verticle stopping...");
+        log.info("Wasabi Verticle stopping...");
     }
 
     //obtain a JDBC pool connection,
-    //Performs a SQL query to create the s3 table unless existed
+    //Performs a SQL query to create the Wasabi table unless existed
     @Override
     public void start(Promise<Void> promise)
     {
         H2 h2 = DbConfig.getH2();
 
-        s3TablePool = createJDBCPool(vertx, h2);
+        wasabiTablePool = createJDBCPool(vertx, h2);
 
-        s3TablePool.getConnection(ar -> {
+        wasabiTablePool.getConnection(ar -> {
 
             if (ar.succeeded()) {
-                s3TablePool.query(S3Query.getCreateS3CredentialTable())
+                wasabiTablePool.query(WasabiQuery.getCreateTable())
                         .execute()
                         .onComplete(create -> {
-                            if (create.succeeded()) {
+                            if (create.succeeded())
+                            {
+                                log.debug("Create Wasabi table success");
+
                                 //the consumer methods registers an event bus destination handler
-                                vertx.eventBus().consumer(S3Query.getQueue(), this::onMessage);
+                                vertx.eventBus().consumer(WasabiQuery.getQueue(), this::onMessage);
 
                                 promise.complete();
                             }
                             else
                             {
-                                log.error("S3 table preparation error", create.cause());
+                                log.error("Wasabi table preparation error", create.cause());
                                 promise.fail(create.cause());
                             }
                         });
             }
             else
             {
-                log.error("Could not open a s3 table connection", ar.cause());
+                log.error("Could not open a Wasabi table connection", ar.cause());
                 promise.fail(ar.cause());
             }
         });

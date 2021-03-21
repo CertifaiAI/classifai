@@ -1,6 +1,6 @@
 package ai.classifai.router;
 
-import ai.classifai.database.s3.S3Query;
+import ai.classifai.database.wasabis3.WasabiQuery;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -19,7 +19,7 @@ public class CloudEndpoint
     @Setter private Vertx vertx = null;
 
     /**
-     * PUT http://localhost:{port}/v2/:annotation_type/s3/newproject/:project_name
+     * PUT http://localhost:{port}/v2/:annotation_type/wasabi/newproject/:project_name
      *
      * response body
      * {
@@ -31,7 +31,7 @@ public class CloudEndpoint
      *
      * @param context
      */
-    public void createS3CloudProject(RoutingContext context)
+    public void createWasabiCloudProject(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
@@ -47,9 +47,9 @@ public class CloudEndpoint
                         .put(ParamConfig.getProjectNameParam(), projectName)
                         .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
-                DeliveryOptions createS3Ops = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), S3Query.getCreateS3Project());
+                DeliveryOptions createS3Ops = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), WasabiQuery.getWriteCredential());
 
-                vertx.eventBus().request(S3Query.getQueue(), requestJsonObject, createS3Ops, fetch ->
+                vertx.eventBus().request(WasabiQuery.getQueue(), requestJsonObject, createS3Ops, fetch ->
                 {
                     JsonObject response = (JsonObject) fetch.result().body();
 

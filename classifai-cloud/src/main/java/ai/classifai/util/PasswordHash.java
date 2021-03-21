@@ -1,6 +1,5 @@
 package ai.classifai.util;
 
-
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Cipher;
@@ -14,13 +13,19 @@ import java.security.AlgorithmParameters;
 import javax.crypto.spec.IvParameterSpec;
 import java.util.Base64;
 
+/**
+ * Confidential content hashing with PBKDF Algorithm
+ *
+ * @author codenamewei
+ */
 @Slf4j
 public class PasswordHash
 {
     private final String PASS_PHASE = "ABCDEFGHIJKL";
     private final String HASH_ALGORITHM = "PBKDF2WithHmacSHA1";
 
-    private final byte[] SALT = "12345678".getBytes();
+    private final String SALT_SEED_NUMBER = "12345678";
+    private final byte[] SALT = SALT_SEED_NUMBER.getBytes();
 
     private final int ITERATION_COUNT = 65536;
     private int KEY_STRENGTH = 256;
