@@ -3,14 +3,14 @@ package ai.classifai.util;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Cipher;
-import java.nio.charset.StandardCharsets;
-import java.security.spec.KeySpec;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKeyFactory;
-import java.security.AlgorithmParameters;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.AlgorithmParameters;
+import java.security.spec.KeySpec;
 import java.util.Base64;
 
 /**
