@@ -18,6 +18,7 @@ package ai.classifai.loader;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.database.wasabis3.WasabiProject;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.project.ProjectInfra;
 import lombok.Builder;
@@ -55,6 +56,8 @@ public class ProjectLoader
     private LoaderStatus loaderStatus;
 
     private ProjectVersion projectVersion;
+
+    @Builder.Default private WasabiProject wasabiProject = null;
 
     @Builder.Default private List<String> labelList = new ArrayList<>();
 
@@ -282,6 +285,11 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
+    }
+
+    public boolean isCloud()
+    {
+        return wasabiProject != null;
     }
 
 }

@@ -222,16 +222,14 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public static void saveDataPoint(@NonNull ProjectLoader loader, @NonNull String dataFullPath, @NonNull Integer currentLength)
+    public static void saveDataPoint(@NonNull ProjectLoader loader, @NonNull String dataPath, @NonNull Integer currentLength)
     {
-        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath);
-
         String uuid = UuidGenerator.generateUuid();
 
         Annotation annotation = Annotation.builder()
                 .uuid(uuid)
                 .projectId(loader.getProjectId())
-                .imgPath(dataSubPath)
+                .imgPath(dataPath)
                 .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
 
@@ -247,7 +245,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     }
                     else
                     {
-                        log.error("Push data point with path " + dataFullPath + " failed: " + fetch.cause().getMessage());
+                        log.error("Push data point with path " + dataPath + " failed: " + fetch.cause().getMessage());
                     }
 
                     loader.updateLoadingProgress(currentLength);
@@ -370,7 +368,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     }
                 });
     }
-
 
     public static void createUuidIfNotExist(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentProcessedLength)
     {

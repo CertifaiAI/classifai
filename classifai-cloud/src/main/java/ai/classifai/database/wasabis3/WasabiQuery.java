@@ -1,12 +1,15 @@
 package ai.classifai.database.wasabis3;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * Table to store Wasabi S3 credentials
  *
  * @author codenamewei
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class WasabiQuery
 {
     @Getter private static final String queue = "wasabi.queue";

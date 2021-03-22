@@ -277,9 +277,9 @@ public class ImageHandler {
         return true;
     }
 
-    public static List<File> checkFile(@NonNull File file)
+    public static List<Object> checkFile(@NonNull File file)
     {
-        List<File> verifiedFilesList = new ArrayList<>();
+        List<Object> verifiedFilesList = new ArrayList<>();
 
         String currentFileFullPath = file.getAbsolutePath();
 
@@ -295,7 +295,7 @@ public class ImageHandler {
     }
 
     @Deprecated
-    public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesFullPath)
+    public static void saveToDatabase(@NonNull String projectID, @NonNull List<Object> filesFullPath)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -304,31 +304,46 @@ public class ImageHandler {
 
         for (int i = 0; i < filesFullPath.size(); ++i)
         {
-            AnnotationVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
+            AnnotationVerticle.writeUuidToDb(loader, (File) filesFullPath.get(i), i + 1);
         }
     }
 
-    public static void saveToProjectTable(@NonNull String projectID, @NonNull List<File> filesFullPath)
+    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<Object> filesPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
         loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
-        loader.setFileSysTotalUUIDSize(filesFullPath.size());
+        loader.setFileSysTotalUUIDSize(filesPath.size());
 
-        for (int i = 0; i < filesFullPath.size(); ++i)
+        //cloud
+        if(loader.isCloud())
         {
-            AnnotationVerticle.saveDataPoint(loader, filesFullPath.get(i).getAbsolutePath(), i + 1);
+            for (int i = 0; i < filesPath.size(); ++i)
+            {
+                AnnotationVerticle.saveDataPoint(loader, (String) filesPath.get(i), i + 1);
+            }
+
         }
+        //local file system
+        else
+        {
+            for (int i = 0; i < filesPath.size(); ++i)
+            {
+                String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), ((File) filesPath.get(i)).getAbsolutePath());
+
+                AnnotationVerticle.saveDataPoint(loader, dataSubPath, i + 1);
+            }
+
+        }
+
     }
 
     @Deprecated
     public static void processFile(@NonNull String projectID, @NonNull List<File> filesInput)
     {
-        List<File> validatedFilesList = new ArrayList<>();
+        List<Object> validatedFilesList = new ArrayList<>();
 
         for (File file : filesInput)
         {
-            List<File> files = checkFile(file);
+            List<Object> files = checkFile(file);
             validatedFilesList.addAll(files);
         }
 
@@ -338,8 +353,6 @@ public class ImageHandler {
     @Deprecated
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        List<File> totalFileList = new ArrayList<>();
-
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
@@ -353,6 +366,8 @@ public class ImageHandler {
 
         Stack<File> folderStack = new Stack<>();
         folderStack.push(rootPath);
+
+        List<Object> totalFileList = new ArrayList<>();
 
         while (folderStack.isEmpty() != true)
         {
@@ -368,7 +383,7 @@ public class ImageHandler {
                 }
                 else
                 {
-                    List<File> files = checkFile(file);
+                    List<Object> files = checkFile(file);
                     totalFileList.addAll(files);
                 }
             }
@@ -379,8 +394,6 @@ public class ImageHandler {
 
     public static void iterateFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        List<File> totalFileList = new ArrayList<>();
-
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
@@ -394,6 +407,8 @@ public class ImageHandler {
 
         Stack<File> folderStack = new Stack<>();
         folderStack.push(rootPath);
+
+        List<Object> totalFileList = new ArrayList<>();
 
         while (folderStack.isEmpty() != true)
         {
@@ -409,13 +424,13 @@ public class ImageHandler {
                 }
                 else
                 {
-                    List<File> files = checkFile(file);
+                    List<Object> files = checkFile(file);
                     totalFileList.addAll(files);
                 }
             }
         }
 
-        saveToProjectTable(projectID, totalFileList);
+        saveToProjectTable(loader, totalFileList);
     }
 
     /*

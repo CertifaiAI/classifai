@@ -526,6 +526,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getIsNewParam(), loader.getIsProjectNew())
                 .put(ParamConfig.getIsStarredParam(), loader.getIsProjectStarred())
                 .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
+                .put(ParamConfig.getIsCloudParam(), loader.isCloud())
+                .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
                 .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDb().size()));

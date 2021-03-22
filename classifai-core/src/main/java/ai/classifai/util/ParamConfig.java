@@ -31,7 +31,6 @@ import java.io.File;
  *
  * @author codenamewei
  */
-@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ParamConfig
 {
@@ -95,8 +94,6 @@ public class ParamConfig
 
     @Getter private static final String versionListParam = "version_list";
 
-    @Getter private static final String projectInfra = "project_infra";
-
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
     @Getter private static final String labelVersionListParam = "label_version_list";
 
@@ -125,5 +122,7 @@ public class ParamConfig
     //hash
     @Getter private static final String checkSumParam = "checksum";
 
-
+    //cloud
+    @Getter private static final String isCloudParam = "is_cloud";
+    @Getter private static final String projectInfraParam = "project_infra";
 }

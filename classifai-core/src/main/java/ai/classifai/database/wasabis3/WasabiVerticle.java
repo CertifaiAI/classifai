@@ -9,6 +9,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;
+import ai.classifai.util.data.WasabiHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.message.ErrorCodes;
@@ -71,6 +72,8 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
             ProjectVersion project = new ProjectVersion();
 
+            WasabiProject wasabiProject = new WasabiProject(request);
+
             ProjectLoader loader = ProjectLoader.builder()
                     .projectId(UuidGenerator.generateUuid())
                     .projectName(projectName)
@@ -80,13 +83,9 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
                     .projectInfra(ProjectInfra.WASABI_S3)
+                    .wasabiProject(wasabiProject)
                     .projectVersion(project)
                     .build();
-
-            ProjectHandler.loadProjectLoader(loader);
-
-            //potential threat on not waiting for the reply before proceed
-            PortfolioVerticle.createNewProject(loader.getProjectId());
 
             Tuple wasabiTuple = buildWasabiTuple(request, loader.getProjectId());
 
@@ -97,7 +96,15 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                         {
                             log.info("Save credential in wasabi table success");
 
+                            ProjectHandler.loadProjectLoader(loader);
+
+                            //potential threat on not waiting for the reply before proceed
+                            PortfolioVerticle.createNewProject(loader.getProjectId());
+
                             message.replyAndRequest(ReplyHandler.getOkReply());
+
+                            WasabiHandler.retrieveObjectsInBucket(loader);
+
                         }
                         else
                         {
@@ -114,7 +121,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
         }
     }
 
-    private static Tuple buildWasabiTuple(@NonNull JsonObject input, @NonNull String projectId)
+    public static Tuple buildWasabiTuple(@NonNull JsonObject input, @NonNull String projectId)
     {
         PasswordHash passwordHash = new PasswordHash();
 
@@ -125,10 +132,10 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
         String hashedSecretAccessKey = passwordHash.encrypt(secretAccessKey);
 
         return Tuple.of(input.getString(CloudParamConfig.getCloudIdParam()),         //cloud_id
-                        projectId,                                                   //project_id
-                        hashedAccessKey,                                             //access_key
-                        hashedSecretAccessKey,                                       //secret_access_key
-                        input.getString(CloudParamConfig.getBucketParam()));         //bucket
+                projectId,                                                   //project_id
+                hashedAccessKey,                                             //access_key
+                hashedSecretAccessKey,                                       //secret_access_key
+                input.getString(CloudParamConfig.getBucketParam()));         //bucket
 
     }
 
