@@ -20,7 +20,7 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;

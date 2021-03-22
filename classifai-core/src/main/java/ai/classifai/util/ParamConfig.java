@@ -84,7 +84,8 @@ public class ParamConfig
     @Getter private static final String content = "content";
     @Getter private static final String progressMetadata = "progress";
 
-    //v2
+    //*******************************V2*******************************
+
     @Getter private static final String isNewParam = "is_new";
     @Getter private static final String isStarredParam = "is_starred";
     @Getter private static final String isLoadedParam = "is_loaded";
@@ -93,6 +94,8 @@ public class ParamConfig
     @Getter private static final String statusParam = "status";
 
     @Getter private static final String versionListParam = "version_list";
+
+    @Getter private static final String projectInfra = "project_infra";
 
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
     @Getter private static final String labelVersionListParam = "label_version_list";

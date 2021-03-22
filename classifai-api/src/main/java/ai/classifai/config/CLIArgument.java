@@ -17,7 +17,7 @@ package ai.classifai.config;
 
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import com.formdev.flatlaf.FlatLightLaf;

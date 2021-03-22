@@ -22,7 +22,7 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;

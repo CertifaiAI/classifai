@@ -207,26 +207,10 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
-                <artifactId>s3</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>software.amazon.awssdk</groupId>
-                        <artifactId>netty-nio-client</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>software.amazon.awssdk</groupId>
-                        <artifactId>apache-client</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>url-connection-client</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>com.amazonaws</groupId>
-                <artifactId>aws-lambda-java-core</artifactId>
-                <version>${aws.lambda.java.version}</version>
+                <artifactId>bom</artifactId>
+                <version>${aws.java.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

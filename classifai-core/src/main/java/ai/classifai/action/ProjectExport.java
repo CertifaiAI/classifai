@@ -16,7 +16,7 @@
 package ai.classifai.action;
 
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;

@@ -23,7 +23,7 @@ import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;

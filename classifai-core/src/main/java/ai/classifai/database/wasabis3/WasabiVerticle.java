@@ -9,10 +9,11 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.AbstractVerticle;
@@ -78,7 +79,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .loaderStatus(LoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
-                    .isCloud(Boolean.TRUE)
+                    .projectInfra(ProjectInfra.WASABI_S3)
                     .projectVersion(project)
                     .build();
 
