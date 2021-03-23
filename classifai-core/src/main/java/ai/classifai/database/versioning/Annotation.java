@@ -45,7 +45,6 @@ public class Annotation
     private Map<String, AnnotationVersion> annotationDict;                  //version_list
 
     @Builder.Default private Integer imgDepth = 0;                          //img_depth
-    @Builder.Default private Integer fileSize = 0;                          //file_size
 
     @Builder.Default private Integer imgOriW = 0;                           //img_ori_w
     @Builder.Default private Integer imgOriH = 0;                           //img_ori_h
@@ -73,7 +72,6 @@ public class Annotation
                 imgPath,                                 //img_path
                 getAnnotationDictDbFormat(),             //version_list
                 imgDepth,                                //img_depth
-                fileSize,                                //file_size
                 imgOriW,                                 //img_ori_w
                 imgOriH);                                //img_ori_w
     }

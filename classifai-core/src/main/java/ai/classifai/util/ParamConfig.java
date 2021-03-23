@@ -75,7 +75,6 @@ public class ParamConfig
     @Getter private static final String imgOriHParam = "img_ori_h";
 
     @Getter private static final String imgDepth = "img_depth";
-    @Getter private static final String fileSizeParam = "file_size";
 
     @Getter private static final String fileParam = "file";
     @Getter private static final String folderParam = "folder";

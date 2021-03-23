@@ -62,9 +62,8 @@ public class ProjectParser
                     .put(ParamConfig.getImgPathParam(), row.getString(1))       //img_path
                     .put(ParamConfig.getVersionListParam(), row.getString(2))   //version_list
                     .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
-                    .put(ParamConfig.getFileSizeParam(), row.getInteger(4))     //file_size
-                    .put(ParamConfig.getImgOriWParam(), row.getInteger(5))      //img_ori_w
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(6));     //img_ori_h
+                    .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
+                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5));     //img_ori_h
 
 
             //uuid, version, content
@@ -105,7 +104,6 @@ public class ProjectParser
                         .imgPath(subPath)
                         .annotationDict(buildAnnotationDict(versionList))
                         .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
-                        .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
                         .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
                         .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
                         .build();

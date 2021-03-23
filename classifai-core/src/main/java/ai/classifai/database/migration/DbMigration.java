@@ -306,9 +306,8 @@ public class DbMigration
                                 .put(ParamConfig.getImgYParam(), rs.getInt(7))
                                 .put(ParamConfig.getImgWParam(), rs.getDouble(8))
                                 .put(ParamConfig.getImgHParam(), rs.getDouble(9))
-                                .put(ParamConfig.getFileSizeParam(), rs.getInt(10))
-                                .put(ParamConfig.getImgOriWParam(), rs.getInt(11))
-                                .put(ParamConfig.getImgOriHParam(), rs.getInt(12)));
+                                .put(ParamConfig.getImgOriWParam(), rs.getInt(10))
+                                .put(ParamConfig.getImgOriHParam(), rs.getInt(11)));
                     }
                 }
 
@@ -384,9 +383,8 @@ public class DbMigration
                         st.setInt(7, obj.getInt(ParamConfig.getImgYParam()));
                         st.setDouble(8, obj.getDouble(ParamConfig.getImgWParam()));
                         st.setDouble(9, obj.getDouble(ParamConfig.getImgHParam()));
-                        st.setInt(10, obj.getInt(ParamConfig.getFileSizeParam()));
-                        st.setInt(11, obj.getInt(ParamConfig.getImgOriWParam()));
-                        st.setInt(12, obj.getInt(ParamConfig.getImgOriHParam()));
+                        st.setInt(10, obj.getInt(ParamConfig.getImgOriWParam()));
+                        st.setInt(11, obj.getInt(ParamConfig.getImgOriHParam()));
 
                         st.executeUpdate();
                         st.clearParameters();
