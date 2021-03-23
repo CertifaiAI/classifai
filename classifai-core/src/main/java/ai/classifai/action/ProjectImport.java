@@ -23,8 +23,11 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * Import of project from configuration file
@@ -43,6 +46,13 @@ public class ProjectImport
 
             JsonObject inputJsonObject = new JsonObject(jsonStr);
 
+            checkToolVersion(inputJsonObject);
+
+            if(!checkJsonKeys(inputJsonObject))
+            {
+                return;
+            }
+
             PortfolioVerticle.loadProjectFromImportingConfigFile(inputJsonObject);
 
         }
@@ -51,4 +61,36 @@ public class ProjectImport
             log.info("Error in importing project. ", e);
         }
     }
+
+    public static boolean checkJsonKeys(JsonObject inputJsonObject)
+    {
+        for(String key: ActionConfig.getKeys())
+        {
+            if(!inputJsonObject.containsKey(key)) {
+                String message = "Project not imported. Missing Key in JSON file: " + key;
+                log.info(message);
+                showMessageDialog(null,
+                        message,
+                        "Import Error", JOptionPane.ERROR_MESSAGE);
+
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void checkToolVersion(JsonObject inputJsonObject)
+    {
+        String toolVersionFromJson = inputJsonObject.getString("tool_version");
+        if(!toolVersionFromJson.equals(ActionConfig.getTool_version()))
+        {
+            String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getTool_version() +
+                    "\nJSON Version: " + toolVersionFromJson;
+            log.info(message);
+            showMessageDialog(null,
+                    message,
+                    "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
 }

@@ -67,9 +67,7 @@ public class ProjectExport
         }
         catch (IOException e)
         {
-            String errorMessage = "Path cannot be provided due to failed configuration: " + e;
-
-            return errorMessage;
+            return "Path cannot be provided due to failed configuration: " + e;
         }
 
         return configPath;
