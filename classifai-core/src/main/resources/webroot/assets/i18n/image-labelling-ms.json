@@ -1,0 +1,57 @@
+{
+    "pageHeader": {
+        "home": "Laman Utama",
+        "datasetManagement": "Pengurusan Set Data",
+        "revision": "Semakan",
+        "addUser": "Tambah pengguna",
+        "profile": "Profil"
+    },
+    "labellingInfo": {
+        "previous": "Sebelumnya",
+        "next": "Seterusnya",
+        "undo": "Kembali ke tindakan terakhir",
+        "redo": "Buat semula"
+    },
+    "leftSideBar": {
+        "pointer": "Penunjuk",
+        "rectangularBB": "Kotak Sempadan",
+        "polygon": "Poligon",
+        "eraser": "Pemadam",
+        "fitCenter": "Sesuaikan Dengan Saiz Skrin",
+        "save": "Simpan"
+    },
+    "rightSideBar": {
+        "folderOrFiles": "Folder / Fail",
+        "label": "Label",
+        "annotation": "Anotasi",
+        "statistic": "Statistik"
+    },
+    "labellingProject": {
+        "project": "Projek",
+        "label": "Label",
+        "enterLabel": "Masukkan Label",
+        "annotation": "Anotasi",
+        "delete": "Padam",
+        "labelNotExist": "Label tidak wujud. Tekan 'enter' untuk tambah."
+    },
+    "searchLabel": {
+        "labelNotExist": "Label tidak wujud.",
+        "enterToAdd": "Tekan 'enter' untuk tambah."
+    },
+    "labellingArea": {
+        "mainLabel": "Label Utama",
+        "label": "Label",
+        "regionInfo": "Info Wilayah",
+        "subLabel": "Sub Label",
+        "add": "Tambah",
+        "addedSubLabel": "Senarai Sub Label",
+        "mainRegionInfo": "Info Label Utama",
+        "subRegionInfo": "Info Sub Label"
+    },
+    "footer": {
+        "size": "Saiz",
+        "image": "Imej",
+        "dimension": "Dimensi",
+        "copyToClipboard": "Salin"
+    }
+}

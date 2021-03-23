@@ -1,31 +1,57 @@
 {
-    "modal": {
-        "header": "Classifai Image labelling Tools",
-        "existing": {
-            "header": "From Existing Project",
-            "label": "Project Name : ",
-            "option": "none",
-            "button": "Submit"
-        },
-        "create": {
-            "header": "Create New Project",
-            "label": "New Project Name : ",
-            "inputPlaceholder": "your new id ....",
-            "subLabel": "Label List File (*.txt): ",
-            "button": "Create"
-        }
+    "pageHeader": {
+        "home": "Home",
+        "datasetManagement": "Dataset Management",
+        "revision": "Revision",
+        "addUser": "Add user",
+        "profile": "Profile"
     },
-    "loading": "Powered by Skymind",
-    "saveFormat": {
-        "currImg": "Current image",
-        "bulkSaving": "Bulk saving",
-        "pascalVoc": "Pascal VOC",
-        "textOcr": "Text OCR",
-        "label": "Label"
+    "labellingInfo": {
+        "previous": "Previous",
+        "next": "Next",
+        "undo": "Undo",
+        "redo": "Redo"
     },
-    "sideNav": {
-        "imgList": "Image List",
-        "labelList": "Label List",
-        "boundBox": "Bounding Box"
+    "leftSideBar": {
+        "pointer": "Pointer",
+        "rectangularBB": "Rectangular Bounding Box",
+        "polygon": "Polygon",
+        "eraser": "Eraser",
+        "fitCenter": "Fit Center",
+        "save": "Save"
+    },
+    "rightSideBar": {
+        "folderOrFiles": "Folder / Files",
+        "label": "Label",
+        "annotation": "Annotation",
+        "statistic": "Statistic"
+    },
+    "labellingProject": {
+        "project": "Project",
+        "label": "Label",
+        "enterLabel": "Enter Label",
+        "annotation": "Annotation",
+        "delete": "Delete",
+        "labelNotExist": "Label does not exist. Press Enter to add."
+    },
+    "searchLabel": {
+        "labelNotExist": "Label does not exist.",
+        "enterToAdd": "Press enter to add."
+    },
+    "labellingArea": {
+        "mainLabel": "Main Label",
+        "label": "Label",
+        "regionInfo": "Region Info",
+        "subLabel": "Sub Label",
+        "add": "Add",
+        "addedSubLabel": "Added Sub Label",
+        "mainRegionInfo": "Input Main Region Info",
+        "subRegionInfo": "Input Sub Region Info"
+    },
+    "footer": {
+        "size": "Size",
+        "image": "Image",
+        "dimension": "Dimension",
+        "copyToClipboard": "Copy to Clipboard"
     }
 }

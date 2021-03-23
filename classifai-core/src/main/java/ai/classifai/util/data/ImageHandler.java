@@ -212,7 +212,6 @@ public class ImageHandler {
             imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
             imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
             imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
-            imageData.put(ParamConfig.getFileSizeParam(), Long.toString(file.length()));
             imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
             return imageData;

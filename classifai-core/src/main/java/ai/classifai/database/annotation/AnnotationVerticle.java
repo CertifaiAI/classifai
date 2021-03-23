@@ -293,9 +293,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                             .imgPath(row.getString(1))      //img_path
                                             .annotationDict(annotationDict)     //version_list
                                             .imgDepth(row.getInteger(3))    //img_depth
-                                            .fileSize(row.getInteger(4))    //file_size
-                                            .imgOriW(row.getInteger(5))     //img_ori_w
-                                            .imgOriH(row.getInteger(6))     //img_ori_h
+                                            .imgOriW(row.getInteger(4))     //img_ori_w
+                                            .imgOriH(row.getInteger(5))     //img_ori_h
                                             .build();
 
                                     uuidAnnotationDict.put(row.getString(0), annotation);
@@ -501,9 +500,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             Integer imgDepth = requestBody.getInteger(ParamConfig.getImgDepth());
             annotation.setImgDepth(imgDepth);
 
-            Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
-            annotation.setFileSize(fileSize);
-
             Integer imgOriW = requestBody.getInteger(ParamConfig.getImgOriWParam());
             annotation.setImgOriW(imgOriW);
 
@@ -522,7 +518,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
                                     imgDepth,
-                                    fileSize,
                                     imgOriW,
                                     imgOriH,
                                     uuid,
@@ -575,7 +570,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getImgYParam(), version.getImgY());
         response.put(ParamConfig.getImgWParam(), version.getImgW());
         response.put(ParamConfig.getImgHParam(), version.getImgH());
-        response.put(ParamConfig.getFileSizeParam(), Long.parseLong(imgData.get(ParamConfig.getFileSizeParam())));
         response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
         response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));

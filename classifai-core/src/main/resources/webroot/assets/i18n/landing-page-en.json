@@ -3,5 +3,10 @@
     "tabular": "Tabular",
     "image": "Image",
     "video": "Video",
-    "voice": "Voice"
+    "voice": "Voice",
+    "imageOpt": {
+        "selection": "Please select one of the below:",
+        "boundingBoxes": "Bounding Boxes",
+        "polygons": "Polygons"
+    }
 }
