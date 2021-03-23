@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util;
+package ai.classifai.util.project;
 
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;

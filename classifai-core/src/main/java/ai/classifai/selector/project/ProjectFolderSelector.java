@@ -23,9 +23,10 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.NonNull;
@@ -137,6 +138,7 @@ public class ProjectFolderSelector {
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
                     .projectVersion(new ProjectVersion())
+                    .projectInfra(ProjectInfra.ON_PREMISE)
                     .build();
 
             ProjectHandler.loadProjectLoader(loader);

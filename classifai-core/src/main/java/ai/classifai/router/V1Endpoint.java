@@ -23,7 +23,7 @@ import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -222,40 +222,48 @@ public class V1Endpoint {
 
         loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
 
-        LoaderStatus loaderStatus = loader.getLoaderStatus();
-
-        //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.LOADED))
+        if(loader.isCloud())
         {
-            loader.setLoaderStatus(LoaderStatus.LOADING);
+            //FIXME
+            HTTPResponseHandler.configureOK(context);
+        }
+        else
+        {
+            LoaderStatus loaderStatus = loader.getLoaderStatus();
 
-            JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-
-            DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getLoadValidProjectUuid());
-
-            //start checking uuid if it's path is still exist
-            vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
+            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
+            if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.LOADED))
             {
-                JsonObject removalResponse = (JsonObject) fetch.result().body();
+                loader.setLoaderStatus(LoaderStatus.LOADING);
 
-                if (ReplyHandler.isReplyOk(removalResponse))
+                JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+
+                DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getLoadValidProjectUuid());
+
+                //start checking uuid if it's path is still exist
+                vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
                 {
-                    HTTPResponseHandler.configureOK(context);
+                    JsonObject removalResponse = (JsonObject) fetch.result().body();
 
-                } else
-                {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-                }
-            });
+                    if (ReplyHandler.isReplyOk(removalResponse))
+                    {
+                        HTTPResponseHandler.configureOK(context);
+                    }
+                    else
+                    {
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
+                    }
+                });
 
-        }
-        else if(loaderStatus.equals(LoaderStatus.LOADING))
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
-        }
-        else if(loaderStatus.equals(LoaderStatus.ERROR))
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
+            }
+            else if(loaderStatus.equals(LoaderStatus.LOADING))
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
+            }
+            else if(loaderStatus.equals(LoaderStatus.ERROR))
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
+            }
         }
     }
 

@@ -42,6 +42,8 @@ public class EndpointRouter extends AbstractVerticle
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
 
+    CloudEndpoint cloud = new CloudEndpoint();
+
     public EndpointRouter()
     {
         Thread threadfile = new Thread(() -> fileSelector = new ToolFileSelector());
@@ -73,6 +75,8 @@ public class EndpointRouter extends AbstractVerticle
         v2.setVertx(vertx);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
+
+        cloud.setVertx(vertx);
     }
 
     @Override
@@ -130,6 +134,10 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 
         router.put("/v2/:annotation_type/projects/:project_name/export").handler(v2::exportProject);
+
+        //*******************************Cloud*******************************
+
+        router.put("/v2/:annotation_type/wasabi/newproject/:project_name").handler(cloud::createWasabiCloudProject);
 
 
         vertx.createHttpServer()

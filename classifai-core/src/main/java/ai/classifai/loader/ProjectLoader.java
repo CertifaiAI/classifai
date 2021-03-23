@@ -18,7 +18,9 @@ package ai.classifai.loader;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.wasabis3.WasabiProject;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.util.project.ProjectInfra;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,11 +49,15 @@ public class ProjectLoader
     private Boolean isProjectNew;
     private Boolean isProjectStarred;
 
+    private ProjectInfra projectInfra;
+
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private LoaderStatus loaderStatus;
 
     private ProjectVersion projectVersion;
+
+    @Builder.Default private WasabiProject wasabiProject = null;
 
     @Builder.Default private List<String> labelList = new ArrayList<>();
 
@@ -279,6 +285,11 @@ public class ProjectLoader
     public void setFileSystemStatus(FileSystemStatus status)
     {
         fileSystemStatus = status;
+    }
+
+    public boolean isCloud()
+    {
+        return wasabiProject != null;
     }
 
 }

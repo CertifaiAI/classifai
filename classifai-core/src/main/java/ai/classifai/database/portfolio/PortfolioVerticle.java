@@ -31,12 +31,14 @@ import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.project.ProjectInfra;
+import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
@@ -218,6 +220,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
                     .projectVersion(project)
+                    .projectInfra(ProjectInfra.ON_PREMISE)
                     .build();
 
             Tuple params = PortfolioVerticle.buildNewProject(loader);
@@ -437,16 +440,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         {
                             for (Row row : rowSet)
                             {
-                                Version currentVersion = new Version(row.getString(6));
+                                Version currentVersion = new Version(row.getString(7));
 
-                                ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(7));     //project_version
+                                ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(8));     //project_version
                                 project.setCurrentVersion(currentVersion.getVersionUuid());
 
-                                Map uuidDict = ActionOps.getKeyWithArray(row.getString(8));
-                                project.setUuidListDict(uuidDict);                                                      //uuid_version_list
+                                Map uuidDict = ActionOps.getKeyWithArray(row.getString(9));
+                                project.setUuidListDict(uuidDict);                                                      //uuid_project_version
 
-                                Map labelDict = ActionOps.getKeyWithArray(row.getString(9));
-                                project.setLabelListDict(labelDict);                                                    //label_version_list
+                                Map labelDict = ActionOps.getKeyWithArray(row.getString(10));
+                                project.setLabelListDict(labelDict);                                                    //label_project_version
 
                                 ProjectLoader loader = ProjectLoader.builder()
                                     .projectId(row.getString(0))                                                   //project_id
@@ -456,12 +459,12 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
                                     .isProjectNew(row.getBoolean(4))                                               //is_new
                                     .isProjectStarred(row.getBoolean(5))                                           //is_starred
+                                    .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
                                     .projectVersion(project)                                                           //project_version
                                     .build();
 
                                 //load each data points
                                 AnnotationVerticle.configProjectLoaderFromDb(loader);
-
 
                                 ProjectHandler.loadProjectLoader(loader);
                             }
@@ -522,6 +525,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getIsNewParam(), loader.getIsProjectNew())
                 .put(ParamConfig.getIsStarredParam(), loader.getIsProjectStarred())
                 .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
+                .put(ParamConfig.getIsCloudParam(), loader.isCloud())
+                .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
                 .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDb().size()));
@@ -640,6 +645,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 loader.getProjectPath(),                    //project_path
                 loader.getIsProjectNew(),                   //is_new
                 loader.getIsProjectStarred(),               //is_starred
+                loader.getProjectInfra().name(),            //project_infra
                 project.getCurrentVersion().getDbFormat(),  //current_version
                 project.getDbFormat(),                      //version_list
                 project.getUuidVersionDbFormat(),           //uuid_version_list

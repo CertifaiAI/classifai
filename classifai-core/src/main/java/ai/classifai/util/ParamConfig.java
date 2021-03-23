@@ -75,7 +75,6 @@ public class ParamConfig
     @Getter private static final String imgOriHParam = "img_ori_h";
 
     @Getter private static final String imgDepth = "img_depth";
-    @Getter private static final String fileSizeParam = "file_size";
 
     @Getter private static final String fileParam = "file";
     @Getter private static final String folderParam = "folder";
@@ -84,7 +83,8 @@ public class ParamConfig
     @Getter private static final String content = "content";
     @Getter private static final String progressMetadata = "progress";
 
-    //v2
+    //*******************************V2*******************************
+
     @Getter private static final String isNewParam = "is_new";
     @Getter private static final String isStarredParam = "is_starred";
     @Getter private static final String isLoadedParam = "is_loaded";
@@ -122,5 +122,7 @@ public class ParamConfig
     //hash
     @Getter private static final String checkSumParam = "checksum";
 
-
+    //cloud
+    @Getter private static final String isCloudParam = "is_cloud";
+    @Getter private static final String projectInfraParam = "project_infra";
 }
