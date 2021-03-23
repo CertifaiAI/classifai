@@ -31,6 +31,7 @@ import java.io.File;
  *
  * @author codenamewei
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ParamConfig
 {

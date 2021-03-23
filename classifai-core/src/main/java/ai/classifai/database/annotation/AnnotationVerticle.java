@@ -29,6 +29,7 @@ import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -42,7 +43,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,11 +88,21 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                             Row row = rowSet.iterator().next();
 
-                            String imgSubPath = row.getString(0);
+                            String dataPath = row.getString(0);
 
-                            File fileImgPath = getDataFullPath(projectID, imgSubPath);
+                            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-                            response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
+                            if(loader.isCloud())
+                            {
+                                response.put(ParamConfig.getImgSrcParam(), WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
+                            }
+                            else
+                            {
+                                File fileImgPath = getDataFullPath(projectID, dataPath);
+
+                                response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
+                            }
+
                             message.replyAndRequest(response);
 
                         }
@@ -281,15 +296,15 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                                 String fullPath = loader.getProjectPath() + row.getString(1);
 
-                                if(ImageHandler.isImageReadable(new File(fullPath)))
+                                if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
                                 {
                                     Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(row.getString(2));
 
                                     Annotation annotation = Annotation.builder()
                                             .uuid(row.getString(0))         //uuid
-                                            .projectId(loader.getProjectId())   //project_id
+                                            .projectId(loader.getProjectId())    //project_id
                                             .imgPath(row.getString(1))      //img_path
-                                            .annotationDict(annotationDict)     //version_list
+                                            .annotationDict(annotationDict)      //version_list
                                             .imgDepth(row.getInteger(3))    //img_depth
                                             .fileSize(row.getInteger(4))    //file_size
                                             .imgOriW(row.getInteger(5))     //img_ori_w
@@ -556,16 +571,40 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
 
-        String dataFullPath = loader.getProjectPath() + annotation.getImgPath();
+        Map<String, String> imgData = new HashMap<>();
+        String dataPath = "";
 
-        Map<String, String> imgData = ImageHandler.getThumbNail(dataFullPath);
+        if(loader.isCloud())
+        {
+            BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
+
+            //not checking orientation for on cloud version
+            imgData = ImageHandler.getThumbNail(img, false, null);
+        }
+        else
+        {
+            dataPath = loader.getProjectPath() + annotation.getImgPath();
+
+            try
+            {
+                File fileDataPath = new File(dataPath);
+
+                BufferedImage img  = ImageIO.read(fileDataPath);
+
+                imgData = ImageHandler.getThumbNail(img, true, fileDataPath);
+            }
+            catch(IOException e)
+            {
+                log.debug("Failure in reading image of path " + dataPath, e);
+            }
+        }
 
         JsonObject response = ReplyHandler.getOkReply();
 
         response.put(ParamConfig.getUuidParam(), uuid);
         response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
 
-        response.put(ParamConfig.getImgPathParam(), dataFullPath);
+        response.put(ParamConfig.getImgPathParam(), dataPath);
         response.put(annotationKey, version.getAnnotation());
         response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
         response.put(ParamConfig.getImgXParam(), version.getImgX());

@@ -466,7 +466,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 //load each data points
                                 AnnotationVerticle.configProjectLoaderFromDb(loader);
 
-
                                 ProjectHandler.loadProjectLoader(loader);
                             }
                         }

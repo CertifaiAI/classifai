@@ -4,6 +4,7 @@
     "projectNameExist": "* 项目名称已被使用。请选择其他名称",
     "projectNameRequired": "* 项目名称空缺",
     "labelListFile": "标签列表文件 (*.txt): ",
+    "chooseFile": "选择文件",
     "createButton": "创建",
     "cancelButton": "取消",
     "menuName": {

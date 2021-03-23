@@ -32,10 +32,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -156,6 +153,7 @@ public class ImageHandler {
         {
             return img.getWidth();
         }
+
         return img.getHeight();
     }
 
@@ -169,74 +167,71 @@ public class ImageHandler {
     }
 
 
-    public static Map<String, String> getThumbNail(String imageAbsPath)
+    public static Map<String, String> getThumbNail(BufferedImage img, boolean toCheckOrientation, File file)
     {
-        try
-        {
-            File file = new File(imageAbsPath);
+        Map<String, String> imageData = new HashMap<>();
 
-            BufferedImage img  = ImageIO.read(file);
+        Integer oriHeight;
+        Integer oriWidth;
+
+        if(toCheckOrientation)
+        {
             int orientation = getExifOrientation(file);
 
-            Integer oriHeight = getHeight(img, orientation);
-            Integer oriWidth = getWidth(img, orientation);
+            oriHeight = getHeight(img, orientation);
+            oriWidth = getWidth(img, orientation);
 
             //rotate for thumbnail generation
             img = rotateWithOrientation(img, orientation);
-
-            int type = img.getColorModel().getColorSpace().getType();
-            boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
-
-            Integer depth = grayscale ? 1 : 3;
-
-            Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
-            Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
-
-            if (oriHeight > oriWidth)
-            {
-                thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
-            }
-            else
-            {
-                thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
-            }
-
-            Image tmp = img.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
-            BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = resized.createGraphics();
-            g2d.drawImage(tmp, 0, 0, null);
-            g2d.dispose();
-
-
-            Map<String, String> imageData = new HashMap<>();
-            imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
-            imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
-            imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
-            imageData.put(ParamConfig.getFileSizeParam(), Long.toString(file.length()));
-            imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
-
-            return imageData;
         }
-        catch (IOException e)
+        else
         {
-            log.debug("Failed in getting thumbnail for path " + imageAbsPath, e);
-            return null;
+            oriHeight = img.getHeight();
+            oriWidth = img.getWidth();
         }
+
+        int type = img.getColorModel().getColorSpace().getType();
+        boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
+
+        Integer depth = grayscale ? 1 : 3;
+
+        Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
+        Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
+
+        if (oriHeight > oriWidth)
+        {
+            thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
+        }
+        else
+        {
+            thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
+        }
+
+        Image tmp = img.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
+        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
+        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
+        imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
+
+        return imageData;
     }
 
     public static String encodeFileToBase64Binary(File file)
     {
         try
         {
-            String encodedfile = null;
-
             FileInputStream fileInputStreamReader = new FileInputStream(file);
 
             byte[] bytes = new byte[(int)file.length()];
 
             fileInputStreamReader.read(bytes);
 
-            encodedfile = new String(Base64.getEncoder().encode(bytes));
+            String encodedfile = new String(Base64.getEncoder().encode(bytes));
 
             return getImageHeader(file.getAbsolutePath()) + encodedfile;
         }
@@ -247,7 +242,6 @@ public class ImageHandler {
 
         return null;
     }
-
 
     private static boolean isImageFileValid(String file)
     {

@@ -4,6 +4,7 @@
     "projectNameExist": "* Nama projek telah tersedia! Sila cuba nama lain",
     "projectNameRequired": "* Sila isi nama projek",
     "labelListFile": "Fail senarai label(*.txt):",
+    "chooseFile": "Pilih Fail",
     "createButton": "Reka",
     "cancelButton": "Batal",
     "menuName": {

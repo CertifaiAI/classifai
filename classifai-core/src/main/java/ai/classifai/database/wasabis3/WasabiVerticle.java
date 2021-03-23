@@ -1,15 +1,17 @@
 package ai.classifai.database.wasabis3;
 
+import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;
-import ai.classifai.util.data.WasabiHandler;
+import ai.classifai.util.data.FileHandler;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.message.ErrorCodes;
@@ -17,6 +19,7 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
+import ai.classifai.wasabis3.WasabiProject;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -27,6 +30,13 @@ import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.paginators.ListObjectsV2Iterable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wasabi S3 Verticle
@@ -68,9 +78,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
         if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
-            log.info("Create Wasabi S3 project with name: " + projectName);
-
-            ProjectVersion project = new ProjectVersion();
+            log.info("Creating Wasabi S3 project with name: " + projectName);
 
             WasabiProject wasabiProject = new WasabiProject(request);
 
@@ -84,7 +92,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .isProjectNew(Boolean.TRUE)
                     .projectInfra(ProjectInfra.WASABI_S3)
                     .wasabiProject(wasabiProject)
-                    .projectVersion(project)
+                    .projectVersion(new ProjectVersion())
                     .build();
 
             Tuple wasabiTuple = buildWasabiTuple(request, loader.getProjectId());
@@ -94,16 +102,14 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .onComplete(fetch -> {
                         if(fetch.succeeded())
                         {
+                            message.replyAndRequest(ReplyHandler.getOkReply());
+
                             log.info("Save credential in wasabi table success");
 
                             ProjectHandler.loadProjectLoader(loader);
 
-                            //potential threat on not waiting for the reply before proceed
-                            PortfolioVerticle.createNewProject(loader.getProjectId());
-
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-
-                            WasabiHandler.retrieveObjectsInBucket(loader);
+                            //only save project to portfolio after get all the data
+                            saveObjectsInBucket(loader);
 
                         }
                         else
@@ -119,6 +125,37 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
         {
             message.replyAndRequest(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
         }
+    }
+
+    private static void saveObjectsInBucket(@NonNull ProjectLoader loader)
+    {
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+
+        WasabiProject project = loader.getWasabiProject();
+
+        ListObjectsV2Request req = ListObjectsV2Request.builder()
+                .bucket(project.getWasabiBucket())
+                .build();
+
+        ListObjectsV2Iterable response = project.getWasabiS3Client().listObjectsV2Paginator(req);
+
+        List<Object> dataPaths = new ArrayList<>();
+
+        for (ListObjectsV2Response page : response)
+        {
+            page.contents().forEach((S3Object object) ->
+            {
+                String inputObject = object.key();
+
+                if(FileHandler.isfileSupported(inputObject, ImageFileType.getImageFileTypes()))
+                {
+                    System.out.println("Path: " + inputObject);
+                    dataPaths.add(inputObject);
+                }
+            });
+        }
+
+        ImageHandler.saveToProjectTable(loader, dataPaths);
     }
 
     public static Tuple buildWasabiTuple(@NonNull JsonObject input, @NonNull String projectId)

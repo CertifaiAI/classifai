@@ -1,4 +1,4 @@
-package ai.classifai.database.wasabis3;
+package ai.classifai.wasabis3;
 
 import ai.classifai.util.CloudParamConfig;
 import io.vertx.core.json.JsonObject;

@@ -18,7 +18,7 @@ package ai.classifai.loader;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.database.wasabis3.WasabiProject;
+import ai.classifai.wasabis3.WasabiProject;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.project.ProjectInfra;
 import lombok.Builder;

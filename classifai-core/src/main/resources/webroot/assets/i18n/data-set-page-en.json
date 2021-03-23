@@ -4,6 +4,7 @@
     "projectNameExist": "* Project name already exist! Try other name",
     "projectNameRequired": "* Project name is required",
     "labelListFile": "Label list file (*.txt):",
+    "chooseFile": "Choose File",
     "createButton": "Create",
     "cancelButton": "Cancel",
     "menuName": {
