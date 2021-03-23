@@ -20,7 +20,7 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.ProjectHandler;
+import ai.classifai.util.project.ProjectHandler;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
@@ -32,10 +32,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -156,6 +153,7 @@ public class ImageHandler {
         {
             return img.getWidth();
         }
+
         return img.getHeight();
     }
 
@@ -169,73 +167,71 @@ public class ImageHandler {
     }
 
 
-    public static Map<String, String> getThumbNail(String imageAbsPath)
+    public static Map<String, String> getThumbNail(BufferedImage img, boolean toCheckOrientation, File file)
     {
-        try
-        {
-            File file = new File(imageAbsPath);
+        Map<String, String> imageData = new HashMap<>();
 
-            BufferedImage img  = ImageIO.read(file);
+        Integer oriHeight;
+        Integer oriWidth;
+
+        if(toCheckOrientation)
+        {
             int orientation = getExifOrientation(file);
 
-            Integer oriHeight = getHeight(img, orientation);
-            Integer oriWidth = getWidth(img, orientation);
+            oriHeight = getHeight(img, orientation);
+            oriWidth = getWidth(img, orientation);
 
             //rotate for thumbnail generation
             img = rotateWithOrientation(img, orientation);
-
-            int type = img.getColorModel().getColorSpace().getType();
-            boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
-
-            Integer depth = grayscale ? 1 : 3;
-
-            Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
-            Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
-
-            if (oriHeight > oriWidth)
-            {
-                thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
-            }
-            else
-            {
-                thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
-            }
-
-            Image tmp = img.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
-            BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = resized.createGraphics();
-            g2d.drawImage(tmp, 0, 0, null);
-            g2d.dispose();
-
-
-            Map<String, String> imageData = new HashMap<>();
-            imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
-            imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
-            imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
-            imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
-
-            return imageData;
         }
-        catch (IOException e)
+        else
         {
-            log.debug("Failed in getting thumbnail for path " + imageAbsPath, e);
-            return null;
+            oriHeight = img.getHeight();
+            oriWidth = img.getWidth();
         }
+
+        int type = img.getColorModel().getColorSpace().getType();
+        boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
+
+        Integer depth = grayscale ? 1 : 3;
+
+        Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
+        Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
+      
+        if (oriHeight > oriWidth)
+        {
+            thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
+        }
+        else
+        {
+            thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
+        }
+
+        Image tmp = img.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
+        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
+        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
+        imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
+
+        return imageData;
     }
 
     public static String encodeFileToBase64Binary(File file)
     {
         try
         {
-            String encodedfile = null;
-
             FileInputStream fileInputStreamReader = new FileInputStream(file);
 
             byte[] bytes = new byte[(int)file.length()];
 
             fileInputStreamReader.read(bytes);
 
-            encodedfile = new String(Base64.getEncoder().encode(bytes));
+            String encodedfile = new String(Base64.getEncoder().encode(bytes));
 
             return getImageHeader(file.getAbsolutePath()) + encodedfile;
         }
@@ -246,7 +242,6 @@ public class ImageHandler {
 
         return null;
     }
-
 
     private static boolean isImageFileValid(String file)
     {
@@ -276,9 +271,9 @@ public class ImageHandler {
         return true;
     }
 
-    public static List<File> checkFile(@NonNull File file)
+    public static List<Object> checkFile(@NonNull File file)
     {
-        List<File> verifiedFilesList = new ArrayList<>();
+        List<Object> verifiedFilesList = new ArrayList<>();
 
         String currentFileFullPath = file.getAbsolutePath();
 
@@ -294,7 +289,7 @@ public class ImageHandler {
     }
 
     @Deprecated
-    public static void saveToDatabase(@NonNull String projectID, @NonNull List<File> filesFullPath)
+    public static void saveToDatabase(@NonNull String projectID, @NonNull List<Object> filesFullPath)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -303,31 +298,46 @@ public class ImageHandler {
 
         for (int i = 0; i < filesFullPath.size(); ++i)
         {
-            AnnotationVerticle.writeUuidToDb(loader, filesFullPath.get(i), i + 1);
+            AnnotationVerticle.writeUuidToDb(loader, (File) filesFullPath.get(i), i + 1);
         }
     }
 
-    public static void saveToProjectTable(@NonNull String projectID, @NonNull List<File> filesFullPath)
+    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<Object> filesPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
         loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
-        loader.setFileSysTotalUUIDSize(filesFullPath.size());
+        loader.setFileSysTotalUUIDSize(filesPath.size());
 
-        for (int i = 0; i < filesFullPath.size(); ++i)
+        //cloud
+        if(loader.isCloud())
         {
-            AnnotationVerticle.saveDataPoint(loader, filesFullPath.get(i).getAbsolutePath(), i + 1);
+            for (int i = 0; i < filesPath.size(); ++i)
+            {
+                AnnotationVerticle.saveDataPoint(loader, (String) filesPath.get(i), i + 1);
+            }
+
         }
+        //local file system
+        else
+        {
+            for (int i = 0; i < filesPath.size(); ++i)
+            {
+                String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), ((File) filesPath.get(i)).getAbsolutePath());
+
+                AnnotationVerticle.saveDataPoint(loader, dataSubPath, i + 1);
+            }
+
+        }
+
     }
 
     @Deprecated
     public static void processFile(@NonNull String projectID, @NonNull List<File> filesInput)
     {
-        List<File> validatedFilesList = new ArrayList<>();
+        List<Object> validatedFilesList = new ArrayList<>();
 
         for (File file : filesInput)
         {
-            List<File> files = checkFile(file);
+            List<Object> files = checkFile(file);
             validatedFilesList.addAll(files);
         }
 
@@ -337,8 +347,6 @@ public class ImageHandler {
     @Deprecated
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        List<File> totalFileList = new ArrayList<>();
-
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
@@ -352,6 +360,8 @@ public class ImageHandler {
 
         Stack<File> folderStack = new Stack<>();
         folderStack.push(rootPath);
+
+        List<Object> totalFileList = new ArrayList<>();
 
         while (folderStack.isEmpty() != true)
         {
@@ -367,7 +377,7 @@ public class ImageHandler {
                 }
                 else
                 {
-                    List<File> files = checkFile(file);
+                    List<Object> files = checkFile(file);
                     totalFileList.addAll(files);
                 }
             }
@@ -378,8 +388,6 @@ public class ImageHandler {
 
     public static void iterateFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        List<File> totalFileList = new ArrayList<>();
-
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
@@ -393,6 +401,8 @@ public class ImageHandler {
 
         Stack<File> folderStack = new Stack<>();
         folderStack.push(rootPath);
+
+        List<Object> totalFileList = new ArrayList<>();
 
         while (folderStack.isEmpty() != true)
         {
@@ -408,13 +418,13 @@ public class ImageHandler {
                 }
                 else
                 {
-                    List<File> files = checkFile(file);
+                    List<Object> files = checkFile(file);
                     totalFileList.addAll(files);
                 }
             }
         }
 
-        saveToProjectTable(projectID, totalFileList);
+        saveToProjectTable(loader, totalFileList);
     }
 
     /*

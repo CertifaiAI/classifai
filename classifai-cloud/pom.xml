@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~  Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+  ~  Copyright (c) 2021 CertifAI Sdn. Bhd.
   ~
   ~  This program and the accompanying materials are made available under the
   ~  terms of the Apache License, Version 2.0 which is available at
@@ -23,17 +23,32 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>classifai-api</artifactId>
-    <name>classifai-api</name>
+    <artifactId>classifai-cloud</artifactId>
+    <name>classifai-cloud</name>
 
     <dependencies>
         <dependency>
-            <groupId>ai.classifai</groupId>
-            <artifactId>classifai-core</artifactId>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>apache-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-core</artifactId>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>${aws.lambda.java.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -48,8 +63,8 @@
             <artifactId>vertx-web-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -64,17 +79,5 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-            </plugin>
-        </plugins>
-    </build>
-
-
 
 </project>
