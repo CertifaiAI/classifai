@@ -46,9 +46,7 @@ public class ProjectImport
 
             JsonObject inputJsonObject = new JsonObject(jsonStr);
 
-            checkToolVersion(inputJsonObject);
-
-            if(!checkJsonKeys(inputJsonObject))
+            if(!checkToolVersion(inputJsonObject) || !checkJsonKeys(inputJsonObject))
             {
                 return;
             }
@@ -79,9 +77,24 @@ public class ProjectImport
         return true;
     }
 
-    public static void checkToolVersion(JsonObject inputJsonObject)
+    public static boolean checkToolVersion(JsonObject inputJsonObject)
     {
-        String toolVersionFromJson = inputJsonObject.getString("tool_version");
+        String toolNameFromJson = inputJsonObject.getString(ActionConfig.getToolParam());
+        String toolVersionFromJson = inputJsonObject.getString(ActionConfig.getToolVersionParam());
+        String updatedDateFromJson = inputJsonObject.getString(ActionConfig.getUpdatedDateParam());
+
+        if(toolNameFromJson == null || toolVersionFromJson == null || updatedDateFromJson == null || !toolNameFromJson.equals(ActionConfig.getToolName()))
+        {
+            String message = "The configuration file imported is not valid.";
+            log.info(message);
+            showMessageDialog(null,
+                    message,
+                    "Invalid import file", JOptionPane.ERROR_MESSAGE);
+
+            return false;
+        }
+
+        // Does not return false. Only pop up warning. Further checking of JSON file is done after.
         if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
         {
             String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
@@ -91,6 +104,7 @@ public class ProjectImport
                     message,
                     "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
         }
+        return true;
     }
 
 }

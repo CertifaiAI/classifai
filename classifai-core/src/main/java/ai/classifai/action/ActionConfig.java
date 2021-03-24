@@ -41,7 +41,7 @@ public class ActionConfig
 
     @Getter private static final List<String> keys = Arrays.asList(
             "tool", "tool_version", "updated_date", "project_id", "project_name", "annotation_type", "is_new",
-            "is_starred", "current_version", "project_version", "uuid_version_list", "label_version_list", "content");
+            "is_starred", "project_infra", "current_version", "project_version", "uuid_version_list", "label_version_list", "content");
 
     //output file path
     @Getter private static final String projectConfigPathParam = "project_config_path";
