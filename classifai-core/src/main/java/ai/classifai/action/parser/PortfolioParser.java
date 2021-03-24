@@ -21,6 +21,8 @@ import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.project.ProjectInfra;
+import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
@@ -59,11 +61,12 @@ public class PortfolioParser
         jsonObject.put(ParamConfig.getIsNewParam(), row.getBoolean(4));                                     //is_new
         jsonObject.put(ParamConfig.getIsStarredParam(), row.getBoolean(5));                                 //is_starred
 
-        jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(6));                             //current version
-        jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(7));                             //project version
-        jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(8));                            //uuid_version_list
+        jsonObject.put(ParamConfig.getProjectInfraParam(), row.getString(6).toLowerCase());                 //project_infra
+        jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(7));                             //current version
+        jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(8));                             //project version
+        jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(9));                            //uuid_version_list
 
-        jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(9));                           //label_version_list
+        jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(10));                          //label_version_list
     }
 
     public static ProjectLoader parseIn(@NonNull JsonObject jsonObject)
@@ -83,6 +86,8 @@ public class PortfolioParser
         Map labelDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
         project.setLabelListDict(labelDict);                                                                        //label_version_list
 
+
+        ProjectInfra projectInfra = ProjectInfraHandler.getInfra(jsonObject.getString(ParamConfig.getProjectInfraParam()));
         return ProjectLoader.builder()
                                 .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
                                 .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
@@ -91,6 +96,8 @@ public class PortfolioParser
                                 .projectPath(jsonObject.getString(ParamConfig.getProjectPathParam()))           //project_path
                                 .isProjectNew(jsonObject.getBoolean(ParamConfig.getIsNewParam()))               //is_new
                                 .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))       //is_starred
+
+                                .projectInfra(projectInfra)                                                     //project_infra
 
                                 .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
 
