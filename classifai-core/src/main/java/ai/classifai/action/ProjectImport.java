@@ -82,9 +82,9 @@ public class ProjectImport
     public static void checkToolVersion(JsonObject inputJsonObject)
     {
         String toolVersionFromJson = inputJsonObject.getString("tool_version");
-        if(!toolVersionFromJson.equals(ActionConfig.getTool_version()))
+        if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
         {
-            String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getTool_version() +
+            String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
                     "\nJSON Version: " + toolVersionFromJson;
             log.info(message);
             showMessageDialog(null,

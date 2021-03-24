@@ -35,9 +35,9 @@ public class ActionConfig
     @Getter private static final String toolVersionParam = "tool_version";
     @Getter private static final String updatedDateParam = "updated_date";
 
-    @Getter private static final String tool_name = "classifai";
+    @Getter private static final String toolName = "classifai";
 
-    @Getter private static final String tool_version = ActionConfig.class.getPackage().getImplementationVersion();
+    @Getter private static final String toolVersion = ActionConfig.class.getPackage().getImplementationVersion();
 
     @Getter private static final List<String> keys = Arrays.asList(
             "tool", "tool_version", "updated_date", "project_id", "project_name", "annotation_type", "is_new",

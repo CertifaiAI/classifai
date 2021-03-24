@@ -41,8 +41,8 @@ public class ProjectExport
     public JsonObject getConfigSkeletonStructure()
     {
         JsonObject jsonObject = new JsonObject()
-                .put(ActionConfig.getToolParam(), "classifai")
-                .put(ActionConfig.getToolVersionParam(), getClass().getPackage().getImplementationVersion())
+                .put(ActionConfig.getToolParam(), ActionConfig.getToolName())
+                .put(ActionConfig.getToolVersionParam(), ActionConfig.getToolVersion())
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
 
         return jsonObject;
