@@ -16,6 +16,7 @@
 package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -23,8 +24,13 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Arrays;
+import java.util.List;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * Import of project from configuration file
@@ -43,6 +49,11 @@ public class ProjectImport
 
             JsonObject inputJsonObject = new JsonObject(jsonStr);
 
+            if(!checkToolVersion(inputJsonObject) || !checkJsonKeys(inputJsonObject))
+            {
+                return;
+            }
+
             PortfolioVerticle.loadProjectFromImportingConfigFile(inputJsonObject);
 
         }
@@ -51,4 +62,70 @@ public class ProjectImport
             log.info("Error in importing project. ", e);
         }
     }
+
+    public static boolean checkJsonKeys(JsonObject inputJsonObject)
+    {
+        List<String> jsonExportFileTemplates = Arrays.asList(
+                ActionConfig.getToolParam(),
+                ActionConfig.getToolVersionParam(),
+                ActionConfig.getUpdatedDateParam(),
+                ParamConfig.getProjectIdParam(),
+                ParamConfig.getProjectNameParam(),
+                ParamConfig.getAnnotationTypeParam(),
+                ParamConfig.getIsNewParam(),
+                ParamConfig.getIsStarredParam(),
+                ParamConfig.getProjectInfraParam(),
+                ParamConfig.getCurrentVersionParam(),
+                ParamConfig.getProjectVersionParam(),
+                ParamConfig.getUuidVersionListParam(),
+                ParamConfig.getLabelVersionListParam(),
+                ParamConfig.getProjectContentParam()
+        );
+
+        for(String key: jsonExportFileTemplates)
+        {
+            if(!inputJsonObject.containsKey(key))
+            {
+                String message = "Project not imported. Missing Key in JSON file: " + key;
+                log.info(message);
+                showMessageDialog(null,
+                        message,
+                        "Import Error", JOptionPane.ERROR_MESSAGE);
+
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean checkToolVersion(JsonObject inputJsonObject)
+    {
+        String toolNameFromJson = inputJsonObject.getString(ActionConfig.getToolParam());
+        String toolVersionFromJson = inputJsonObject.getString(ActionConfig.getToolVersionParam());
+        String updatedDateFromJson = inputJsonObject.getString(ActionConfig.getUpdatedDateParam());
+
+        if(toolNameFromJson == null || toolVersionFromJson == null || updatedDateFromJson == null || !toolNameFromJson.equals(ActionConfig.getToolName()))
+        {
+            String message = "The configuration file imported is not valid.";
+            log.info(message);
+            showMessageDialog(null,
+                    message,
+                    "Invalid import file", JOptionPane.ERROR_MESSAGE);
+
+            return false;
+        }
+
+        // Does not return false. Only pop up warning.
+        if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
+        {
+            String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
+                    "\nJSON Version: " + toolVersionFromJson;
+            log.info(message);
+            showMessageDialog(null,
+                    message,
+                    "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
+        }
+        return true;
+    }
+
 }

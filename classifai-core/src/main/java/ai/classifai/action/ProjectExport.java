@@ -16,8 +16,8 @@
 package ai.classifai.action;
 
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.datetime.DateTime;
+import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -40,12 +40,10 @@ public class ProjectExport
 {
     public JsonObject getConfigSkeletonStructure()
     {
-        JsonObject jsonObject = new JsonObject()
-                .put(ActionConfig.getToolParam(), "classifai")          //FIXME: dont hardcode
-                .put(ActionConfig.getToolVersionParam(), "2.0.0-alpha") //FIXME: dont hardcode
+        return new JsonObject()
+                .put(ActionConfig.getToolParam(), ActionConfig.getToolName())
+                .put(ActionConfig.getToolVersionParam(), ActionConfig.getToolVersion())
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
-
-        return jsonObject;
     }
 
     public String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
@@ -67,9 +65,7 @@ public class ProjectExport
         }
         catch (IOException e)
         {
-            String errorMessage = "Path cannot be provided due to failed configuration: " + e;
-
-            return errorMessage;
+            return "Path cannot be provided due to failed configuration: " + e;
         }
 
         return configPath;
