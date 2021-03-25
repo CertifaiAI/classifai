@@ -16,6 +16,7 @@
 package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,8 @@ import org.apache.commons.io.IOUtils;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Arrays;
+import java.util.List;
 
 import static javax.swing.JOptionPane.showMessageDialog;
 
@@ -62,9 +65,27 @@ public class ProjectImport
 
     public static boolean checkJsonKeys(JsonObject inputJsonObject)
     {
-        for(String key: ActionConfig.getKeys())
+        List<String> jsonExportFileTemplates = Arrays.asList(
+                ActionConfig.getToolParam(),
+                ActionConfig.getToolVersionParam(),
+                ActionConfig.getUpdatedDateParam(),
+                ParamConfig.getProjectIdParam(),
+                ParamConfig.getProjectNameParam(),
+                ParamConfig.getAnnotationTypeParam(),
+                ParamConfig.getIsNewParam(),
+                ParamConfig.getIsStarredParam(),
+                ParamConfig.getProjectInfraParam(),
+                ParamConfig.getCurrentVersionParam(),
+                ParamConfig.getProjectVersionParam(),
+                ParamConfig.getUuidVersionListParam(),
+                ParamConfig.getLabelVersionListParam(),
+                ParamConfig.getProjectContentParam()
+        );
+
+        for(String key: jsonExportFileTemplates)
         {
-            if(!inputJsonObject.containsKey(key)) {
+            if(!inputJsonObject.containsKey(key))
+            {
                 String message = "Project not imported. Missing Key in JSON file: " + key;
                 log.info(message);
                 showMessageDialog(null,
@@ -94,7 +115,7 @@ public class ProjectImport
             return false;
         }
 
-        // Does not return false. Only pop up warning. Further checking of JSON file is done after.
+        // Does not return false. Only pop up warning.
         if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
         {
             String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +

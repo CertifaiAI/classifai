@@ -19,9 +19,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * keywords for export use
  *
@@ -38,10 +35,6 @@ public class ActionConfig
     @Getter private static final String toolName = "classifai";
 
     @Getter private static final String toolVersion = ActionConfig.class.getPackage().getImplementationVersion();
-
-    @Getter private static final List<String> keys = Arrays.asList(
-            "tool", "tool_version", "updated_date", "project_id", "project_name", "annotation_type", "is_new",
-            "is_starred", "project_infra", "current_version", "project_version", "uuid_version_list", "label_version_list", "content");
 
     //output file path
     @Getter private static final String projectConfigPathParam = "project_config_path";
