@@ -40,12 +40,10 @@ public class ProjectExport
 {
     public JsonObject getConfigSkeletonStructure()
     {
-        JsonObject jsonObject = new JsonObject()
+        return new JsonObject()
                 .put(ActionConfig.getToolParam(), ActionConfig.getToolName())
                 .put(ActionConfig.getToolVersionParam(), ActionConfig.getToolVersion())
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
-
-        return jsonObject;
     }
 
     public String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
