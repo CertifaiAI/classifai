@@ -15,16 +15,19 @@
  */
 package ai.classifai.selector.project;
 
+import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectImport;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * Open browser to choose for configuration file to import
@@ -81,6 +84,9 @@ public class ProjectImportSelector
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
+                        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
+
+                        log.info("DEVEN: " + jsonFile);
 
                         if ((jsonFile != null) && (jsonFile.exists()))
                         {
