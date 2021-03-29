@@ -22,8 +22,8 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.project.ProjectHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 

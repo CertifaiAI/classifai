@@ -3,12 +3,11 @@ package ai.classifai.wasabis3;
 import ai.classifai.util.CloudParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-
 import software.amazon.awssdk.services.s3.S3Client;
-import lombok.NonNull;
 
 import java.net.URI;
 

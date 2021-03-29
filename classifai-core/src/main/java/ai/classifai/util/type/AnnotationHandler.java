@@ -15,11 +15,11 @@
  */
 package ai.classifai.util.type;
 
-import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.loader.ProjectLoader;
 import io.vertx.jdbcclient.JDBCPool;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
