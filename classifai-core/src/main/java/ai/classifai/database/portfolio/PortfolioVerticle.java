@@ -31,12 +31,12 @@ import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
@@ -311,7 +311,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
 
                         //export project table relevant
-                        JDBCPool client = AnnotationHandler.getJDBCPool(type.ordinal());
+                        JDBCPool client = AnnotationHandler.getJDBCPool(ProjectHandler.getProjectLoader(projectId));
 
                         client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)
