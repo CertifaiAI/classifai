@@ -311,7 +311,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
 
                         //export project table relevant
-                        JDBCPool client = AnnotationHandler.getJDBCPool(type.ordinal());
+                        JDBCPool client = AnnotationHandler.getJDBCPool(ProjectHandler.getProjectLoader(projectId));
 
                         client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)

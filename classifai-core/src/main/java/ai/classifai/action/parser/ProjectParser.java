@@ -22,6 +22,7 @@ import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.AnnotationHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;

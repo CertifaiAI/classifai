@@ -39,8 +39,10 @@ import lombok.extern.slf4j.Slf4j;
 public class MainVerticle extends AbstractVerticle
 {
     private static PortfolioVerticle portfolioVerticle;
+
     private static BoundingBoxVerticle boundingBoxVerticle;
     private static SegVerticle segVerticle;
+
     private static WasabiVerticle wasabiVerticle;
     private static EndpointRouter serverVerticle;
 
