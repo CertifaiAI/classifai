@@ -47,6 +47,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +119,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String projBasePath = ProjectHandler.getProjectLoader(projectId).getProjectPath();
 
-        return new File(projBasePath + dataSubPath);
+        return Paths.get(projBasePath, dataSubPath).toFile();
     }
 
     public static void loadValidProjectUuid(@NonNull String projectId)
@@ -302,7 +303,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             {
                                 Row row = rowIterator.next();
 
-                                String fullPath = loader.getProjectPath() + row.getString(1);
+                                String fullPath = Paths.get(loader.getProjectPath(), row.getString(1)).toString();
 
                                 if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
                                 {
@@ -337,6 +338,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     private static void writeUuidToDbFromReloadingRootPath(@NonNull ProjectLoader loader, @NonNull String dataSubPath)
     {
+
         String uuid = UuidGenerator.generateUuid();
 
         Annotation annotation = Annotation.builder()
@@ -379,7 +381,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         String childPath = param.getString(2);
 
-                        File currentImagePath = new File(loader.getProjectPath() + childPath);
+                        File currentImagePath = Paths.get(loader.getProjectPath(), childPath).toFile();
 
                         if(ImageHandler.isImageReadable(currentImagePath))
                         {
@@ -414,6 +416,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     //not exist , create data point
                     if (rowSet.size() == 0)
                     {
+
                         if(ImageHandler.isImageReadable(dataFullPath))
                         {
                             writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
@@ -592,7 +595,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
         else
         {
-            dataPath = loader.getProjectPath() + annotation.getImgPath();
+            dataPath = Paths.get(loader.getProjectPath(), annotation.getImgPath()).toString();
 
             try
             {

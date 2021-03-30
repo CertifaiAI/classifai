@@ -18,6 +18,7 @@ package ai.classifai.action;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * keywords for export use
@@ -38,4 +39,7 @@ public class ActionConfig
 
     //output file path
     @Getter private static final String projectConfigPathParam = "project_config_path";
+
+    // User json file absolute path
+    @Getter @Setter private static String jsonFilePath;
 }

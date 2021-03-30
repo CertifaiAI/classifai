@@ -49,6 +49,8 @@ public class ProjectImport
 
             JsonObject inputJsonObject = new JsonObject(jsonStr);
 
+            checkProjectPath(inputJsonObject);
+
             if(!checkToolVersion(inputJsonObject) || !checkJsonKeys(inputJsonObject))
             {
                 return;
@@ -126,6 +128,22 @@ public class ProjectImport
                     "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
         }
         return true;
+    }
+
+    public static void checkProjectPath(JsonObject inputJsonObject)
+    {
+        String initialProjectPath = inputJsonObject.getString(ParamConfig.getProjectPathParam());
+
+        if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
+        {
+            String message = "Folder path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
+            log.info(message);
+            inputJsonObject.put(ParamConfig.getProjectPathParam(), ActionConfig.getJsonFilePath());
+            showMessageDialog(null,
+                    message,
+                    "Project Path Update", JOptionPane.INFORMATION_MESSAGE);
+
+        }
     }
 
 }
