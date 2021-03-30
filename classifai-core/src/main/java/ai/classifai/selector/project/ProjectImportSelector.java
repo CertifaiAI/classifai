@@ -86,8 +86,6 @@ public class ProjectImportSelector
                         File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
                         ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
-                        log.info("DEVEN: " + jsonFile);
-
                         if ((jsonFile != null) && (jsonFile.exists()))
                         {
                             log.info("Proceed with importing project with " + jsonFile.getName());

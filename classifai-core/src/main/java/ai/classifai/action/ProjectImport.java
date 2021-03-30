@@ -133,8 +133,6 @@ public class ProjectImport
     public static void checkProjectPath(JsonObject inputJsonObject)
     {
         String initialProjectPath = inputJsonObject.getString(ParamConfig.getProjectPathParam());
-        log.info("DEVEN: JSON Base path: " + ActionConfig.getJsonFilePath());
-        log.info("DEVEN: PATH from JSON: " + initialProjectPath);
 
         if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
         {

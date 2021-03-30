@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,13 +54,15 @@ public class ProjectParser
         {
             Row row = rowIterator.next();
 
-            String fullPath = projectPath + row.getString(1);
+            String imgPath = row.getString(1).replaceAll("\\\\", "").replaceAll("\\\\", "");
+
+            String fullPath = Paths.get(projectPath, imgPath).toString();
 
             String hash = Hash.getHash256String(new File(fullPath));
 
             JsonObject annotationJsonObject = new JsonObject()
                     .put(ParamConfig.getCheckSumParam(), hash)
-                    .put(ParamConfig.getImgPathParam(), row.getString(1))       //img_path
+                    .put(ParamConfig.getImgPathParam(), imgPath)       //img_path
                     .put(ParamConfig.getVersionListParam(), row.getString(2))   //version_list
                     .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
                     .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
@@ -89,7 +92,8 @@ public class ProjectParser
 
             String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
 
-            String fullPath = loader.getProjectPath() + subPath;
+            String fullPath = Paths.get(loader.getProjectPath(), subPath).toString();
+
             String currentHash = Hash.getHash256String(new File(fullPath));
 
             String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
