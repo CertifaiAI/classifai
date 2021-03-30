@@ -15,15 +15,16 @@
  */
 package ai.classifai.util.type;
 
-import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegVerticle;
+import ai.classifai.loader.ProjectLoader;
 import io.vertx.jdbcclient.JDBCPool;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Check for annotation type
@@ -36,6 +37,9 @@ import java.util.Locale;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnnotationHandler
 {
+    //annotationInt, jdbc
+    private static Map<Integer, JDBCPool> annotationJDBCPool = new HashMap<>();
+
     public static boolean checkSanity(@NonNull Integer annotationTypeInt)
     {
         if (annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(AnnotationType.SEGMENTATION.ordinal()))
@@ -49,11 +53,15 @@ public class AnnotationHandler
         }
     }
 
-    public static JDBCPool getJDBCPool(Integer annotationTypeInt)
+    public static void addJDBCPool(@NonNull AnnotationType type, @NonNull JDBCPool jdbcPool)
     {
-        return (AnnotationType.BOUNDINGBOX.ordinal() == annotationTypeInt) ? BoundingBoxVerticle.getJdbcPool() : SegVerticle.getJdbcPool();
+        annotationJDBCPool.put(type.ordinal(), jdbcPool);
     }
 
+    public static JDBCPool getJDBCPool(@NonNull ProjectLoader loader)
+    {
+        return annotationJDBCPool.get(loader.getAnnotationType());
+    }
 
     public static AnnotationType getTypeFromEndpoint(@NonNull String annotation)
     {

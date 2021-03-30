@@ -20,6 +20,8 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
+import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.Promise;
@@ -127,6 +129,8 @@ public class SegVerticle extends AnnotationVerticle
                                 }
                                 else
                                 {
+                                    AnnotationHandler.addJDBCPool(AnnotationType.SEGMENTATION, jdbcPool);
+
                                     //the consumer methods registers an event bus destination handler
                                     vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
                                     promise.complete();
