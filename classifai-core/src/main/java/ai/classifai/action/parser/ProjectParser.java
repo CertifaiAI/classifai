@@ -54,7 +54,7 @@ public class ProjectParser
         {
             Row row = rowIterator.next();
 
-            String imgPath = row.getString(1).replaceAll("\\\\", "").replaceAll("\\\\", "");
+            String imgPath = row.getString(1).replace("\\\\", "").replace("\\\\", "");
 
             String fullPath = Paths.get(projectPath, imgPath).toString();
 
