@@ -141,7 +141,7 @@ public class ProjectImport
             inputJsonObject.put(ParamConfig.getProjectPathParam(), ActionConfig.getJsonFilePath());
             showMessageDialog(null,
                     message,
-                    "Project path Update", JOptionPane.INFORMATION_MESSAGE);
+                    "Project Path Update", JOptionPane.INFORMATION_MESSAGE);
 
         }
     }
