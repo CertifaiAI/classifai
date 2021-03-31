@@ -30,13 +30,21 @@ import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Objects;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -55,6 +63,9 @@ public class ProjectFolderSelector {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    File projectPath  = new File("/nonExistentPath"); // Dummy path. Will always be replaced.
+                    ProjectLoader loader = Objects.requireNonNull(configureLoader(projectName, annotationType.ordinal(), projectPath));
+                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
@@ -92,13 +103,13 @@ public class ProjectFolderSelector {
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
+                        projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
-                        if ((projectPath != null) && (projectPath.exists()))
+                        if (projectPath.exists())
                         {
                             log.debug("Proceed with creating project");
 
-                            ProjectLoader loader = configureLoader(projectName, annotationType.ordinal(), projectPath);
+                            loader.setProjectPath(projectPath.toString());
 
                             initFolderIteration(loader);
                         }
@@ -107,6 +118,7 @@ public class ProjectFolderSelector {
                     {
                         log.info("Creation of " + projectName + "with " + annotationType.name() + " aborted");
                     }
+                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                 }
             });
         }
