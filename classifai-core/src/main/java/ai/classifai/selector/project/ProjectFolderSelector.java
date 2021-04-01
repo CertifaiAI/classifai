@@ -30,14 +30,19 @@ import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Objects;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -47,71 +52,49 @@ import java.util.Objects;
 @Slf4j
 public class ProjectFolderSelector {
 
-    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
+    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
 
     public void run(@NonNull String projectName, @NonNull AnnotationType annotationType)
     {
         try
         {
             EventQueue.invokeLater(new Runnable() {
+                @SneakyThrows
                 @Override
-                public void run() {
-                    File projectPath  = new File("/nonExistentPath"); // Dummy path. Will always be replaced.
-                    ProjectLoader loader = Objects.requireNonNull(configureLoader(projectName, annotationType.ordinal(), projectPath));
+                public void run()
+                {
+                    ProjectLoader loader = Objects.requireNonNull(
+                            configureLoader(projectName, annotationType.ordinal(), new File("")));
+
                     loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
-                    Point pt = MouseInfo.getPointerInfo().getLocation();
-                    JFrame frame = new JFrame();
-
-                    frame.setIconImage(LogoLauncher.getClassifaiIcon());
-                    frame.setAlwaysOnTop(true);
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    frame.setLocation(pt);
-                    frame.requestFocus();
-                    frame.setVisible(false);
-
-                    JFileChooser chooser = new JFileChooser() {
-                        @Override
-                        protected JDialog createDialog(Component parent)
-                                throws HeadlessException {
-                            JDialog dialog = super.createDialog(parent);
-                            dialog.setLocationByPlatform(true);
-                            dialog.setAlwaysOnTop(true);
-                            return dialog;
-                        }
-                    };
-
-                    chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
-                    chooser.setFileFilter(imgfilter);
-                    chooser.setDialogTitle("Select Directory");
-                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    chooser.setAcceptAllFileFilterUsed(false);
+                    JFrame frame = initiateFrame();
+                    JFileChooser chooser = initiateChooser();
 
                     //Important: prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
 
                     int res = chooser.showOpenDialog(frame);
-
                     frame.dispose();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        projectPath =  chooser.getSelectedFile().getAbsoluteFile();
+                        File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
-                        if (projectPath.exists())
-                        {
-                            log.debug("Proceed with creating project");
+                        log.debug("Proceed with creating project");
+                        loader.setProjectPath(projectPath.toString());
+                        initFolderIteration(loader);
 
-                            loader.setProjectPath(projectPath.toString());
-
-                            initFolderIteration(loader);
-                        }
+                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                     }
                     else
                     {
-                        log.info("Creation of " + projectName + "with " + annotationType.name() + " aborted");
+                        // Abort creation if user did not choose any
+                        showAbortProjectPopup();
+                        log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
+
+                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                 }
             });
         }
@@ -119,7 +102,52 @@ public class ProjectFolderSelector {
         {
             log.info("ProjectFolderSelector failed to open", e);
         }
+    }
 
+    private JFrame initiateFrame()
+    {
+        Point pt = MouseInfo.getPointerInfo().getLocation();
+        JFrame frame = new JFrame();
+
+        frame.setIconImage(LogoLauncher.getClassifaiIcon());
+        frame.setAlwaysOnTop(true);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocation(pt);
+        frame.requestFocus();
+        frame.setVisible(false);
+
+        return frame;
+    }
+
+    private JFileChooser initiateChooser()
+    {
+        JFileChooser chooser = new JFileChooser() {
+            @Override
+            protected JDialog createDialog(Component parent)
+                    throws HeadlessException {
+                JDialog dialog = super.createDialog(parent);
+                dialog.setLocationByPlatform(true);
+                dialog.setAlwaysOnTop(true);
+                return dialog;
+            }
+        };
+
+        chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
+        chooser.setFileFilter(imgFilter);
+        chooser.setDialogTitle("Select Directory");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        return chooser;
+    }
+
+    private void showAbortProjectPopup()
+    {
+        String message = "No folder chosen. Abort project creation.";
+        log.info(message);
+        showMessageDialog(null,
+                message,
+                "Project Not Created", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
@@ -154,11 +182,21 @@ public class ProjectFolderSelector {
         return null;
     }
 
-    private void initFolderIteration(@NonNull ProjectLoader loader)
-    {
+    private void initFolderIteration(@NonNull ProjectLoader loader) throws IOException {
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-        ImageHandler.iterateFolder(loader.getProjectId(), new File(loader.getProjectPath()));
+        String projectPath = loader.getProjectPath();
+        if(!ImageHandler.iterateFolder(loader.getProjectId(), new File(projectPath)))
+        {
+            // Get example image from metadata
+            File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
+            File destImageFile = Paths.get(projectPath, "example_img.png").toFile();
+            FileUtils.copyFile(srcImgFile, destImageFile);
+            log.info("Empty folder. Example image added.");
+
+            // Run initiate image again
+            ImageHandler.iterateFolder(loader.getProjectId(), new File(projectPath));
+        }
     }
 
 }
