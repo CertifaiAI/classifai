@@ -427,7 +427,7 @@ public class ImageHandler {
         }
 
         saveToProjectTable(loader, totalFileList);
-        return false;
+        return true;
     }
 
     /*
