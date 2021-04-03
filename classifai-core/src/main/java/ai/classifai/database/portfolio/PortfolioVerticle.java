@@ -452,23 +452,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 project.setLabelListDict(labelDict);                                                    //label_project_version
 
                                 ProjectLoader loader = ProjectLoader.builder()
-                                        .projectId(row.getString(0))                                                   //project_id
-                                        .projectName(row.getString(1))                                                 //project_name
-                                        .annotationType(row.getInteger(2))                                             //annotation_type
-                                        .projectPath(row.getString(3))                                                 //project_path
-                                        .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
-                                        .isProjectNew(row.getBoolean(4))                                               //is_new
-                                        .isProjectStarred(row.getBoolean(5))                                           //is_starred
-                                        .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
-                                        .projectVersion(project)                                                           //project_version
-                                        .build();
+                                    .projectId(row.getString(0))                                                   //project_id
+                                    .projectName(row.getString(1))                                                 //project_name
+                                    .annotationType(row.getInteger(2))                                             //annotation_type
+                                    .projectPath(row.getString(3))                                                 //project_path
+                                    .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
+                                    .isProjectNew(row.getBoolean(4))                                               //is_new
+                                    .isProjectStarred(row.getBoolean(5))                                           //is_starred
+                                    .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
+                                    .projectVersion(project)                                                           //project_version
+                                    .build();
 
                                 //load each data points
                                 AnnotationVerticle.configProjectLoaderFromDb(loader);
 
                                 ProjectHandler.loadProjectLoader(loader);
-
-
                             }
                         }
                     }
