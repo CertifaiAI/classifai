@@ -422,7 +422,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    private void configProjectLoaderFromDb()
+    public void configProjectLoaderFromDb()
     {
         portfolioDbPool.query(PortfolioDbQuery.getRetrieveAllProjects())
                 .execute()
@@ -698,8 +698,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 if (create.succeeded()) {
                                     //the consumer methods registers an event bus destination handler
                                     vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
-
-                                    configProjectLoaderFromDb();
 
                                     promise.complete();
                                 }
