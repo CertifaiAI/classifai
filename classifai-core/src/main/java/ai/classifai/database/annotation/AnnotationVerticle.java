@@ -254,7 +254,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .imgPath(dataPath)
                 .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
-
         loader.getUuidAnnotationDict().put(uuid, annotation);
 
         JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);

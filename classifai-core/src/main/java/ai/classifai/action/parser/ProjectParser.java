@@ -101,7 +101,6 @@ public class ProjectParser
             if(fileHash.equals(currentHash))
             {
                 String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
-
                 Annotation annotation = Annotation.builder()
                         .uuid(uuid)
                         .projectId(projectId)

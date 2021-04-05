@@ -65,7 +65,6 @@ public class PortfolioParser
         jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(7));                             //current version
         jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(8));                             //project version
         jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(9));                            //uuid_version_list
-
         jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(10));                          //label_version_list
     }
 

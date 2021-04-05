@@ -579,7 +579,8 @@ public class V1Endpoint {
                         HTTPResponseHandler.configureOK(context, response);
                     }
                 });
-            }catch (Exception e)
+            }
+            catch (Exception e)
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
 

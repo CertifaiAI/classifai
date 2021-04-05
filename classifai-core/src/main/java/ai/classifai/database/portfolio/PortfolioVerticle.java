@@ -47,6 +47,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -58,10 +59,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * General database processing to get high level infos of each created project
@@ -250,14 +248,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     public void updateLabelList(Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
+        JsonArray newLabelListJson = new JsonArray(message.body().getString(ParamConfig.getLabelListParam()));
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
-        List<String> labelList = loader.getLabelList();
+        List<String> newLabelList = new ArrayList<>();
+
+        for(Object label: newLabelListJson)
+        {
+            newLabelList.add((String) label);
+        }
 
         ProjectVersion project = loader.getProjectVersion();
 
-        project.setCurrentVersionLabelList(labelList);
+        project.setCurrentVersionLabelList(newLabelList);
+        loader.setLabelList(newLabelList);
 
         Tuple updateUuidListBody = Tuple.of(project.getLabelVersionDbFormat(), projectId);
 
@@ -311,7 +316,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
 
                         //export project table relevant
-                        JDBCPool client = AnnotationHandler.getJDBCPool(ProjectHandler.getProjectLoader(projectId));
+                        JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId)));
 
                         client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)

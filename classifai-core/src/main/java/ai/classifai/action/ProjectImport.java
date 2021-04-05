@@ -67,6 +67,7 @@ public class ProjectImport
 
     public static boolean checkJsonKeys(JsonObject inputJsonObject)
     {
+        // Templates for JSON config files in order
         List<String> jsonExportFileTemplates = Arrays.asList(
                 ActionConfig.getToolParam(),
                 ActionConfig.getToolVersionParam(),
