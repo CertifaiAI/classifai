@@ -376,7 +376,7 @@ public class ImageHandler {
         saveToDatabase(projectID, totalFilelist);
     }
 
-    private static int getWidth(Metadata metadata) throws Exception
+    private static int getWidth(Metadata metadata) throws NotSupportedImageTypeError
     {
         int width;
 
@@ -394,13 +394,13 @@ public class ImageHandler {
         }
         else
         {
-            throw new Exception("File type not supported");
+            throw new NotSupportedImageTypeError("File type not supported");
         }
 
         return Math.abs(width);
     }
 
-    private static int getHeight(Metadata metadata) throws Exception
+    private static int getHeight(Metadata metadata) throws NotSupportedImageTypeError
     {
         int height;
 
@@ -418,9 +418,17 @@ public class ImageHandler {
         }
         else
         {
-            throw new Exception("File type not supported");
+            throw new NotSupportedImageTypeError("File type not supported");
         }
 
         return Math.abs(height);
+    }
+
+    static class NotSupportedImageTypeError extends Exception
+    {
+        public NotSupportedImageTypeError(String message)
+        {
+            super(message);
+        }
     }
 }
