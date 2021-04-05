@@ -26,10 +26,14 @@ import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.ProjectHandler;
 import ai.classifai.util.type.AnnotationType;
+import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.bmp.BmpHeaderDirectory;
 import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.jpeg.JpegDirectory;
+import com.drew.metadata.png.PngDirectory;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -252,14 +256,9 @@ public class ImageHandler {
         try {
             File filePath = new File(file);
 
-            BufferedImage bimg = ImageIO.read(filePath);
+            Metadata metadata = ImageMetadataReader.readMetadata(filePath);
 
-            if (bimg == null)
-            {
-                log.info("Failed in reading. Skipped " + filePath.getAbsolutePath());
-                return false;
-            }
-            else if((bimg.getWidth() > ImageFileType.getMaxWidth()) || (bimg.getHeight() > ImageFileType.getMaxHeight()))
+            if((getWidth(metadata) > ImageFileType.getMaxWidth()) || (getHeight(metadata) > ImageFileType.getMaxHeight()))
             {
                 log.info("Image size bigger than maximum allowed input size. Skipped " + filePath.getAbsolutePath());
                 return false;
@@ -346,7 +345,6 @@ public class ImageHandler {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
         String[] fileExtension = ImageFileType.getImageFileTypes();
         java.util.List<File> checkFileFormat = FileHandler.processFolder(rootPath, fileExtension);
-
         folderStack.push(rootPath);
 
         if(checkFileFormat.isEmpty())
@@ -375,7 +373,54 @@ public class ImageHandler {
             }
 
         }
-
         saveToDatabase(projectID, totalFilelist);
+    }
+
+    private static int getWidth(Metadata metadata) throws Exception
+    {
+        int width;
+
+        if (metadata.containsDirectoryOfType(JpegDirectory.class))
+        {
+            width = metadata.getFirstDirectoryOfType(JpegDirectory.class).getImageWidth();
+        }
+        else if (metadata.containsDirectoryOfType(PngDirectory.class))
+        {
+            width = metadata.getFirstDirectoryOfType(PngDirectory.class).getInt(PngDirectory.TAG_IMAGE_WIDTH);
+        }
+        else if (metadata.containsDirectoryOfType(BmpHeaderDirectory.class))
+        {
+            width = metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+        }
+        else
+        {
+            throw new Exception("File type not supported");
+        }
+
+        return Math.abs(width);
+    }
+
+    private static int getHeight(Metadata metadata) throws Exception
+    {
+        int height;
+
+        if (metadata.containsDirectoryOfType(JpegDirectory.class))
+        {
+            height = metadata.getFirstDirectoryOfType(JpegDirectory.class).getImageHeight();
+        }
+        else if (metadata.containsDirectoryOfType(PngDirectory.class))
+        {
+            height = metadata.getFirstDirectoryOfType(PngDirectory.class).getInt(PngDirectory.TAG_IMAGE_HEIGHT);
+        }
+        else if (metadata.containsDirectoryOfType(BmpHeaderDirectory.class))
+        {
+            height = metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        }
+        else
+        {
+            throw new Exception("File type not supported");
+        }
+
+        return Math.abs(height);
     }
 }
