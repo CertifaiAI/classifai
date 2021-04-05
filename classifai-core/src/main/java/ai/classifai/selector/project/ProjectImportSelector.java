@@ -29,6 +29,8 @@ import java.awt.*;
 import java.io.File;
 import java.nio.file.Paths;
 
+import static javax.swing.JOptionPane.showMessageDialog;
+
 /**
  * Open browser to choose for configuration file to import
  *
@@ -37,7 +39,14 @@ import java.nio.file.Paths;
 @Slf4j
 public class ProjectImportSelector
 {
-    private static FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Json Files", new String[]{"json"});
+    private enum ImportSelectionWindowStatus
+    {
+        WINDOW_OPEN,
+        WINDOW_CLOSE
+    }
+    private static ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
+    private static final FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Json Files", new String[]{"json"});
 
     public void run()
     {
@@ -47,59 +56,45 @@ public class ProjectImportSelector
                 @Override
                 public void run() {
 
-                    Point pt = MouseInfo.getPointerInfo().getLocation();
-                    JFrame frame = new JFrame();
-                    frame.setIconImage(LogoLauncher.getClassifaiIcon());
-
-                    frame.setAlwaysOnTop(true);
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    frame.setLocation(pt);
-                    frame.requestFocus();
-                    frame.setVisible(false);
-
-                    JFileChooser chooser = new JFileChooser() {
-                        @Override
-                        protected JDialog createDialog(Component parent)
-                                throws HeadlessException {
-                            JDialog dialog = super.createDialog(parent);
-                            dialog.setLocationByPlatform(true);
-                            dialog.setAlwaysOnTop(true);
-                            return dialog;
-                        }
-                    };
-
-                    chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
-                    chooser.setFileFilter(imgfilter);
-                    chooser.setDialogTitle("Select Files");
-                    chooser.setMultiSelectionEnabled(false);
-                    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    chooser.setAcceptAllFileFilterUsed(false);
-
-                    //Important: prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
-
-                    int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
-
-                    if (res == JFileChooser.APPROVE_OPTION)
+                    if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
                     {
-                        File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
+                        windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
 
-                        if (jsonFile.exists())
+                        JFrame frame = initiateFrame();
+                        JFileChooser chooser = initiateChooser();
+
+                        //Important: prevent Welcome Console from popping out
+                        WelcomeLauncher.setToBackground();
+
+                        int res = chooser.showOpenDialog(frame);
+                        frame.dispose();
+
+                        if (res == JFileChooser.APPROVE_OPTION)
                         {
-                            log.info("Proceed with importing project with " + jsonFile.getName());
+                            File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
+                            ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
-                            ProjectImport.importProjectFile(jsonFile);
+                            if (jsonFile.exists())
+                            {
+                                log.info("Proceed with importing project with " + jsonFile.getName());
+
+                                ProjectImport.importProjectFile(jsonFile);
+                            }
+                            else
+                            {
+                                log.debug("Import project failed");
+                            }
                         }
                         else
                         {
-                            log.debug("Import project failed");
+                            log.debug("Operation of import project aborted");
                         }
+
+                        windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
                     }
                     else
                     {
-                        log.debug("Operation of import project aborted");
+                        showAbortImportPopup();
                     }
                 }
             });
@@ -108,6 +103,53 @@ public class ProjectImportSelector
         {
             log.info("ProjectHandler for File type failed to open", e);
         }
+    }
+
+    private JFrame initiateFrame()
+    {
+        Point pt = MouseInfo.getPointerInfo().getLocation();
+        JFrame frame = new JFrame();
+        frame.setIconImage(LogoLauncher.getClassifaiIcon());
+
+        frame.setAlwaysOnTop(true);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocation(pt);
+        frame.requestFocus();
+        frame.setVisible(false);
+
+        return frame;
+    }
+
+    private JFileChooser initiateChooser()
+    {
+        JFileChooser chooser = new JFileChooser() {
+            @Override
+            protected JDialog createDialog(Component parent)
+                    throws HeadlessException {
+                JDialog dialog = super.createDialog(parent);
+                dialog.setLocationByPlatform(true);
+                dialog.setAlwaysOnTop(true);
+                return dialog;
+            }
+        };
+
+        chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
+        chooser.setFileFilter(imgfilter);
+        chooser.setDialogTitle("Select Files");
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        return chooser;
+    }
+
+    private void showAbortImportPopup()
+    {
+        String message = "Another selection window is currently open. Please close to proceed.";
+        log.info(message);
+        showMessageDialog(null,
+                message,
+                "Error Opening Window", JOptionPane.ERROR_MESSAGE);
     }
 
 }

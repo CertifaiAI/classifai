@@ -143,7 +143,6 @@ public class ProjectImport
             showMessageDialog(null,
                     message,
                     "Project Path Update", JOptionPane.INFORMATION_MESSAGE);
-
         }
     }
 

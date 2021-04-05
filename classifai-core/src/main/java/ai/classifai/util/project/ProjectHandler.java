@@ -172,7 +172,7 @@ public class ProjectHandler {
         return isProjectNameUnique;
     }
 
-    public static void deleteProjectWithID(String projectID)
+    public static void deleteProjectFromCache(String projectID)
     {
         try
         {

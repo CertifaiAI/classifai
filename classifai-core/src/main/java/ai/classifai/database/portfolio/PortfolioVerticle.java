@@ -58,8 +58,11 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.*;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * General database processing to get high level infos of each created project
@@ -156,12 +159,18 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         ProjectLoader loader = PortfolioParser.parseIn(input);
 
+        String newProjName = "";
         while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
         {
-            String newProjName = new NameGenerator().getNewProjectName();
+            newProjName = new NameGenerator().getNewProjectName();
             loader.setProjectName(newProjName);
             loader.setProjectId(UuidGenerator.generateUuid());
-            log.info("Project name overlapped. Rename project as " + newProjName);
+        }
+
+        // Only show popup if there is duplicate project name
+        if(!newProjName.equals(""))
+        {
+            showNameOverlappedPopup(newProjName);
         }
 
         ProjectHandler.loadProjectLoader(loader);
@@ -179,7 +188,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
-                        log.info("Import project " + loader.getProjectName() + " success!");
+                        showImportSuccessPopup(loader.getProjectName());
                     }
                     else
                     {
@@ -187,6 +196,24 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 });
 
+    }
+
+    private static void showNameOverlappedPopup(String newProjName)
+    {
+        String message = "Rename project as " + newProjName;
+        log.info(message);
+        showMessageDialog(null,
+                message,
+                "Name Overlapped", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static void showImportSuccessPopup(String projectName)
+    {
+        String message = "Import project " + projectName + " success!";
+        log.info(message);
+        showMessageDialog(null,
+                message,
+                "Success", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**

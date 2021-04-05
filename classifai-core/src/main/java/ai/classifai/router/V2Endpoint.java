@@ -305,7 +305,7 @@ public class V2Endpoint {
         else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
         {
             // Delete project if user attempt to create project but no path chosen
-            ProjectHandler.deleteProjectWithID(loader.getProjectId());
+            ProjectHandler.deleteProjectFromCache(loader.getProjectId());
         }
         else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
         {

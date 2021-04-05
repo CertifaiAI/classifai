@@ -632,7 +632,7 @@ public class V1Endpoint {
                             JsonObject replyResponse = (JsonObject) fetch.result().body();
 
                             //delete in Project Handler
-                            ProjectHandler.deleteProjectWithID(projectID);
+                            ProjectHandler.deleteProjectFromCache(projectID);
                             HTTPResponseHandler.configureOK(context, replyResponse);
                         } else {
                             HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
