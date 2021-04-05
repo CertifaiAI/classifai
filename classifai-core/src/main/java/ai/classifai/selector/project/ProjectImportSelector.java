@@ -44,9 +44,10 @@ public class ProjectImportSelector
         WINDOW_OPEN,
         WINDOW_CLOSE
     }
-    private static ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+    private ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
 
-    private static final FileNameExtensionFilter imgfilter = new FileNameExtensionFilter("Json Files", new String[]{"json"});
+    private static final FileNameExtensionFilter imgfilter = new FileNameExtensionFilter(
+            "Json Files", "json");
 
     public void run()
     {
