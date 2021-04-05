@@ -30,6 +30,7 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
 import com.drew.metadata.bmp.BmpHeaderDirectory;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
@@ -376,7 +377,7 @@ public class ImageHandler {
         saveToDatabase(projectID, totalFilelist);
     }
 
-    private static int getWidth(Metadata metadata) throws NotSupportedImageTypeError
+    private static int getWidth(Metadata metadata) throws NotSupportedImageTypeError, MetadataException
     {
         int width;
 
@@ -400,7 +401,7 @@ public class ImageHandler {
         return Math.abs(width);
     }
 
-    private static int getHeight(Metadata metadata) throws NotSupportedImageTypeError
+    private static int getHeight(Metadata metadata) throws NotSupportedImageTypeError, MetadataException
     {
         int height;
 
