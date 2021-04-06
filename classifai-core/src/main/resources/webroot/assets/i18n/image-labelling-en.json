@@ -24,7 +24,8 @@
         "folderOrFiles": "Folder / Files",
         "label": "Label",
         "annotation": "Annotation",
-        "statistic": "Statistic"
+        "statistic": "Statistic",
+        "export": "Export"
     },
     "labellingProject": {
         "project": "Project",
@@ -53,5 +54,7 @@
         "image": "Image",
         "dimension": "Dimension",
         "copyToClipboard": "Copy to Clipboard"
-    }
+    },
+    "exportSuccess": " project was exported successfully!",
+    "exportFailed": "Fail to export "
 }

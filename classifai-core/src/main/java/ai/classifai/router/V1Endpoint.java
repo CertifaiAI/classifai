@@ -37,8 +37,7 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Classifai v1 endpoints
@@ -302,12 +301,17 @@ public class V1Endpoint {
             JsonObject jsonObject = new JsonObject();
             jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
 
+            // Remove empty string from label list
+            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
+
             jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
+
             jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
-        } else if (loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.ERROR))
+        }
+        else if (loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.ERROR))
         {
             JsonObject jsonObject = new JsonObject();
             jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.ERROR.ordinal());
