@@ -113,7 +113,7 @@ public class ProjectImportSelector
         frame.setIconImage(LogoLauncher.getClassifaiIcon());
 
         frame.setAlwaysOnTop(true);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setLocation(pt);
         frame.requestFocus();
         frame.setVisible(false);

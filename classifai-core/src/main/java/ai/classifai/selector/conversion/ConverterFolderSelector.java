@@ -43,7 +43,7 @@ public class ConverterFolderSelector {
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
                     frame.setAlwaysOnTop(true);
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     frame.setLocation(pt);
                     frame.requestFocus();
                     frame.setVisible(false);
