@@ -24,7 +24,8 @@
         "folderOrFiles": "文件夹 / 文件",
         "label": "标签",
         "annotation": "标注",
-        "statistic": "数据"
+        "statistic": "数据",
+        "export": "Export"
     },
     "labellingProject": {
         "project": "项目",
@@ -53,5 +54,7 @@
         "image": "格式",
         "dimension": "尺寸",
         "copyToClipboard": "复制"
-    }
+    },
+    "exportSuccess": " project was exported successfully!",
+    "exportFailed": "Fail to export "
 }

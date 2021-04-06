@@ -34,6 +34,8 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 /**
  * Classifai v2 endpoints
  *
@@ -264,5 +266,53 @@ public class V2Endpoint {
         projectImporter.run();
 
         HTTPResponseHandler.configureOK(context);
+    }
+
+    /**
+     * Get file system (file/folder) status for a specific project
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesysstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
+     *
+     */
+    public void getFileSystemStatus(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        util.checkIfDockerEnv(context);
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
+
+        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+
+        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+
+        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
+        {
+            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+        {
+            List<String> newAddedUUIDList = loader.getFileSysNewUuidList();
+
+            res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
+        {
+            // Delete project if user attempt to create project but no path chosen
+            ProjectHandler.deleteProjectFromCache(loader.getProjectId());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        {
+            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
+        }
+
+        HTTPResponseHandler.configureOK(context, res);
     }
 }

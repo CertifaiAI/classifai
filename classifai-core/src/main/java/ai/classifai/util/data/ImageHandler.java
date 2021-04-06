@@ -388,7 +388,7 @@ public class ImageHandler {
         saveToDatabase(projectID, totalFileList);
     }
 
-    public static void iterateFolder(@NonNull String projectID, @NonNull File rootPath)
+    public static boolean iterateFolder(@NonNull String projectID, @NonNull File rootPath)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
@@ -398,7 +398,7 @@ public class ImageHandler {
         if (dataList.isEmpty())
         {
             loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-            return;
+            return false;
         }
 
         Stack<File> folderStack = new Stack<>();
@@ -427,6 +427,7 @@ public class ImageHandler {
         }
 
         saveToProjectTable(loader, totalFileList);
+        return true;
     }
 
     /*

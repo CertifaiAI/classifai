@@ -24,7 +24,8 @@
         "folderOrFiles": "Folder / Fail",
         "label": "Label",
         "annotation": "Anotasi",
-        "statistic": "Statistik"
+        "statistic": "Statistik",
+        "export": "Eksport"
     },
     "labellingProject": {
         "project": "Projek",
@@ -53,5 +54,7 @@
         "image": "Imej",
         "dimension": "Dimensi",
         "copyToClipboard": "Salin"
-    }
+    },
+    "exportSuccess": " telah berjaya diesksport!",
+    "exportFailed": "Gagal untuk mengeksport projek "
 }
