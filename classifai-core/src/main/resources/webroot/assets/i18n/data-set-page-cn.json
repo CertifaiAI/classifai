@@ -9,7 +9,7 @@
     "cancelButton": "取消",
     "menuName": {
         "newProject": "创建新项目",
-        "importProject": "Import Project",
+        "importProject": "导入项目",
         "myProject": "我的项目",
         "starred": "书签",
         "recent": "最新",
