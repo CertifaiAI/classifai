@@ -15,14 +15,12 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -35,13 +33,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Objects;
+
 import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
@@ -50,9 +48,7 @@ import static javax.swing.JOptionPane.showMessageDialog;
  * @author codenamewei
  */
 @Slf4j
-public class ProjectFolderSelector {
-
-    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter("Image Files", ImageFileType.getImageFileTypes());
+public class ProjectFolderSelector extends SelectionWindow {
 
     public void run(@NonNull String projectName, @NonNull AnnotationType annotationType)
     {
@@ -68,8 +64,8 @@ public class ProjectFolderSelector {
 
                     loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
-                    JFrame frame = initiateFrame();
-                    JFileChooser chooser = initiateChooser();
+                    JFrame frame = initFrame();
+                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY);
 
                     //Important: prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
@@ -102,43 +98,6 @@ public class ProjectFolderSelector {
         {
             log.info("ProjectFolderSelector failed to open", e);
         }
-    }
-
-    private JFrame initiateFrame()
-    {
-        Point pt = MouseInfo.getPointerInfo().getLocation();
-        JFrame frame = new JFrame();
-
-        frame.setIconImage(LogoLauncher.getClassifaiIcon());
-        frame.setAlwaysOnTop(true);
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setLocation(pt);
-        frame.requestFocus();
-        frame.setVisible(false);
-
-        return frame;
-    }
-
-    private JFileChooser initiateChooser()
-    {
-        JFileChooser chooser = new JFileChooser() {
-            @Override
-            protected JDialog createDialog(Component parent)
-                    throws HeadlessException {
-                JDialog dialog = super.createDialog(parent);
-                dialog.setLocationByPlatform(true);
-                dialog.setAlwaysOnTop(true);
-                return dialog;
-            }
-        };
-
-        chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
-        chooser.setFileFilter(imgFilter);
-        chooser.setDialogTitle("Select Directory");
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-
-        return chooser;
     }
 
     private void showAbortProjectPopup()

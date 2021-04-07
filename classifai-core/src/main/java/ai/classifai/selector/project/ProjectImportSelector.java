@@ -17,14 +17,15 @@ package ai.classifai.selector.project;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectImport;
-import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import ai.classifai.util.ParamConfig;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Paths;
@@ -37,17 +38,11 @@ import static javax.swing.JOptionPane.showMessageDialog;
  * @author codenamewei
  */
 @Slf4j
-public class ProjectImportSelector
-{
-    private enum ImportSelectionWindowStatus
-    {
-        WINDOW_OPEN,
-        WINDOW_CLOSE
-    }
-    private ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+public class ProjectImportSelector extends SelectionWindow {
 
-    private static final FileNameExtensionFilter imgfilter = new FileNameExtensionFilter(
-            "Json Files", "json");
+    @Getter
+    @Setter
+    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
 
     public void run()
     {
@@ -60,9 +55,10 @@ public class ProjectImportSelector
                     if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
                     {
                         windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
+                        setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
-                        JFrame frame = initiateFrame();
-                        JFileChooser chooser = initiateChooser();
+                        JFrame frame = initFrame();
+                        JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY);
 
                         //Important: prevent Welcome Console from popping out
                         WelcomeLauncher.setToBackground();
@@ -75,28 +71,33 @@ public class ProjectImportSelector
                             File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
                             ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
-                            if (jsonFile.exists())
-                            {
-                                log.info("Proceed with importing project with " + jsonFile.getName());
+                            log.info("Proceed with importing project with " + jsonFile.getName());
 
-                                ProjectImport.importProjectFile(jsonFile);
+                            if(!ProjectImport.importProjectFile(jsonFile))
+                            {
+                                log.debug("Import project failed");
+                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                             }
                             else
                             {
-                                log.debug("Import project failed");
+                                log.debug("Import project success");
+                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                             }
                         }
                         else
                         {
+                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                             log.debug("Operation of import project aborted");
                         }
-
-                        windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
                     }
                     else
                     {
                         showAbortImportPopup();
+                        setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
+
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
                 }
             });
         }
@@ -104,44 +105,6 @@ public class ProjectImportSelector
         {
             log.info("ProjectHandler for File type failed to open", e);
         }
-    }
-
-    private JFrame initiateFrame()
-    {
-        Point pt = MouseInfo.getPointerInfo().getLocation();
-        JFrame frame = new JFrame();
-        frame.setIconImage(LogoLauncher.getClassifaiIcon());
-
-        frame.setAlwaysOnTop(true);
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setLocation(pt);
-        frame.requestFocus();
-        frame.setVisible(false);
-
-        return frame;
-    }
-
-    private JFileChooser initiateChooser()
-    {
-        JFileChooser chooser = new JFileChooser() {
-            @Override
-            protected JDialog createDialog(Component parent)
-                    throws HeadlessException {
-                JDialog dialog = super.createDialog(parent);
-                dialog.setLocationByPlatform(true);
-                dialog.setAlwaysOnTop(true);
-                return dialog;
-            }
-        };
-
-        chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
-        chooser.setFileFilter(imgfilter);
-        chooser.setDialogTitle("Select Files");
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-
-        return chooser;
     }
 
     private void showAbortImportPopup()
