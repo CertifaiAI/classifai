@@ -17,8 +17,11 @@ package ai.classifai.selector.project;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectImport;
+import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
@@ -36,6 +39,11 @@ import static javax.swing.JOptionPane.showMessageDialog;
  */
 @Slf4j
 public class ProjectImportSelector extends SelectionWindow {
+
+    @Getter
+    @Setter
+    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+
     public void run()
     {
         try
@@ -47,6 +55,7 @@ public class ProjectImportSelector extends SelectionWindow {
                     if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
                     {
                         windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
+                        setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                         JFrame frame = initFrame();
                         JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY);
@@ -62,28 +71,33 @@ public class ProjectImportSelector extends SelectionWindow {
                             File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
                             ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
-                            if (jsonFile.exists())
-                            {
-                                log.info("Proceed with importing project with " + jsonFile.getName());
+                            log.info("Proceed with importing project with " + jsonFile.getName());
 
-                                ProjectImport.importProjectFile(jsonFile);
+                            if(!ProjectImport.importProjectFile(jsonFile))
+                            {
+                                log.debug("Import project failed");
+                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                             }
                             else
                             {
-                                log.debug("Import project failed");
+                                log.debug("Import project success");
+                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                             }
                         }
                         else
                         {
+                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                             log.debug("Operation of import project aborted");
                         }
-
-                        windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
                     }
                     else
                     {
                         showAbortImportPopup();
+                        setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
+
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
                 }
             });
         }

@@ -2,6 +2,8 @@ package ai.classifai.ui;
 
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.util.ParamConfig;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -14,6 +16,9 @@ public class SelectionWindow {
         WINDOW_OPEN,
         WINDOW_CLOSE
     }
+
+    // To make sure window open once only
+    @Getter @Setter
     public ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
 
     private final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(

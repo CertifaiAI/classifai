@@ -270,10 +270,10 @@ public class V2Endpoint {
 
     /**
      * Get file system (file/folder) status for a specific project
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesysstatus
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/filesysstatus
      *
      * Example:
-     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/filesysstatus
      *
      */
     public void getFileSystemStatus(RoutingContext context)
@@ -314,5 +314,23 @@ public class V2Endpoint {
         }
 
         HTTPResponseHandler.configureOK(context, res);
+    }
+
+    /**
+     * Get import project status
+     * GET http://localhost:{port}/v2/:annotation_type/projects/importstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
+     *
+     */
+    public void getImportStatus(RoutingContext context)
+    {
+        util.checkIfDockerEnv(context);
+
+        FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
+
+        HTTPResponseHandler.configureOK(context,
+                new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal()));
     }
 }

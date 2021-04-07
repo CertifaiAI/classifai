@@ -41,7 +41,7 @@ import static javax.swing.JOptionPane.showMessageDialog;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectImport
 {
-    public static void importProjectFile(@NonNull File jsonFile)
+    public static boolean importProjectFile(@NonNull File jsonFile)
     {
         try
         {
@@ -53,7 +53,7 @@ public class ProjectImport
 
             if(!checkToolVersion(inputJsonObject) || !checkJsonKeys(inputJsonObject))
             {
-                return;
+                return false;
             }
 
             PortfolioVerticle.loadProjectFromImportingConfigFile(inputJsonObject);
@@ -62,7 +62,10 @@ public class ProjectImport
         catch(Exception e)
         {
             log.info("Error in importing project. ", e);
+            return false;
         }
+
+        return true;
     }
 
     public static boolean checkJsonKeys(JsonObject inputJsonObject)
