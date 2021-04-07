@@ -25,7 +25,8 @@
         "label": "Label",
         "annotation": "Annotation",
         "statistic": "Statistic",
-        "export": "Export"
+        "export": "Export",
+        "reload": "Reload"
     },
     "labellingProject": {
         "project": "Project",
@@ -56,5 +57,7 @@
         "copyToClipboard": "Copy to Clipboard"
     },
     "exportSuccess": " project was exported successfully!",
-    "exportFailed": "Fail to export "
+    "exportFailed": "Fail to export ",
+    "reloadSuccess": " project was reload successfully!",
+    "reloadFailed": "Fail to reload "
 }
