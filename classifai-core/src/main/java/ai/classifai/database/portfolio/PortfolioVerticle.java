@@ -126,6 +126,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.exportProject(message);
         }
+        else if(action.equals(PortfolioDbQuery.getRenameProject()))
+        {
+            this.renameProject(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -154,6 +158,31 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
+    public static void renameProject(Message<JsonObject> message)
+    {
+        log.info("DEVEN: renameProject " + message.body());
+        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
+        String newProjectName = message.body().getString(ParamConfig.getNewProjectNameParam());
+
+        Tuple params = Tuple.of(newProjectName, projectId);
+
+        log.info("DEVEN: renameProject " + params);
+
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRenameProject())
+                .execute(params)
+                .onComplete(fetch ->{
+
+                    if (fetch.succeeded())
+                    {
+                        message.replyAndRequest(ReplyHandler.getOkReply());
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
+
+    }
 
     public static void loadProjectFromImportingConfigFile(@NonNull JsonObject input)
     {

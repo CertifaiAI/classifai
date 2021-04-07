@@ -198,4 +198,27 @@ public class ProjectHandler {
             log.debug("Error: ", e);
         }
     }
+
+    public static void updateProjectNameInCache(String projectID, ProjectLoader loader)
+    {
+        try
+        {
+            if (projectIDLoaderDict.get(projectID) == null)
+            {
+                throw new NullPointerException("Rename project error. ProjectID not exist in projectNameSearch.");
+            }
+
+            // Update project id Search dict
+            Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
+            projectIDSearch.put(projectNameWithType, loader.getProjectId());
+
+            // Update loader dict
+            projectIDLoaderDict.put(projectID, loader);
+
+        }
+        catch (Exception e)
+        {
+            log.debug("Error: ", e);
+        }
+    }
 }

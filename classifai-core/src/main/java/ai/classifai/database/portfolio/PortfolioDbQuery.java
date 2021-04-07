@@ -49,6 +49,8 @@ public class PortfolioDbQuery
 
     @Getter private static final String starProject = "UPDATE Portfolio SET is_starred = ? WHERE project_id = ?";
 
+    @Getter private static final String renameProject = "UPDATE Portfolio SET project_name = ? WHERE project_id = ?";
+
     @Getter private static final String retrieveAllProjects = "SELECT * FROM Portfolio";
 
     @Getter private static final String exportProject = "SELECT * FROM Portfolio WHERE project_id = ?";

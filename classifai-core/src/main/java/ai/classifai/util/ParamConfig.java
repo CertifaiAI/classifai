@@ -48,6 +48,7 @@ public class ParamConfig
     @Getter private static final String dateTimeFormat = "yyyy/MM/dd hh:mm:ss a";
 
     @Getter private static final String projectNameParam = "project_name";
+    @Getter private static final String newProjectNameParam = "new_project_name";
     @Getter private static final String projectIdParam = "project_id";
     @Getter private static final String projectPathParam = "project_path";
 
