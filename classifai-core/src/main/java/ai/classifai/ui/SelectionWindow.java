@@ -19,16 +19,20 @@ import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * For selection windows initialization and settings
  *
  * @author devenyantis
  */
+@Slf4j
 public class SelectionWindow {
 
     public enum ImportSelectionWindowStatus
@@ -80,5 +84,12 @@ public class SelectionWindow {
         chooser.setAcceptAllFileFilterUsed(false);
 
         return chooser;
+    }
+
+    public static void showPopupAndLog(String title, String message, int popupType)
+    {
+        log.info(message);
+        JFrame frame = initFrame();
+        showMessageDialog(frame, message, title, popupType);
     }
 }

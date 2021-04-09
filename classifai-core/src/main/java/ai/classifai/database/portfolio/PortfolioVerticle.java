@@ -63,8 +63,6 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 /**
  * General database processing to get high level infos of each created project
  *
@@ -161,13 +159,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public static void renameProject(Message<JsonObject> message)
     {
-        log.info("DEVEN: renameProject " + message.body());
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
         String newProjectName = message.body().getString(ParamConfig.getNewProjectNameParam());
 
         Tuple params = Tuple.of(newProjectName, projectId);
-
-        log.info("DEVEN: renameProject " + params);
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRenameProject())
                 .execute(params)
@@ -230,16 +225,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private static void showNameOverlappedPopup(String newProjName)
     {
+        String popupTitle = "Name Overlapped";
         String message = "Rename project as " + newProjName;
-        log.info(message);
-        showMessageDialog(SelectionWindow.initFrame(), message, "Name Overlapped", JOptionPane.INFORMATION_MESSAGE);
+        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static void showImportSuccessPopup(String projectName)
     {
+        String popupTitle = "Success";
         String message = "Import project " + projectName + " success!";
-        log.info(message);
-        showMessageDialog(SelectionWindow.initFrame(), message, "Success", JOptionPane.INFORMATION_MESSAGE);
+        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**

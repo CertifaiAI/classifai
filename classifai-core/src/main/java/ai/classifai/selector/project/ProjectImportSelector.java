@@ -30,8 +30,6 @@ import java.awt.*;
 import java.io.File;
 import java.nio.file.Paths;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 /**
  * Open browser to choose for configuration file to import
  *
@@ -109,11 +107,9 @@ public class ProjectImportSelector extends SelectionWindow {
 
     private void showAbortImportPopup()
     {
+        String popupTitle = "Error Opening Window";
         String message = "Another selection window is currently open. Please close to proceed.";
-        log.info(message);
-        showMessageDialog(SelectionWindow.initFrame(),
-                message,
-                "Error Opening Window", JOptionPane.ERROR_MESSAGE);
+        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
     }
 
 }

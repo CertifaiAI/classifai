@@ -180,6 +180,7 @@ public class V2Endpoint {
                 {
                     // Update loader in cache after success db update
                     ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader);
+                    log.debug("Rename to " + newProjectName + " success.");
                     HTTPResponseHandler.configureOK(context);
                 }
                 else

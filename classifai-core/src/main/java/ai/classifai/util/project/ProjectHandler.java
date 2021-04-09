@@ -33,8 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 /**
  * Project Handler for File & Folder Selector and Database Update
  *
@@ -209,10 +207,10 @@ public class ProjectHandler {
         if(!isProjectNameUnique(newProjectName, annotationType))
         {
             // Popup error message if duplicate name exists
+            String popupTitle = "Rename Error";
             String message = "Duplicate project name. Abort process";
-            log.info(message);
-            JFrame frame = SelectionWindow.initFrame();
-            showMessageDialog(frame, message, "Rename Error", JOptionPane.ERROR_MESSAGE);
+            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+
             return false;
         }
         log.debug("Proceed to rename process");

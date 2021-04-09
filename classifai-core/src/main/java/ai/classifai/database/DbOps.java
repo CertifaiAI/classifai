@@ -25,8 +25,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 
 /**
  * Db Operations for files and paths of database
@@ -70,10 +68,9 @@ public class DbOps {
 
             if(DbConfig.getH2().isDbLocked())
             {
-                log.info("H2 Database is locked. Likely another classifai application is running. Close it and try again.");
-                showMessageDialog(SelectionWindow.initFrame(),
-                        "H2 Database is locked. Likely another classifai application is running. Close it and try again.",
-                        "Database Setup Error", JOptionPane.ERROR_MESSAGE);
+                String popupTitle = "Database Setup Error";
+                String message = "H2 Database is locked. Likely another classifai application is running. Close it and try again.";
+                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
                 System.exit(0);
             }
