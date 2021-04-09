@@ -45,6 +45,8 @@ public class SelectionWindow {
     @Getter @Setter
     public ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
 
+    private static JFrame frame = initFrame();
+
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Json Files", "json");
 
@@ -89,7 +91,7 @@ public class SelectionWindow {
     public static void showPopupAndLog(String title, String message, int popupType)
     {
         log.info(message);
-        JFrame frame = initFrame();
         showMessageDialog(frame, message, title, popupType);
     }
+
 }
