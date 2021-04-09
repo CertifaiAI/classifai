@@ -293,7 +293,7 @@ public class ImageHandler {
     @Deprecated
     public static void saveToDatabase(@NonNull String projectID, @NonNull List<Object> filesFullPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesFullPath.size());
@@ -349,7 +349,7 @@ public class ImageHandler {
     @Deprecated
     public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
         List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
@@ -365,11 +365,11 @@ public class ImageHandler {
 
         List<Object> totalFileList = new ArrayList<>();
 
-        while (folderStack.isEmpty() != true)
+        while (!folderStack.isEmpty())
         {
             File currentFolderPath = folderStack.pop();
 
-            File[] folderList = currentFolderPath.listFiles();
+            File[] folderList = Objects.requireNonNull(currentFolderPath.listFiles());
 
             for (File file : folderList)
             {
@@ -390,7 +390,7 @@ public class ImageHandler {
 
     public static boolean iterateFolder(@NonNull String projectID, @NonNull File rootPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         String[] fileExtension = ImageFileType.getImageFileTypes();
         List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
@@ -406,11 +406,11 @@ public class ImageHandler {
 
         List<Object> totalFileList = new ArrayList<>();
 
-        while (folderStack.isEmpty() != true)
+        while (!folderStack.isEmpty())
         {
             File currentFolderPath = folderStack.pop();
 
-            File[] folderList = currentFolderPath.listFiles();
+            File[] folderList = Objects.requireNonNull(currentFolderPath.listFiles());
 
             for (File file : folderList)
             {
@@ -430,6 +430,13 @@ public class ImageHandler {
         return true;
     }
 
+    public static List<File> getValidImagesFromFolder(File rootPath)
+    {
+        String[] fileExtension = ImageFileType.getImageFileTypes();
+
+        return FileHandler.processFolder(rootPath, fileExtension);
+    }
+
     /*
     search through rootpath and check if list of files exists
     scenario 1: root file missing
@@ -440,7 +447,7 @@ public class ImageHandler {
     */
     public static void refreshProjectRootPath(@NonNull String projectID)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
@@ -456,8 +463,7 @@ public class ImageHandler {
             return;
         }
 
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-        List<File> dataFullPathList = FileHandler.processFolder(rootPath, fileExtension);
+        List<File> dataFullPathList = getValidImagesFromFolder(rootPath);
 
         //Scenario 2 - 1: root path exist but all images missing
         if(dataFullPathList.isEmpty())

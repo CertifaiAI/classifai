@@ -61,6 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -568,9 +569,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private void getProjectMetadata(@NonNull List<JsonObject> result, @NonNull String projectId)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         Version currentVersion = loader.getProjectVersion().getCurrentVersion();
+
+        List<File> existingDataInDir = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
 
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
@@ -582,7 +585,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
                 .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
-                .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDb().size()));
+                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size()));
     }
 
     /**
