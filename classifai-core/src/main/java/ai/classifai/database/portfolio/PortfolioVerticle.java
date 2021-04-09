@@ -30,6 +30,7 @@ import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -231,18 +232,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         String message = "Rename project as " + newProjName;
         log.info(message);
-        showMessageDialog(null,
-                message,
-                "Name Overlapped", JOptionPane.INFORMATION_MESSAGE);
+        showMessageDialog(SelectionWindow.initFrame(), message, "Name Overlapped", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static void showImportSuccessPopup(String projectName)
     {
         String message = "Import project " + projectName + " success!";
         log.info(message);
-        showMessageDialog(null,
-                message,
-                "Success", JOptionPane.INFORMATION_MESSAGE);
+        showMessageDialog(SelectionWindow.initFrame(), message, "Success", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**

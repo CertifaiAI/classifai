@@ -16,6 +16,7 @@
 package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
@@ -94,9 +95,7 @@ public class ProjectImport
             {
                 String message = "Project not imported. Missing Key in JSON file: " + key;
                 log.info(message);
-                showMessageDialog(null,
-                        message,
-                        "Import Error", JOptionPane.ERROR_MESSAGE);
+                showMessageDialog(SelectionWindow.initFrame(), message, "Import Error", JOptionPane.ERROR_MESSAGE);
 
                 return false;
             }
@@ -114,9 +113,7 @@ public class ProjectImport
         {
             String message = "The configuration file imported is not valid.";
             log.info(message);
-            showMessageDialog(null,
-                    message,
-                    "Invalid import file", JOptionPane.ERROR_MESSAGE);
+            showMessageDialog(SelectionWindow.initFrame(), message, "Invalid import file", JOptionPane.ERROR_MESSAGE);
 
             return false;
         }
@@ -127,9 +124,7 @@ public class ProjectImport
             String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
                     "\nJSON Version: " + toolVersionFromJson;
             log.info(message);
-            showMessageDialog(null,
-                    message,
-                    "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
+            showMessageDialog(SelectionWindow.initFrame(), message, "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
         }
         return true;
     }
@@ -143,9 +138,7 @@ public class ProjectImport
             String message = "Folder path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
             log.info(message);
             inputJsonObject.put(ParamConfig.getProjectPathParam(), ActionConfig.getJsonFilePath());
-            showMessageDialog(null,
-                    message,
-                    "Project Path Update", JOptionPane.INFORMATION_MESSAGE);
+            showMessageDialog(SelectionWindow.initFrame(), message, "Project Path Update", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

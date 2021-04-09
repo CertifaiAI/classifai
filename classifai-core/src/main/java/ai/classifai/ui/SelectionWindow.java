@@ -41,10 +41,10 @@ public class SelectionWindow {
     @Getter @Setter
     public ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
 
-    private final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
+    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Json Files", "json");
 
-    public JFrame initFrame()
+    public static JFrame initFrame()
     {
         Point pt = MouseInfo.getPointerInfo().getLocation();
         JFrame frame = new JFrame();
@@ -59,7 +59,7 @@ public class SelectionWindow {
         return frame;
     }
 
-    public JFileChooser initChooser(int mode)
+    public static JFileChooser initChooser(int mode)
     {
         JFileChooser chooser = new JFileChooser() {
             @Override

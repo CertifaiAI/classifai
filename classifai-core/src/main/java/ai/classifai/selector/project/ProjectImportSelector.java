@@ -111,7 +111,7 @@ public class ProjectImportSelector extends SelectionWindow {
     {
         String message = "Another selection window is currently open. Please close to proceed.";
         log.info(message);
-        showMessageDialog(null,
+        showMessageDialog(SelectionWindow.initFrame(),
                 message,
                 "Error Opening Window", JOptionPane.ERROR_MESSAGE);
     }

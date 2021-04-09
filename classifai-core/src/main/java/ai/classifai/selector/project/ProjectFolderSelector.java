@@ -104,9 +104,7 @@ public class ProjectFolderSelector extends SelectionWindow {
     {
         String message = "No folder chosen. Abort project creation.";
         log.info(message);
-        showMessageDialog(null,
-                message,
-                "Project Not Created", JOptionPane.INFORMATION_MESSAGE);
+        showMessageDialog(initFrame(), message, "Project Not Created", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
