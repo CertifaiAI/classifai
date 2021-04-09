@@ -25,7 +25,8 @@
         "label": "标签",
         "annotation": "标注",
         "statistic": "数据",
-        "export": "Export"
+        "export": "导出",
+        "reload": "重新加载"
     },
     "labellingProject": {
         "project": "项目",
@@ -55,6 +56,8 @@
         "dimension": "尺寸",
         "copyToClipboard": "复制"
     },
-    "exportSuccess": " project was exported successfully!",
-    "exportFailed": "Fail to export "
+    "exportSuccess": "导出成功",
+    "exportFailed": "导出失败",
+    "reloadSuccess": "重新导入成功",
+    "reloadFailed": "重新导入失败"
 }
