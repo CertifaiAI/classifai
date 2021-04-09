@@ -18,6 +18,7 @@ package ai.classifai.util.project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
@@ -27,9 +28,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * Project Handler for File & Folder Selector and Database Update
@@ -197,6 +201,22 @@ public class ProjectHandler {
         {
             log.debug("Error: ", e);
         }
+    }
+
+    public static boolean checkValidProjectRename(String newProjectName, int annotationType)
+    {
+
+        if(!isProjectNameUnique(newProjectName, annotationType))
+        {
+            // Popup error message if duplicate name exists
+            String message = "Duplicate project name. Abort process";
+            log.info(message);
+            JFrame frame = SelectionWindow.initFrame();
+            showMessageDialog(frame, message, "Rename Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        log.debug("Proceed to rename process");
+        return true;
     }
 
     public static void updateProjectNameInCache(String projectID, ProjectLoader loader)

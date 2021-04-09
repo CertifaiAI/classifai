@@ -162,30 +162,36 @@ public class V2Endpoint {
 
         if(util.checkIfProjectNull(context, loader, projectName)) return;
 
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-        jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
-
-        DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
-
-        loader.setProjectName(newProjectName);
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
+        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
-            JsonObject response = (JsonObject) fetch.result().body();
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
 
-            if (ReplyHandler.isReplyOk(response))
-            {
-                // Update loader in cache after success db update
-                ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader);
-                HTTPResponseHandler.configureOK(context);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
-            }
-        });
+            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
 
+            loader.setProjectName(newProjectName);
+
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
+            {
+                JsonObject response = (JsonObject) fetch.result().body();
+
+                if (ReplyHandler.isReplyOk(response))
+                {
+                    // Update loader in cache after success db update
+                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader);
+                    HTTPResponseHandler.configureOK(context);
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
+                }
+            });
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
     }
 
     /**
