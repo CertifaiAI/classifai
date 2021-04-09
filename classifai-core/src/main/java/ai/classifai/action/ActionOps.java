@@ -15,6 +15,7 @@
  */
 package ai.classifai.action;
 
+import ai.classifai.action.ActionConfig.ExportType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
@@ -143,5 +144,20 @@ public class ActionOps
         if(input.length() > 2 && (input.charAt(0) != openBracket)  || (input.charAt(input.length() - 1) != closeBracket)) return input;
 
         return input.substring(1, input.length() - 1);
+    }
+
+    public static ExportType getExportType(String export_type_str)
+    {
+        if(export_type_str.equals("cfg"))
+        {
+            return ExportType.CONFIG_ONLY;
+        }
+        else if(export_type_str.equals("cfgzip"))
+        {
+            return ExportType.CONFIG_WITH_DATA;
+        }
+
+        log.info("Invalid export type");
+        return ExportType.INVALID_CONFIG;
     }
 }

@@ -41,7 +41,6 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.AbstractVerticle;
@@ -52,7 +51,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
@@ -61,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.io.File;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -334,9 +332,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     public void exportProject(Message<JsonObject> message)
     {
         ProjectExport exporter = new ProjectExport();
-
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
-
         Tuple params = Tuple.of(projectId);
 
         //export portfolio table relevant
@@ -354,23 +350,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             return;
                         }
 
-                        Row portfolioRow = rowSet.iterator().next();
-
                         JsonObject configContent = exporter.getConfigSkeletonStructure();
-
-                        PortfolioParser.parseOut(portfolioRow, configContent);
-
-                        String projectPath = configContent.getString(ParamConfig.getProjectPathParam());
-
-                        AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
+                        PortfolioParser.parseOut(rowSet.iterator().next(), configContent);
 
                         //export project table relevant
-                        JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId)));
+                        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+                        JDBCPool client = AnnotationHandler.getJDBCPool(
+                                Objects.requireNonNull(loader));
 
                         client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)
                                 .onComplete(annotationFetch ->{
-
                                     if (annotationFetch.succeeded())
                                     {
                                         RowSet<Row> projectRowSet = annotationFetch.result();
@@ -381,16 +371,30 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         }
                                         else
                                         {
-
-                                            RowIterator<Row> projectRowIterator = projectRowSet.iterator();
-
-                                            ProjectParser.parseOut(projectPath, projectRowIterator, configContent);
+                                            ProjectParser.parseOut(
+                                                    configContent.getString(ParamConfig.getProjectPathParam()),
+                                                    projectRowSet.iterator(), configContent);
                                         }
 
-                                        //export to configuration file
-                                        String file = exporter.exportToFile(projectId, configContent);
-
-                                        message.reply(ReplyHandler.getOkReply().put(ActionConfig.getProjectConfigPathParam(), file));
+                                        if(message.body().getInteger(ActionConfig.getExportTypeParam()) ==
+                                                ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
+                                        {
+                                            log.info("Exporting Config with data");
+                                            try {
+                                                message.reply(ReplyHandler.getOkReply().put(
+                                                        ActionConfig.getProjectConfigPathParam(),
+                                                        exporter.exportToFileWithData(loader, projectId, configContent)));
+                                            } catch (IOException e) {
+                                                log.info("Error creating zip file");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            log.info("Exporting Config");
+                                            message.reply(ReplyHandler.getOkReply().put(
+                                                    ActionConfig.getProjectConfigPathParam(),
+                                                    exporter.exportToFile(projectId, configContent)));
+                                        }
                                     }
                                 });
                     }

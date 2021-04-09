@@ -29,9 +29,18 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ActionConfig
 {
+    public enum ExportType
+    {
+        INVALID_CONFIG,
+        CONFIG_ONLY,
+        CONFIG_WITH_DATA
+    }
+
     @Getter private static final String toolParam = "tool";
     @Getter private static final String toolVersionParam = "tool_version";
     @Getter private static final String updatedDateParam = "updated_date";
+
+    @Getter private static final String exportTypeParam = "export_type";
 
     @Getter private static final String toolName = "classifai";
 
