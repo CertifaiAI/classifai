@@ -139,7 +139,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/v2/:annotation_type/projects/importstatus").handler(v2::getImportStatus);
 
-        router.put("/v2/:annotation_type/rename/:project_name/:new_project_name").handler(v2::renameProject);
+        router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
 
         //*******************************Cloud*******************************
 
