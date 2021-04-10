@@ -25,7 +25,8 @@
         "label": "Label",
         "annotation": "Anotasi",
         "statistic": "Statistik",
-        "export": "Eksport"
+        "export": "Eksport",
+        "reload": "Muat Semula"
     },
     "labellingProject": {
         "project": "Projek",
@@ -56,5 +57,7 @@
         "copyToClipboard": "Salin"
     },
     "exportSuccess": " telah berjaya diesksport!",
-    "exportFailed": "Gagal untuk mengeksport projek "
+    "exportFailed": "Gagal untuk mengeksport projek ",
+    "reloadSuccess": " telah berjaya dimuat semula!",
+    "reloadFailed": "Gagal untuk memuat semula "
 }
