@@ -1,11 +1,13 @@
 {
     "createNewProject": "建立新项目",
+    "renameProject": "重新命名项目",
     "newProjectName": "新项目名称 : ",
     "projectNameExist": "* 项目名称已被使用。请选择其他名称",
     "projectNameRequired": "* 项目名称空缺",
     "labelListFile": "标签列表文件 (*.txt): ",
     "chooseFile": "选择文件",
     "createButton": "创建",
+    "updateButton": "更新",
     "cancelButton": "取消",
     "menuName": {
         "newProject": "创建新项目",
@@ -34,11 +36,13 @@
         "notAvailable": "不可开启",
         "uploadFolder": "上载文件夹",
         "uploadPhotos": "上载图像",
+        "renameProject": "重新命名项目",
         "deleteProject": "删除现有项目",
         "created": "已创建:",
         "totalPhoto": "图像总数:",
         "noProject": "没有项目",
         "createNew": "开始新的项目吧！"
     },
-    "deleteSuccess": "已被删除"
+    "deleteSuccess": "已被删除!",
+    "renameSuccess": "名称更新成功!"
 }
