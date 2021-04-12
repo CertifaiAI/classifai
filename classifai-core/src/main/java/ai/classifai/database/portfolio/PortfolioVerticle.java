@@ -47,7 +47,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
@@ -60,7 +59,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**

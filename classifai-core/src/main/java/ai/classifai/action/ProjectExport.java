@@ -22,7 +22,6 @@ import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
-import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
