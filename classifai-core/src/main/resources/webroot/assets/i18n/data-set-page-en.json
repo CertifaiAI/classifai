@@ -1,11 +1,13 @@
 {
     "createNewProject": "Create New Project",
+    "renameProject": "Rename Project",
     "newProjectName": "New Project Name:",
     "projectNameExist": "* Project name already exist! Try other name",
     "projectNameRequired": "* Project name is required",
     "labelListFile": "Label list file (*.txt):",
     "chooseFile": "Choose File",
     "createButton": "Create",
+    "updateButton": "Update",
     "cancelButton": "Cancel",
     "menuName": {
         "newProject": "New Project",
@@ -34,11 +36,13 @@
         "notAvailable": "Not Available",
         "uploadFolder": "Upload Folder",
         "uploadPhotos": "Upload Photo(s)",
+        "renameProject": "Rename Project",
         "deleteProject": "Delete Project",
         "created": "Created:",
         "totalPhoto": "Total Photo:",
         "noProject": "Wait a minute... there's no project",
         "createNew": "Gear up and start creating new project!"
     },
-    "deleteSuccess": "is successfully deleted!"
+    "deleteSuccess": "is successfully deleted!",
+    "renameSuccess": "is successfully renamed!"
 }
