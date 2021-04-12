@@ -16,6 +16,7 @@
 package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
@@ -29,8 +30,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.List;
-
-import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * Import of project from configuration file
@@ -92,11 +91,9 @@ public class ProjectImport
         {
             if(!inputJsonObject.containsKey(key))
             {
+                String popupTitle = "Import Error";
                 String message = "Project not imported. Missing Key in JSON file: " + key;
-                log.info(message);
-                showMessageDialog(null,
-                        message,
-                        "Import Error", JOptionPane.ERROR_MESSAGE);
+                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
                 return false;
             }
@@ -112,11 +109,9 @@ public class ProjectImport
 
         if(toolNameFromJson == null || toolVersionFromJson == null || updatedDateFromJson == null || !toolNameFromJson.equals(ActionConfig.getToolName()))
         {
+            String popupTitle = "Invalid import file";
             String message = "The configuration file imported is not valid.";
-            log.info(message);
-            showMessageDialog(null,
-                    message,
-                    "Invalid import file", JOptionPane.ERROR_MESSAGE);
+            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
             return false;
         }
@@ -124,12 +119,11 @@ public class ProjectImport
         // Does not return false. Only pop up warning.
         if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
         {
+            String popupTitle = "Tool Version Warning";
             String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
                     "\nJSON Version: " + toolVersionFromJson;
-            log.info(message);
-            showMessageDialog(null,
-                    message,
-                    "Tool Version Warning", JOptionPane.WARNING_MESSAGE);
+            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.WARNING_MESSAGE);
+
         }
         return true;
     }
@@ -140,12 +134,9 @@ public class ProjectImport
 
         if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
         {
+            String popupTitle = "Project Path Update";
             String message = "Folder path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
-            log.info(message);
-            inputJsonObject.put(ParamConfig.getProjectPathParam(), ActionConfig.getJsonFilePath());
-            showMessageDialog(null,
-                    message,
-                    "Project Path Update", JOptionPane.INFORMATION_MESSAGE);
+            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

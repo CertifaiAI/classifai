@@ -30,6 +30,7 @@ import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -61,8 +62,6 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
-
-import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * General database processing to get high level infos of each created project
@@ -126,6 +125,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.exportProject(message);
         }
+        else if(action.equals(PortfolioDbQuery.getRenameProject()))
+        {
+            renameProject(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -154,6 +157,28 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
+    public static void renameProject(@NonNull Message<JsonObject> message)
+    {
+        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
+        String newProjectName = message.body().getString(ParamConfig.getNewProjectNameParam());
+
+        Tuple params = Tuple.of(newProjectName, projectId);
+
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRenameProject())
+                .execute(params)
+                .onComplete(fetch ->{
+
+                    if (fetch.succeeded())
+                    {
+                        message.replyAndRequest(ReplyHandler.getOkReply());
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
+
+    }
 
     public static void loadProjectFromImportingConfigFile(@NonNull JsonObject input)
     {
@@ -200,20 +225,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private static void showNameOverlappedPopup(String newProjName)
     {
+        String popupTitle = "Name Overlapped";
         String message = "Rename project as " + newProjName;
-        log.info(message);
-        showMessageDialog(null,
-                message,
-                "Name Overlapped", JOptionPane.INFORMATION_MESSAGE);
+        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static void showImportSuccessPopup(String projectName)
     {
+        String popupTitle = "Success";
         String message = "Import project " + projectName + " success!";
-        log.info(message);
-        showMessageDialog(null,
-                message,
-                "Success", JOptionPane.INFORMATION_MESSAGE);
+        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -547,9 +568,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private void getProjectMetadata(@NonNull List<JsonObject> result, @NonNull String projectId)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         Version currentVersion = loader.getProjectVersion().getCurrentVersion();
+
+        List<File> existingDataInDir = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
 
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
@@ -561,7 +584,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
                 .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
-                .put(ParamConfig.getTotalUuidParam(), loader.getUuidListFromDb().size()));
+                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size()));
     }
 
     /**

@@ -19,16 +19,20 @@ import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * For selection windows initialization and settings
  *
  * @author devenyantis
  */
+@Slf4j
 public class SelectionWindow {
 
     public enum ImportSelectionWindowStatus
@@ -41,10 +45,10 @@ public class SelectionWindow {
     @Getter @Setter
     public ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
 
-    private final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
+    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Json Files", "json");
 
-    public JFrame initFrame()
+    public static JFrame initFrame()
     {
         Point pt = MouseInfo.getPointerInfo().getLocation();
         JFrame frame = new JFrame();
@@ -59,7 +63,7 @@ public class SelectionWindow {
         return frame;
     }
 
-    public JFileChooser initChooser(int mode)
+    public static JFileChooser initChooser(int mode)
     {
         JFileChooser chooser = new JFileChooser() {
             @Override
@@ -80,5 +84,12 @@ public class SelectionWindow {
         chooser.setAcceptAllFileFilterUsed(false);
 
         return chooser;
+    }
+
+    public static void showPopupAndLog(String title, String message, int popupType)
+    {
+        log.info(message);
+        JFrame frame = initFrame();
+        showMessageDialog(frame, message, title, popupType);
     }
 }

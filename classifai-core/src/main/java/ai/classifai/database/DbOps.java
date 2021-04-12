@@ -16,6 +16,7 @@
 package ai.classifai.database;
 
 import ai.classifai.database.migration.DbMigration;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.data.FileHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,8 +24,6 @@ import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import static javax.swing.JOptionPane.showMessageDialog;
 
 
 /**
@@ -69,10 +68,9 @@ public class DbOps {
 
             if(DbConfig.getH2().isDbLocked())
             {
-                log.info("H2 Database is locked. Likely another classifai application is running. Close it and try again.");
-                showMessageDialog(null,
-                        "H2 Database is locked. Likely another classifai application is running. Close it and try again.",
-                        "Database Setup Error", JOptionPane.ERROR_MESSAGE);
+                String popupTitle = "Database Setup Error";
+                String message = "H2 Database is locked. Likely another classifai application is running. Close it and try again.";
+                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
                 System.exit(0);
             }

@@ -40,8 +40,6 @@ import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Objects;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-
 /**
  * Open browser to select folder with importing list of data points in the folder
  *
@@ -102,11 +100,9 @@ public class ProjectFolderSelector extends SelectionWindow {
 
     private void showAbortProjectPopup()
     {
+        String popupTitle = "Project Not Created";
         String message = "No folder chosen. Abort project creation.";
-        log.info(message);
-        showMessageDialog(null,
-                message,
-                "Project Not Created", JOptionPane.INFORMATION_MESSAGE);
+        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)

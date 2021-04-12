@@ -18,6 +18,7 @@ package ai.classifai.util.project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -41,28 +43,28 @@ public class ProjectHandler {
 
     //key: projectID
     //value: ProjectLoader
-    private static Map projectIDLoaderDict;
+    private static Map<String, ProjectLoader> projectIDLoaderDict;
 
     //key: Pair<String projectName, Integer annotationType>
     //value: projectID
-    private static Map projectIDSearch;
+    private static Map<Pair<String, Integer>, String> projectIDSearch;
 
     //key: projectID
     //value: Pair<String projectName, Integer annotationType>
-    private static Map projectNameSearch;
+    private static Map<String, Pair<String, Integer>> projectNameSearch;
 
     @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
 
     static
     {
-        projectIDLoaderDict = new HashMap<String, ProjectLoader>();
-        projectIDSearch = new HashMap<Pair<String, Integer>, String>();
-        projectNameSearch = new HashMap<String, Pair<String, Integer>>();
+        projectIDLoaderDict = new HashMap<>();
+        projectIDSearch = new HashMap<>();
+        projectNameSearch = new HashMap<>();
     }
 
     public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
     {
-        return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
+        return getProjectLoader(new ImmutablePair<>(projectName, annotationType.ordinal()));
     }
 
     private static ProjectLoader getProjectLoader(Pair<String, Integer> project)
@@ -106,7 +108,7 @@ public class ProjectHandler {
 
     public static String getProjectId(String projectName, Integer annotationType)
     {
-        Pair key = new ImmutablePair(projectName, annotationType);
+        Pair<String, Integer> key = new ImmutablePair<>(projectName, annotationType);
 
         return getProjectID(key);
     }
@@ -118,7 +120,7 @@ public class ProjectHandler {
             log.debug("Saving new project of name: " + loader.getProjectName() + " failed with invalid annotation type.");
         }
 
-        Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
+        Pair<String, Integer> projectNameWithType = new ImmutablePair<>(loader.getProjectName(), loader.getAnnotationType());
 
         projectIDSearch.put(projectNameWithType, loader.getProjectId());
         projectNameSearch.put(loader.getProjectId(), projectNameWithType);
@@ -153,7 +155,7 @@ public class ProjectHandler {
             return false;
         }
 
-        Set projectIDDictKeys = projectIDSearch.keySet();
+        Set<Pair<String, Integer>> projectIDDictKeys = projectIDSearch.keySet();
 
         boolean isProjectNameUnique = true;
 
@@ -192,6 +194,49 @@ public class ProjectHandler {
             {
                 throw new NullPointerException("Deletion of Project from ProjectIDSearch failed.");
             }
+        }
+        catch (Exception e)
+        {
+            log.debug("Error: ", e);
+        }
+    }
+
+    public static boolean checkValidProjectRename(String newProjectName, int annotationType)
+    {
+
+        if(!isProjectNameUnique(newProjectName, annotationType))
+        {
+            // Popup error message if duplicate name exists
+            String popupTitle = "Rename Error";
+            String message = "Duplicate project name. Abort process";
+            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+
+            return false;
+        }
+        log.debug("Proceed to rename process");
+        return true;
+    }
+
+    public static void updateProjectNameInCache(String projectID, ProjectLoader loader, String oldProjectName)
+    {
+        try
+        {
+            if (projectIDLoaderDict.get(projectID) == null)
+            {
+                throw new NullPointerException("Rename project error. ProjectID not exist in projectNameSearch.");
+            }
+
+            // Delete old project id Search dict and add new
+
+            Pair<String, Integer> oldProjectNameWithType = new ImmutablePair<>(oldProjectName, loader.getAnnotationType());
+            projectIDSearch.remove(oldProjectNameWithType);
+
+            Pair<String, Integer> projectNameWithType = new ImmutablePair<>(loader.getProjectName(), loader.getAnnotationType());
+            projectIDSearch.put(projectNameWithType, loader.getProjectId());
+
+            // Update loader dict
+            projectIDLoaderDict.put(projectID, loader);
+
         }
         catch (Exception e)
         {

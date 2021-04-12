@@ -144,6 +144,58 @@ public class V2Endpoint {
     }
 
     /**
+     * Create new project
+     * PUT http://localhost:{port}/v2/:annotation_type/rename/:project_name/:new_project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/rename/helloworld/helloworldnewname
+     *
+     */
+    public void renameProject(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String newProjectName = context.request().getParam(ParamConfig.getNewProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(util.checkIfProjectNull(context, loader, projectName)) return;
+
+        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
+        {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
+
+            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
+
+            loader.setProjectName(newProjectName);
+
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
+            {
+                JsonObject response = (JsonObject) fetch.result().body();
+
+                if (ReplyHandler.isReplyOk(response))
+                {
+                    // Update loader in cache after success db update
+                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+                    log.debug("Rename to " + newProjectName + " success.");
+                    HTTPResponseHandler.configureOK(context);
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
+                }
+            });
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
+    }
+
+    /**
      * Reload v2 project
      * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/reload
      *

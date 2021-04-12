@@ -1,11 +1,13 @@
 {
     "createNewProject": "Reka Projek Baru",
+    "renameProject": "Tukar Nama Projek",
     "newProjectName": "Nama Projek Baru:",
     "projectNameExist": "* Nama projek telah tersedia! Sila cuba nama lain",
     "projectNameRequired": "* Sila isi nama projek",
     "labelListFile": "Fail senarai label(*.txt):",
     "chooseFile": "Pilih Fail",
     "createButton": "Reka",
+    "updateButton": "Kemas Kini",
     "cancelButton": "Batal",
     "menuName": {
         "newProject": "Projek Baru",
@@ -34,11 +36,13 @@
         "notAvailable": "Tidak Tersedia",
         "uploadFolder": "Memuat naik folder",
         "uploadPhotos": "Memuat naik foto",
+        "renameProject": "Tukar Nama Projek",
         "deleteProject": "Padam Projek",
         "created": "Dicipta pada:",
         "totalPhoto": "Jumlah foto:",
         "noProject": "Tunggu sekejap... tidak ada projek pun",
         "createNew": "Bersedia dan jom mulakan projek baru!"
     },
-    "deleteSuccess": "telah berjaya dipadam!"
+    "deleteSuccess": "telah berjaya dipadam!",
+    "renameSuccess": "telah berjaya dinamakan semula!"
 }
