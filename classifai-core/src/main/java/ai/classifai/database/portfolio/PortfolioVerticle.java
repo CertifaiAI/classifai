@@ -47,6 +47,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
@@ -331,7 +332,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void exportProject(Message<JsonObject> message)
     {
-        ProjectExport exporter = new ProjectExport();
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
         Tuple params = Tuple.of(projectId);
 
@@ -344,19 +344,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     {
                         RowSet<Row> rowSet = fetch.result();
 
-                        if(rowSet.size() == 0)
-                        {
-                            log.debug("Export project retrieve 0 rows. Project not found from portfolio database");
-                            return;
-                        }
-
-                        JsonObject configContent = exporter.getConfigSkeletonStructure();
-                        PortfolioParser.parseOut(rowSet.iterator().next(), configContent);
-
                         //export project table relevant
                         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-                        JDBCPool client = AnnotationHandler.getJDBCPool(
-                                Objects.requireNonNull(loader));
+                        JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(loader));
 
                         client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)
@@ -365,36 +355,15 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     {
                                         RowSet<Row> projectRowSet = annotationFetch.result();
 
-                                        if(projectRowSet.size() == 0)
-                                        {
-                                            log.debug("Export project annotation retrieve 0 rows. Project not found from project database");
-                                        }
-                                        else
-                                        {
-                                            ProjectParser.parseOut(
-                                                    configContent.getString(ParamConfig.getProjectPathParam()),
-                                                    projectRowSet.iterator(), configContent);
-                                        }
+                                        JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
+                                        if(configContent == null) return;
 
-                                        if(message.body().getInteger(ActionConfig.getExportTypeParam()) ==
-                                                ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
-                                        {
-                                            log.info("Exporting Config with data");
-                                            try {
-                                                message.reply(ReplyHandler.getOkReply().put(
-                                                        ActionConfig.getProjectConfigPathParam(),
-                                                        exporter.exportToFileWithData(loader, projectId, configContent)));
-                                            } catch (IOException e) {
-                                                log.info("Error creating zip file");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            log.info("Exporting Config");
-                                            message.reply(ReplyHandler.getOkReply().put(
-                                                    ActionConfig.getProjectConfigPathParam(),
-                                                    exporter.exportToFile(projectId, configContent)));
-                                        }
+                                        String exportPath = ProjectExport.runExportProcess(
+                                                message.body().getInteger(ActionConfig.getExportTypeParam()),
+                                                loader, projectId, configContent);
+
+                                        message.reply(ReplyHandler.getOkReply().put(
+                                                ActionConfig.getProjectConfigPathParam(), exportPath));
                                     }
                                 });
                     }

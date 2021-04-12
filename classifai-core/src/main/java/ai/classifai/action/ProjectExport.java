@@ -15,11 +15,17 @@
  */
 package ai.classifai.action;
 
+import ai.classifai.action.parser.PortfolioParser;
+import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
+import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -41,7 +47,7 @@ import java.util.zip.ZipOutputStream;
 @NoArgsConstructor
 public class ProjectExport
 {
-    public JsonObject getConfigSkeletonStructure()
+    public static JsonObject getConfigSkeletonStructure()
     {
         return new JsonObject()
                 .put(ActionConfig.getToolParam(), ActionConfig.getToolName())
@@ -49,7 +55,7 @@ public class ProjectExport
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
     }
 
-    public String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
+    private static String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
@@ -74,7 +80,7 @@ public class ProjectExport
         return configPath;
     }
 
-    public String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
+    private static String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
         File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
@@ -99,7 +105,7 @@ public class ProjectExport
         return zipFile.toString();
     }
 
-    public void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
+    private static void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
     {
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
         String saveFileRelativePath = Paths.get(filePath.getParentFile().getName(), relativePath).toFile().toString();
@@ -119,5 +125,45 @@ public class ProjectExport
 
         out.closeEntry();
         fis.close();
+    }
+
+    public static String runExportProcess(int exportType, ProjectLoader loader, String projectId, JsonObject configContent)
+    {
+        if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
+        {
+            log.info("Exporting Config with data");
+            try {
+                return exportToFileWithData(loader, projectId, configContent);
+            } catch (IOException e) {
+                log.info("Error creating zip file");
+            }
+        }
+
+        log.info("Exporting Config only");
+        return exportToFile(projectId, configContent);
+    }
+
+    public static JsonObject getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
+    {
+        if(rowSet.size() == 0)
+        {
+            log.debug("Export project retrieve 0 rows. Project not found from portfolio database");
+            return null;
+        }
+
+        JsonObject configContent = getConfigSkeletonStructure();
+        PortfolioParser.parseOut(rowSet.iterator().next(), configContent);
+
+        if(projectRowSet.size() == 0)
+        {
+            log.debug("Export project annotation retrieve 0 rows. Project not found from project database");
+            return null;
+        }
+
+        ProjectParser.parseOut(
+                configContent.getString(ParamConfig.getProjectPathParam()),
+                projectRowSet.iterator(), configContent);
+
+        return configContent;
     }
 }

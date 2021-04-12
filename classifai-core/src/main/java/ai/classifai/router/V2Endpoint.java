@@ -286,7 +286,6 @@ public class V2Endpoint {
     public void exportProject(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        ActionConfig.ExportType exportType = ActionOps.getExportType(context.request().getParam(ActionConfig.getExportTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
@@ -296,7 +295,7 @@ public class V2Endpoint {
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectId)
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
-                .put(ActionConfig.getExportTypeParam(), exportType.ordinal());
+                .put(ActionConfig.getExportTypeParam(), 2);
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
 
