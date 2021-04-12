@@ -81,43 +81,39 @@ public class ProjectParser
     {
         String projectId = loader.getProjectId();
 
-        Iterator<Map.Entry<String, Object>> iterator = contentJsonBody.iterator();
-
-        while(iterator.hasNext())
-        {
-            Map.Entry<String, Object> item = iterator.next();
+        for (Map.Entry<String, Object> item : contentJsonBody) {
             String uuid = item.getKey();
 
             JsonObject jsonObject = (JsonObject) item.getValue();
 
             String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
 
-            String fullPath = Paths.get(loader.getProjectPath(), subPath).toString();
+            File fullPath = Paths.get(loader.getProjectPath(), subPath).toFile();
 
-            String currentHash = Hash.getHash256String(new File(fullPath));
+            // Only proceed to uploading image if image exists. Else skip
+            if (fullPath.exists()) {
+                String currentHash = Hash.getHash256String(fullPath);
 
-            String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
+                String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
 
-            if(fileHash.equals(currentHash))
-            {
-                String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
-                Annotation annotation = Annotation.builder()
-                        .uuid(uuid)
-                        .projectId(projectId)
-                        .imgPath(subPath)
-                        .annotationDict(buildAnnotationDict(versionList))
-                        .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
-                        .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
-                        .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
-                        .build();
+                if (fileHash.equals(currentHash)) {
+                    String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
+                    Annotation annotation = Annotation.builder()
+                            .uuid(uuid)
+                            .projectId(projectId)
+                            .imgPath(subPath)
+                            .annotationDict(buildAnnotationDict(versionList))
+                            .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
+                            .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
+                            .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
+                            .build();
 
-                loader.getUuidAnnotationDict().put(uuid, annotation);
+                    loader.getUuidAnnotationDict().put(uuid, annotation);
 
-                AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
-            }
-            else
-            {
-                log.debug("Hash not same for " + fullPath);
+                    AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+                } else {
+                    log.debug("Hash not same for " + fullPath);
+                }
             }
         }
     }
