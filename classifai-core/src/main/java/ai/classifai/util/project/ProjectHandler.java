@@ -217,7 +217,7 @@ public class ProjectHandler {
         return true;
     }
 
-    public static void updateProjectNameInCache(String projectID, ProjectLoader loader)
+    public static void updateProjectNameInCache(String projectID, ProjectLoader loader, String oldProjectName)
     {
         try
         {
@@ -226,7 +226,11 @@ public class ProjectHandler {
                 throw new NullPointerException("Rename project error. ProjectID not exist in projectNameSearch.");
             }
 
-            // Update project id Search dict
+            // Delete old project id Search dict and add new
+
+            Pair oldProjectNameWithType = new ImmutablePair(oldProjectName, loader.getAnnotationType());
+            projectIDSearch.remove(oldProjectNameWithType);
+
             Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
             projectIDSearch.put(projectNameWithType, loader.getProjectId());
 
