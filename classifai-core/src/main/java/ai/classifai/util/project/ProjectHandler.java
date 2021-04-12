@@ -43,28 +43,28 @@ public class ProjectHandler {
 
     //key: projectID
     //value: ProjectLoader
-    private static Map projectIDLoaderDict;
+    private static Map<String, ProjectLoader> projectIDLoaderDict;
 
     //key: Pair<String projectName, Integer annotationType>
     //value: projectID
-    private static Map projectIDSearch;
+    private static Map<Pair<String, Integer>, String> projectIDSearch;
 
     //key: projectID
     //value: Pair<String projectName, Integer annotationType>
-    private static Map projectNameSearch;
+    private static Map<String, Pair<String, Integer>> projectNameSearch;
 
     @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
 
     static
     {
-        projectIDLoaderDict = new HashMap<String, ProjectLoader>();
-        projectIDSearch = new HashMap<Pair<String, Integer>, String>();
-        projectNameSearch = new HashMap<String, Pair<String, Integer>>();
+        projectIDLoaderDict = new HashMap<>();
+        projectIDSearch = new HashMap<>();
+        projectNameSearch = new HashMap<>();
     }
 
     public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
     {
-        return getProjectLoader(new ImmutablePair(projectName, annotationType.ordinal()));
+        return getProjectLoader(new ImmutablePair<>(projectName, annotationType.ordinal()));
     }
 
     private static ProjectLoader getProjectLoader(Pair<String, Integer> project)
@@ -108,7 +108,7 @@ public class ProjectHandler {
 
     public static String getProjectId(String projectName, Integer annotationType)
     {
-        Pair key = new ImmutablePair(projectName, annotationType);
+        Pair<String, Integer> key = new ImmutablePair<>(projectName, annotationType);
 
         return getProjectID(key);
     }
@@ -120,7 +120,7 @@ public class ProjectHandler {
             log.debug("Saving new project of name: " + loader.getProjectName() + " failed with invalid annotation type.");
         }
 
-        Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
+        Pair<String, Integer> projectNameWithType = new ImmutablePair<>(loader.getProjectName(), loader.getAnnotationType());
 
         projectIDSearch.put(projectNameWithType, loader.getProjectId());
         projectNameSearch.put(loader.getProjectId(), projectNameWithType);
@@ -155,7 +155,7 @@ public class ProjectHandler {
             return false;
         }
 
-        Set projectIDDictKeys = projectIDSearch.keySet();
+        Set<Pair<String, Integer>> projectIDDictKeys = projectIDSearch.keySet();
 
         boolean isProjectNameUnique = true;
 
@@ -228,10 +228,10 @@ public class ProjectHandler {
 
             // Delete old project id Search dict and add new
 
-            Pair oldProjectNameWithType = new ImmutablePair(oldProjectName, loader.getAnnotationType());
+            Pair<String, Integer> oldProjectNameWithType = new ImmutablePair<>(oldProjectName, loader.getAnnotationType());
             projectIDSearch.remove(oldProjectNameWithType);
 
-            Pair projectNameWithType = new ImmutablePair(loader.getProjectName(), loader.getAnnotationType());
+            Pair<String, Integer> projectNameWithType = new ImmutablePair<>(loader.getProjectName(), loader.getAnnotationType());
             projectIDSearch.put(projectNameWithType, loader.getProjectId());
 
             // Update loader dict

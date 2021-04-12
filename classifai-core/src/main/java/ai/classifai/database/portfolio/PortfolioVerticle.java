@@ -61,7 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -128,7 +127,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else if(action.equals(PortfolioDbQuery.getRenameProject()))
         {
-            this.renameProject(message);
+            renameProject(message);
         }
         else
         {
@@ -158,7 +157,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    public static void renameProject(Message<JsonObject> message)
+    public static void renameProject(@NonNull Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
         String newProjectName = message.body().getString(ParamConfig.getNewProjectNameParam());
