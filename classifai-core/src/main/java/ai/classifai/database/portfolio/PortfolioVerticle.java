@@ -358,9 +358,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
                                         if(configContent == null) return;
 
-                                        String exportPath = ProjectExport.runExportProcess(
-                                                message.body().getInteger(ActionConfig.getExportTypeParam()),
-                                                loader, projectId, configContent);
+                                        String exportPath = ProjectExport.runExportProcess(loader, projectId, configContent);
 
                                         message.reply(ReplyHandler.getOkReply().put(
                                                 ActionConfig.getProjectConfigPathParam(), exportPath));

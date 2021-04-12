@@ -16,6 +16,7 @@
 package ai.classifai.ui;
 
 import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 
 import static javax.swing.JOptionPane.showMessageDialog;
+import static javax.swing.JOptionPane.showOptionDialog;
 
 /**
  * For selection windows initialization and settings
@@ -91,7 +93,18 @@ public class SelectionWindow {
     public static void showPopupAndLog(String title, String message, int popupType)
     {
         log.info(message);
+        WelcomeLauncher.setToBackground();
         showMessageDialog(frame, message, title, popupType);
+    }
+
+    public static int showOptionPopupAndLog(String title, String message, String[] options)
+    {
+        WelcomeLauncher.setToBackground();
+        int choice = showOptionDialog(frame, message, title, JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        log.info("Chosen: " + options[choice]);
+
+        return choice;
     }
 
 }

@@ -18,6 +18,7 @@ package ai.classifai.action;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
@@ -127,8 +128,11 @@ public class ProjectExport
         fis.close();
     }
 
-    public static String runExportProcess(int exportType, ProjectLoader loader, String projectId, JsonObject configContent)
+    public static String runExportProcess(ProjectLoader loader, String projectId, JsonObject configContent)
     {
+        // +1 because index 0 is INVALID_CONFIG. Valid choice start from index 1
+        int exportType = showExportChoices() + 1;
+
         if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
         {
             log.info("Exporting Config with data");
@@ -165,5 +169,14 @@ public class ProjectExport
                 projectRowSet.iterator(), configContent);
 
         return configContent;
+    }
+
+    public static int showExportChoices()
+    {
+        String title = "";
+        String message = "Choose export Options";
+        String[] options = {"Config file", "Config & Data"};
+
+        return SelectionWindow.showOptionPopupAndLog(title, message, options);
     }
 }
