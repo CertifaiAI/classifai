@@ -110,21 +110,28 @@ public class ProjectExport
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
         String saveFileRelativePath = Paths.get(filePath.getParentFile().getName(), relativePath).toFile().toString();
 
-        ZipEntry e = new ZipEntry(saveFileRelativePath);
-        out.putNextEntry(e);
+        ZipEntry entry = new ZipEntry(saveFileRelativePath);
+        out.putNextEntry(entry);
 
-        FileInputStream fis = new FileInputStream(filePath);
-
-        byte[] buffer = new byte[1024];
-        int len;
-
-        while((len = fis.read(buffer)) > 0)
+        try
         {
-            out.write(buffer, 0, len);
-        }
+            FileInputStream fis = new FileInputStream(filePath);
 
-        out.closeEntry();
-        fis.close();
+            byte[] buffer = new byte[1024];
+            int len;
+
+            while((len = fis.read(buffer)) > 0)
+            {
+                out.write(buffer, 0, len);
+            }
+
+            out.closeEntry();
+            fis.close();
+        }
+        catch (Exception e)
+        {
+            log.debug(e.toString());
+        }
     }
 
     public static String runExportProcess(ProjectLoader loader, String projectId, JsonObject configContent)
