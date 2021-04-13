@@ -113,10 +113,8 @@ public class ProjectExport
         ZipEntry entry = new ZipEntry(saveFileRelativePath);
         out.putNextEntry(entry);
 
-        try
+        try(FileInputStream fis = new FileInputStream(filePath))
         {
-            FileInputStream fis = new FileInputStream(filePath);
-
             byte[] buffer = new byte[1024];
             int len;
 
@@ -126,7 +124,6 @@ public class ProjectExport
             }
 
             out.closeEntry();
-            fis.close();
         }
         catch (Exception e)
         {
