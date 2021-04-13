@@ -102,7 +102,7 @@ public class SelectionWindow {
         WelcomeLauncher.setToBackground();
         int choice = showOptionDialog(frame, message, title, JOptionPane.DEFAULT_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        log.info("Chosen: " + options[choice]);
+        log.debug("Chosen: " + choice);
 
         return choice;
     }

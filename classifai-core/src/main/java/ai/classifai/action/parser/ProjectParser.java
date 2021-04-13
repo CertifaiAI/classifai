@@ -81,7 +81,11 @@ public class ProjectParser
     {
         String projectId = loader.getProjectId();
 
-        for (Map.Entry<String, Object> item : contentJsonBody) {
+        Iterator<Map.Entry<String, Object>> iterator = contentJsonBody.iterator();
+
+        while(iterator.hasNext())
+        {
+            Map.Entry<String, Object> item = iterator.next();
             String uuid = item.getKey();
 
             JsonObject jsonObject = (JsonObject) item.getValue();
@@ -91,12 +95,14 @@ public class ProjectParser
             File fullPath = Paths.get(loader.getProjectPath(), subPath).toFile();
 
             // Only proceed to uploading image if image exists. Else skip
-            if (fullPath.exists()) {
+            if(fullPath.exists())
+            {
                 String currentHash = Hash.getHash256String(fullPath);
 
                 String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
 
-                if (fileHash.equals(currentHash)) {
+                if(fileHash.equals(currentHash))
+                {
                     String versionList = jsonObject.getString(ParamConfig.getVersionListParam());
                     Annotation annotation = Annotation.builder()
                             .uuid(uuid)
@@ -111,7 +117,9 @@ public class ProjectParser
                     loader.getUuidAnnotationDict().put(uuid, annotation);
 
                     AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
-                } else {
+                }
+                else
+                {
                     log.debug("Hash not same for " + fullPath);
                 }
             }

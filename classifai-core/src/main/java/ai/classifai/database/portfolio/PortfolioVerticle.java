@@ -340,8 +340,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
-                        RowSet<Row> rowSet = fetch.result();
-
                         //export project table relevant
                         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
                         JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(loader));
@@ -351,15 +349,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 .onComplete(annotationFetch ->{
                                     if (annotationFetch.succeeded())
                                     {
-                                        RowSet<Row> projectRowSet = annotationFetch.result();
-
-                                        JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
-                                        if(configContent == null) return;
-
-                                        String exportPath = ProjectExport.runExportProcess(loader, projectId, configContent);
-
-                                        message.reply(ReplyHandler.getOkReply().put(
-                                                ActionConfig.getProjectConfigPathParam(), exportPath));
+                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(),
+                                                message, loader);
                                     }
                                 });
                     }
@@ -370,6 +361,24 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
 
     }
+
+    private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, Message<JsonObject> message,
+                                             ProjectLoader loader)
+    {
+        JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
+        if(configContent == null) return;
+
+        String exportPath = ProjectExport.runExportProcess(loader, loader.getProjectId(), configContent);
+        if(exportPath != null)
+        {
+            message.reply(ReplyHandler.getOkReply().put(
+                    ActionConfig.getProjectConfigPathParam(), exportPath));
+
+            return;
+        }
+        message.reply(ReplyHandler.getFailedReply());
+    }
+
 
     public void deleteProject(Message<JsonObject> message)
     {

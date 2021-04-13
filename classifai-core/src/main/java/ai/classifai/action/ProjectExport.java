@@ -138,12 +138,16 @@ public class ProjectExport
             try {
                 return exportToFileWithData(loader, projectId, configContent);
             } catch (IOException e) {
-                log.info("Error creating zip file");
+                log.warn("Error creating zip file");
             }
         }
+        else if(exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal())
+        {
+            log.info("Exporting Config only");
+            return exportToFile(projectId, configContent);
+        }
 
-        log.info("Exporting Config only");
-        return exportToFile(projectId, configContent);
+        return null;
     }
 
     public static JsonObject getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
@@ -172,7 +176,7 @@ public class ProjectExport
 
     public static int showExportChoices()
     {
-        String title = "";
+        String title = "Export Project";
         String message = "Choose export Options";
         String[] options = {"Config file", "Config & Data"};
 
