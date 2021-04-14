@@ -181,7 +181,7 @@ public class ProjectExport
     public static int showExportChoices()
     {
         String title = "Export Project";
-        String message = "Choose export Options";
+        String message = "Choose export options";
         String[] options = {"Config file", "Config & Data"};
 
         return SelectionWindow.showOptionPopupAndLog(title, message, options);

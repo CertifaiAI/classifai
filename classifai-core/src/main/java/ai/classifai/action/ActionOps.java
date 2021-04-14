@@ -146,18 +146,4 @@ public class ActionOps
         return input.substring(1, input.length() - 1);
     }
 
-    public static ExportType getExportType(String export_type_str)
-    {
-        if(export_type_str.equals("cfg"))
-        {
-            return ExportType.CONFIG_ONLY;
-        }
-        else if(export_type_str.equals("cfgzip"))
-        {
-            return ExportType.CONFIG_WITH_DATA;
-        }
-
-        log.info("Invalid export type");
-        return ExportType.INVALID_CONFIG;
-    }
 }
