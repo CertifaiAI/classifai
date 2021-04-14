@@ -18,7 +18,6 @@ package ai.classifai.action;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
@@ -131,16 +130,13 @@ public class ProjectExport
         }
     }
 
-    public static String runExportProcess(ProjectLoader loader, String projectId, JsonObject configContent)
+    public static String runExportProcess(ProjectLoader loader, JsonObject configContent, int exportType)
     {
-        // +1 because index 0 is INVALID_CONFIG. Valid choice start from index 1
-        int exportType = showExportChoices() + 1;
-
         if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
         {
             log.info("Exporting Config with data");
             try {
-                return exportToFileWithData(loader, projectId, configContent);
+                return exportToFileWithData(loader, loader.getProjectId(), configContent);
             } catch (IOException e) {
                 log.warn("Error creating zip file");
             }
@@ -148,7 +144,7 @@ public class ProjectExport
         else if(exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal())
         {
             log.info("Exporting Config only");
-            return exportToFile(projectId, configContent);
+            return exportToFile(loader.getProjectId(), configContent);
         }
 
         return null;
@@ -178,12 +174,16 @@ public class ProjectExport
         return configContent;
     }
 
-    public static int showExportChoices()
+    public static ActionConfig.ExportType getExportType(String exportType)
     {
-        String title = "Export Project";
-        String message = "Choose export options";
-        String[] options = {"Config file", "Config & Data"};
-
-        return SelectionWindow.showOptionPopupAndLog(title, message, options);
+        if(exportType.equals("cfg"))
+        {
+            return ActionConfig.ExportType.CONFIG_ONLY;
+        }
+        else if(exportType.equals("cfgdata"))
+        {
+            return ActionConfig.ExportType.CONFIG_WITH_DATA;
+        }
+        return ActionConfig.ExportType.INVALID_CONFIG;
     }
 }
