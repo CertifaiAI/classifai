@@ -50,6 +50,12 @@
         "mainRegionInfo": "主标签资讯",
         "subRegionInfo": "副标签资讯"
     },
+    "exportModal": {
+        "exportOptions": "导出选择",
+        "configFile": "配置文件",
+        "configFileWithData": "配置文件和数据",
+        "cancel": "取消"
+    },
     "footer": {
         "size": "容量",
         "image": "格式",

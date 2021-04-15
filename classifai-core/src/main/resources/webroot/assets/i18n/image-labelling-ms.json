@@ -50,6 +50,12 @@
         "mainRegionInfo": "Info Label Utama",
         "subRegionInfo": "Info Sub Label"
     },
+    "exportModal": {
+        "exportOptions": "Pilihan Eksport",
+        "configFile": "Fail Konfigurasi",
+        "configFileWithData": "Fail Konfigurasi dan Data",
+        "cancel": "Batal"
+    },
     "footer": {
         "size": "Saiz",
         "image": "Imej",
