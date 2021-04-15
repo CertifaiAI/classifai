@@ -51,9 +51,9 @@
         "subRegionInfo": "Input Sub Region Info"
     },
     "exportModal": {
-        "exportOptions": "Export Options",
+        "exportOptions": "Choose Export Options",
         "configFile": "Config File",
-        "configFileWithData": "Config File with Data",
+        "configFileWithData": "Config File & Data",
         "cancel": "Cancel"
     },
     "footer": {

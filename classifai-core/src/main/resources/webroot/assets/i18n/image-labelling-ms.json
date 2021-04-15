@@ -53,7 +53,7 @@
     "exportModal": {
         "exportOptions": "Pilihan Eksport",
         "configFile": "Fail Konfigurasi",
-        "configFileWithData": "Fail Konfigurasi dan Data",
+        "configFileWithData": "Fail Konfigurasi & Data",
         "cancel": "Batal"
     },
     "footer": {
