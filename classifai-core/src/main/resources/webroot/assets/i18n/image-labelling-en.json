@@ -50,6 +50,12 @@
         "mainRegionInfo": "Input Main Region Info",
         "subRegionInfo": "Input Sub Region Info"
     },
+    "exportModal": {
+        "exportOptions": "Choose Export Options",
+        "configFile": "Config File",
+        "configFileWithData": "Config File & Data",
+        "cancel": "Cancel"
+    },
     "footer": {
         "size": "Size",
         "image": "Image",
