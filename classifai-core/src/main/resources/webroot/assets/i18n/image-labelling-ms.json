@@ -51,9 +51,10 @@
         "subRegionInfo": "Info Sub Label"
     },
     "exportModal": {
-        "exportOptions": "Pilihan Eksport",
-        "configFile": "Fail Konfigurasi",
-        "configFileWithData": "Fail Konfigurasi & Data",
+        "exportOptions": "Eksport Projek Ke",
+        "configFile": "Fail Konfig",
+        "zipFile": "Fail Zip",
+        "withData": "(Bersama Data)",
         "cancel": "Batal"
     },
     "footer": {
