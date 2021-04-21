@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Paths;
@@ -42,6 +43,9 @@ public class ProjectImportSelector extends SelectionWindow {
     @Setter
     private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
 
+    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
+            "Json Files", "json");
+
     public void run()
     {
         try
@@ -56,7 +60,9 @@ public class ProjectImportSelector extends SelectionWindow {
                         setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                         JFrame frame = initFrame();
-                        JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY);
+                        String title = "Select File";
+                        JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
+                        chooser.setFileFilter(imgFilter);
 
                         //Important: prevent Welcome Console from popping out
                         WelcomeLauncher.setToBackground();
