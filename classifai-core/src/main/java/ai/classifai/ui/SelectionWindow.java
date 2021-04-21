@@ -23,7 +23,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 
 import static javax.swing.JOptionPane.showMessageDialog;
@@ -49,9 +48,6 @@ public class SelectionWindow {
 
     private static JFrame frame = initFrame();
 
-    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
-            "Json Files", "json");
-
     public static JFrame initFrame()
     {
         Point pt = MouseInfo.getPointerInfo().getLocation();
@@ -67,7 +63,7 @@ public class SelectionWindow {
         return frame;
     }
 
-    public static JFileChooser initChooser(int mode)
+    public static JFileChooser initChooser(int mode, String title)
     {
         JFileChooser chooser = new JFileChooser() {
             @Override
@@ -80,9 +76,8 @@ public class SelectionWindow {
             }
         };
 
+        chooser.setDialogTitle(title);
         chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
-        chooser.setFileFilter(imgFilter);
-        chooser.setDialogTitle("Select Files");
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(mode);
         chooser.setAcceptAllFileFilterUsed(false);

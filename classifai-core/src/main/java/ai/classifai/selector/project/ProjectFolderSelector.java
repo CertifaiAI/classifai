@@ -63,7 +63,8 @@ public class ProjectFolderSelector extends SelectionWindow {
                     loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                     JFrame frame = initFrame();
-                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY);
+                    String title = "Select Folder";
+                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
 
                     //Important: prevent Welcome Console from popping out
                     WelcomeLauncher.setToBackground();
