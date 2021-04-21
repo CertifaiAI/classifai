@@ -133,7 +133,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 
-        router.put("/v2/:annotation_type/projects/:project_name/export").handler(v2::exportProject);
+        router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
 
         router.get("/v2/:annotation_type/projects/:project_name/filesysstatus").handler(v2::getFileSystemStatus);
 

@@ -41,7 +41,6 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.AbstractVerticle;
@@ -52,7 +51,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
@@ -332,10 +330,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void exportProject(Message<JsonObject> message)
     {
-        ProjectExport exporter = new ProjectExport();
-
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
-
         Tuple params = Tuple.of(projectId);
 
         //export portfolio table relevant
@@ -345,51 +340,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
-                        RowSet<Row> rowSet = fetch.result();
-
-                        if(rowSet.size() == 0)
-                        {
-                            log.debug("Export project retrieve 0 rows. Project not found from portfolio database");
-                            return;
-                        }
-
-                        Row portfolioRow = rowSet.iterator().next();
-
-                        JsonObject configContent = exporter.getConfigSkeletonStructure();
-
-                        PortfolioParser.parseOut(portfolioRow, configContent);
-
-                        String projectPath = configContent.getString(ParamConfig.getProjectPathParam());
-
-                        AnnotationType type = AnnotationHandler.getType(configContent.getString(ParamConfig.getAnnotationTypeParam()));
-
                         //export project table relevant
-                        JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId)));
+                        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+                        JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(loader));
 
                         client.preparedQuery(AnnotationQuery.getExtractProject())
                                 .execute(params)
                                 .onComplete(annotationFetch ->{
-
                                     if (annotationFetch.succeeded())
                                     {
-                                        RowSet<Row> projectRowSet = annotationFetch.result();
-
-                                        if(projectRowSet.size() == 0)
-                                        {
-                                            log.debug("Export project annotation retrieve 0 rows. Project not found from project database");
-                                        }
-                                        else
-                                        {
-
-                                            RowIterator<Row> projectRowIterator = projectRowSet.iterator();
-
-                                            ProjectParser.parseOut(projectPath, projectRowIterator, configContent);
-                                        }
-
-                                        //export to configuration file
-                                        String file = exporter.exportToFile(projectId, configContent);
-
-                                        message.reply(ReplyHandler.getOkReply().put(ActionConfig.getProjectConfigPathParam(), file));
+                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(),
+                                                message, loader);
                                     }
                                 });
                     }
@@ -400,6 +361,26 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
 
     }
+
+    private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, Message<JsonObject> message,
+                                             ProjectLoader loader)
+    {
+        JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
+        if(configContent == null) return;
+
+        int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
+
+        String exportPath = ProjectExport.runExportProcess(loader, configContent, exportType);
+        if(exportPath != null)
+        {
+            message.reply(ReplyHandler.getOkReply().put(
+                    ActionConfig.getProjectConfigPathParam(), exportPath));
+
+            return;
+        }
+        message.reply(ReplyHandler.getFailedReply());
+    }
+
 
     public void deleteProject(Message<JsonObject> message)
     {

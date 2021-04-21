@@ -15,6 +15,8 @@
  */
 package ai.classifai.router;
 
+import ai.classifai.action.ActionConfig;
+import ai.classifai.action.ProjectExport;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
@@ -279,7 +281,7 @@ public class V2Endpoint {
     /***
      * export a project to configuration file
      *
-     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/export
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/export/:export_type
      */
     public void exportProject(RoutingContext context)
     {
@@ -290,9 +292,14 @@ public class V2Endpoint {
 
         if(util.checkIfProjectNull(context, projectId, projectName)) return;
 
+        ActionConfig.ExportType exportType = ProjectExport.getExportType(
+                context.request().getParam(ActionConfig.getExportTypeParam()));
+        if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
+
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectId)
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
+                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
+                .put(ActionConfig.getExportTypeParam(), exportType.ordinal());
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
 
