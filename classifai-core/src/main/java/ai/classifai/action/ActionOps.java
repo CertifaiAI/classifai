@@ -15,7 +15,6 @@
  */
 package ai.classifai.action;
 
-import ai.classifai.action.ActionConfig.ExportType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
