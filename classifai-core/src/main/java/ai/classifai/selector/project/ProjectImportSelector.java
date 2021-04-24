@@ -93,15 +93,14 @@ public class ProjectImportSelector extends SelectionWindow {
                             setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                             log.debug("Operation of import project aborted");
                         }
+
+                        windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
                     }
                     else
                     {
                         showAbortImportPopup();
                         setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                     }
-
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
-
                 }
             });
         }
@@ -111,11 +110,5 @@ public class ProjectImportSelector extends SelectionWindow {
         }
     }
 
-    private void showAbortImportPopup()
-    {
-        String popupTitle = "Error Opening Window";
-        String message = "Another selection window is currently open. Please close to proceed.";
-        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
-    }
 
 }

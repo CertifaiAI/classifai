@@ -17,6 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
+import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
@@ -38,6 +39,7 @@ public class EndpointRouter extends AbstractVerticle
     private ToolFolderSelector folderSelector;
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
+    private LabelListSelector labelListSelector;
 
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
@@ -57,6 +59,9 @@ public class EndpointRouter extends AbstractVerticle
 
         Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
         projectImport.start();
+
+        Thread labelListImport = new Thread(() -> labelListSelector = new LabelListSelector());
+        labelListImport.start();
     }
 
     @Override
@@ -75,6 +80,8 @@ public class EndpointRouter extends AbstractVerticle
         v2.setVertx(vertx);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
+
+        v2.setLabelListSelector(labelListSelector);
 
         cloud.setVertx(vertx);
     }
@@ -140,6 +147,10 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/v2/:annotation_type/projects/importstatus").handler(v2::getImportStatus);
 
         router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
+
+        router.put("/v2/labelfile").handler(v2::loadLabelFile);
+
+        router.get("/v2/labelfilestatus").handler(v2::loadLabelFileStatus);
 
         //*******************************Cloud*******************************
 

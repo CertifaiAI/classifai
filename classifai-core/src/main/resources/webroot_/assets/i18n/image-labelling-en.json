@@ -1,0 +1,69 @@
+{
+    "pageHeader": {
+        "home": "Home",
+        "datasetManagement": "Dataset Management",
+        "revision": "Revision",
+        "addUser": "Add user",
+        "profile": "Profile"
+    },
+    "labellingInfo": {
+        "previous": "Previous",
+        "next": "Next",
+        "undo": "Undo",
+        "redo": "Redo"
+    },
+    "leftSideBar": {
+        "pointer": "Pointer",
+        "rectangularBB": "Rectangular Bounding Box",
+        "polygon": "Polygon",
+        "eraser": "Eraser",
+        "fitCenter": "Fit Center",
+        "save": "Save"
+    },
+    "rightSideBar": {
+        "folderOrFiles": "Folder / Files",
+        "label": "Label",
+        "annotation": "Annotation",
+        "statistic": "Statistic",
+        "export": "Export",
+        "reload": "Reload"
+    },
+    "labellingProject": {
+        "project": "Project",
+        "label": "Label",
+        "enterLabel": "Enter Label",
+        "annotation": "Annotation",
+        "delete": "Delete",
+        "labelNotExist": "Label does not exist. Press Enter to add."
+    },
+    "searchLabel": {
+        "labelNotExist": "Label does not exist.",
+        "enterToAdd": "Press enter to add."
+    },
+    "labellingArea": {
+        "mainLabel": "Main Label",
+        "label": "Label",
+        "regionInfo": "Region Info",
+        "subLabel": "Sub Label",
+        "add": "Add",
+        "addedSubLabel": "Added Sub Label",
+        "mainRegionInfo": "Input Main Region Info",
+        "subRegionInfo": "Input Sub Region Info"
+    },
+    "exportModal": {
+        "exportOptions": "Choose Export Options",
+        "configFile": "Config File",
+        "configFileWithData": "Config File & Data",
+        "cancel": "Cancel"
+    },
+    "footer": {
+        "size": "Size",
+        "image": "Image",
+        "dimension": "Dimension",
+        "copyToClipboard": "Copy to Clipboard"
+    },
+    "exportSuccess": " project was exported successfully!",
+    "exportFailed": "Fail to export ",
+    "reloadSuccess": " project was reload successfully!",
+    "reloadFailed": "Fail to reload "
+}
