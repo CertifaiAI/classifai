@@ -316,6 +316,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                             .imgDepth(row.getInteger(3))    //img_depth
                                             .imgOriW(row.getInteger(4))     //img_ori_w
                                             .imgOriH(row.getInteger(5))     //img_ori_h
+                                            .fileSize(row.getInteger(6))    //file_size
                                             .build();
 
                                     uuidAnnotationDict.put(row.getString(0), annotation);
@@ -534,6 +535,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             Integer imgOriH = requestBody.getInteger(ParamConfig.getImgOriHParam());
             annotation.setImgOriH(imgOriH);
 
+            Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
+            annotation.setFileSize(fileSize);
+
             String currentVersionUuid = loader.getCurrentVersionUuid();
 
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
@@ -548,6 +552,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     imgDepth,
                                     imgOriW,
                                     imgOriH,
+                                    fileSize,
                                     uuid,
                                     projectId);
 
@@ -622,6 +627,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getImgYParam(), version.getImgY());
         response.put(ParamConfig.getImgWParam(), version.getImgW());
         response.put(ParamConfig.getImgHParam(), version.getImgH());
+        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
         response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
         response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));

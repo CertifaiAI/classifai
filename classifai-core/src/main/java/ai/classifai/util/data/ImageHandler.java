@@ -279,7 +279,7 @@ public class ImageHandler {
 
         String currentFileFullPath = file.getAbsolutePath();
 
-        if (FileHandler.isfileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
+        if (FileHandler.isFileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
         {
             if (isImageFileValid(currentFileFullPath))
             {
