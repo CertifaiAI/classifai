@@ -22,6 +22,7 @@ import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.data.StringHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
@@ -54,7 +55,7 @@ public class ProjectParser
         {
             Row row = rowIterator.next();
 
-            String imgPath = row.getString(1).replace("\\", "").replace("/", "");
+            String imgPath = StringHandler.removeSlashes(row.getString(1));
 
             String fullPath = Paths.get(projectPath, imgPath).toString();
 
