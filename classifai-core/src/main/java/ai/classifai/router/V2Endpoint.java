@@ -445,7 +445,10 @@ public class V2Endpoint {
 
         if(currentStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
         {
-            jsonResponse.put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+            jsonResponse
+                    .put(ParamConfig.getLabelFilePathParam(), LabelListSelector.getLabelFilePath())
+                    .put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+
         }
 
         HTTPResponseHandler.configureOK(context, jsonResponse);

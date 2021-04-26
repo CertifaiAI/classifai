@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -40,12 +41,19 @@ public class LabelListSelector extends SelectionWindow
     @Getter @Setter
     private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
 
+    @Setter
+    private static File labelFile = null;
+
     @Getter @Setter
     private static List<String> labelList = null;
 
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Text Files", "txt");
 
+    public static String getLabelFilePath()
+    {
+        return (labelFile != null) ? labelFile.getAbsolutePath() : "";
+    }
 
     public void run()
     {
@@ -73,7 +81,7 @@ public class LabelListSelector extends SelectionWindow
 
                         if (res == JFileChooser.APPROVE_OPTION)
                         {
-                            File labelFile =  chooser.getSelectedFile().getAbsoluteFile();
+                            labelFile = chooser.getSelectedFile().getAbsoluteFile();
 
                             log.info("Proceed with importing label list file with " + labelFile.getName());
 
