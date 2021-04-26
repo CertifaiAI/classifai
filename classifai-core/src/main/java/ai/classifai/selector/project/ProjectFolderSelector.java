@@ -138,7 +138,7 @@ public class ProjectFolderSelector extends SelectionWindow {
         return null;
     }
 
-    private void initFolderIteration(@NonNull ProjectLoader loader) throws IOException {
+    public static void initFolderIteration(@NonNull ProjectLoader loader) throws IOException {
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
         String projectPath = loader.getProjectPath();

@@ -477,6 +477,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 Version currentVersion = new Version(row.getString(7));
 
                                 ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(8));     //project_version
+
                                 project.setCurrentVersion(currentVersion.getVersionUuid());
 
                                 Map uuidDict = ActionOps.getKeyWithArray(row.getString(9));
@@ -499,7 +500,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                 //load each data points
                                 AnnotationVerticle.configProjectLoaderFromDb(loader);
-
                                 ProjectHandler.loadProjectLoader(loader);
                             }
                         }
