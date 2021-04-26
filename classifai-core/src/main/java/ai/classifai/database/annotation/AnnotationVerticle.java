@@ -26,6 +26,7 @@ import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
@@ -328,8 +329,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 }
 
                             }
-
-
                         }
                     }
                 });
@@ -401,7 +400,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String projectId = loader.getProjectId();
 
-        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
+        String dataChildPath = StringHandler.removeSlashes(FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath()));
 
         Tuple params = Tuple.of(dataChildPath, projectId);
 
@@ -416,7 +415,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     //not exist , create data point
                     if (rowSet.size() == 0)
                     {
-
                         if(ImageHandler.isImageReadable(dataFullPath))
                         {
                             writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
