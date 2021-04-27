@@ -147,7 +147,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
             {
                 String inputObject = object.key();
 
-                if(FileHandler.isfileSupported(inputObject, ImageFileType.getImageFileTypes()))
+                if(FileHandler.isFileSupported(inputObject, ImageFileType.getImageFileTypes()))
                 {
                     System.out.println("Path: " + inputObject);
                     dataPaths.add(inputObject);

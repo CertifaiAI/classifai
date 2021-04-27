@@ -55,7 +55,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if (isfileSupported(file.getAbsolutePath(), extensionFormat))
+                    if (isFileSupported(file.getAbsolutePath(), extensionFormat))
                     {
                         totalFilelist.add(file);
                     }
@@ -66,7 +66,7 @@ public class FileHandler
         return totalFilelist;
     }
 
-    public static boolean isfileSupported(String file, String[] formatTypes)
+    public static boolean isFileSupported(String file, String[] formatTypes)
     {
         for (String format : formatTypes)
         {

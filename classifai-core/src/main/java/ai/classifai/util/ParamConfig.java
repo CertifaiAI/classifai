@@ -80,6 +80,8 @@ public class ParamConfig
     @Getter private static final String fileParam = "file";
     @Getter private static final String folderParam = "folder";
 
+    @Getter private final static String fileSizeParam = "file_size";
+
     @Getter private static final String actionKeyword = "action";
     @Getter private static final String content = "content";
     @Getter private static final String progressMetadata = "progress";
