@@ -144,11 +144,7 @@ public class ProjectFolderSelector extends SelectionWindow {
         String projectPath = loader.getProjectPath();
         File fileProjectPath = new File(projectPath);
 
-        if(fileProjectPath == null)
-        {
-            log.debug("Project path for " + loader.getProjectName() + " is not set. This not supposed to happen");
-        }
-        else if(!ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath))
+        if(!ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath))
         {
             // Get example image from metadata
             File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
