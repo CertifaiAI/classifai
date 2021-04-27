@@ -18,7 +18,8 @@
         "polygon": "Poligon",
         "eraser": "Pemadam",
         "fitCenter": "Sesuaikan Dengan Saiz Skrin",
-        "save": "Simpan"
+        "save": "Simpan",
+        "info": "Info Kekunci Pintasan"
     },
     "rightSideBar": {
         "folderOrFiles": "Folder / Fail",
@@ -66,5 +67,6 @@
     "exportSuccess": " telah berjaya diesksport!",
     "exportFailed": "Gagal untuk mengeksport projek ",
     "reloadSuccess": " telah berjaya dimuat semula!",
-    "reloadFailed": "Gagal untuk memuat semula "
+    "reloadFailed": "Gagal untuk memuat semula ",
+    "labelExist": "Beberapa imej dalam projek menggunakan label ini. Memadam label ini tidak dibenarkan."
 }

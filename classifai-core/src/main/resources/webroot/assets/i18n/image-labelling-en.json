@@ -18,7 +18,8 @@
         "polygon": "Polygon",
         "eraser": "Eraser",
         "fitCenter": "Fit Center",
-        "save": "Save"
+        "save": "Save",
+        "info": "Shortcut Key Info"
     },
     "rightSideBar": {
         "folderOrFiles": "Folder / Files",
@@ -57,6 +58,31 @@
         "withData": "(With Data)",
         "cancel": "Cancel"
     },
+    "info": {
+        "header": "Keyboard Shortcut Information",
+        "shortcut": {
+            "1": {
+                "key": "Ctrl + z",
+                "functionality": "Undo the last action"
+            },
+            "2": {
+                "key": "Ctrl + c",
+                "functionality": "Copy the selected bounding box"
+            },
+            "3": {
+                "key": "Ctrl + v",
+                "functionality": "Paste the selected bounding box"
+            },
+            "4": {
+                "key": "Delete/Backspace",
+                "functionality": "Delete a selected bounding box"
+            },
+            "5": {
+                "key": "Double click on a selected bounding box",
+                "functionality": "Choose label for the selected bounding box"
+            }
+        }
+    },
     "footer": {
         "size": "Size",
         "image": "Image",
@@ -66,5 +92,6 @@
     "exportSuccess": " project was exported successfully!",
     "exportFailed": "Fail to export ",
     "reloadSuccess": " project was reload successfully!",
-    "reloadFailed": "Fail to reload "
+    "reloadFailed": "Fail to reload ",
+    "labelExist": "Some image in project are using this label. Deleting this label are not allowed."
 }
