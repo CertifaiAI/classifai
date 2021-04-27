@@ -67,8 +67,8 @@ public class ProjectParser
                     .put(ParamConfig.getVersionListParam(), row.getString(2))   //version_list
                     .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
                     .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5));     //img_ori_h
-
+                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5))      //img_ori_h
+                    .put(ParamConfig.getFileSizeParam(), row.getInteger(6));
 
             //uuid, version, content
             content.put(row.getString(0), annotationJsonObject);
