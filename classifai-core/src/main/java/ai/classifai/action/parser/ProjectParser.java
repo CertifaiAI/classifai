@@ -113,6 +113,7 @@ public class ProjectParser
                             .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
                             .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
                             .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
+                            .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
                             .build();
 
                     loader.getUuidAnnotationDict().put(uuid, annotation);
