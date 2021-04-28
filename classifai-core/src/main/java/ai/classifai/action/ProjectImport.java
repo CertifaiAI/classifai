@@ -16,6 +16,7 @@
 package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
@@ -111,6 +112,7 @@ public class ProjectImport
         {
             String popupTitle = "Invalid import file";
             String message = "The configuration file imported is not valid.";
+            ProjectImportSelector.formatImportErrorMessage(message);
             SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
             return false;
@@ -122,6 +124,7 @@ public class ProjectImport
             String popupTitle = "Tool Version Warning";
             String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
                     "\nJSON Version: " + toolVersionFromJson;
+            ProjectImportSelector.formatImportErrorMessage(message);
             SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.WARNING_MESSAGE);
 
         }
@@ -136,6 +139,7 @@ public class ProjectImport
         {
             String popupTitle = "Project Path Update";
             String message = "Folder path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
+            ProjectImportSelector.formatImportErrorMessage(message);
             SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
         }
     }

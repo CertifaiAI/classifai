@@ -388,8 +388,10 @@ public class V2Endpoint {
         util.checkIfDockerEnv(context);
 
         FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
+        JsonObject res = new JsonObject();
+        res.put(ReplyHandler.getErrorCodeKey(), currentStatus.ordinal());
+        res.put(ReplyHandler.getErrorMesageKey(), ProjectImportSelector.getImportErrorMessage());
 
-        HTTPResponseHandler.configureOK(context,
-                new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal()));
+        HTTPResponseHandler.configureOK(context, res);
     }
 }

@@ -43,6 +43,10 @@ public class ProjectImportSelector extends SelectionWindow {
     @Setter
     private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
 
+    @Getter
+    @Setter
+    private static String importErrorMessage;
+
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Json Files", "json");
 
@@ -53,7 +57,7 @@ public class ProjectImportSelector extends SelectionWindow {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-
+                    clearImportErrorMessage();
                     if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
                     {
                         windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
@@ -73,20 +77,7 @@ public class ProjectImportSelector extends SelectionWindow {
                         if (res == JFileChooser.APPROVE_OPTION)
                         {
                             File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                            ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
-
-                            log.info("Proceed with importing project with " + jsonFile.getName());
-
-                            if(!ProjectImport.importProjectFile(jsonFile))
-                            {
-                                log.debug("Import project failed");
-                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            }
-                            else
-                            {
-                                log.debug("Import project success");
-                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-                            }
+                            runApproveOption(jsonFile);
                         }
                         else
                         {
@@ -111,11 +102,43 @@ public class ProjectImportSelector extends SelectionWindow {
         }
     }
 
+    private void runApproveOption(File jsonFile)
+    {
+        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
+
+        log.info("Proceed with importing project with " + jsonFile.getName());
+
+        if(!ProjectImport.importProjectFile(jsonFile))
+        {
+            String mes = "Import project failed";
+            log.debug(mes);
+            formatImportErrorMessage(mes);
+            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+        }
+        else
+        {
+            String mes = "Import project success";
+            log.debug(mes);
+            formatImportErrorMessage(mes);
+            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+        }
+    }
+
     private void showAbortImportPopup()
     {
         String popupTitle = "Error Opening Window";
         String message = "Another selection window is currently open. Please close to proceed.";
         SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void formatImportErrorMessage(String message)
+    {
+        setImportErrorMessage(getImportErrorMessage() + "\n" + message);
+    }
+
+    public static void clearImportErrorMessage()
+    {
+        setImportErrorMessage("");
     }
 
 }
