@@ -138,11 +138,13 @@ public class ProjectFolderSelector extends SelectionWindow {
         return null;
     }
 
-    private void initFolderIteration(@NonNull ProjectLoader loader) throws IOException {
+    public void initFolderIteration(@NonNull ProjectLoader loader) throws IOException {
         loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
         String projectPath = loader.getProjectPath();
-        if(!ImageHandler.iterateFolder(loader.getProjectId(), new File(projectPath)))
+        File fileProjectPath = new File(projectPath);
+
+        if(!ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath))
         {
             // Get example image from metadata
             File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
@@ -151,7 +153,7 @@ public class ProjectFolderSelector extends SelectionWindow {
             log.info("Empty folder. Example image added.");
 
             // Run initiate image again
-            ImageHandler.iterateFolder(loader.getProjectId(), new File(projectPath));
+            ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath);
         }
     }
 

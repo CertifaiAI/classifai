@@ -26,6 +26,7 @@ import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
@@ -316,6 +317,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                             .imgDepth(row.getInteger(3))    //img_depth
                                             .imgOriW(row.getInteger(4))     //img_ori_w
                                             .imgOriH(row.getInteger(5))     //img_ori_h
+                                            .fileSize(row.getInteger(6))    //file_size
                                             .build();
 
                                     uuidAnnotationDict.put(row.getString(0), annotation);
@@ -327,8 +329,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 }
 
                             }
-
-
                         }
                     }
                 });
@@ -400,7 +400,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String projectId = loader.getProjectId();
 
-        String dataChildPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
+        String dataChildPath = StringHandler.removeSlashes(FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath()));
 
         Tuple params = Tuple.of(dataChildPath, projectId);
 
@@ -415,7 +415,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     //not exist , create data point
                     if (rowSet.size() == 0)
                     {
-
                         if(ImageHandler.isImageReadable(dataFullPath))
                         {
                             writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
@@ -534,6 +533,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             Integer imgOriH = requestBody.getInteger(ParamConfig.getImgOriHParam());
             annotation.setImgOriH(imgOriH);
 
+            Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
+            annotation.setFileSize(fileSize);
+
             String currentVersionUuid = loader.getCurrentVersionUuid();
 
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
@@ -548,6 +550,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     imgDepth,
                                     imgOriW,
                                     imgOriH,
+                                    fileSize,
                                     uuid,
                                     projectId);
 
@@ -622,6 +625,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getImgYParam(), version.getImgY());
         response.put(ParamConfig.getImgWParam(), version.getImgW());
         response.put(ParamConfig.getImgHParam(), version.getImgH());
+        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
         response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
         response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
