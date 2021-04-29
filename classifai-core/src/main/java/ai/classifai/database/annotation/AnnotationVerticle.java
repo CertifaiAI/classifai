@@ -359,6 +359,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     if (fetch.succeeded())
                     {
                         loader.uploadUuidFromRootPath(uuid);
+                        PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
                     }
                     else
                     {
