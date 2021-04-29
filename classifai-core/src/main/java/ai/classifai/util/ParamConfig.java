@@ -122,6 +122,8 @@ public class ParamConfig
     @Getter private static final String versionUuidParam = "version_uuid";
     @Getter private static final String nextVersionUuidParam = "next_version_uuid";
 
+    @Getter private static final String annotationDataParam = "annotation_data";
+
     //hash
     @Getter private static final String checkSumParam = "checksum";
 
