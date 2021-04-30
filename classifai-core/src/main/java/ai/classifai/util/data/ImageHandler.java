@@ -35,6 +35,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 
@@ -323,7 +324,7 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesPath.size(); ++i)
             {
-                String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), ((File) filesPath.get(i)).getAbsolutePath());
+                String dataSubPath = Paths.get(((File) filesPath.get(i)).getAbsolutePath()).getFileName().toString();
 
                 AnnotationVerticle.saveDataPoint(loader, dataSubPath, i + 1);
             }

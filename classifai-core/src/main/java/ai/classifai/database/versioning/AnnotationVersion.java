@@ -15,8 +15,6 @@
  */
 package ai.classifai.database.versioning;
 
-import ai.classifai.action.ActionOps;
-import ai.classifai.action.parser.AnnotationParser;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -45,53 +43,18 @@ public class AnnotationVersion
     /**
      * Constructor
      *
-     * @param strAnnotationVersion {annotation:[],img_x:0,img_y:0,img_w:0,img_h:0}}]
+     * @param jsonAnnotationVersion {annotation:[],img_x:0,img_y:0,img_w:0,img_h:0}}]
      */
-    public AnnotationVersion(@NonNull String strAnnotationVersion)
+    public AnnotationVersion(@NonNull JsonObject jsonAnnotationVersion)
     {
-        String trimmedString = ActionOps.removeOuterBrackets(strAnnotationVersion);
-
-        Integer annotationStart = ParamConfig.getAnnotationParam().length() + 1;
-        Integer annotationEnd = trimmedString.indexOf(ParamConfig.getImgXParam()) - 1;
-
-        //annotation
-        String strAnnotation = trimmedString.substring(annotationStart,  annotationEnd);
-
-        log.debug("Start parsing annotation");
-        annotation = AnnotationParser.buildAnnotation(strAnnotation);
-        log.debug("Done parsing annotation");
-
-        Integer imgXStart = annotationEnd + ParamConfig.getImgXParam().length() + 2;
-        Integer imgXEnd = trimmedString.indexOf(ParamConfig.getImgYParam()) - 1;
-
-        //imgX
-        imgX = getValueFromString(trimmedString, imgXStart, imgXEnd);
-
-        Integer imgYStart = imgXEnd + ParamConfig.getImgYParam().length() + 2;
-        Integer imgYEnd = trimmedString.indexOf(ParamConfig.getImgWParam()) - 1;
-
-        //imgY
-        imgY = getValueFromString(trimmedString, imgYStart, imgYEnd);
-
-        Integer imgWStart = imgYEnd + ParamConfig.getImgWParam().length() + 2;
-        Integer imgWEnd = trimmedString.indexOf(ParamConfig.getImgHParam()) - 1;
-
-        //imgW
-        imgW = getValueFromString(trimmedString, imgWStart, imgWEnd);
-
-        Integer imgHStart = imgWEnd + ParamConfig.getImgHParam().length() + 2;
-
-        //imgH
-        imgH = getValueFromString(trimmedString, imgHStart, trimmedString.length());
-
+        annotation = jsonAnnotationVersion.getJsonArray(ParamConfig.getAnnotationParam());
+        imgX = jsonAnnotationVersion.getInteger(ParamConfig.getImgXParam());
+        imgY = jsonAnnotationVersion.getInteger(ParamConfig.getImgYParam());
+        imgW = jsonAnnotationVersion.getInteger(ParamConfig.getImgWParam());
+        imgH = jsonAnnotationVersion.getInteger(ParamConfig.getImgHParam());
     }
 
-    private Integer getValueFromString(@NonNull String input, @NonNull Integer start, @NonNull Integer end)
-    {
-        return Integer.parseInt(input.substring(start, end));
-    }
-
-    private JsonObject getJsonObject()
+    public JsonObject getJsonObject()
     {
         JsonObject unitJsonObject = new JsonObject();
         unitJsonObject.put(ParamConfig.getAnnotationParam(), annotation);
@@ -101,10 +64,5 @@ public class AnnotationVersion
         unitJsonObject.put(ParamConfig.getImgHParam(), imgH);
 
         return unitJsonObject;
-    }
-
-    public String getDbFormat()
-    {
-        return ActionOps.removeDoubleQuote(getJsonObject().encode());
     }
 }
