@@ -15,12 +15,15 @@
  */
 package ai.classifai.util.data;
 
+import ai.classifai.data.type.image.ImageData;
+import ai.classifai.data.type.image.ImageDataFactory;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectHandler;
+import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
@@ -250,24 +253,19 @@ public class ImageHandler {
     {
         try
         {
-            File filePath = new File(file);
+            Metadata metadata = ImageMetadataReader.readMetadata(new File(file));
 
-            BufferedImage bimg = ImageIO.read(filePath);
+            ImageData imgData = new ImageDataFactory().getImageData(metadata);
 
-            if (bimg == null)
+            if (imgData.getWidth() > ImageFileType.getMaxWidth() || imgData.getHeight() > ImageFileType.getMaxHeight())
             {
-                log.info("Failed in reading. Skipped " + filePath.getAbsolutePath());
-                return false;
-            }
-            else if ((bimg.getWidth() > ImageFileType.getMaxWidth()) || (bimg.getHeight() > ImageFileType.getMaxHeight()))
-            {
-                log.info("Image size bigger than maximum allowed input size. Skipped " + filePath.getAbsolutePath());
+                log.info("Image size bigger than maximum allowed input size. Skipped " + file);
                 return false;
             }
         }
         catch (Exception e)
         {
-            log.debug("Error in checking if image file valid - " + file, e);
+            log.info("Skipped " + file, e);
             return false;
         }
 
