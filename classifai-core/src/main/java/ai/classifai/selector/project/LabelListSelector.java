@@ -58,60 +58,57 @@ public class LabelListSelector extends SelectionWindow
     {
         try
         {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+            EventQueue.invokeLater(() -> {
 
-                    if(windowStatus.equals(SelectionWindow.ImportSelectionWindowStatus.WINDOW_CLOSE))
+                if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+                {
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
+                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+
+                    JFrame frame = initFrame();
+                    String title = "Select File";
+                    JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
+                    chooser.setFileFilter(imgFilter);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
+                    if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        windowStatus = SelectionWindow.ImportSelectionWindowStatus.WINDOW_OPEN;
-                        setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                        setLabelFile(chooser.getSelectedFile().getAbsoluteFile());
 
-                        JFrame frame = initFrame();
-                        String title = "Select File";
-                        JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
-                        chooser.setFileFilter(imgFilter);
+                        log.info("Proceed with importing label list file with " + getLabelFile().getName());
 
-                        //Important: prevent Welcome Console from popping out
-                        WelcomeLauncher.setToBackground();
+                        setLabelList(new LabelListImport(labelFile).getValidLabelList());
 
-                        int res = chooser.showOpenDialog(frame);
-                        frame.dispose();
-
-                        if (res == JFileChooser.APPROVE_OPTION)
+                        if(labelList == null)
                         {
-                            setLabelFile(chooser.getSelectedFile().getAbsoluteFile());
-
-                            log.info("Proceed with importing label list file with " + getLabelFile().getName());
-
-                            setLabelList(new LabelListImport(labelFile).getValidLabelList());
-
-                            if(labelList == null)
-                            {
-                                log.debug("Import label list failed");
-                                setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            }
-                            else
-                            {
-                                log.debug("Import label list success");
-
-                                setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-                            }
+                            log.debug("Import label list failed");
+                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                         else
                         {
-                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            log.debug("Operation of import project aborted");
+                            log.debug("Import label list success");
+
+                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                         }
-
-                        windowStatus = SelectionWindow.ImportSelectionWindowStatus.WINDOW_CLOSE;
-
                     }
                     else
                     {
-                        showAbortImportPopup();
                         setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        log.debug("Operation of import project aborted");
                     }
+
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
+                }
+                else
+                {
+                    showAbortImportPopup();
+                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }

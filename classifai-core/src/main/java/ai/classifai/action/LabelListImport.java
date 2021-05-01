@@ -58,7 +58,7 @@ public class LabelListImport
      */
     private String[] getValidLabelList(String[] inputLabelList)
     {
-        List<String> validLabelList = new ArrayList<>();
+        validLabelList = new ArrayList<>();
 
         for(String label : inputLabelList)
         {

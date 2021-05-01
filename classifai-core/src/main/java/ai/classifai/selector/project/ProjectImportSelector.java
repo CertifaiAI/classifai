@@ -50,57 +50,54 @@ public class ProjectImportSelector extends SelectionWindow {
     {
         try
         {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+            EventQueue.invokeLater(() -> {
 
-                    if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+                if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+                {
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
+                    setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+
+                    JFrame frame = initFrame();
+                    String title = "Select File";
+                    JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
+                    chooser.setFileFilter(imgFilter);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
+                    if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
-                        setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                        File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
+                        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
-                        JFrame frame = initFrame();
-                        String title = "Select File";
-                        JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
-                        chooser.setFileFilter(imgFilter);
+                        log.info("Proceed with importing project with " + jsonFile.getName());
 
-                        //Important: prevent Welcome Console from popping out
-                        WelcomeLauncher.setToBackground();
-
-                        int res = chooser.showOpenDialog(frame);
-                        frame.dispose();
-
-                        if (res == JFileChooser.APPROVE_OPTION)
+                        if(!ProjectImport.importProjectFile(jsonFile))
                         {
-                            File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                            ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
-
-                            log.info("Proceed with importing project with " + jsonFile.getName());
-
-                            if(!ProjectImport.importProjectFile(jsonFile))
-                            {
-                                log.debug("Import project failed");
-                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            }
-                            else
-                            {
-                                log.debug("Import project success");
-                                setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-                            }
+                            log.debug("Import project failed");
+                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                         else
                         {
-                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            log.debug("Operation of import project aborted");
+                            log.debug("Import project success");
+                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                         }
-
-                        windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
                     }
                     else
                     {
-                        showAbortImportPopup();
                         setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        log.debug("Operation of import project aborted");
                     }
+
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+                }
+                else
+                {
+                    showAbortImportPopup();
+                    setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }
