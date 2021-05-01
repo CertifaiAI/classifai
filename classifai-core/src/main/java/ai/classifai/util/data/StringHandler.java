@@ -31,6 +31,6 @@ public class StringHandler
 
     public static String removeEndOfLineChar(@NonNull String input)
     {
-        return input.replaceAll("(\\r|\\n)", "");
+        return input.replaceAll("[\\r\\n]", "");
     }
 }
