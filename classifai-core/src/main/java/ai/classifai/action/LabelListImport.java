@@ -15,7 +15,7 @@
  */
 package ai.classifai.action;
 
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -32,13 +32,13 @@ import java.util.List;
  * @author codenamewei
  */
 @Slf4j
-@NoArgsConstructor
 public class LabelListImport
 {
-    public List<String> importLabelListFile(@NonNull File labelFile)
-    {
-        List<String> validLabelList = null;
+    @Getter
+    private List<String> validLabelList = null;
 
+    public LabelListImport(@NonNull File labelFile)
+    {
         try
         {
             String labels = IOUtils.toString(new FileReader(labelFile));
@@ -49,8 +49,6 @@ public class LabelListImport
         {
             log.info("Error in importing label list. ", e);
         }
-
-        return validLabelList;
     }
 
     /**

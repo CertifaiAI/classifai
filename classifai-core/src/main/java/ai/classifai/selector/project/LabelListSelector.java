@@ -27,7 +27,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -41,7 +40,7 @@ public class LabelListSelector extends SelectionWindow
     @Getter @Setter
     private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
 
-    @Setter
+    @Getter @Setter
     private static File labelFile = null;
 
     @Getter @Setter
@@ -81,11 +80,11 @@ public class LabelListSelector extends SelectionWindow
 
                         if (res == JFileChooser.APPROVE_OPTION)
                         {
-                            labelFile = chooser.getSelectedFile().getAbsoluteFile();
+                            setLabelFile(chooser.getSelectedFile().getAbsoluteFile());
 
-                            log.info("Proceed with importing label list file with " + labelFile.getName());
+                            log.info("Proceed with importing label list file with " + getLabelFile().getName());
 
-                            setLabelList(new LabelListImport().importLabelListFile(labelFile));
+                            setLabelList(new LabelListImport(labelFile).getValidLabelList());
 
                             if(labelList == null)
                             {
