@@ -322,7 +322,7 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesPath.size(); ++i)
             {
-                String dataSubPath = Paths.get(((File) filesPath.get(i)).getAbsolutePath()).getFileName().toString();
+                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(loader.getProjectPath(), ((File) filesPath.get(i)).getAbsolutePath()));
 
                 AnnotationVerticle.saveDataPoint(loader, dataSubPath, i + 1);
             }

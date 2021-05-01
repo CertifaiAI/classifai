@@ -55,7 +55,7 @@ public class ProjectParser
         {
             Row row = rowIterator.next();
 
-            String imgPath = StringHandler.removeSlashes(row.getString(1));
+            String imgPath = StringHandler.removeFirstSlashes(row.getString(1));
 
             String fullPath = Paths.get(projectPath, imgPath).toString();
 
