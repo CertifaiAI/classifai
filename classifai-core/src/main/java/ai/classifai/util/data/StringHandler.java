@@ -28,4 +28,9 @@ public class StringHandler
     {
         return input.replace("\\", "").replace("/", "");
     }
+
+    public static String removeEndOfLineChar(@NonNull String input)
+    {
+        return input.replaceAll("(\\r|\\n)", "");
+    }
 }
