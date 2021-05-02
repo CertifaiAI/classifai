@@ -91,7 +91,7 @@ public class ProjectParser
 
             JsonObject jsonObject = (JsonObject) item.getValue();
 
-            String subPath = String.join(File.separator,jsonObject.getString(ParamConfig.getImgPathParam()).split("(/|\\\\)"));
+            String subPath = String.join(File.separator,jsonObject.getString(ParamConfig.getImgPathParam()).split("[/\\\\]"));
 
             File fullPath = Paths.get(loader.getProjectPath(), subPath).toFile();
 
