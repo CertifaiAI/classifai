@@ -92,8 +92,6 @@ public class PortfolioParser
                                 .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
                                 .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
                                 .annotationType(annotationInt)                                                  //annotation_type
-                                //FIXME
-                                // wrong path given
                                 .projectPath(ActionConfig.getJsonFilePath())           //project_path
                                 .isProjectNew(jsonObject.getBoolean(ParamConfig.getIsNewParam()))               //is_new
                                 .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))       //is_starred

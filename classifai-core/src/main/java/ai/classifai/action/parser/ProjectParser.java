@@ -90,7 +90,7 @@ public class ProjectParser
             String uuid = item.getKey();
 
             JsonObject jsonObject = (JsonObject) item.getValue();
-            //FIXME
+
             String subPath = String.join(File.separator,jsonObject.getString(ParamConfig.getImgPathParam()).split("(/|\\\\)"));
 
             File fullPath = Paths.get(loader.getProjectPath(), subPath).toFile();
