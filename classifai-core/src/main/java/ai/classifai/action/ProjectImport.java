@@ -134,6 +134,7 @@ public class ProjectImport
 
         if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
         {
+            inputJsonObject.put(ParamConfig.getProjectPathParam(), ActionConfig.getJsonFilePath());
             String popupTitle = "Project Path Update";
             String message = "Folder path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
             SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
