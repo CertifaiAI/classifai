@@ -55,7 +55,7 @@ public class ProjectParser
         {
             Row row = rowIterator.next();
 
-            String imgPath = StringHandler.removeSlashes(row.getString(1));
+            String imgPath = StringHandler.removeFirstSlashes(row.getString(1));
 
             String fullPath = Paths.get(projectPath, imgPath).toString();
 
@@ -91,7 +91,7 @@ public class ProjectParser
 
             JsonObject jsonObject = (JsonObject) item.getValue();
 
-            String subPath = jsonObject.getString(ParamConfig.getImgPathParam());
+            String subPath = String.join(File.separator,jsonObject.getString(ParamConfig.getImgPathParam()).split("[/\\\\]"));
 
             File fullPath = Paths.get(loader.getProjectPath(), subPath).toFile();
 
