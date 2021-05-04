@@ -15,6 +15,7 @@
  */
 package ai.classifai.action.parser;
 
+import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
@@ -91,8 +92,7 @@ public class PortfolioParser
                                 .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
                                 .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
                                 .annotationType(annotationInt)                                                  //annotation_type
-
-                                .projectPath(jsonObject.getString(ParamConfig.getProjectPathParam()))           //project_path
+                                .projectPath(ActionConfig.getJsonFilePath())           //project_path
                                 .isProjectNew(jsonObject.getBoolean(ParamConfig.getIsNewParam()))               //is_new
                                 .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))       //is_starred
 

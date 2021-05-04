@@ -107,7 +107,7 @@ public class ProjectExport
     private static void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
     {
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
-        String saveFileRelativePath = Paths.get(filePath.getParentFile().getName(), relativePath).toFile().toString();
+        String saveFileRelativePath = Paths.get(dir.getName(), relativePath).toFile().toString();
 
         ZipEntry entry = new ZipEntry(saveFileRelativePath);
         out.putNextEntry(entry);

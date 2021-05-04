@@ -23,6 +23,7 @@ import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,12 +80,20 @@ public class EndpointRouter extends AbstractVerticle
         cloud.setVertx(vertx);
     }
 
+    private void addNoCacheHeader(RoutingContext ctx)
+    {
+        ctx.response().headers().add("Cache-Control", "no-cache");
+        ctx.next();
+    }
+
     @Override
     public void start(Promise<Void> promise)
     {
         Router router = Router.router(vertx);
 
         //display for content in webroot
+        //uses no-cache header for cache busting, perform revalidation when fetching static assets
+        router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
 
         final String projectEndpoint = "/:annotation_type/projects/:project_name";
