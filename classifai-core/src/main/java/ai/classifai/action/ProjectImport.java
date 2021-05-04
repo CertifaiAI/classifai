@@ -94,7 +94,8 @@ public class ProjectImport
             {
                 String popupTitle = "Import Error";
                 String message = "Project not imported. Missing Key in JSON file: " + key;
-                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+//                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+                ProjectImportSelector.formatImportErrorMessage(message);
 
                 return false;
             }
@@ -112,21 +113,19 @@ public class ProjectImport
         {
             String popupTitle = "Invalid import file";
             String message = "The configuration file imported is not valid.";
+//            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
             ProjectImportSelector.formatImportErrorMessage(message);
-            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
             return false;
         }
 
-        // Does not return false. Only pop up warning.
+        // Does not abort import process. Just print warning
         if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
         {
-            String popupTitle = "Tool Version Warning";
-            String message = "Different tool version detected. Import may not work." + "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
+            String message = "Different tool version detected. Import may not work." +
+                    "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
                     "\nJSON Version: " + toolVersionFromJson;
-            ProjectImportSelector.formatImportErrorMessage(message);
-            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.WARNING_MESSAGE);
-
+            log.warn(message);
         }
         return true;
     }
@@ -138,9 +137,9 @@ public class ProjectImport
         if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
         {
             String popupTitle = "Project Path Update";
-            String message = "Folder path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
+            String message = "Project path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
+//            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
             ProjectImportSelector.formatImportErrorMessage(message);
-            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

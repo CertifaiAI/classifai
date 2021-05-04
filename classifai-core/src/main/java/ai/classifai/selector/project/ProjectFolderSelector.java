@@ -103,7 +103,8 @@ public class ProjectFolderSelector extends SelectionWindow {
     {
         String popupTitle = "Project Not Created";
         String message = "No folder chosen. Abort project creation.";
-        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
+//        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
+        ProjectImportSelector.formatImportErrorMessage(message);
     }
 
     private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
