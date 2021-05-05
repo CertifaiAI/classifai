@@ -85,27 +85,24 @@ public class ProjectExport
         File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
         List<File> validImagePaths = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
 
-        FileOutputStream fos = new FileOutputStream(zipFile);
-        ZipOutputStream out = new ZipOutputStream(fos);
-
         // Add config file
-        addToEntry(new File(configPath), out, new File(loader.getProjectPath()));
+        addToEntry(new File(configPath), zipFile, new File(loader.getProjectPath()));
 
         // Add all image data
         for(File filePath: validImagePaths)
         {
-            addToEntry(filePath, out, new File(loader.getProjectPath()));
+            addToEntry(filePath, zipFile, new File(loader.getProjectPath()));
         }
-        out.close();
-        fos.close();
 
         log.info("Project configuration file and data saved at: " + zipFile);
 
         return zipFile.toString();
     }
 
-    private static void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
+    private static void addToEntry(File filePath, File zipFile, File dir) throws IOException
     {
+        FileOutputStream fos = new FileOutputStream(zipFile);
+        ZipOutputStream out = new ZipOutputStream(fos);
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
         String saveFileRelativePath = Paths.get(dir.getName(), relativePath).toFile().toString();
 
@@ -128,6 +125,9 @@ public class ProjectExport
         {
             log.debug(e.toString());
         }
+
+        out.close();
+        fos.close();
     }
 
     public static String runExportProcess(ProjectLoader loader, JsonObject configContent, int exportType)
