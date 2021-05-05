@@ -1,3 +1,4 @@
+package ai.classifai.selector.project;
 /*
  * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
@@ -13,38 +14,45 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.project;
 
-import ai.classifai.action.ActionConfig;
-import ai.classifai.action.ProjectImport;
+import ai.classifai.action.LabelListImport;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.nio.file.Paths;
+import java.util.List;
 
 /**
- * Open browser to choose for configuration file to import
+ * Open browser to choose label list to import
  *
  * @author codenamewei
  */
 @Slf4j
-public class ProjectImportSelector extends SelectionWindow {
+public class LabelListSelector extends SelectionWindow
+{
+    @Getter @Setter
+    private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
 
-    @Getter
-    @Setter
-    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+    @Getter @Setter
+    private static File labelFile = null;
+
+    @Getter @Setter
+    private static List<String> labelList = null;
 
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
-            "Json Files", "json");
+            "Text Files", "txt");
+
+    public static String getLabelFilePath()
+    {
+        return (labelFile != null) ? labelFile.getAbsolutePath() : "";
+    }
 
     public void run()
     {
@@ -55,7 +63,7 @@ public class ProjectImportSelector extends SelectionWindow {
                 if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
                 {
                     windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
-                    setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                     JFrame frame = initFrame();
                     String title = "Select File";
@@ -70,42 +78,43 @@ public class ProjectImportSelector extends SelectionWindow {
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
+                        setLabelFile(chooser.getSelectedFile().getAbsoluteFile());
 
-                        log.info("Proceed with importing project with " + jsonFile.getName());
+                        log.info("Proceed with importing label list file with " + getLabelFile().getName());
 
-                        if(!ProjectImport.importProjectFile(jsonFile))
+                        setLabelList(new LabelListImport(labelFile).getValidLabelList());
+
+                        if(labelList == null)
                         {
-                            log.debug("Import project failed");
-                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            log.debug("Import label list failed");
+                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                         else
                         {
-                            log.debug("Import project success");
-                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+                            log.debug("Import label list success");
+
+                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
                         }
                     }
                     else
                     {
-                        setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         log.debug("Operation of import project aborted");
                     }
 
                     windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
                 }
                 else
                 {
                     showAbortImportPopup();
-                    setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }
         catch (Exception e)
         {
-            log.info("ProjectHandler for File type failed to open", e);
+            log.info("LabelListSelector failed to open", e);
         }
     }
-
-
 }

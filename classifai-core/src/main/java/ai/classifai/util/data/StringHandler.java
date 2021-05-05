@@ -29,6 +29,11 @@ public class StringHandler
         return input.replace("\\", "").replace("/", "");
     }
 
+    public static String removeEndOfLineChar(@NonNull String input)
+    {
+        return input.replaceAll("[\\r\\n]", "");
+    }
+
     public static String removeFirstSlashes(@NonNull String input)
     {
         return removeSlashes(input.substring(0,2)) + input.substring(2);

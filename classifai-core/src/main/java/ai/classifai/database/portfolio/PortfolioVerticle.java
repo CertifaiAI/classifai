@@ -35,6 +35,7 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -302,7 +303,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         for(Object label: newLabelListJson)
         {
-            newLabelList.add((String) label);
+            String trimmedLabel = StringHandler.removeEndOfLineChar((String) label);
+
+            newLabelList.add(trimmedLabel);
         }
 
         ProjectVersion project = loader.getProjectVersion();
