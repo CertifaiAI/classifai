@@ -7,4 +7,4 @@ del %JAR%
 
 call mvnw -Puberjar -Dmaven.test.skip=true clean install
 
-java -jar -Dlog.dir=%CLASSIFAI_HOME% %JAR% %*
+java -jar -Xmx1024m -Dlog.dir=%CLASSIFAI_HOME% %JAR% %*
