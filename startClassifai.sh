@@ -9,4 +9,4 @@ rm $CLASSIFAI_ABSPATH_JAR
 
 ./mvnw -Puberjar -Dmaven.test.skip=true clean install
 
-java -jar $CLASSIFAI_ABSPATH_JAR $@
+java -jar -Xmx1024m $CLASSIFAI_ABSPATH_JAR $@
