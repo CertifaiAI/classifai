@@ -93,7 +93,7 @@ public class ProjectImport
             if(!inputJsonObject.containsKey(key))
             {
                 String popupTitle = "Import Error";
-                String message = "Project not imported. Missing Key in JSON file: " + key;
+                String message = "Missing Key in JSON file: " + key;
 //                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
                 ProjectImportSelector.formatImportErrorMessage(message);
 
