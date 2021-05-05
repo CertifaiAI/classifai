@@ -56,7 +56,7 @@ public class ProjectFolderSelector extends SelectionWindow {
                 ProjectLoader loader = Objects.requireNonNull(
                         configureLoader(projectName, annotationType.ordinal(), new File("")));
 
-                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN)
 
                 JFrame frame = initFrame();
                 String title = "Select Folder";
