@@ -61,6 +61,7 @@ public class ParamConfig
     @Getter private static final String totalUuidParam = "total_uuid";
     @Getter private static final String uuidListParam = "uuid_list";
     @Getter private static final String labelListParam = "label_list";
+    @Getter private static final String labelFilePathParam = "label_file_path";
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
@@ -79,6 +80,8 @@ public class ParamConfig
 
     @Getter private static final String fileParam = "file";
     @Getter private static final String folderParam = "folder";
+
+    @Getter private final static String fileSizeParam = "file_size";
 
     @Getter private static final String actionKeyword = "action";
     @Getter private static final String content = "content";
@@ -119,6 +122,8 @@ public class ParamConfig
 
     @Getter private static final String versionUuidParam = "version_uuid";
     @Getter private static final String nextVersionUuidParam = "next_version_uuid";
+
+    @Getter private static final String annotationDataParam = "annotation_data";
 
     //hash
     @Getter private static final String checkSumParam = "checksum";

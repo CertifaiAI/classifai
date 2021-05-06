@@ -15,7 +15,7 @@
  */
 package ai.classifai.database.versioning;
 
-import ai.classifai.action.ActionOps;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -49,20 +49,22 @@ public class Annotation
     @Builder.Default private Integer imgOriW = 0;                           //img_ori_w
     @Builder.Default private Integer imgOriH = 0;                           //img_ori_h
 
+    @Builder.Default private Integer fileSize = 0;                          //file_size
+
     public String getAnnotationDictDbFormat()
     {
         JsonArray response = new JsonArray();
 
         for (Map.Entry<String, AnnotationVersion> entry : annotationDict.entrySet())
         {
-            String annotation = entry.getValue().getDbFormat();
+            JsonObject jsonAnnotationVersion = new JsonObject();
 
-            String strAnnotationVersion = ActionOps.removeDoubleQuote(new JsonObject().put(entry.getKey(), annotation).encode());
+            jsonAnnotationVersion.put(ParamConfig.getVersionUuidParam(), entry.getKey());
+            jsonAnnotationVersion.put(ParamConfig.getAnnotationDataParam(), entry.getValue().getJsonObject());
 
-            response.add(strAnnotationVersion);
+            response.add(jsonAnnotationVersion);
         }
-
-        return ActionOps.removeDoubleQuote(response.encode());
+        return response.encode();
     }
 
     public Tuple getTuple()
@@ -73,7 +75,8 @@ public class Annotation
                 getAnnotationDictDbFormat(),             //version_list
                 imgDepth,                                //img_depth
                 imgOriW,                                 //img_ori_w
-                imgOriH);                                //img_ori_w
+                imgOriH,                                 //img_ori_h
+                fileSize);                               //file_size
     }
 
 }

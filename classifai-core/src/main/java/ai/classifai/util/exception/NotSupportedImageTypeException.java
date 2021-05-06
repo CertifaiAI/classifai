@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,29 +13,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.data;
-
-import lombok.NonNull;
+package ai.classifai.util.exception;
 
 /**
- * String processing operation
+ * Exception thrown when data type is not supported
  *
- * @author codenamewei
+ * @author YCCertifai
  */
-public class StringHandler
-{
-    public static String removeSlashes(@NonNull String input)
-    {
-        return input.replace("\\", "").replace("/", "");
-    }
+public class NotSupportedImageTypeException extends Exception{
 
-    public static String removeEndOfLineChar(@NonNull String input)
+    public NotSupportedImageTypeException(String message)
     {
-        return input.replaceAll("[\\r\\n]", "");
-    }
-
-    public static String removeFirstSlashes(@NonNull String input)
-    {
-        return removeSlashes(input.substring(0,2)) + input.substring(2);
+        super(message);
     }
 }

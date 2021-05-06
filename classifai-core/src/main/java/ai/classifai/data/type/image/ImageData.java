@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,29 +13,25 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.util.data;
+package ai.classifai.data.type.image;
 
-import lombok.NonNull;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
 
 /**
- * String processing operation
+ * ImageData provides metadata of images
  *
- * @author codenamewei
+ * @author YCCertifai
  */
-public class StringHandler
+public abstract class ImageData
 {
-    public static String removeSlashes(@NonNull String input)
+    protected Metadata metadata;
+
+    protected ImageData(Metadata metadata)
     {
-        return input.replace("\\", "").replace("/", "");
+        this.metadata = metadata;
     }
 
-    public static String removeEndOfLineChar(@NonNull String input)
-    {
-        return input.replaceAll("[\\r\\n]", "");
-    }
-
-    public static String removeFirstSlashes(@NonNull String input)
-    {
-        return removeSlashes(input.substring(0,2)) + input.substring(2);
-    }
+    public abstract int getWidth() throws MetadataException;
+    public abstract int getHeight() throws MetadataException;
 }

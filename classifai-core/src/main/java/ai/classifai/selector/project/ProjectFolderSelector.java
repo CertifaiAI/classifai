@@ -52,44 +52,39 @@ public class ProjectFolderSelector extends SelectionWindow {
     {
         try
         {
-            EventQueue.invokeLater(new Runnable() {
-                @SneakyThrows
-                @Override
-                public void run()
+            EventQueue.invokeLater(() -> {
+                ProjectLoader loader = Objects.requireNonNull(
+                        configureLoader(projectName, annotationType.ordinal(), new File("")));
+
+                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+
+                JFrame frame = initFrame();
+                String title = "Select Folder";
+                JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
+
+                //Important: prevent Welcome Console from popping out
+                WelcomeLauncher.setToBackground();
+
+                int res = chooser.showOpenDialog(frame);
+                frame.dispose();
+
+                if (res == JFileChooser.APPROVE_OPTION)
                 {
-                    ProjectLoader loader = Objects.requireNonNull(
-                            configureLoader(projectName, annotationType.ordinal(), new File("")));
+                    File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                    log.debug("Proceed with creating project");
+                    loader.setProjectPath(projectPath.toString());
+                    initFolderIteration(loader);
 
-                    JFrame frame = initFrame();
-                    String title = "Select Folder";
-                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
+                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+                }
+                else
+                {
+                    // Abort creation if user did not choose any
+                    showAbortProjectPopup();
+                    log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
 
-                    //Important: prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
-
-                    int res = chooser.showOpenDialog(frame);
-                    frame.dispose();
-
-                    if (res == JFileChooser.APPROVE_OPTION)
-                    {
-                        File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
-
-                        log.debug("Proceed with creating project");
-                        loader.setProjectPath(projectPath.toString());
-                        initFolderIteration(loader);
-
-                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-                    }
-                    else
-                    {
-                        // Abort creation if user did not choose any
-                        showAbortProjectPopup();
-                        log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
-
-                        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                    }
+                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }
@@ -139,21 +134,32 @@ public class ProjectFolderSelector extends SelectionWindow {
         return null;
     }
 
-    public void initFolderIteration(@NonNull ProjectLoader loader) throws IOException {
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-
-        String projectPath = loader.getProjectPath();
-        if(!ImageHandler.iterateFolder(loader.getProjectId(), new File(projectPath)))
+    public void initFolderIteration(@NonNull ProjectLoader loader)
+    {
+        try
         {
-            // Get example image from metadata
-            File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
-            File destImageFile = Paths.get(projectPath, "example_img.png").toFile();
-            FileUtils.copyFile(srcImgFile, destImageFile);
-            log.info("Empty folder. Example image added.");
+            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
 
-            // Run initiate image again
-            ImageHandler.iterateFolder(loader.getProjectId(), new File(projectPath));
+            String projectPath = loader.getProjectPath();
+            File fileProjectPath = new File(projectPath);
+
+            if(!ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath))
+            {
+                // Get example image from metadata
+                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
+                File destImageFile = Paths.get(projectPath, "example_img.png").toFile();
+                FileUtils.copyFile(srcImgFile, destImageFile);
+                log.info("Empty folder. Example image added.");
+
+                // Run initiate image again
+                ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath);
+            }
         }
+        catch(IOException e)
+        {
+            log.info("Error while copying file: ", e);
+        }
+
     }
 
 }
