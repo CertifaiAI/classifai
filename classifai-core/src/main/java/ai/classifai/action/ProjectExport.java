@@ -101,33 +101,29 @@ public class ProjectExport
 
     private static void addToEntry(File filePath, File zipFile, File dir) throws IOException
     {
-        FileOutputStream fos = new FileOutputStream(zipFile);
-        ZipOutputStream out = new ZipOutputStream(fos);
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
         String saveFileRelativePath = Paths.get(dir.getName(), relativePath).toFile().toString();
 
-        ZipEntry entry = new ZipEntry(saveFileRelativePath);
-        out.putNextEntry(entry);
+        try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream out = new ZipOutputStream(fos)) {
 
-        try(FileInputStream fis = new FileInputStream(filePath))
-        {
-            byte[] buffer = new byte[1024];
-            int len;
+            ZipEntry entry = new ZipEntry(saveFileRelativePath);
+            out.putNextEntry(entry);
 
-            while((len = fis.read(buffer)) > 0)
-            {
-                out.write(buffer, 0, len);
+            try (FileInputStream fis = new FileInputStream(filePath)) {
+                byte[] buffer = new byte[1024];
+                int len;
+
+                while ((len = fis.read(buffer)) > 0) {
+                    out.write(buffer, 0, len);
+                }
+
+                out.closeEntry();
+            } catch (Exception e) {
+                log.debug(e.toString());
             }
-
-            out.closeEntry();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.debug(e.toString());
         }
-
-        out.close();
-        fos.close();
     }
 
     public static String runExportProcess(ProjectLoader loader, JsonObject configContent, int exportType)
