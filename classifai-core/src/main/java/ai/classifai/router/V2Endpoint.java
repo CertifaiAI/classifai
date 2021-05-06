@@ -20,6 +20,7 @@ import ai.classifai.action.ProjectExport;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
@@ -49,6 +50,7 @@ public class V2Endpoint {
     @Setter private Vertx vertx = null;
     @Setter private ProjectFolderSelector projectFolderSelector = null;
     @Setter private ProjectImportSelector projectImporter = null;
+    @Setter private LabelListSelector labelListSelector = null;
 
     Util util = new Util();
 
@@ -322,9 +324,18 @@ public class V2Endpoint {
 
     public void importProject(RoutingContext context)
     {
-        projectImporter.run();
+        if(projectImporter.isWindowOpen())
+        {
+            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
 
-        HTTPResponseHandler.configureOK(context);
+            HTTPResponseHandler.configureOK(context, jsonResonse);
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
+
+        projectImporter.run();
     }
 
     /**
@@ -391,5 +402,55 @@ public class V2Endpoint {
 
         HTTPResponseHandler.configureOK(context,
                 new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal()));
+    }
+
+
+    /**
+     * Initiate load label list
+     * PUT http://localhost:{port}/v2/labelfile
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/labelfile
+     */
+    public void loadLabelFile(RoutingContext context)
+    {
+        if(labelListSelector.isWindowOpen())
+        {
+            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Label list selector window has already opened. CLose that to proceed.");
+
+            HTTPResponseHandler.configureOK(context, jsonResonse);
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
+
+        labelListSelector.run();
+    }
+
+    /**
+     * Get load label file status
+     * GET http://localhost:{port}/v2/labelfilestatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/labelfilestatus
+     */
+    public void loadLabelFileStatus(RoutingContext context)
+    {
+        util.checkIfDockerEnv(context);
+
+        FileSystemStatus currentStatus = LabelListSelector.getImportLabelFileSystemStatus();
+
+        JsonObject jsonResponse = new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
+
+        if(currentStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+        {
+            jsonResponse
+                    .put(ParamConfig.getLabelFilePathParam(), LabelListSelector.getLabelFilePath())
+                    .put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+
+        }
+
+        HTTPResponseHandler.configureOK(context, jsonResponse);
     }
 }

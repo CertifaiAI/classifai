@@ -126,7 +126,6 @@ public class ProjectExport
     {
         if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
         {
-            log.info("Exporting Config with data");
             try {
                 return exportToFileWithData(loader, loader.getProjectId(), configContent);
             } catch (IOException e) {
@@ -135,7 +134,6 @@ public class ProjectExport
         }
         else if(exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal())
         {
-            log.info("Exporting Config only");
             return exportToFile(loader.getProjectId(), configContent);
         }
 

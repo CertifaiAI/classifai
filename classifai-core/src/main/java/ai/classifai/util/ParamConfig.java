@@ -61,6 +61,7 @@ public class ParamConfig
     @Getter private static final String totalUuidParam = "total_uuid";
     @Getter private static final String uuidListParam = "uuid_list";
     @Getter private static final String labelListParam = "label_list";
+    @Getter private static final String labelFilePathParam = "label_file_path";
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
