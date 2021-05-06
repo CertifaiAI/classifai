@@ -124,13 +124,6 @@ public class ProjectImportSelector extends SelectionWindow {
         }
     }
 
-    private void showAbortImportPopup()
-    {
-        String popupTitle = "Error Opening Window";
-        String message = "Another selection window is currently open. Please close to proceed.";
-        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
-    }
-
     public static void formatImportErrorMessage(String message)
     {
         setImportErrorMessage(getImportErrorMessage() + "\n" + message);
