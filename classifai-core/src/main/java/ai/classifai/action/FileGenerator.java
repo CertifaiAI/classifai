@@ -41,11 +41,11 @@ public class FileGenerator {
                 log.info("Exporting project config with data");
                 try
                 {
-                    exportPath = ProjectExport.exportToFileWithData(message, loader, loader.getProjectId(), configContent);
+                    exportPath = ProjectExport.exportToFileWithData(loader, loader.getProjectId(), configContent);
                 }
                 catch (IOException e)
                 {
-                    e.printStackTrace();
+                    log.info("Exporting fail");
                 }
             }
             else if (exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal())

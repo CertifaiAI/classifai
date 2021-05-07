@@ -81,7 +81,7 @@ public class ProjectExport
         return configPath;
     }
 
-    public static String exportToFileWithData(Message<JsonObject> message, ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
+    public static String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
         File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
