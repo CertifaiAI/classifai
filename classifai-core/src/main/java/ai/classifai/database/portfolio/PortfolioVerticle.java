@@ -30,8 +30,6 @@ import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.project.ProjectImportSelector;
-import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -59,7 +57,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.*;
 import java.io.File;
 import java.util.*;
 
@@ -197,7 +194,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         // Only show popup if there is duplicate project name
         if(!newProjName.equals(""))
         {
-            String message = "Name Overlapped. Rename as " + newProjName;
+            String message = "Name Overlapped. Rename as " + newProjName + ".";
             formatImportErrorMessage(message);
             log.info(message);
         }

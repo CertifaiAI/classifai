@@ -400,7 +400,7 @@ public class V2Endpoint {
 
         FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
         JsonObject res = new JsonObject();
-        res.put(ReplyHandler.getErrorCodeKey(), currentStatus.ordinal());
+        res.put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
         res.put(ReplyHandler.getErrorMesageKey(), ProjectImportSelector.getImportErrorMessage());
 
         HTTPResponseHandler.configureOK(context, res);

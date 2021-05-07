@@ -110,14 +110,14 @@ public class ProjectImportSelector extends SelectionWindow {
 
         if(!ProjectImport.importProjectFile(jsonFile))
         {
-            String mes = "Import project failed";
+            String mes = "Import project failed.";
             log.debug(mes);
             formatImportErrorMessage(mes);
             setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
         }
         else
         {
-            String mes = "Import project success";
+            String mes = "Import project success.";
             log.debug(mes);
             formatImportErrorMessage(mes);
             setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
