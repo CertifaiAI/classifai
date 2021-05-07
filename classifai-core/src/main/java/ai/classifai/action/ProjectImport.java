@@ -92,10 +92,8 @@ public class ProjectImport
         {
             if(!inputJsonObject.containsKey(key))
             {
-                String popupTitle = "Import Error";
                 String message = "Missing Key in JSON file: " + key;
-//                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
-                ProjectImportSelector.formatImportErrorMessage(message);
+                log.info(message);
 
                 return false;
             }
@@ -111,10 +109,8 @@ public class ProjectImport
 
         if(toolNameFromJson == null || toolVersionFromJson == null || updatedDateFromJson == null || !toolNameFromJson.equals(ActionConfig.getToolName()))
         {
-            String popupTitle = "Invalid import file";
             String message = "The configuration file imported is not valid.";
-//            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
-            ProjectImportSelector.formatImportErrorMessage(message);
+            log.info(message);
 
             return false;
         }
@@ -123,7 +119,7 @@ public class ProjectImport
         if(!toolVersionFromJson.equals(ActionConfig.getToolVersion()))
         {
             String message = "Different tool version detected. Import may not work." +
-                    "\n\nInstalled Version: " + ActionConfig.getToolVersion() +
+                    "\nInstalled Version: " + ActionConfig.getToolVersion() +
                     "\nJSON Version: " + toolVersionFromJson;
             log.warn(message);
         }
@@ -136,10 +132,8 @@ public class ProjectImport
 
         if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
         {
-            String popupTitle = "Project Path Update";
-            String message = "Project path updated \n\nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
-//            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
-            ProjectImportSelector.formatImportErrorMessage(message);
+            String message = "Project path updated \nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
+            log.info(message);
         }
     }
 

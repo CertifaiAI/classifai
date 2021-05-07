@@ -119,7 +119,7 @@ public class ProjectImportSelector extends SelectionWindow {
         {
             String mes = "Import project success";
             log.debug(mes);
-//            formatImportErrorMessage(mes);
+            formatImportErrorMessage(mes);
             setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
         }
     }

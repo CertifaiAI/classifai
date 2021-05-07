@@ -195,7 +195,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         // Only show popup if there is duplicate project name
         if(!newProjName.equals(""))
         {
-            showNameOverlappedPopup(newProjName);
+            log.info("Name Overlapped. Rename project as " + newProjName);
         }
 
         ProjectHandler.loadProjectLoader(loader);
@@ -213,7 +213,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
-                        showImportSuccessPopup(loader.getProjectName());
+                        log.info("Import project " + loader.getProjectName() + " success!");
                     }
                     else
                     {
@@ -221,22 +221,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 });
 
-    }
-
-    private static void showNameOverlappedPopup(String newProjName)
-    {
-        String popupTitle = "Name Overlapped";
-        String message = "Name Overlapped. Rename project as " + newProjName;
-//        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
-        ProjectImportSelector.formatImportErrorMessage(message);
-    }
-
-    private static void showImportSuccessPopup(String projectName)
-    {
-        String popupTitle = "Success";
-        String message = "Import project " + projectName + " success!";
-//        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
-        ProjectImportSelector.formatImportErrorMessage(message);
     }
 
     /**
