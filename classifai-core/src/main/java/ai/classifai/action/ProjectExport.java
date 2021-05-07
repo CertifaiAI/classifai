@@ -22,6 +22,7 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.project.ProjectHandler;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -54,9 +56,9 @@ public class ProjectExport
                 .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
     }
 
-    private static String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
+    public static String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         //Configuration file of json format
         String configPath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".json";
@@ -79,7 +81,7 @@ public class ProjectExport
         return configPath;
     }
 
-    private static String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
+    public static String exportToFileWithData(Message<JsonObject> message, ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
         File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
@@ -128,24 +130,6 @@ public class ProjectExport
         {
             log.debug(e.toString());
         }
-    }
-
-    public static String runExportProcess(ProjectLoader loader, JsonObject configContent, int exportType)
-    {
-        if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
-        {
-            try {
-                return exportToFileWithData(loader, loader.getProjectId(), configContent);
-            } catch (IOException e) {
-                log.warn("Error creating zip file");
-            }
-        }
-        else if(exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal())
-        {
-            return exportToFile(loader.getProjectId(), configContent);
-        }
-
-        return null;
     }
 
     public static JsonObject getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
