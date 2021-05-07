@@ -16,8 +16,6 @@
 package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.selector.project.ProjectImportSelector;
-import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.AccessLevel;
@@ -26,7 +24,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;

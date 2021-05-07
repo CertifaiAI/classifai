@@ -54,46 +54,43 @@ public class ProjectImportSelector extends SelectionWindow {
     {
         try
         {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    clearImportErrorMessage();
-                    if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+            EventQueue.invokeLater(() -> {
+                clearImportErrorMessage();
+                if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+                {
+                    windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
+                    setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+
+                    JFrame frame = initFrame();
+                    String title = "Select File";
+                    JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
+                    chooser.setFileFilter(imgFilter);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
+                    if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
-                        setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
-
-                        JFrame frame = initFrame();
-                        String title = "Select File";
-                        JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
-                        chooser.setFileFilter(imgFilter);
-
-                        //Important: prevent Welcome Console from popping out
-                        WelcomeLauncher.setToBackground();
-
-                        int res = chooser.showOpenDialog(frame);
-                        frame.dispose();
-
-                        if (res == JFileChooser.APPROVE_OPTION)
-                        {
-                            File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                            runApproveOption(jsonFile);
-                        }
-                        else
-                        {
-                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                            log.debug("Operation of import project aborted");
-                        }
+                        File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
+                        runApproveOption(jsonFile);
                     }
                     else
                     {
-                        showAbortImportPopup();
                         setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        log.debug("Operation of import project aborted");
                     }
-
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
-
                 }
+                else
+                {
+                    showAbortImportPopup();
+                    setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                }
+
+                windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
             });
         }
         catch (Exception e)
