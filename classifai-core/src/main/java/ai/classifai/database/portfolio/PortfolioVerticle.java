@@ -63,6 +63,8 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 
+import static ai.classifai.selector.project.ProjectImportSelector.formatImportErrorMessage;
+
 /**
  * General database processing to get high level infos of each created project
  *
@@ -195,7 +197,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         // Only show popup if there is duplicate project name
         if(!newProjName.equals(""))
         {
-            log.info("Name Overlapped. Rename project as " + newProjName);
+            String message = "Name Overlapped. Rename as " + newProjName;
+            formatImportErrorMessage(message);
+            log.info(message);
         }
 
         ProjectHandler.loadProjectLoader(loader);
