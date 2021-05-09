@@ -120,6 +120,11 @@ public class V2Endpoint {
             {
                 if(reply.succeeded())
                 {
+                    //set status of starring to project loader.
+                    Boolean isStar = Boolean.parseBoolean(jsonObject.getString(ParamConfig.getStatusParam()));
+                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+                    loader.setIsProjectStarred(isStar);
+
                     JsonObject response = (JsonObject) reply.result().body();
 
                     HTTPResponseHandler.configureOK(context, response);
