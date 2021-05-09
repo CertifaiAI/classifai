@@ -12,13 +12,13 @@
     <a href="https://github.com/CertifaiAI/classifai/releases">
         <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=yellow">
     </a>
-    <a href="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
+    <a href="https://sonarcloud.io/dashboard?id=CertifaiAI_classifai">
         <img alt="Sonar Cloud Quality Gate" src="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
     </a>
     <a href="https://classifai.ai">
-        <img alt="Documentation" src="https://img.shields.io/website/http/certifai.ai.svg?color=orange">
+        <img alt="Website" src="https://img.shields.io/website/http/classifai.ai.svg?color=orange">
     </a>
-    <a href="Discord">
+    <a href="https://discord.gg/WsBFgNP">
         <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
     </a>
 </p>
