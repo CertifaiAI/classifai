@@ -12,13 +12,13 @@
     <a href="https://github.com/CertifaiAI/classifai/releases">
         <img alt="GitHub release" src="https://img.shields.io/github/release/CertifaiAI/classifai.svg?color=yellow">
     </a>
-    <a href="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
+    <a href="https://sonarcloud.io/dashboard?id=CertifaiAI_classifai">
         <img alt="Sonar Cloud Quality Gate" src="https://img.shields.io/sonar/quality_gate/CertifaiAI_classifai?server=https%3A%2F%2Fsonarcloud.io">
     </a>
     <a href="https://classifai.ai">
-        <img alt="Documentation" src="https://img.shields.io/website/http/certifai.ai.svg?color=orange">
+        <img alt="Website" src="https://img.shields.io/website/http/classifai.ai.svg?color=orange">
     </a>
-    <a href="Discord">
+    <a href="https://discord.gg/WsBFgNP">
         <img alt="Discord" src="https://img.shields.io/discord/699181979316387842?color=informational">
     </a>
 </p>
@@ -26,8 +26,6 @@
 <h3 align="center">
 Data Annotation Platform for AI Training
 </h3>
-
-[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/0)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/0)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/1)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/1)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/2)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/2)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/3)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/3)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/4)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/4)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/5)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/5)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/6)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/6)[![](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/images/7)](https://sourcerer.io/fame/codenamewei/CertifaiAI/classifai/links/7)
 
 **Classifai** is one of the most comprehensive open-source data annotation platform.  
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  

@@ -18,6 +18,7 @@ package ai.classifai.database.portfolio;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
 import ai.classifai.action.ProjectExport;
+import ai.classifai.action.FileGenerator;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.DbConfig;
@@ -71,6 +72,7 @@ import static ai.classifai.selector.project.ProjectImportSelector.formatImportEr
 public class PortfolioVerticle extends AbstractVerticle implements VerticleServiceable, PortfolioServiceable
 {
     @Setter private static JDBCPool portfolioDbPool;
+    @Setter private static FileGenerator fileGenerator;
 
     public void onMessage(Message<JsonObject> message)
     {
@@ -361,15 +363,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
 
-        String exportPath = ProjectExport.runExportProcess(loader, configContent, exportType);
-        if(exportPath != null)
-        {
-            message.reply(ReplyHandler.getOkReply().put(
-                    ActionConfig.getProjectConfigPathParam(), exportPath));
-
-            return;
-        }
-        message.reply(ReplyHandler.getFailedReply());
+        fileGenerator.run(message, loader, configContent, exportType);
     }
 
 

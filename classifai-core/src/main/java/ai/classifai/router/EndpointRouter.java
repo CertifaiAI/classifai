@@ -15,6 +15,8 @@
  */
 package ai.classifai.router;
 
+import ai.classifai.action.FileGenerator;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.annotation.ToolFileSelector;
 import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.project.LabelListSelector;
@@ -41,6 +43,8 @@ public class EndpointRouter extends AbstractVerticle
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
     private LabelListSelector labelListSelector;
+    private FileGenerator fileGenerator;
+
 
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
@@ -63,6 +67,9 @@ public class EndpointRouter extends AbstractVerticle
 
         Thread labelListImport = new Thread(() -> labelListSelector = new LabelListSelector());
         labelListImport.start();
+
+        Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
+        threadZipFileGenerator.start();
     }
 
     @Override
@@ -85,6 +92,8 @@ public class EndpointRouter extends AbstractVerticle
         v2.setLabelListSelector(labelListSelector);
 
         cloud.setVertx(vertx);
+
+        PortfolioVerticle.setFileGenerator(fileGenerator);
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
