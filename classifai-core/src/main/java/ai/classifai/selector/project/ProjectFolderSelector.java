@@ -81,7 +81,6 @@ public class ProjectFolderSelector extends SelectionWindow {
                 else
                 {
                     // Abort creation if user did not choose any
-                    showAbortProjectPopup();
                     log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
 
                     loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
@@ -92,13 +91,6 @@ public class ProjectFolderSelector extends SelectionWindow {
         {
             log.info("ProjectFolderSelector failed to open", e);
         }
-    }
-
-    private void showAbortProjectPopup()
-    {
-        String popupTitle = "Project Not Created";
-        String message = "No folder chosen. Abort project creation.";
-        SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)

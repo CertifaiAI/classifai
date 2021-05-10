@@ -43,6 +43,10 @@ public class ProjectImportSelector extends SelectionWindow {
     @Setter
     private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
 
+    @Getter
+    @Setter
+    private static String importErrorMessage;
+
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Json Files", "json");
 
@@ -51,7 +55,7 @@ public class ProjectImportSelector extends SelectionWindow {
         try
         {
             EventQueue.invokeLater(() -> {
-
+                clearImportErrorMessage();
                 if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
                 {
                     windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
@@ -71,34 +75,22 @@ public class ProjectImportSelector extends SelectionWindow {
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
-
-                        log.info("Proceed with importing project with " + jsonFile.getName());
-
-                        if(!ProjectImport.importProjectFile(jsonFile))
-                        {
-                            log.debug("Import project failed");
-                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                        }
-                        else
-                        {
-                            log.debug("Import project success");
-                            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-                        }
+                        runApproveOption(jsonFile);
                     }
                     else
                     {
                         setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         log.debug("Operation of import project aborted");
                     }
-
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
                 }
                 else
                 {
                     showAbortImportPopup();
                     setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
+
+                windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+
             });
         }
         catch (Exception e)
@@ -107,5 +99,36 @@ public class ProjectImportSelector extends SelectionWindow {
         }
     }
 
+    private void runApproveOption(File jsonFile)
+    {
+        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
+
+        log.info("Proceed with importing project with " + jsonFile.getName());
+
+        if(!ProjectImport.importProjectFile(jsonFile))
+        {
+            String mes = "Import project failed.";
+            log.debug(mes);
+            formatImportErrorMessage(mes);
+            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+        }
+        else
+        {
+            String mes = "Import project success.";
+            log.debug(mes);
+            formatImportErrorMessage(mes);
+            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+        }
+    }
+
+    public static void formatImportErrorMessage(String message)
+    {
+        setImportErrorMessage(getImportErrorMessage() + "\n" + message);
+    }
+
+    public static void clearImportErrorMessage()
+    {
+        setImportErrorMessage("");
+    }
 
 }
