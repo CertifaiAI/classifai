@@ -138,7 +138,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public static void createNewProject(@NonNull String projectId)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         Tuple params = PortfolioVerticle.buildNewProject(loader);
 
