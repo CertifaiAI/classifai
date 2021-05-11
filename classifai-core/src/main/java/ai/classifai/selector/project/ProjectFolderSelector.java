@@ -56,6 +56,8 @@ public class ProjectFolderSelector extends SelectionWindow {
                 ProjectLoader loader = Objects.requireNonNull(
                         configureLoader(projectName, annotationType.ordinal(), new File("")));
 
+                loader.setLabelList(LabelListSelector.getLabelList()); // Insert the label list to associated project
+
                 loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                 JFrame frame = initFrame();
