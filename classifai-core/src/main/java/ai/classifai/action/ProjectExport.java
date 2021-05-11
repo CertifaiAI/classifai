@@ -86,39 +86,47 @@ public class ProjectExport
         File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
         List<File> validImagePaths = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
 
+        FileOutputStream fos = new FileOutputStream(zipFile);
+        ZipOutputStream out = new ZipOutputStream(fos);
+
         // Add config file
-        addToEntry(new File(configPath), zipFile, new File(loader.getProjectPath()));
+        addToEntry(new File(configPath), out, new File(loader.getProjectPath()));
 
         // Add all image data
         for(File filePath: validImagePaths)
         {
-            addToEntry(filePath, zipFile, new File(loader.getProjectPath()));
+            addToEntry(filePath, out, new File(loader.getProjectPath()));
         }
+        out.close();
+        fos.close();
 
         log.info("Project configuration file and data saved at: " + zipFile);
 
         return zipFile.toString();
     }
 
-    private static void addToEntry(File filePath, File zipFile, File dir) throws IOException
+    private static void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
     {
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
         String saveFileRelativePath = Paths.get(dir.getName(), relativePath).toFile().toString();
 
-        try (FileOutputStream fos = new FileOutputStream(zipFile); ZipOutputStream out = new ZipOutputStream(fos); FileInputStream fis = new FileInputStream(filePath)) {
+        ZipEntry entry = new ZipEntry(saveFileRelativePath);
+        out.putNextEntry(entry);
 
-            ZipEntry entry = new ZipEntry(saveFileRelativePath);
-            out.putNextEntry(entry);
-
+        try(FileInputStream fis = new FileInputStream(filePath))
+        {
             byte[] buffer = new byte[1024];
             int len;
 
-            while ((len = fis.read(buffer)) > 0) {
+            while((len = fis.read(buffer)) > 0)
+            {
                 out.write(buffer, 0, len);
             }
 
             out.closeEntry();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.debug(e.toString());
         }
     }
