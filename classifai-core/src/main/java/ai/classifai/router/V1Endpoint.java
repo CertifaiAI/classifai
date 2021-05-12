@@ -19,8 +19,6 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.annotation.ToolFileSelector;
-import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -50,8 +48,6 @@ import java.util.Objects;
 public class V1Endpoint {
 
     @Setter private Vertx vertx = null;
-    @Setter private ToolFileSelector fileSelector = null;
-    @Setter private ToolFolderSelector folderSelector = null;
 
     Util util = new Util();
 
@@ -320,62 +316,6 @@ public class V1Endpoint {
             jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
 
             HTTPResponseHandler.configureOK(context, jsonObject);
-        }
-    }
-
-    /**
-     * Open file system (file/folder) for a specific segmentation project
-     *
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesys/:file_sys
-     *
-     * Example:
-     * GET http://localhost:{port}/seg/projects/helloworld/filesys/file
-     * GET http://localhost:{port}/seg/projects/helloworld/filesys/folder
-     */
-    public void selectFileSystemType(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        if(ParamConfig.isDockerEnv()) log.info("Docker Mode. Choosing file/folder not supported. Use --volume to attach data folder.");
-        util.checkIfDockerEnv(context);
-
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
-
-        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("File system processing. Not allowed to proceed"));
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context);
-
-            String fileType = context.request().getParam(ParamConfig.getFileSysParam());
-
-            if(!ProjectHandler.initSelector(fileType))
-            {
-                JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Filetype with parameter " + fileType + " is not recognizable");
-                HTTPResponseHandler.configureOK(context, jsonObject);
-                return;
-            }
-
-            String currentProjectID = loader.getProjectId();
-
-            if (fileType.equals(ParamConfig.getFileParam()))
-            {
-                fileSelector.run(currentProjectID);
-            }
-            else if (fileType.equals(ParamConfig.getFolderParam()))
-            {
-                folderSelector.run(currentProjectID);
-            }
-            HTTPResponseHandler.configureOK(context);
         }
     }
 
