@@ -29,7 +29,6 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -50,34 +49,6 @@ public class V1Endpoint {
     @Setter private Vertx vertx = null;
 
     Util util = new Util();
-
-    /**
-     * Get a list of all projects
-     * PUT http://localhost:{port}/:annotation_type/projects
-     *
-     */
-    public void getAllProjects(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-
-            if(reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
-            }
-        });
-    }
 
     /**
      * Retrieve specific project metadata
@@ -155,42 +126,6 @@ public class V1Endpoint {
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
             }
-        });
-    }
-
-    /**
-     * Create new project
-     * PUT http://localhost:{port}/:annotation_type/newproject/:project_name
-     *
-     * Example:
-     * PUT http://localhost:{port}/seg/newproject/helloworld
-     *
-     */
-    public void createV1NewProject(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-
-        context.request().bodyHandler(h -> {
-
-            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getCreateNewProject());
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, createOptions, reply -> {
-
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    if(!ReplyHandler.isReplyOk(response))
-                    {
-                        log.info("Failure in creating new " + type.name() +  " project of name: " + projectName);
-                    }
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
         });
     }
 
@@ -590,49 +525,6 @@ public class V1Endpoint {
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage  + " from Portfolio Database"));
             }
-        });
-    }
-
-    /**
-     * Delete uuid of a specific project
-     *
-     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name/uuids
-     *
-     * Example:
-     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
-     *
-     */
-    public void deleteProjectUUID(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String queue = util.getDbQuery(type);
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            JsonObject request = h.toJsonObject();
-
-            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
-
-            request.put(ParamConfig.getProjectIdParam(), projectID).put(ParamConfig.getUuidListParam(), uuidListArray);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getDeleteSelectionUuidList());
-
-            vertx.eventBus().request(queue, request, options, reply ->
-            {
-                if (reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
         });
     }
 }
