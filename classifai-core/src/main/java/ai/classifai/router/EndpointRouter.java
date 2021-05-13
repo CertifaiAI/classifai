@@ -17,8 +17,6 @@ package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
 import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.selector.annotation.ToolFileSelector;
-import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
@@ -38,8 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    private ToolFileSelector fileSelector;
-    private ToolFolderSelector folderSelector;
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
     private LabelListSelector labelListSelector;
@@ -53,12 +49,6 @@ public class EndpointRouter extends AbstractVerticle
 
     public EndpointRouter()
     {
-        Thread threadfile = new Thread(() -> fileSelector = new ToolFileSelector());
-        threadfile.start();
-
-        Thread threadfolder = new Thread(() -> folderSelector = new ToolFolderSelector());
-        threadfolder.start();
-
         Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
         projectFolder.start();
 
@@ -82,8 +72,6 @@ public class EndpointRouter extends AbstractVerticle
     private void configureVersionVertx()
     {
         v1.setVertx(vertx);
-        v1.setFolderSelector(folderSelector);
-        v1.setFileSelector(fileSelector);
 
         v2.setVertx(vertx);
         v2.setProjectFolderSelector(projectFolderSelector);
@@ -116,25 +104,15 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************V1 Endpoints*******************************
 
-        router.get("/:annotation_type/projects").handler(v1::getAllProjects);
-
         router.get("/:annotation_type/projects/meta").handler(v1::getAllProjectsMeta);
 
         router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
-
-        router.put("/:annotation_type/newproject/:project_name").handler(v1::createV1NewProject);
 
         router.get(projectEndpoint).handler(v1::loadProject);
 
         router.delete(projectEndpoint).handler(v1::deleteProject);
 
-        router.delete("/:annotation_type/projects/:project_name/uuids").handler(v1::deleteProjectUUID);
-
         router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
-
-        router.get("/:annotation_type/projects/:project_name/filesys/:file_sys").handler(v1::selectFileSystemType);
-
-        router.get("/:annotation_type/projects/:project_name/filesysstatus").handler(v1::getFileSystemStatus);
 
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
 

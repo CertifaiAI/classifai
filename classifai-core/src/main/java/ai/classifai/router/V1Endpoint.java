@@ -19,8 +19,6 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.annotation.ToolFileSelector;
-import ai.classifai.selector.annotation.ToolFolderSelector;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -31,7 +29,6 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -50,38 +47,8 @@ import java.util.Objects;
 public class V1Endpoint {
 
     @Setter private Vertx vertx = null;
-    @Setter private ToolFileSelector fileSelector = null;
-    @Setter private ToolFolderSelector folderSelector = null;
 
     Util util = new Util();
-
-    /**
-     * Get a list of all projects
-     * PUT http://localhost:{port}/:annotation_type/projects
-     *
-     */
-    public void getAllProjects(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-
-            if(reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
-            }
-        });
-    }
 
     /**
      * Retrieve specific project metadata
@@ -159,42 +126,6 @@ public class V1Endpoint {
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
             }
-        });
-    }
-
-    /**
-     * Create new project
-     * PUT http://localhost:{port}/:annotation_type/newproject/:project_name
-     *
-     * Example:
-     * PUT http://localhost:{port}/seg/newproject/helloworld
-     *
-     */
-    public void createV1NewProject(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), projectName)
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-
-        context.request().bodyHandler(h -> {
-
-            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getCreateNewProject());
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, createOptions, reply -> {
-
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    if(!ReplyHandler.isReplyOk(response))
-                    {
-                        log.info("Failure in creating new " + type.name() +  " project of name: " + projectName);
-                    }
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
         });
     }
 
@@ -320,62 +251,6 @@ public class V1Endpoint {
             jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
 
             HTTPResponseHandler.configureOK(context, jsonObject);
-        }
-    }
-
-    /**
-     * Open file system (file/folder) for a specific segmentation project
-     *
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesys/:file_sys
-     *
-     * Example:
-     * GET http://localhost:{port}/seg/projects/helloworld/filesys/file
-     * GET http://localhost:{port}/seg/projects/helloworld/filesys/folder
-     */
-    public void selectFileSystemType(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        if(ParamConfig.isDockerEnv()) log.info("Docker Mode. Choosing file/folder not supported. Use --volume to attach data folder.");
-        util.checkIfDockerEnv(context);
-
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        FileSystemStatus fileSystemStatus = loader.getFileSystemStatus();
-
-        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("File system processing. Not allowed to proceed"));
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context);
-
-            String fileType = context.request().getParam(ParamConfig.getFileSysParam());
-
-            if(!ProjectHandler.initSelector(fileType))
-            {
-                JsonObject jsonObject = ReplyHandler.reportUserDefinedError("Filetype with parameter " + fileType + " is not recognizable");
-                HTTPResponseHandler.configureOK(context, jsonObject);
-                return;
-            }
-
-            String currentProjectID = loader.getProjectId();
-
-            if (fileType.equals(ParamConfig.getFileParam()))
-            {
-                fileSelector.run(currentProjectID);
-            }
-            else if (fileType.equals(ParamConfig.getFolderParam()))
-            {
-                folderSelector.run(currentProjectID);
-            }
-            HTTPResponseHandler.configureOK(context);
         }
     }
 
@@ -650,49 +525,6 @@ public class V1Endpoint {
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage  + " from Portfolio Database"));
             }
-        });
-    }
-
-    /**
-     * Delete uuid of a specific project
-     *
-     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name/uuids
-     *
-     * Example:
-     * DELETE http://localhost:{port}/bndbox/projects/helloworld/uuids
-     *
-     */
-    public void deleteProjectUUID(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String queue = util.getDbQuery(type);
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            JsonObject request = h.toJsonObject();
-
-            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
-
-            request.put(ParamConfig.getProjectIdParam(), projectID).put(ParamConfig.getUuidListParam(), uuidListArray);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getDeleteSelectionUuidList());
-
-            vertx.eventBus().request(queue, request, options, reply ->
-            {
-                if (reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
         });
     }
 }
