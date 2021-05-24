@@ -7,7 +7,7 @@
     "labelListFile": "标签列表文件 (*.txt): ",
     "chooseFile": "选择文件",
     "createButton": "创建",
-    "updateButton": "更新",
+    "updateButton": "继续",
     "cancelButton": "取消",
     "menuName": {
         "newProject": "创建新项目",
@@ -44,5 +44,11 @@
         "createNew": "开始新的项目吧！"
     },
     "deleteSuccess": "已被删除!",
-    "renameSuccess": "名称更新成功!"
+    "renameSuccess": "名称更新成功!",
+    "deleteProject": "删除项目",
+    "exportProject": "导出项目",
+    "importJson": "导入配置文件",
+    "selectJson": "配置文件",
+    "configFileInfoTitle": "什么是配置文件? ",
+    "configFileInfoDest": "从项目导出的配置文件"
 }

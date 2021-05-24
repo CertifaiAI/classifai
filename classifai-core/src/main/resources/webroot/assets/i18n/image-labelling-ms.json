@@ -68,5 +68,7 @@
     "exportFailed": "Gagal untuk mengeksport projek ",
     "reloadSuccess": " telah berjaya dimuat semula!",
     "reloadFailed": "Gagal untuk memuat semula ",
-    "labelExist": "Beberapa imej dalam projek menggunakan label ini. Memadam label ini tidak dibenarkan."
+    "labelExist": "Beberapa imej dalam projek menggunakan label ini. Memadam label ini tidak dibenarkan.",
+    "location": "Lokasi Fail: ",
+    "exportTitle": "Esksport Projek"
 }

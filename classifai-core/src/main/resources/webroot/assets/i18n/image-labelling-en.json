@@ -93,5 +93,7 @@
     "exportFailed": "Fail to export ",
     "reloadSuccess": " project was reload successfully!",
     "reloadFailed": "Fail to reload ",
-    "labelExist": "Some image in project are using this label. Deleting this label are not allowed."
+    "labelExist": "Some image in project are using this label. Deleting this label are not allowed.",
+    "location": "File Location: ",
+    "exportTitle": "Export Project"
 }
