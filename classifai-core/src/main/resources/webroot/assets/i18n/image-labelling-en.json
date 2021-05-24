@@ -95,5 +95,13 @@
     "reloadFailed": "Fail to reload ",
     "labelExist": "Some image in project are using this label. Deleting this label are not allowed.",
     "location": "File Location: ",
-    "exportTitle": "Export Project"
+    "exportTitle": "Export Project",
+    "bulkSave": "Bulk Saving",
+    "singleSave": "Current Image",
+    "advModal": {
+        "title": "Advanced Setting",
+        "noLabel": "No Label",
+        "btnSave": "Save",
+        "instructionText": "Toggle left to disable the label"
+    }
 }

@@ -70,5 +70,13 @@
     "reloadFailed": "Gagal untuk memuat semula ",
     "labelExist": "Beberapa imej dalam projek menggunakan label ini. Memadam label ini tidak dibenarkan.",
     "location": "Lokasi Fail: ",
-    "exportTitle": "Esksport Projek"
+    "exportTitle": "Esksport Projek",
+    "bulkSave": "Simpan Secara Pukal",
+    "singleSave": "Imej Semasa",
+    "advModal": {
+        "title": "Tetapan Lanjutan",
+        "noLabel": "Tiada label wujud",
+        "btnSave": "Simpan",
+        "instructionText": "Togol ke kiri untuk melumpuhkan label"
+    }
 }
