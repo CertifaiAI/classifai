@@ -7,7 +7,7 @@
     "labelListFile": "Label list file (*.txt):",
     "chooseFile": "Choose File",
     "createButton": "Create",
-    "updateButton": "Update",
+    "updateButton": "Proceed",
     "cancelButton": "Cancel",
     "menuName": {
         "newProject": "New Project",
@@ -44,5 +44,11 @@
         "createNew": "Gear up and start creating new project!"
     },
     "deleteSuccess": "is successfully deleted!",
-    "renameSuccess": "is successfully renamed!"
+    "renameSuccess": "is successfully renamed!",
+    "deleteProject": "Delete Project",
+    "exportProject": "Export Project",
+    "importJson": "Select Config File",
+    "selectJson": "Config File",
+    "configFileInfoTitle": "What is Config File? ",
+    "configFileInfoDest": "JSON file exported from project."
 }

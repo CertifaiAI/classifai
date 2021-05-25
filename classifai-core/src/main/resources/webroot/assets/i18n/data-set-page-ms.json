@@ -7,7 +7,7 @@
     "labelListFile": "Fail senarai label(*.txt):",
     "chooseFile": "Pilih Fail",
     "createButton": "Reka",
-    "updateButton": "Kemas Kini",
+    "updateButton": "Teruskan",
     "cancelButton": "Batal",
     "menuName": {
         "newProject": "Projek Baru",
@@ -44,5 +44,11 @@
         "createNew": "Bersedia dan jom mulakan projek baru!"
     },
     "deleteSuccess": "telah berjaya dipadam!",
-    "renameSuccess": "telah berjaya dinamakan semula!"
+    "renameSuccess": "telah berjaya dinamakan semula!",
+    "deleteProject": "Padam Projek",
+    "exportProject": "Eksport Projek",
+    "importJson": "Fail Json",
+    "selectJson": "Fail Konfig",
+    "configFileInfoTitle": "Apa itu Fail Konfig? ",
+    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek."
 }
