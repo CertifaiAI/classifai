@@ -10,14 +10,25 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 ## [Unreleased]
 ### Added
 - CHANGELOG.md
-- Project renaming feature
-- Project reloading feature
+- Project renaming 
+- Project reloading
 - Project versioning [WIP]
-- Project import export feature
+- Project import export
+- Project import image from cloud storage [WIP]
+- Project starring
+- Project is_new label
+- Database migration [WIP]
 
 ### Changed
-- Image validation method from reading files to reading metadata
-- Project creating method. Each project is only limited to one folder.
+- Image validation method from reading files -> reading metadata
+- Project creating method -> each project is only limited to one folder
+- Api endpoint refactoring
+- Project loading api -> v2 api
+- Log file location from *{home}*/logs -> *{home}*/.classifai
+- Vertx version 3.9.0 -> 4.0.2
+- Database from HSQLDB -> H2
+- Image UUID from incremental integer -> UUID
+- Project id from incremental integer -> UUID
 
 ### Removed
 - Import images from folder
