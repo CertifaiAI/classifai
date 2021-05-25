@@ -77,7 +77,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
   single file with multiple images -> one file corresponding to one image
 - Distribution for Windows(7, 8, 10), Mac, Ubuntu(18 LTS, 20 LTS) and Centos(7, 8)  
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/CertifaiAI/classifai/compare/main...v2_alpha?expand=1
 [1.0.0]: https://github.com/CertifaiAI/classifai/releases/tag/v1.0
 [1.1.0]: https://github.com/CertifaiAI/classifai/releases/tag/v1.1.0
 [1.1.1]: https://github.com/CertifaiAI/classifai/releases/tag/v1.1.1
