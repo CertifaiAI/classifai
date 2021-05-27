@@ -17,7 +17,7 @@ jobs:
         with:
           github_token: ${{ secrets.PERSONAL_TOKEN }}
           destination_branch: "v2_alpha" # Base Branch which changes will be applied to                     
-          pr_title: "Copying and pasting dist folder's contents from Classifai_FrontEnd to classifai's webroot" # Set title for the PR
+          pr_title: "[Test]Copying and pasting dist folder's contents from Classifai_FrontEnd to classifai's webroot" # Set title for the PR
           pr_body: | # PR's body
             ## This is an automatically created PR :robot::robot:
             
@@ -28,7 +28,7 @@ jobs:
             [2]: https://github.com/CertifaiAI/classifai/tree/v2_alpha/classifai-core/src/main/resources/webroot
             [3]: https://github.com/CertifaiAI/Classifai_FrontEnd/tree/main/dist/classifai
 
-          pr_reviewer: "fariskamaludin-skymind"  # Reviewer(s), can be Comma-separated list (no spaces)                                            
+          pr_reviewer: "codenamewei"  # Reviewer(s), can be Comma-separated list (no spaces)                                            
           pr_label: "auto-pr" # Set label for the PR                              
           pr_allow_empty: true # Creates pull request even if there are no changes
 
