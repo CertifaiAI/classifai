@@ -2,7 +2,7 @@ name: Auto Create PR
 
 on:
   push:
-    branches: faris_auto_pr
+    branches: faris_auto_pr # Branch will be automatically created once automated copy workflow from Classifai_FrontEnd is triggered
 
 jobs:
   PR:
@@ -21,13 +21,16 @@ jobs:
           pr_body: | # PR's body
             ## This is an automatically created PR :robot::robot:
             
-            - It will triggered once codes in **dist folder** from repo [***Classifai_FrontEnd***][1] has been pushed.
-            - Files & sub-folder in **dist folder** of repo [***Classifai_FrontEnd***][1] will be copied into [***classifai's webroot***][2]
+            - It will triggered once codes in [***dist folder***][3] from repo [***Classifai_FrontEnd***][1] has been pushed.
+            - Files & sub-folder in [***dist folder***][3] of repo [***Classifai_FrontEnd***][1] will be copied into [***classifai's webroot***][2]
 
             [1]: https://github.com/CertifaiAI/Classifai_FrontEnd
             [2]: https://github.com/CertifaiAI/classifai/tree/v2_alpha/classifai-core/src/main/resources/webroot
+            [3]: https://github.com/CertifaiAI/Classifai_FrontEnd/tree/main/dist/classifai
 
           pr_reviewer: "fariskamaludin-skymind"  # Reviewer(s), can be Comma-separated list (no spaces)                                            
           pr_label: "auto-pr" # Set label for the PR                              
-          #pr_allow_empty: true
-          #pr_draft: true                             
+          pr_allow_empty: true # Creates pull request even if there are no changes
+
+          # Further reference from https://github.com/repo-sync/pull-request
+                             
