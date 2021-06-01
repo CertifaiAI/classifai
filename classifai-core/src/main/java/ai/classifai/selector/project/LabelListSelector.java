@@ -38,7 +38,7 @@ import java.util.List;
 public class LabelListSelector extends SelectionWindow
 {
     @Getter @Setter
-    private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
+    private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
 
     @Getter @Setter
     private static File labelFile = null;
@@ -87,7 +87,7 @@ public class LabelListSelector extends SelectionWindow
                         if(labelList == null)
                         {
                             log.debug("Import label list failed");
-                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                         }
                         else
                         {
@@ -98,7 +98,7 @@ public class LabelListSelector extends SelectionWindow
                     }
                     else
                     {
-                        setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                         log.debug("Operation of import project aborted");
                     }
 
@@ -108,7 +108,7 @@ public class LabelListSelector extends SelectionWindow
                 else
                 {
                     showAbortImportPopup();
-                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                 }
             });
         }

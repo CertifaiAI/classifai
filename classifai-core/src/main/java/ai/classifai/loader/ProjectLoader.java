@@ -82,7 +82,7 @@ public class ProjectLoader
     @Builder.Default private Set<String> validUUIDSet = new LinkedHashSet<>();
 
     //Status when dealing with file/folder opener
-    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
 
     //list to send the new added datapoints as thumbnails to front end
     @Builder.Default private List<String> fileSysNewUuidList = new ArrayList<>();
@@ -199,7 +199,7 @@ public class ProjectLoader
         {
             if (fileSysNewUuidList.isEmpty())
             {
-                fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
+                fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
             }
             else
             {
@@ -220,7 +220,7 @@ public class ProjectLoader
     {
         if (fileSysNewUuidList.isEmpty())
         {
-            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
+            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
         }
         else
         {

@@ -355,7 +355,7 @@ public class ImageHandler {
 
         if (dataList.isEmpty())
         {
-            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
             return;
         }
 
@@ -396,7 +396,7 @@ public class ImageHandler {
 
         if (dataList.isEmpty())
         {
-            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
             return false;
         }
 
@@ -448,7 +448,7 @@ public class ImageHandler {
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
-        loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+        loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_ITERATING_FOLDER);
 
         File rootPath = new File(loader.getProjectPath());
 

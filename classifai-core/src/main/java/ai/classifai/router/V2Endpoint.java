@@ -22,6 +22,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
+import ai.classifai.selector.project.ProjectV1FolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -30,7 +31,6 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -45,14 +45,12 @@ import java.util.List;
  * @author devenyantis
  */
 @Slf4j
-public class V2Endpoint {
+public class V2Endpoint extends EndpointBase {
 
-    @Setter private Vertx vertx = null;
     @Setter private ProjectFolderSelector projectFolderSelector = null;
+    @Setter private ProjectV1FolderSelector projectV1FolderSelector = null;
     @Setter private ProjectImportSelector projectImporter = null;
     @Setter private LabelListSelector labelListSelector = null;
-
-    Util util = new Util();
 
     /***
      * change is_load state of a project to false
@@ -147,7 +145,7 @@ public class V2Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        projectFolderSelector.run(projectName, type);
+        projectV1FolderSelector.run(projectName, type);
 
         HTTPResponseHandler.configureOK(context);
     }
@@ -224,7 +222,7 @@ public class V2Endpoint {
 
         if(util.checkIfProjectNull(context, loader, projectName)) return;
 
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_ITERATING_FOLDER);
 
         JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
 
@@ -265,7 +263,7 @@ public class V2Endpoint {
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
 
         if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
         {
@@ -276,7 +274,7 @@ public class V2Endpoint {
             res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
             res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
         }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATED))
         {
             res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
             res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
@@ -365,7 +363,7 @@ public class V2Endpoint {
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
 
         if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
         {
@@ -377,12 +375,12 @@ public class V2Endpoint {
 
             res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
         }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
+        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_NO_ACTION))
         {
             // Delete project if user attempt to create project but no path chosen
             ProjectHandler.deleteProjectFromCache(loader.getProjectId());
         }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATED))
         {
             res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
             res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
@@ -404,9 +402,7 @@ public class V2Endpoint {
         util.checkIfDockerEnv(context);
 
         FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
-        JsonObject res = new JsonObject();
-        res.put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
-        res.put(ReplyHandler.getErrorMesageKey(), ProjectImportSelector.getImportErrorMessage());
+        JsonObject res = compileFileSysStatusResponse(currentStatus);
 
         HTTPResponseHandler.configureOK(context, res);
     }
@@ -423,9 +419,9 @@ public class V2Endpoint {
     {
         if(labelListSelector.isWindowOpen())
         {
-            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Label list selector window has already opened. CLose that to proceed.");
+            JsonObject jsonResponse = ReplyHandler.reportUserDefinedError("Label list selector window has already opened. CLose that to proceed.");
 
-            HTTPResponseHandler.configureOK(context, jsonResonse);
+            HTTPResponseHandler.configureOK(context, jsonResponse);
         }
         else
         {
@@ -448,14 +444,53 @@ public class V2Endpoint {
 
         FileSystemStatus currentStatus = LabelListSelector.getImportLabelFileSystemStatus();
 
-        JsonObject jsonResponse = new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
+        JsonObject jsonResponse = compileFileSysStatusResponse(currentStatus);
 
         if(currentStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
         {
             jsonResponse
                     .put(ParamConfig.getLabelFilePathParam(), LabelListSelector.getLabelFilePath())
                     .put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+        }
 
+        HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+
+    /**
+     * Open folder selector to choose project folder
+     * PUT http://localhost:{port}/v2/folder
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/folder
+     */
+    public void selectFolder(RoutingContext context)
+    {
+        projectFolderSelector.run();
+
+        FileSystemStatus folderSelectorStatus = projectFolderSelector.getFileSystemStatus();
+
+        JsonObject jsonResponse = compileFileSysStatusResponse(folderSelectorStatus);
+
+        HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+    /**
+     * Get status of choosing a project folder
+     * GET http://localhost:{port}/v2/folderstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/folderstatus
+     */
+    public void selectFolderStatus(RoutingContext context)
+    {
+        FileSystemStatus folderSelectorStatus = projectFolderSelector.getFileSystemStatus();
+
+        JsonObject jsonResponse = compileFileSysStatusResponse(folderSelectorStatus);
+
+        if(folderSelectorStatus.equals(FileSystemStatus.WINDOW_CLOSE_FOLDER_SELECTED))
+        {
+            jsonResponse.put(ParamConfig.getProjectPathParam(), projectFolderSelector.getProjectFolderPath());
         }
 
         HTTPResponseHandler.configureOK(context, jsonResponse);

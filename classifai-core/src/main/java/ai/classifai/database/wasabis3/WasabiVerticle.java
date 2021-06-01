@@ -129,7 +129,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
     private static void saveObjectsInBucket(@NonNull ProjectLoader loader)
     {
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_ITERATING_FOLDER);
 
         WasabiProject project = loader.getWasabiProject();
 

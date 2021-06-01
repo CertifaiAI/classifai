@@ -135,18 +135,6 @@ public class ProjectHandler {
         loader.getLabelList().addAll(project.getCurrentLabelList());
     }
 
-    public static boolean initSelector(String selection)
-    {
-        if ((selection.equals(ParamConfig.getFileParam())) || selection.equals(ParamConfig.getFolderParam())) {
-            return true;
-        }
-        else
-        {
-            log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
-            return false;
-        }
-    }
-
     public static boolean isProjectNameUnique(String projectName, Integer annotationType)
     {
         if (!AnnotationHandler.checkSanity(annotationType))

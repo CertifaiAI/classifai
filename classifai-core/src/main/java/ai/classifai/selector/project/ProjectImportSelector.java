@@ -41,7 +41,7 @@ public class ProjectImportSelector extends SelectionWindow {
 
     @Getter
     @Setter
-    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
 
     @Getter
     @Setter
@@ -79,14 +79,14 @@ public class ProjectImportSelector extends SelectionWindow {
                     }
                     else
                     {
-                        setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                         log.debug("Operation of import project aborted");
                     }
                 }
                 else
                 {
                     showAbortImportPopup();
-                    setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                    setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                 }
 
                 windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
@@ -110,7 +110,7 @@ public class ProjectImportSelector extends SelectionWindow {
             String mes = "Import project failed.";
             log.debug(mes);
             formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
         }
         else
         {

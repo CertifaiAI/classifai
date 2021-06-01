@@ -19,6 +19,7 @@ import ai.classifai.action.FileGenerator;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
+import ai.classifai.selector.project.ProjectV1FolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
@@ -36,11 +37,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
+    //deprecated
+    private ProjectV1FolderSelector projectV1FolderSelector;
+
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
     private LabelListSelector labelListSelector;
     private FileGenerator fileGenerator;
-
 
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
@@ -49,6 +52,10 @@ public class EndpointRouter extends AbstractVerticle
 
     public EndpointRouter()
     {
+        //deprecated
+        Thread projectV1Folder = new Thread(() -> projectV1FolderSelector = new ProjectV1FolderSelector());
+        projectV1Folder.start();
+
         Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
         projectFolder.start();
 
@@ -72,11 +79,11 @@ public class EndpointRouter extends AbstractVerticle
     private void configureVersionVertx()
     {
         v1.setVertx(vertx);
-
         v2.setVertx(vertx);
+
+        v2.setProjectV1FolderSelector(projectV1FolderSelector);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
-
         v2.setLabelListSelector(labelListSelector);
 
         cloud.setVertx(vertx);
@@ -138,6 +145,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
 
+        //deprecated
         router.get("/v2/:annotation_type/projects/:project_name/filesysstatus").handler(v2::getFileSystemStatus);
 
         router.get("/v2/:annotation_type/projects/importstatus").handler(v2::getImportStatus);
@@ -147,6 +155,10 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/labelfile").handler(v2::loadLabelFile);
 
         router.get("/v2/labelfilestatus").handler(v2::loadLabelFileStatus);
+
+        router.put("/v2/folder").handler(v2::selectFolder);
+
+        router.get("/v2/folderstatus").handler(v2::selectFolderStatus);
 
         //*******************************Cloud*******************************
 

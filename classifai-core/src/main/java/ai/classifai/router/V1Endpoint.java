@@ -19,23 +19,18 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -44,10 +39,8 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
-public class V1Endpoint {
-
-    @Setter private Vertx vertx = null;
-
+public class V1Endpoint extends EndpointBase
+{
     Util util = new Util();
 
     /**
@@ -252,50 +245,6 @@ public class V1Endpoint {
 
             HTTPResponseHandler.configureOK(context, jsonObject);
         }
-    }
-
-    /**
-     * Get file system (file/folder) status for a specific project
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesysstatus
-     *
-     * Example:
-     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
-     *
-     */
-    public void getFileSystemStatus(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        util.checkIfDockerEnv(context);
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
-
-        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
-        {
-            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
-        {
-            List<String> newAddedUUIDList = loader.getFileSysNewUuidList();
-
-            res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
-
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
-        {
-            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
-        }
-
-        HTTPResponseHandler.configureOK(context, res);
     }
 
     /**

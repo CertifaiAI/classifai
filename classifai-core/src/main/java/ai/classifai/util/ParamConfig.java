@@ -78,9 +78,6 @@ public class ParamConfig
 
     @Getter private static final String imgDepth = "img_depth";
 
-    @Getter private static final String fileParam = "file";
-    @Getter private static final String folderParam = "folder";
-
     @Getter private final static String fileSizeParam = "file_size";
 
     @Getter private static final String actionKeyword = "action";
@@ -100,6 +97,8 @@ public class ParamConfig
 
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
     @Getter private static final String labelVersionListParam = "label_version_list";
+
+    @Getter private static final String fileSysMessageParam = "file_system_message";
 
     //keyword to retrieve image thumbnail
     @Getter private static final String imgThumbnailParam = "img_thumbnail";
