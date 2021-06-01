@@ -18,7 +18,7 @@ package ai.classifai.selector.project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.window.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.collection.UuidGenerator;
@@ -55,7 +55,7 @@ public class ProjectV1FolderSelector extends SelectionWindow {
                 ProjectLoader loader = Objects.requireNonNull(
                         configureLoader(projectName, annotationType.ordinal(), new File("")));
 
-                loader.setLabelList(LabelListSelector.getLabelList()); // Insert the label list to associated project
+                loader.setLabelList(LabelListV1Selector.getLabelList()); // Insert the label list to associated project
 
                 loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 

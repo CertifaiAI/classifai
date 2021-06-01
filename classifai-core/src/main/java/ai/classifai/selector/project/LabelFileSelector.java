@@ -15,54 +15,54 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.action.ActionConfig;
-import ai.classifai.action.ProjectImport;
 import ai.classifai.selector.window.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.nio.file.Paths;
 
 /**
- * Open browser to choose for configuration file to import
+ * Open browser to choose label file to import
  *
  * @author codenamewei
  */
 @Slf4j
-public class ProjectImportSelector extends SelectionWindow {
+public class LabelFileSelector extends SelectionWindow
+{
+    @Getter @Setter
+    private static FileSystemStatus importLabelFileStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
 
-    @Getter
-    @Setter
-    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
-
-    @Getter
-    @Setter
-    private static String importErrorMessage;
+    @Getter @Setter
+    private static File labelFile = null;
 
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
-            "Json Files", "json");
+            "Text Files", "txt");
+
+    public static String getLabelFilePath()
+    {
+        return (labelFile != null) ? labelFile.getAbsolutePath() : "";
+    }
 
     public void run()
     {
         try
         {
             EventQueue.invokeLater(() -> {
-                clearImportErrorMessage();
+
                 if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
+                    labelFile = null;
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
-                    setImportFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                    setImportLabelFileStatus(FileSystemStatus.WINDOW_OPEN);
 
                     JFrame frame = initFrame();
-                    String title = "Select File";
+                    String title = "Select Label File (*.txt)";
                     JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
                     chooser.setFileFilter(imgFilter);
 
@@ -74,61 +74,28 @@ public class ProjectImportSelector extends SelectionWindow {
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
-                        runApproveOption(jsonFile);
+                        labelFile = chooser.getSelectedFile();
+
+                        setImportLabelFileStatus(FileSystemStatus.WINDOW_CLOSE_ITEM_SELECTED);
                     }
                     else
                     {
-                        setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
+                        setImportLabelFileStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                         log.debug("Operation of import project aborted");
                     }
+
+                    windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
                 }
                 else
                 {
                     showAbortImportPopup();
-                    setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
+                    setImportLabelFileStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                 }
-
-                windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
-
             });
         }
         catch (Exception e)
         {
-            log.info("ProjectHandler for File type failed to open", e);
+            log.info("LabelFileSelector failed to open", e);
         }
     }
-
-    private void runApproveOption(File jsonFile)
-    {
-        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
-
-        log.info("Proceed with importing project with " + jsonFile.getName());
-
-        if(!ProjectImport.importProjectFile(jsonFile))
-        {
-            String mes = "Import project failed.";
-            log.debug(mes);
-            formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
-        }
-        else
-        {
-            String mes = "Import project success.";
-            log.debug(mes);
-            formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-        }
-    }
-
-    public static void formatImportErrorMessage(String message)
-    {
-        setImportErrorMessage(getImportErrorMessage() + "\n" + message);
-    }
-
-    public static void clearImportErrorMessage()
-    {
-        setImportErrorMessage("");
-    }
-
 }

@@ -16,7 +16,7 @@ package ai.classifai.selector.project;
  */
 
 import ai.classifai.action.LabelListImport;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.window.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
@@ -35,7 +35,7 @@ import java.util.List;
  * @author codenamewei
  */
 @Slf4j
-public class LabelListSelector extends SelectionWindow
+public class LabelListV1Selector extends SelectionWindow
 {
     @Getter @Setter
     private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
@@ -60,9 +60,9 @@ public class LabelListSelector extends SelectionWindow
         {
             EventQueue.invokeLater(() -> {
 
-                if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+                if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
+                    windowStatus = SelectionWindowStatus.WINDOW_OPEN;
                     setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                     JFrame frame = initFrame();
@@ -102,7 +102,7 @@ public class LabelListSelector extends SelectionWindow
                         log.debug("Operation of import project aborted");
                     }
 
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+                    windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
 
                 }
                 else

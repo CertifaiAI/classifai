@@ -88,11 +88,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         String action = message.headers().get(ParamConfig.getActionKeyword());
 
-        if (action.equals(PortfolioDbQuery.getCreateNewProject()))
-        {
-            this.createV1NewProject(message);
-        }
-        else if (action.equals(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType()))
+        if (action.equals(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType()))
         {
             this.getAllProjectsForAnnotationType(message);
         }
@@ -224,62 +220,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     }
                 });
 
-    }
-
-    /**
-     * v1 create new project
-     * @param message
-     */
-    @Deprecated
-    public void createV1NewProject(Message<JsonObject> message)
-    {
-        JsonObject request = message.body();
-
-        String projectName = request.getString(ParamConfig.getProjectNameParam());
-        Integer annotationInt = request.getInteger(ParamConfig.getAnnotationTypeParam());
-
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
-        {
-            String annotationName = AnnotationHandler.getType(annotationInt).name();
-
-            log.info("Create " + annotationName + " project with name: " + projectName);
-
-            ProjectVersion project = new ProjectVersion();
-
-            ProjectLoader loader = ProjectLoader.builder()
-                    .projectId(UuidGenerator.generateUuid())
-                    .projectName(projectName)
-                    .annotationType(annotationInt)
-                    .projectPath("")
-                    .loaderStatus(LoaderStatus.LOADED)
-                    .isProjectStarred(Boolean.FALSE)
-                    .isProjectNew(Boolean.TRUE)
-                    .projectVersion(project)
-                    .projectInfra(ProjectInfra.ON_PREMISE)
-                    .build();
-
-            Tuple params = PortfolioVerticle.buildNewProject(loader);
-
-            portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
-                    .execute(params)
-                    .onComplete(fetch -> {
-
-                        if (fetch.succeeded())
-                        {
-                            ProjectHandler.loadProjectLoader(loader);
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            //query database failed
-                            message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                        }
-                    });
-        }
-        else
-        {
-            message.replyAndRequest(ReplyHandler.reportUserDefinedError("Project name exist. Please choose another one."));
-        }
     }
 
     public void updateLabelList(Message<JsonObject> message)
@@ -480,7 +420,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .isProjectNew(row.getBoolean(4))                                               //is_new
                                     .isProjectStarred(row.getBoolean(5))                                           //is_starred
                                     .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
-                                    .projectVersion(project)                                                           //project_version
+                                    .projectVersion(project)                                                            //project_version
                                     .build();
 
                                 //load each data points

@@ -20,7 +20,7 @@ import ai.classifai.data.type.image.ImageDataFactory;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.window.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectHandler;
 import com.drew.imaging.ImageMetadataReader;
@@ -38,7 +38,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 

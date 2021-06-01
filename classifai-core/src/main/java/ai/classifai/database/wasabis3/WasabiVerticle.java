@@ -6,7 +6,7 @@ import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.window.FileSystemStatus;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;

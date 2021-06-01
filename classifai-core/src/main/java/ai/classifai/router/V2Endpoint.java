@@ -18,17 +18,19 @@ package ai.classifai.router;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
+import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
-import ai.classifai.selector.project.LabelListSelector;
-import ai.classifai.selector.project.ProjectFolderSelector;
-import ai.classifai.selector.project.ProjectV1FolderSelector;
-import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.selector.project.*;
+import ai.classifai.selector.window.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
+import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -48,9 +50,13 @@ import java.util.List;
 public class V2Endpoint extends EndpointBase {
 
     @Setter private ProjectFolderSelector projectFolderSelector = null;
-    @Setter private ProjectV1FolderSelector projectV1FolderSelector = null;
     @Setter private ProjectImportSelector projectImporter = null;
-    @Setter private LabelListSelector labelListSelector = null;
+
+    @Setter private LabelFileSelector labelFileSelector = null;
+
+    //deprecated
+    @Setter private ProjectV1FolderSelector projectV1FolderSelector = null;
+    @Setter private LabelListV1Selector labelListV1Selector = null;
 
     /***
      * change is_load state of a project to false
@@ -139,7 +145,7 @@ public class V2Endpoint extends EndpointBase {
      * PUT http://localhost:{port}/v2/bndbox/newproject/helloworld
      *
      */
-    public void createProject(RoutingContext context)
+    public void createProject_old(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
@@ -152,6 +158,75 @@ public class V2Endpoint extends EndpointBase {
 
     /**
      * Create new project
+     * PUT http://localhost:{port}/v2/projects
+     *
+     * Request Body
+     * {
+     *   "project_name": "test-project",
+     *   "annotation_type": "boundingbox",
+     *   "project_path": "/Users/codenamwei/Desktop/Education/books",
+     *   "label_file_path": "/Users/codenamewei/Downloads/test_label.txt",
+     * }
+     *
+     */
+    public void createProject(RoutingContext context)
+    {
+        context.request().bodyHandler(h ->
+        {
+            JsonObject requestBody = h.toJsonObject();
+
+            String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
+
+            String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
+            Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
+
+            if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+            {
+                String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
+
+                String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
+
+                ProjectLoader loader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationInt)
+                        .projectPath(projectPath)
+                        .loaderStatus(LoaderStatus.LOADED)
+                        .isProjectStarred(Boolean.FALSE)
+                        .isProjectNew(Boolean.TRUE)
+                        .projectVersion(new ProjectVersion())
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .build();
+
+                ProjectHandler.loadProjectLoader(loader);
+
+                loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_ITERATING_FOLDER);
+
+                HTTPResponseHandler.configureOK(context);
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project name exist: " + projectName));
+            }
+        });
+    }
+
+    /**
+     * Create new project status
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld
+     */
+    public void createProjectStatus(RoutingContext context)
+    {
+
+    }
+
+
+
+    /**
+     * Rename project
      * PUT http://localhost:{port}/v2/:annotation_type/rename/:project_name/:new_project_name
      *
      * Example:
@@ -408,6 +483,7 @@ public class V2Endpoint extends EndpointBase {
     }
 
 
+    //deprecated
     /**
      * Initiate load label list
      * PUT http://localhost:{port}/v2/labelfile
@@ -417,7 +493,7 @@ public class V2Endpoint extends EndpointBase {
      */
     public void loadLabelFile(RoutingContext context)
     {
-        if(labelListSelector.isWindowOpen())
+        if(labelListV1Selector.isWindowOpen())
         {
             JsonObject jsonResponse = ReplyHandler.reportUserDefinedError("Label list selector window has already opened. CLose that to proceed.");
 
@@ -428,9 +504,10 @@ public class V2Endpoint extends EndpointBase {
             HTTPResponseHandler.configureOK(context);
         }
 
-        labelListSelector.run();
+        labelListV1Selector.run();
     }
 
+    //deprecated
     /**
      * Get load label file status
      * GET http://localhost:{port}/v2/labelfilestatus
@@ -442,29 +519,70 @@ public class V2Endpoint extends EndpointBase {
     {
         util.checkIfDockerEnv(context);
 
-        FileSystemStatus currentStatus = LabelListSelector.getImportLabelFileSystemStatus();
+        FileSystemStatus currentStatus = LabelListV1Selector.getImportLabelFileSystemStatus();
 
         JsonObject jsonResponse = compileFileSysStatusResponse(currentStatus);
 
         if(currentStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
         {
             jsonResponse
-                    .put(ParamConfig.getLabelFilePathParam(), LabelListSelector.getLabelFilePath())
-                    .put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+                    .put(ParamConfig.getLabelPathParam(), LabelListV1Selector.getLabelFilePath())
+                    .put(ParamConfig.getLabelListParam(), LabelListV1Selector.getLabelList());
         }
 
         HTTPResponseHandler.configureOK(context, jsonResponse);
     }
 
+    /**
+     * Initiate load label list
+     * PUT http://localhost:{port}/v2/labelfiles
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/labelfiles
+     */
+    public void selectLabelFile(RoutingContext context)
+    {
+        util.checkIfDockerEnv(context);
+
+        if(!labelFileSelector.isWindowOpen()) labelFileSelector.run();
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
+    /**
+     * Get load label file status
+     * GET http://localhost:{port}/v2/labelfiles
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/labelfiles
+     */
+    public void selectLabelFileStatus(RoutingContext context)
+    {
+//        util.checkIfDockerEnv(context);
+//
+//        SelectionWindowStatus status = labelFileSelector.getWindowStatus();
+//
+//        JsonObject jsonResponse = compileWindowStatusResponse(status);
+//        HTTPResponseHandler.configureOK(context, jsonResponse);
+//
+//        FileSystemStatus currentStatus = labelFileSelector.getImportLabelFileStatus();
+//
+//        JsonObject jsonResponse = compileFileSysStatusResponse(currentStatus);
+//
+//        if(!labelFileSelector.isWindowOpen()) jsonResponse.put(ParamConfig.getLabelPathParam(), labelFileSelector.getLabelFilePath());
+//
+//        HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
 
     /**
      * Open folder selector to choose project folder
-     * PUT http://localhost:{port}/v2/folder
+     * PUT http://localhost:{port}/v2/folders
      *
      * Example:
-     * PUT http://localhost:{port}/v2/folder
+     * PUT http://localhost:{port}/v2/folders
      */
-    public void selectFolder(RoutingContext context)
+    public void selectProjectFolder(RoutingContext context)
     {
         projectFolderSelector.run();
 
@@ -477,18 +595,18 @@ public class V2Endpoint extends EndpointBase {
 
     /**
      * Get status of choosing a project folder
-     * GET http://localhost:{port}/v2/folderstatus
+     * GET http://localhost:{port}/v2/folders
      *
      * Example:
-     * GET http://localhost:{port}/v2/folderstatus
+     * GET http://localhost:{port}/v2/folders
      */
-    public void selectFolderStatus(RoutingContext context)
+    public void selectProjectFolderStatus(RoutingContext context)
     {
         FileSystemStatus folderSelectorStatus = projectFolderSelector.getFileSystemStatus();
 
         JsonObject jsonResponse = compileFileSysStatusResponse(folderSelectorStatus);
 
-        if(folderSelectorStatus.equals(FileSystemStatus.WINDOW_CLOSE_FOLDER_SELECTED))
+        if(folderSelectorStatus.equals(FileSystemStatus.WINDOW_CLOSE_ITEM_SELECTED))
         {
             jsonResponse.put(ParamConfig.getProjectPathParam(), projectFolderSelector.getProjectFolderPath());
         }

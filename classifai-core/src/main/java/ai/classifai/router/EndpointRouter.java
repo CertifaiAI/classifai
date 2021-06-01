@@ -17,10 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
 import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.selector.project.LabelListSelector;
-import ai.classifai.selector.project.ProjectFolderSelector;
-import ai.classifai.selector.project.ProjectV1FolderSelector;
-import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.selector.project.*;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -39,10 +36,12 @@ public class EndpointRouter extends AbstractVerticle
 {
     //deprecated
     private ProjectV1FolderSelector projectV1FolderSelector;
+    private LabelListV1Selector labelListV1Selector;
 
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
-    private LabelListSelector labelListSelector;
+
+    private LabelFileSelector labelFileSelector;
     private FileGenerator fileGenerator;
 
     V1Endpoint v1 = new V1Endpoint();
@@ -62,8 +61,11 @@ public class EndpointRouter extends AbstractVerticle
         Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
         projectImport.start();
 
-        Thread labelListImport = new Thread(() -> labelListSelector = new LabelListSelector());
+        Thread labelListImport = new Thread(() -> labelListV1Selector = new LabelListV1Selector());
         labelListImport.start();
+
+        Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
+        labelFileImport.start();
 
         Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
         threadZipFileGenerator.start();
@@ -81,10 +83,14 @@ public class EndpointRouter extends AbstractVerticle
         v1.setVertx(vertx);
         v2.setVertx(vertx);
 
-        v2.setProjectV1FolderSelector(projectV1FolderSelector);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
-        v2.setLabelListSelector(labelListSelector);
+
+        v2.setLabelFileSelector(labelFileSelector);
+
+        //deprecated
+        v2.setLabelListV1Selector(labelListV1Selector);
+        v2.setProjectV1FolderSelector(projectV1FolderSelector);
 
         cloud.setVertx(vertx);
 
@@ -107,7 +113,9 @@ public class EndpointRouter extends AbstractVerticle
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
 
-        final String projectEndpoint = "/:annotation_type/projects/:project_name";
+        final String projectV1Endpoint = "/:annotation_type/projects/:project_name";
+
+        final String projectV2Endpoint = "/v2/:annotation_type/projects/:project_name";
 
         //*******************************V1 Endpoints*******************************
 
@@ -115,9 +123,9 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
 
-        router.get(projectEndpoint).handler(v1::loadProject);
+        router.get(projectV1Endpoint).handler(v1::loadProject);
 
-        router.delete(projectEndpoint).handler(v1::deleteProject);
+        router.delete(projectV1Endpoint).handler(v1::deleteProject);
 
         router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
 
@@ -133,11 +141,12 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/newproject").handler(v2::importProject);
 
-        router.put(projectEndpoint).handler(v2::closeProjectState);
+        router.put(projectV1Endpoint).handler(v2::closeProjectState);
 
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 
-        router.put("/v2/:annotation_type/newproject/:project_name").handler(v2::createProject);
+        //deprecated
+        router.put("/v2/:annotation_type/newproject/:project_name").handler(v2::createProject_old);
 
         router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
 
@@ -152,17 +161,28 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
 
+        //deprecated
         router.put("/v2/labelfile").handler(v2::loadLabelFile);
 
+        //deprecated
         router.get("/v2/labelfilestatus").handler(v2::loadLabelFileStatus);
 
-        router.put("/v2/folder").handler(v2::selectFolder);
+        router.put("/v2/labelfiles").handler(v2::selectLabelFile);
 
-        router.get("/v2/folderstatus").handler(v2::selectFolderStatus);
+        router.get("/v2/labelfiles").handler(v2::selectLabelFileStatus);
+
+        router.put("/v2/folders").handler(v2::selectProjectFolder);
+
+        router.get("/v2/folders").handler(v2::selectProjectFolderStatus);
+
+        router.put("/v2/projects").handler(v2::createProject);
+
+        router.get(projectV2Endpoint).handler(v2::createProjectStatus);
+
 
         //*******************************Cloud*******************************
 
-        router.put("/v2/:annotation_type/wasabi/newproject/:project_name").handler(cloud::createWasabiCloudProject);
+        router.put("/v2/:annotation_type/wasabi/projects/:project_name").handler(cloud::createWasabiCloudProject);
 
 
         vertx.createHttpServer()

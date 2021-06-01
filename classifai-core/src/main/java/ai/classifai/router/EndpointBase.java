@@ -15,7 +15,9 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.selector.window.SelectionWindowStatus;
+import ai.classifai.ui.component.SelectionWindow;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.Vertx;
@@ -35,8 +37,19 @@ public abstract class EndpointBase
 
     public JsonObject compileFileSysStatusResponse(FileSystemStatus status)
     {
-        JsonObject response = new JsonObject()
-                .put(ReplyHandler.getMessageKey(), status.ordinal())
+        JsonObject response = ReplyHandler.getOkReply();
+
+        response.put(ParamConfig.getFileSysStatusParam(), status.ordinal())
+                .put(ParamConfig.getFileSysMessageParam(), status.name());
+
+        return response;
+    }
+
+    public JsonObject compileWindowStatusResponse(SelectionWindowStatus status)
+    {
+        JsonObject response = ReplyHandler.getOkReply();
+
+        response.put(ParamConfig.getFileSysStatusParam(), status.ordinal())
                 .put(ParamConfig.getFileSysMessageParam(), status.name());
 
         return response;

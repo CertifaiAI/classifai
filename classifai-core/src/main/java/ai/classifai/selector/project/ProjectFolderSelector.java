@@ -15,16 +15,14 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.window.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 
 /**
  * Open browser to select project folder
@@ -66,7 +64,7 @@ public class ProjectFolderSelector extends SelectionWindow
                 if (res == JFileChooser.APPROVE_OPTION)
                 {
                     projectFolderPath = chooser.getSelectedFile().getAbsolutePath();
-                    fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_FOLDER_SELECTED;
+                    fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_ITEM_SELECTED;
                 }
                 else
                 {
