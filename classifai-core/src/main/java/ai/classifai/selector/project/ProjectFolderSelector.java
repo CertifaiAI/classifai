@@ -15,18 +15,29 @@
  */
 package ai.classifai.selector.project;
 
+import ai.classifai.database.portfolio.PortfolioDbQuery;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.http.HTTPResponseHandler;
+import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +48,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -48,7 +60,7 @@ import java.util.Objects;
 @Slf4j
 public class ProjectFolderSelector extends SelectionWindow {
 
-    public void run(@NonNull String projectName, @NonNull AnnotationType annotationType)
+    public void run(@NonNull Vertx vertx, @NonNull String projectName, @NonNull AnnotationType annotationType)
     {
         try
         {
@@ -74,6 +86,11 @@ public class ProjectFolderSelector extends SelectionWindow {
                 {
                     File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
+                    if(LabelListSelector.getLabelList() != null)
+                    {
+                        saveAndClearLabelSelectorLabelList(vertx, loader);
+                    }
+
                     log.debug("Proceed with creating project");
                     loader.setProjectPath(projectPath.toString());
                     initFolderIteration(loader);
@@ -93,6 +110,26 @@ public class ProjectFolderSelector extends SelectionWindow {
         {
             log.info("ProjectFolderSelector failed to open", e);
         }
+    }
+
+    private void saveAndClearLabelSelectorLabelList(Vertx vertx, ProjectLoader loader)
+    {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+        jsonObject.put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLabelList());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+        {
+            if (reply.succeeded()) {
+                log.info("Adding imported label list to " + loader.getProjectName());
+
+                // Setting to null because following the initial value
+                LabelListSelector.setLabelList(null);
+            }
+        });
+
     }
 
     private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
