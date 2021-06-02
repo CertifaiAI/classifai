@@ -98,10 +98,13 @@ public class ParamConfig
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
     @Getter private static final String labelVersionListParam = "label_version_list";
 
+    //file system status
     @Getter private static final String fileSysStatusParam = "file_system_status";
     @Getter private static final String fileSysMessageParam = "file_system_message";
 
-    @Getter private static final String windowStatusParam = "window_status";
+    //selector window status
+    @Getter private static final String selectionWindowStatusParam = "window_status";
+    @Getter private static final String selectionWindowMessageParam = "window_message";
 
     //keyword to retrieve image thumbnail
     @Getter private static final String imgThumbnailParam = "img_thumbnail";

@@ -16,7 +16,8 @@ package ai.classifai.selector.project;
  */
 
 import ai.classifai.action.LabelListImport;
-import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus_old;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
@@ -35,10 +36,10 @@ import java.util.List;
  * @author codenamewei
  */
 @Slf4j
-public class LabelListV1Selector extends SelectionWindow
+public class LabelListSelector extends SelectionWindow
 {
     @Getter @Setter
-    private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
+    private static FileSystemStatus_old importLabelFileSystemStatusOld = FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
 
     @Getter @Setter
     private static File labelFile = null;
@@ -63,7 +64,7 @@ public class LabelListV1Selector extends SelectionWindow
                 if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
-                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                    setImportLabelFileSystemStatusOld(FileSystemStatus_old.WINDOW_OPEN);
 
                     JFrame frame = initFrame();
                     String title = "Select File";
@@ -87,18 +88,18 @@ public class LabelListV1Selector extends SelectionWindow
                         if(labelList == null)
                         {
                             log.debug("Import label list failed");
-                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
+                            setImportLabelFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         }
                         else
                         {
                             log.debug("Import label list success");
 
-                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+                            setImportLabelFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_UPDATED);
                         }
                     }
                     else
                     {
-                        setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
+                        setImportLabelFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         log.debug("Operation of import project aborted");
                     }
 
@@ -108,7 +109,7 @@ public class LabelListV1Selector extends SelectionWindow
                 else
                 {
                     showAbortImportPopup();
-                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
+                    setImportLabelFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }

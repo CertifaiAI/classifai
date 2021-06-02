@@ -15,7 +15,8 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus_old;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 /**
  * Open browser to select project folder
@@ -32,50 +34,59 @@ import java.awt.*;
 @Slf4j
 public class ProjectFolderSelector extends SelectionWindow
 {
-    @Getter private String projectFolderPath = null;
-    @Getter private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
+    @Getter private File projectFolderPath = null;
+
+    public String getProjectFolderPath()
+    {
+        return (projectFolderPath != null) ? projectFolderPath.getAbsolutePath() : "";
+    }
 
     public void run()
     {
-        if(fileSystemStatus.equals(FileSystemStatus.WINDOW_OPEN))
-        {
-            log.debug("Project folder selector window is opened. Close that to proceed.");
-            return;
-        }
-        else
-        {
-            fileSystemStatus = FileSystemStatus.WINDOW_OPEN;
-        }
-
         try
         {
             EventQueue.invokeLater(() -> {
 
-                JFrame frame = initFrame();
-                String title = "Select Project Folder";
-                JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
-
-                //Important: prevent Welcome Console from popping out
-                WelcomeLauncher.setToBackground();
-
-                int res = chooser.showOpenDialog(frame);
-                frame.dispose();
-
-                if (res == JFileChooser.APPROVE_OPTION)
+                if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
-                    projectFolderPath = chooser.getSelectedFile().getAbsolutePath();
-                    fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_ITEM_SELECTED;
+                    windowStatus = SelectionWindowStatus.WINDOW_OPEN;
+
+                    projectFolderPath = null;
+
+                    JFrame frame = initFrame();
+                    String title = "Select Project Folder";
+                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
+                    if (res == JFileChooser.APPROVE_OPTION)
+                    {
+                        projectFolderPath = chooser.getSelectedFile();
+                    }
+                    else
+                    {
+                        log.debug("Operation of import project aborted");
+                    }
+
+                    windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
                 }
                 else
                 {
-                    fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
+                    showAbortImportPopup();
                 }
             });
         }
         catch (Exception e)
         {
-            log.info("ProjectFolderSelector failed to open", e);
+            log.info("LabelFileSelector failed to open", e);
         }
     }
 
+
 }
+
+

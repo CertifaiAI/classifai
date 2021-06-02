@@ -6,7 +6,7 @@ import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;
@@ -129,7 +129,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
     private static void saveObjectsInBucket(@NonNull ProjectLoader loader)
     {
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_ITERATING_FOLDER);
+        loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_LOADING_FILES);
 
         WasabiProject project = loader.getWasabiProject();
 

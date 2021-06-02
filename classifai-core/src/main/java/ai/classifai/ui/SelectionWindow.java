@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui;
 
-import ai.classifai.selector.window.SelectionWindowStatus;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
@@ -38,7 +38,7 @@ public class SelectionWindow {
 
     // To make sure window open once only
     @Getter @Setter
-    public SelectionWindowStatus windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
+    protected SelectionWindowStatus windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
 
     private static JFrame frame = initFrame();
 

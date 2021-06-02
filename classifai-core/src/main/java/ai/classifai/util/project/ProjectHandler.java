@@ -18,17 +18,25 @@ package ai.classifai.util.project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +92,7 @@ public class ProjectHandler {
     {
         try
         {
-            return (ProjectLoader) projectIDLoaderDict.get(projectID);
+            return projectIDLoaderDict.get(projectID);
         }
         catch (Exception e)
         {
@@ -133,6 +141,7 @@ public class ProjectHandler {
         loader.getSanityUuidList().addAll(project.getCurrentUuidList());
 
         loader.getLabelList().addAll(project.getCurrentLabelList());
+
     }
 
     public static boolean isProjectNameUnique(String projectName, Integer annotationType)
@@ -229,6 +238,32 @@ public class ProjectHandler {
         catch (Exception e)
         {
             log.debug("Error: ", e);
+        }
+    }
+
+    public void initFolderIteration(@NonNull ProjectLoader loader)
+    {
+        try
+        {
+            loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
+
+            File projectPath = loader.getProjectPath();
+
+            if(!ImageHandler.iterateFolder(loader, projectPath))
+            {
+                // Get example image from metadata
+                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
+                File destImageFile = Paths.get(projectPath.getAbsolutePath(), "example_img.png").toFile();
+                FileUtils.copyFile(srcImgFile, destImageFile);
+                log.info("Empty folder. Example image added.");
+
+                // Run initiate image again
+                ImageHandler.iterateFolder(loader, projectPath);
+            }
+        }
+        catch(IOException e)
+        {
+            log.info("Error while copying file: ", e);
         }
     }
 }

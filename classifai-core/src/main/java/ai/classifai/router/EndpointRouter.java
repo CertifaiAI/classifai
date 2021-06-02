@@ -36,7 +36,7 @@ public class EndpointRouter extends AbstractVerticle
 {
     //deprecated
     private ProjectV1FolderSelector projectV1FolderSelector;
-    private LabelListV1Selector labelListV1Selector;
+    private LabelListSelector labelListSelector;
 
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
@@ -61,7 +61,7 @@ public class EndpointRouter extends AbstractVerticle
         Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
         projectImport.start();
 
-        Thread labelListImport = new Thread(() -> labelListV1Selector = new LabelListV1Selector());
+        Thread labelListImport = new Thread(() -> labelListSelector = new LabelListSelector());
         labelListImport.start();
 
         Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
@@ -89,7 +89,7 @@ public class EndpointRouter extends AbstractVerticle
         v2.setLabelFileSelector(labelFileSelector);
 
         //deprecated
-        v2.setLabelListV1Selector(labelListV1Selector);
+        v2.setLabelListSelector(labelListSelector);
         v2.setProjectV1FolderSelector(projectV1FolderSelector);
 
         cloud.setVertx(vertx);

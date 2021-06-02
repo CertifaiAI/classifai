@@ -15,9 +15,8 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.selector.window.FileSystemStatus;
-import ai.classifai.selector.window.SelectionWindowStatus;
-import ai.classifai.ui.component.SelectionWindow;
+import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.Vertx;
@@ -45,12 +44,12 @@ public abstract class EndpointBase
         return response;
     }
 
-    public JsonObject compileWindowStatusResponse(SelectionWindowStatus status)
+    public JsonObject compileSelectionWindowResponse(SelectionWindowStatus status)
     {
         JsonObject response = ReplyHandler.getOkReply();
 
-        response.put(ParamConfig.getFileSysStatusParam(), status.ordinal())
-                .put(ParamConfig.getFileSysMessageParam(), status.name());
+        response.put(ParamConfig.getSelectionWindowStatusParam(), status.ordinal())
+                .put(ParamConfig.getSelectionWindowMessageParam(), status.name());
 
         return response;
     }

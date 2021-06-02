@@ -18,7 +18,7 @@ package ai.classifai.selector.project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.collection.UuidGenerator;
@@ -55,9 +55,9 @@ public class ProjectV1FolderSelector extends SelectionWindow {
                 ProjectLoader loader = Objects.requireNonNull(
                         configureLoader(projectName, annotationType.ordinal(), new File("")));
 
-                loader.setLabelList(LabelListV1Selector.getLabelList()); // Insert the label list to associated project
+                loader.setLabelList(LabelListSelector.getLabelList()); // Insert the label list to associated project
 
-                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_OPEN);
 
                 JFrame frame = initFrame();
                 String title = "Select Folder";
@@ -77,14 +77,14 @@ public class ProjectV1FolderSelector extends SelectionWindow {
                     loader.setProjectPath(projectPath.toString());
                     initFolderIteration(loader);
 
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+                    loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_UPDATED);
                 }
                 else
                 {
                     // Abort creation if user did not choose any
                     log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
 
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
+                    loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }
@@ -130,12 +130,12 @@ public class ProjectV1FolderSelector extends SelectionWindow {
     {
         try
         {
-            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_ITERATING_FOLDER);
+            loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_LOADING_FILES);
 
             String projectPath = loader.getProjectPath();
             File fileProjectPath = new File(projectPath);
 
-            if(!ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath))
+            if(!ImageHandler.iterateFolder(loader, fileProjectPath))
             {
                 // Get example image from metadata
                 File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
@@ -144,14 +144,13 @@ public class ProjectV1FolderSelector extends SelectionWindow {
                 log.info("Empty folder. Example image added.");
 
                 // Run initiate image again
-                ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath);
+                ImageHandler.iterateFolder(loader, fileProjectPath);
             }
         }
         catch(IOException e)
         {
             log.info("Error while copying file: ", e);
         }
-
     }
 
 }

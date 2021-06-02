@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,15 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.window;
+package ai.classifai.selector.status;
+
 
 /**
- * State of windows to select file/folder
+ * State of file system
  *
  * @author codenamewei
  */
-public enum SelectionWindowStatus
+public enum FileSystemStatus
 {
-    WINDOW_OPEN,
-    WINDOW_CLOSE
+    DID_NOT_INITITATED,
+    ITERATING_FOLDER,
+    DATABASE_UPDATING,
+    DATABASE_UPDATED,
+    DATABASE_NOT_UPDATED,
+    ABORTED
 }

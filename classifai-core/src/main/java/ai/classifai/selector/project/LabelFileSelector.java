@@ -15,7 +15,9 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.selector.window.FileSystemStatus;
+import ai.classifai.action.LabelListImport;
+import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import lombok.Getter;
@@ -26,6 +28,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.List;
 
 /**
  * Open browser to choose label file to import
@@ -35,16 +38,12 @@ import java.io.File;
 @Slf4j
 public class LabelFileSelector extends SelectionWindow
 {
-    @Getter @Setter
-    private static FileSystemStatus importLabelFileStatus = FileSystemStatus.WINDOW_CLOSE_NO_ACTION;
-
-    @Getter @Setter
-    private static File labelFile = null;
+    @Setter private File labelFile = null;
 
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Text Files", "txt");
 
-    public static String getLabelFilePath()
+    public String getLabelFilePath()
     {
         return (labelFile != null) ? labelFile.getAbsolutePath() : "";
     }
@@ -57,9 +56,9 @@ public class LabelFileSelector extends SelectionWindow
 
                 if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
-                    labelFile = null;
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
-                    setImportLabelFileStatus(FileSystemStatus.WINDOW_OPEN);
+
+                    labelFile = null;
 
                     JFrame frame = initFrame();
                     String title = "Select Label File (*.txt)";
@@ -75,12 +74,9 @@ public class LabelFileSelector extends SelectionWindow
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
                         labelFile = chooser.getSelectedFile();
-
-                        setImportLabelFileStatus(FileSystemStatus.WINDOW_CLOSE_ITEM_SELECTED);
                     }
                     else
                     {
-                        setImportLabelFileStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                         log.debug("Operation of import project aborted");
                     }
 
@@ -89,7 +85,6 @@ public class LabelFileSelector extends SelectionWindow
                 else
                 {
                     showAbortImportPopup();
-                    setImportLabelFileStatus(FileSystemStatus.WINDOW_CLOSE_NO_ACTION);
                 }
             });
         }
@@ -98,4 +93,5 @@ public class LabelFileSelector extends SelectionWindow
             log.info("LabelFileSelector failed to open", e);
         }
     }
+
 }

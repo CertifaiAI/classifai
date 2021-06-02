@@ -39,7 +39,6 @@ import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.database.H2;
@@ -630,7 +629,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
-        ImageHandler.refreshProjectRootPath(projectID);
+        ImageHandler.refreshProjectRootPathOld(projectID);
     }
 
     @Override
