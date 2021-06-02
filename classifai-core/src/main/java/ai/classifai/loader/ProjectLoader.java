@@ -250,7 +250,7 @@ public class ProjectLoader
             reloadDeletionList = dbListBuffer;
 
             PortfolioVerticle.updateFileSystemUuidList(projectId);
-            fileSystemStatusOld = FileSystemStatus_old.WINDOW_CLOSE_DATABASE_UPDATED;
+            fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
         }
     }
 
@@ -271,6 +271,29 @@ public class ProjectLoader
         return wasabiProject != null;
     }
 
+    public void initFolderIteration()
+    {
+        try
+        {
+            if(!ImageHandler.loadProjectRootPath(this, true))
+            {
+                // Get example image from metadata
+                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
+                File destImageFile = Paths.get(projectPath.getAbsolutePath(), "example_img.png").toFile();
+                FileUtils.copyFile(srcImgFile, destImageFile);
+                log.info("Empty folder. Example image added.");
 
+                // Run loadProjectRootPath again
+                if(!ImageHandler.loadProjectRootPath(this, true))
+                {
+                    log.debug("Loading files in project folder failed");
+                }
+            }
+        }
+        catch(IOException e)
+        {
+            log.info("Error while copying file: ", e);
+        }
+    }
 
 }

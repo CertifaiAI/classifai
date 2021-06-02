@@ -33,9 +33,9 @@ import java.util.Stack;
 @Slf4j
 public class FileHandler
 {
-    public static List<File> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
+    public static List<String> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
     {
-        List<File> totalFilelist = new ArrayList<>();
+        List<String> totalFilelist = new ArrayList<>();
 
         Stack<File> folderStack = new Stack<>();
 
@@ -57,7 +57,7 @@ public class FileHandler
                 {
                     if (isFileSupported(file.getAbsolutePath(), extensionFormat))
                     {
-                        totalFilelist.add(file);
+                        totalFilelist.add(file.getAbsolutePath());
                     }
                 }
             }

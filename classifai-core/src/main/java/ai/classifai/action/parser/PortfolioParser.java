@@ -32,6 +32,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.util.Locale;
 import java.util.Map;
 
@@ -92,7 +93,7 @@ public class PortfolioParser
                                 .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
                                 .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
                                 .annotationType(annotationInt)                                                  //annotation_type
-                                .projectPath(ActionConfig.getJsonFilePath())           //project_path
+                                .projectPath(new File(ActionConfig.getJsonFilePath()))                          //project_path
                                 .isProjectNew(jsonObject.getBoolean(ParamConfig.getIsNewParam()))               //is_new
                                 .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))       //is_starred
 

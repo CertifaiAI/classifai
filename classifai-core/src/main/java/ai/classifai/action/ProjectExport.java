@@ -83,19 +83,19 @@ public class ProjectExport
     public static String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
-        File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
-        List<File> validImagePaths = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
+        File zipFile = Paths.get(loader.getProjectPath().getAbsolutePath(), loader.getProjectName() + ".zip").toFile();
+        List<String> validImagePaths = ImageHandler.getValidImagesFromFolder(loader.getProjectPath());
 
         FileOutputStream fos = new FileOutputStream(zipFile);
         ZipOutputStream out = new ZipOutputStream(fos);
 
         // Add config file
-        addToEntry(new File(configPath), out, new File(loader.getProjectPath()));
+        addToEntry(new File(configPath), out, loader.getProjectPath());
 
-        // Add all image data
-        for(File filePath: validImagePaths)
+        // Add all data
+        for(String dataPath: validImagePaths)
         {
-            addToEntry(filePath, out, new File(loader.getProjectPath()));
+            addToEntry(new File(dataPath), out, loader.getProjectPath());
         }
         out.close();
         fos.close();

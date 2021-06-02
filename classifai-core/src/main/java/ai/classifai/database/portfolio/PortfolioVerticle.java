@@ -414,7 +414,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .projectId(row.getString(0))                                                   //project_id
                                     .projectName(row.getString(1))                                                 //project_name
                                     .annotationType(row.getInteger(2))                                             //annotation_type
-                                    .projectPath(row.getString(3))                                                 //project_path
+                                    .projectPath(new File(row.getString(3)))                                       //project_path
                                     .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
                                     .isProjectNew(row.getBoolean(4))                                               //is_new
                                     .isProjectStarred(row.getBoolean(5))                                           //is_starred
@@ -448,9 +448,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         if(!ProjectHandler.isProjectNameUnique(projName, annotationInt))
         {
-            String projectID = ProjectHandler.getProjectId(projName, annotationInt);
-
-            if (dataPath != null) ImageHandler.processFolder(projectID, dataPath);
+//            String projectID = ProjectHandler.getProjectId(projName, annotationInt);
+//
+//            if (dataPath != null) ImageHandler.refreshProjectRootPath(loader, true);
 
             return;
         }
@@ -477,7 +477,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         Version currentVersion = loader.getProjectVersion().getCurrentVersion();
 
-        List<File> existingDataInDir = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
+        List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(loader.getProjectPath());
 
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())

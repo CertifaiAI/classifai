@@ -74,7 +74,7 @@ public class ProjectV1FolderSelector extends SelectionWindow {
                     File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
                     log.debug("Proceed with creating project");
-                    loader.setProjectPath(projectPath.toString());
+                    loader.setProjectPath(projectPath);
                     initFolderIteration(loader);
 
                     loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_UPDATED);
@@ -104,13 +104,11 @@ public class ProjectV1FolderSelector extends SelectionWindow {
 
             String projectID = UuidGenerator.generateUuid();
 
-            String rootProjectPath = rootPath.getAbsolutePath();
-
             ProjectLoader loader = ProjectLoader.builder()
                     .projectId(projectID)
                     .projectName(projectName)
                     .annotationType(annotationInt)
-                    .projectPath(rootProjectPath)
+                    .projectPath(rootPath)
                     .loaderStatus(LoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
@@ -132,19 +130,16 @@ public class ProjectV1FolderSelector extends SelectionWindow {
         {
             loader.setFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_LOADING_FILES);
 
-            String projectPath = loader.getProjectPath();
-            File fileProjectPath = new File(projectPath);
-
-            if(!ImageHandler.iterateFolder(loader, fileProjectPath))
+            if(!ImageHandler.iterateFolder(loader))
             {
                 // Get example image from metadata
                 File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
-                File destImageFile = Paths.get(projectPath, "example_img.png").toFile();
+                File destImageFile = Paths.get(loader.getProjectPath().getAbsolutePath(), "example_img.png").toFile();
                 FileUtils.copyFile(srcImgFile, destImageFile);
                 log.info("Empty folder. Example image added.");
 
                 // Run initiate image again
-                ImageHandler.iterateFolder(loader, fileProjectPath);
+                ImageHandler.iterateFolder(loader);
             }
         }
         catch(IOException e)

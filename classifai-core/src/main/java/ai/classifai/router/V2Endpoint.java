@@ -206,6 +206,8 @@ public class V2Endpoint extends EndpointBase {
 
                 ProjectHandler.loadProjectLoader(loader);
 
+                loader.initFolderIteration();
+
                 HTTPResponseHandler.configureOK(context);
             }
             else

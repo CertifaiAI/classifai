@@ -241,29 +241,5 @@ public class ProjectHandler {
         }
     }
 
-    public void initFolderIteration(@NonNull ProjectLoader loader)
-    {
-        try
-        {
-            loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
-            File projectPath = loader.getProjectPath();
-
-            if(!ImageHandler.iterateFolder(loader, projectPath))
-            {
-                // Get example image from metadata
-                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
-                File destImageFile = Paths.get(projectPath.getAbsolutePath(), "example_img.png").toFile();
-                FileUtils.copyFile(srcImgFile, destImageFile);
-                log.info("Empty folder. Example image added.");
-
-                // Run initiate image again
-                ImageHandler.iterateFolder(loader, projectPath);
-            }
-        }
-        catch(IOException e)
-        {
-            log.info("Error while copying file: ", e);
-        }
-    }
 }

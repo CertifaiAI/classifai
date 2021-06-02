@@ -118,9 +118,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
     {
-        String projBasePath = ProjectHandler.getProjectLoader(projectId).getProjectPath();
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
-        return Paths.get(projBasePath, dataSubPath).toFile();
+        return Paths.get(loader.getProjectPath().getAbsolutePath(), dataSubPath).toFile();
     }
 
     public static void loadValidProjectUuid(@NonNull String projectId)
@@ -179,7 +179,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     @Deprecated
     public static void writeUuidToTable(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
     {
-        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
+        String dataSubPath = FileHandler.trimPath(loader.getProjectPath().getAbsolutePath(), dataFullPath.getAbsolutePath());
 
         String uuid = UuidGenerator.generateUuid();
 
@@ -268,7 +268,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             {
                                 Row row = rowIterator.next();
 
-                                String fullPath = Paths.get(loader.getProjectPath(), row.getString(1)).toString();
+                                String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
                                 if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
                                 {
@@ -346,7 +346,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         String childPath = param.getString(2);
 
-                        File currentImagePath = Paths.get(loader.getProjectPath(), childPath).toFile();
+                        File currentImagePath = Paths.get(loader.getProjectPath().getAbsolutePath(), childPath).toFile();
 
                         if(ImageHandler.isImageReadable(currentImagePath))
                         {
@@ -366,7 +366,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String projectId = loader.getProjectId();
 
-        String dataChildPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath()));
+        String dataChildPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(loader.getProjectPath().getAbsolutePath(), dataFullPath.getAbsolutePath()));
 
         Tuple params = Tuple.of(dataChildPath, projectId);
 
@@ -563,7 +563,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
         else
         {
-            dataPath = Paths.get(loader.getProjectPath(), annotation.getImgPath()).toString();
+            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
 
             try
             {

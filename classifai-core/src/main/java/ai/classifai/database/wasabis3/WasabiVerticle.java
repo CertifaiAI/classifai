@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.database.wasabis3;
 
 import ai.classifai.data.type.image.ImageFileType;
@@ -86,7 +101,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .projectId(UuidGenerator.generateUuid())
                     .projectName(projectName)
                     .annotationType(annotationInt)
-                    .projectPath("")
+                    .projectPath(null)
                     .loaderStatus(LoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
@@ -139,7 +154,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
         ListObjectsV2Iterable response = project.getWasabiS3Client().listObjectsV2Paginator(req);
 
-        List<Object> dataPaths = new ArrayList<>();
+        List<String> dataPaths = new ArrayList<>();
 
         for (ListObjectsV2Response page : response)
         {
@@ -149,7 +164,6 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
                 if(FileHandler.isFileSupported(inputObject, ImageFileType.getImageFileTypes()))
                 {
-                    System.out.println("Path: " + inputObject);
                     dataPaths.add(inputObject);
                 }
             });
