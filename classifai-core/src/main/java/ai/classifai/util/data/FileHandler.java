@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Function;
 
 /**
  * File Handler
@@ -34,6 +35,13 @@ import java.util.Stack;
 public class FileHandler
 {
     public static List<File> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
+    {
+        Function<File, Boolean> func = file -> isFileSupported(file.getAbsolutePath(), extensionFormat);
+
+        return processFolder(rootPath, func);
+    }
+
+    public static List<File> processFolder(@NonNull File rootPath, @NonNull Function<File, Boolean> function)
     {
         List<File> totalFilelist = new ArrayList<>();
 
@@ -55,7 +63,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if (isFileSupported(file.getAbsolutePath(), extensionFormat))
+                    if (function.apply(file))
                     {
                         totalFilelist.add(file);
                     }

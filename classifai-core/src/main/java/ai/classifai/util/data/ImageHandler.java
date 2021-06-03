@@ -41,6 +41,7 @@ import java.io.FileInputStream;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Image Handler
@@ -431,9 +432,8 @@ public class ImageHandler {
 
     public static List<File> getValidImagesFromFolder(File rootPath)
     {
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-
-        return FileHandler.processFolder(rootPath, fileExtension);
+        Function<File, Boolean> function = file -> isImageFileValid(file.getAbsolutePath());
+        return FileHandler.processFolder(rootPath, function);
     }
 
     /*
