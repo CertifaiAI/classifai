@@ -266,7 +266,7 @@ public class ImageHandler {
         }
         catch (Exception e)
         {
-            log.info("Skipped " + file, e);
+            log.info(String.format("Skipped %s.\n %s", file, e.getMessage()));
             return false;
         }
 
