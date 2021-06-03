@@ -15,12 +15,9 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.action.LabelListImport;
-import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +25,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.List;
 
 /**
  * Open browser to choose label file to import

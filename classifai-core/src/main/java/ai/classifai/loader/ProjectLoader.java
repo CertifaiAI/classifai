@@ -59,7 +59,7 @@ public class ProjectLoader
 
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
-    private LoaderStatus loaderStatus;
+    private ProjectLoaderStatus projectLoaderStatus;
 
     private ProjectVersion projectVersion;
 
@@ -103,8 +103,6 @@ public class ProjectLoader
 
     @Builder.Default private List<Integer> progressUpdate = Arrays.asList(0, 1);
 
-
-
     public String getCurrentVersionUuid()
     {
         return projectVersion.getCurrentVersion().getVersionUuid();
@@ -138,12 +136,12 @@ public class ProjectLoader
 
         if (totalUuidMaxLen.equals(0))
         {
-            loaderStatus = LoaderStatus.LOADED;
+            projectLoaderStatus = ProjectLoaderStatus.LOADED;
         }
         else if (totalUuidMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
-            loaderStatus = LoaderStatus.ERROR;
+            projectLoaderStatus = ProjectLoaderStatus.ERROR;
         }
     }
 
@@ -158,7 +156,7 @@ public class ProjectLoader
 
             validUUIDSet.clear();
 
-            loaderStatus = LoaderStatus.LOADED;
+            projectLoaderStatus = ProjectLoaderStatus.LOADED;
         }
     }
 
@@ -190,6 +188,7 @@ public class ProjectLoader
                 uuidListFromDb.addAll(fileSysNewUuidList);
 
                 projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
+                projectVersion.setCurrentVersionLabelList(labelList);
 
                 PortfolioVerticle.createNewProject(projectId);
 

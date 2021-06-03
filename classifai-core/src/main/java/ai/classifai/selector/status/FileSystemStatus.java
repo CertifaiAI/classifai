@@ -15,7 +15,6 @@
  */
 package ai.classifai.selector.status;
 
-
 /**
  * State of file system
  *

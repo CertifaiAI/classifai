@@ -19,8 +19,8 @@ import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.project.ProjectInfraHandler;
@@ -99,7 +99,7 @@ public class PortfolioParser
 
                                 .projectInfra(projectInfra)                                                     //project_infra
 
-                                .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
+                                .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
 
                                 .projectVersion(project)                                                        //project_version
                                 .build();

@@ -17,8 +17,8 @@ package ai.classifai.database.portfolio;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
-import ai.classifai.action.ProjectExport;
 import ai.classifai.action.FileGenerator;
+import ai.classifai.action.ProjectExport;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.DbConfig;
@@ -28,9 +28,9 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.CLIProjectInitiator;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -123,7 +123,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
         else if(action.equals(PortfolioDbQuery.getRenameProject()))
         {
-            renameProject(message);
+            this.renameProject(message);
         }
         else
         {
@@ -415,7 +415,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .projectName(row.getString(1))                                                 //project_name
                                     .annotationType(row.getInteger(2))                                             //annotation_type
                                     .projectPath(new File(row.getString(3)))                                       //project_path
-                                    .loaderStatus(LoaderStatus.DID_NOT_INITIATED)
+                                    .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
                                     .isProjectNew(row.getBoolean(4))                                               //is_new
                                     .isProjectStarred(row.getBoolean(5))                                           //is_starred
                                     .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
@@ -481,7 +481,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
-                .put(ParamConfig.getProjectPathParam(), loader.getProjectPath())
+                .put(ParamConfig.getProjectPathParam(), loader.getProjectPath().getAbsolutePath())
                 .put(ParamConfig.getIsNewParam(), loader.getIsProjectNew())
                 .put(ParamConfig.getIsStarredParam(), loader.getIsProjectStarred())
                 .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
@@ -602,7 +602,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         return Tuple.of(loader.getProjectId(),              //project_id
                 loader.getProjectName(),                    //project_name
                 loader.getAnnotationType(),                 //annotation_type
-                loader.getProjectPath(),                    //project_path
+                loader.getProjectPath().getAbsolutePath(),  //project_path
                 loader.getIsProjectNew(),                   //is_new
                 loader.getIsProjectStarred(),               //is_starred
                 loader.getProjectInfra().name(),            //project_infra

@@ -19,8 +19,8 @@ import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
@@ -102,7 +102,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .projectName(projectName)
                     .annotationType(annotationInt)
                     .projectPath(null)
-                    .loaderStatus(LoaderStatus.LOADED)
+                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
                     .projectInfra(ProjectInfra.WASABI_S3)

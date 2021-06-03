@@ -17,8 +17,8 @@ package ai.classifai.router;
 
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -154,12 +154,12 @@ public class V1Endpoint extends EndpointBase
         }
         else
         {
-            LoaderStatus loaderStatus = loader.getLoaderStatus();
+            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
 
             //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-            if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.LOADED))
+            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
             {
-                loader.setLoaderStatus(LoaderStatus.LOADING);
+                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
 
                 JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
 
@@ -181,11 +181,11 @@ public class V1Endpoint extends EndpointBase
                 });
 
             }
-            else if(loaderStatus.equals(LoaderStatus.LOADING))
+            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
             }
-            else if(loaderStatus.equals(LoaderStatus.ERROR))
+            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
             }
@@ -211,36 +211,35 @@ public class V1Endpoint extends EndpointBase
 
         if (util.checkIfProjectNull(context, projectLoader, projectName)) return;
 
-        LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
+        ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
 
-        if (loaderStatus.equals(LoaderStatus.LOADING))
+        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
         {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
+            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
 
             jsonObject.put(ParamConfig.getProgressMetadata(), projectLoader.getProgress());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
-        } else if (loaderStatus.equals(LoaderStatus.LOADED)) {
+        } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
 
             JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
+            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
 
             // Remove empty string from label list
             projectLoader.getLabelList().removeAll(Collections.singletonList(""));
 
             jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-
             jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 
         }
-        else if (loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.ERROR))
+        else if (projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
         {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.ERROR.ordinal());
+            jsonObject.put(ReplyHandler.getMessageKey(), ProjectLoaderStatus.ERROR.ordinal());
             jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
 
             HTTPResponseHandler.configureOK(context, jsonObject);

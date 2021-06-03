@@ -15,7 +15,6 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;

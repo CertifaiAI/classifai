@@ -16,8 +16,8 @@
 package ai.classifai.selector.project;
 
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -109,7 +109,7 @@ public class ProjectV1FolderSelector extends SelectionWindow {
                     .projectName(projectName)
                     .annotationType(annotationInt)
                     .projectPath(rootPath)
-                    .loaderStatus(LoaderStatus.LOADED)
+                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
                     .projectVersion(new ProjectVersion())

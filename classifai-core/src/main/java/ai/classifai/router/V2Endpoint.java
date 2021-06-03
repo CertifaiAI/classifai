@@ -20,11 +20,11 @@ import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
+import ai.classifai.loader.ProjectLoaderStatus;
+import ai.classifai.selector.project.*;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.FileSystemStatus_old;
-import ai.classifai.selector.project.*;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
@@ -196,7 +196,7 @@ public class V2Endpoint extends EndpointBase {
                         .annotationType(annotationInt)
                         .projectPath(new File(projectPath))
                         .labelList(labelList)
-                        .loaderStatus(LoaderStatus.LOADED)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                         .isProjectStarred(Boolean.FALSE)
                         .isProjectNew(Boolean.TRUE)
                         .projectVersion(new ProjectVersion())
@@ -226,7 +226,16 @@ public class V2Endpoint extends EndpointBase {
      */
     public void createProjectStatus(RoutingContext context)
     {
+        String annotationName = context.request().getParam(ParamConfig.getAnnotationTypeParam());
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationName);
 
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        JsonObject response = compileFileSysStatusResponse(loader.getFileSystemStatus());
+
+        HTTPResponseHandler.configureOK(context, response);
     }
 
 
@@ -557,14 +566,9 @@ public class V2Endpoint extends EndpointBase {
         {
             labelFileSelector.run();
 
-            HTTPResponseHandler.configureOK(context);
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Label file selector window is opened"));
         }
 
-
+        HTTPResponseHandler.configureOK(context);
     }
 
     /**
@@ -606,13 +610,8 @@ public class V2Endpoint extends EndpointBase {
         {
             projectFolderSelector.run();
 
-            HTTPResponseHandler.configureOK(context);
         }
-        else
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project folder selector window is opened"));
-        }
-
+        HTTPResponseHandler.configureOK(context);
     }
 
     /**

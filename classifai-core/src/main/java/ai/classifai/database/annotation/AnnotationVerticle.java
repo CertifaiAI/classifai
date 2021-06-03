@@ -121,6 +121,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
         return Paths.get(loader.getProjectPath().getAbsolutePath(), dataSubPath).toFile();
+
     }
 
     public static void loadValidProjectUuid(@NonNull String projectId)
@@ -220,6 +221,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .imgPath(dataPath)
                 .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
+
         loader.getUuidAnnotationDict().put(uuid, annotation);
 
         JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);

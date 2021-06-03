@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author codenamewei
  */
 @Slf4j
-public enum LoaderStatus
+public enum ProjectLoaderStatus
 {
     ERROR,
     LOADING,
