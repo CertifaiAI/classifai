@@ -437,8 +437,6 @@ public class ImageHandler {
         return FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
     }
 
-
-
     /*
     search through rootpath and check if list of files exists
     scenario 1: root file missing
