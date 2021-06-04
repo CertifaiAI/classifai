@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Image Handler
@@ -270,7 +269,7 @@ public class ImageHandler {
         }
         catch (Exception e)
         {
-            log.info(String.format("Skipped %s.\n %s", file, e.getMessage()));
+            log.info(String.format("Skipped %s.%n%s", file, e.getMessage()));
             return false;
         }
 

@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -38,12 +40,12 @@ public class FileHandler
 {
     public static List<File> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
     {
-        Function<File, Boolean> func = file -> isFileSupported(file.getAbsolutePath(), extensionFormat);
+        Predicate<File> func = file -> isFileSupported(file.getAbsolutePath(), extensionFormat);
 
         return processFolder(rootPath, func);
     }
 
-    public static List<File> processFolder(@NonNull File rootPath, @NonNull Function<File, Boolean> filterFunction)
+    public static List<File> processFolder(@NonNull File rootPath, @NonNull Predicate<File> filterFunction)
     {
         List<File> totalFilelist = new ArrayList<>();
 
@@ -65,7 +67,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if (filterFunction.apply(file))
+                    if (filterFunction.test(rootPath))
                     {
                         totalFilelist.add(file);
                     }
