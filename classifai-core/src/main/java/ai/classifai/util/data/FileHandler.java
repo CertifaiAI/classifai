@@ -65,7 +65,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if (filterFunction.test(rootPath))
+                    if (filterFunction.test(file))
                     {
                         totalFilelist.add(file);
                     }
