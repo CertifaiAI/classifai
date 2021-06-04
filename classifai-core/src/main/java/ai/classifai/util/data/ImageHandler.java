@@ -249,6 +249,11 @@ public class ImageHandler {
         return null;
     }
 
+    private static boolean isImageFileValid(File file)
+    {
+        return isImageFileValid(file.getAbsolutePath());
+    }
+
     private static boolean isImageFileValid(String file)
     {
         try
@@ -350,8 +355,7 @@ public class ImageHandler {
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
+        List<File> dataList = FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
 
         if (dataList.isEmpty())
         {
@@ -391,8 +395,7 @@ public class ImageHandler {
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
+        List<File> dataList = FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
 
         if (dataList.isEmpty())
         {
@@ -431,9 +434,10 @@ public class ImageHandler {
 
     public static List<File> getValidImagesFromFolder(File rootPath)
     {
-        Function<File, Boolean> function = file -> isImageFileValid(file.getAbsolutePath());
-        return FileHandler.processFolder(rootPath, function);
+        return FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
     }
+
+
 
     /*
     search through rootpath and check if list of files exists
