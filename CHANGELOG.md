@@ -9,6 +9,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 *Note: This changelog is implemented since `2.0.0-alpha` version. All records before it are drafted based on [release notes](https://github.com/CertifaiAI/classifai/releases) might not be as detailed.*
 ## [Unreleased]
 ### Added
+- Frontend auto pr
 - CHANGELOG.md
 - Project renaming 
 - Project reloading
