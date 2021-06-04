@@ -538,6 +538,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         Version currentVersion = loader.getProjectVersion().getCurrentVersion();
 
+        File projectPath = new File(loader.getProjectPath());
+
+        if (!projectPath.exists())
+        {
+            log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
+        }
+
         List<File> existingDataInDir = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
 
         result.add(new JsonObject()

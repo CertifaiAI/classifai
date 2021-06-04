@@ -22,9 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * File Handler
@@ -41,7 +43,7 @@ public class FileHandler
         return processFolder(rootPath, func);
     }
 
-    public static List<File> processFolder(@NonNull File rootPath, @NonNull Function<File, Boolean> function)
+    public static List<File> processFolder(@NonNull File rootPath, @NonNull Function<File, Boolean> filterFunction)
     {
         List<File> totalFilelist = new ArrayList<>();
 
@@ -49,11 +51,11 @@ public class FileHandler
 
         folderStack.push(rootPath);
 
-        while (folderStack.isEmpty() != true)
+        while (!folderStack.isEmpty())
         {
             File currentFolderPath = folderStack.pop();
 
-            File[] folderList = currentFolderPath.listFiles();
+            List<File> folderList = listFiles(currentFolderPath);
 
             for (File file : folderList)
             {
@@ -63,7 +65,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if (function.apply(file))
+                    if (filterFunction.apply(file))
                     {
                         totalFilelist.add(file);
                     }
@@ -72,6 +74,19 @@ public class FileHandler
         }
 
         return totalFilelist;
+    }
+
+    private static List<File> listFiles(File rootPath)
+    {
+        List<File> outputList = new ArrayList<>();
+
+        if (rootPath.exists())
+        {
+            outputList = Arrays.stream(rootPath.listFiles())
+                    .collect(Collectors.toList());
+        }
+
+        return outputList;
     }
 
     public static boolean isFileSupported(String file, String[] formatTypes)
