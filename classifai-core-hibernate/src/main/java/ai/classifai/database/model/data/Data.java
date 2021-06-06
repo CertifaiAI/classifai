@@ -22,4 +22,6 @@ public abstract class Data
 
     @ManyToOne
     private Project project;
+
+    private int fileSize;
 }
