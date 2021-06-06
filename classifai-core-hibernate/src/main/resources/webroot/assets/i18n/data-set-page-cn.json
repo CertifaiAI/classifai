@@ -1,0 +1,54 @@
+{
+    "createNewProject": "建立新项目",
+    "renameProject": "重新命名项目",
+    "newProjectName": "新项目名称 : ",
+    "projectNameExist": "* 项目名称已被使用。请选择其他名称",
+    "projectNameRequired": "* 项目名称空缺",
+    "labelListFile": "标签列表文件 (*.txt): ",
+    "chooseFile": "选择文件",
+    "createButton": "创建",
+    "updateButton": "继续",
+    "cancelButton": "取消",
+    "menuName": {
+        "newProject": "创建新项目",
+        "importProject": "导入项目",
+        "myProject": "我的项目",
+        "starred": "书签",
+        "recent": "最新",
+        "trash": "已删除"
+    },
+    "datasetHeader": {
+        "datasetManagement": "资料集管理"
+    },
+    "pageHeader": {
+        "home": "主页",
+        "datasetManagement": "资料集管理",
+        "revision": "修订",
+        "addUser": "添加用户",
+        "profile": "用户资料"
+    },
+    "datasetCard": {
+        "fetchingProject": "正在读取档案...",
+        "pleaseWait": "请稍等...缓冲处理中",
+        "uploading": "正在读取",
+        "new": "最新",
+        "available": "可开启",
+        "opened": "开了",
+        "uploadFolder": "上载文件夹",
+        "uploadPhotos": "上载图像",
+        "renameProject": "重新命名项目",
+        "deleteProject": "删除现有项目",
+        "created": "已创建:",
+        "totalPhoto": "图像总数:",
+        "noProject": "没有项目",
+        "createNew": "开始新的项目吧！"
+    },
+    "deleteSuccess": "已被删除!",
+    "renameSuccess": "名称更新成功!",
+    "deleteProject": "删除项目",
+    "exportProject": "导出项目",
+    "importJson": "导入配置文件",
+    "selectJson": "配置文件",
+    "configFileInfoTitle": "什么是配置文件? ",
+    "configFileInfoDest": "从项目导出的配置文件"
+}

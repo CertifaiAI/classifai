@@ -1,0 +1,107 @@
+{
+    "pageHeader": {
+        "home": "Home",
+        "datasetManagement": "Dataset Management",
+        "revision": "Revision",
+        "addUser": "Add user",
+        "profile": "Profile"
+    },
+    "labellingInfo": {
+        "previous": "Previous",
+        "next": "Next",
+        "undo": "Undo",
+        "redo": "Redo"
+    },
+    "leftSideBar": {
+        "pointer": "Pointer",
+        "rectangularBB": "Rectangular Bounding Box",
+        "polygon": "Polygon",
+        "eraser": "Eraser",
+        "fitCenter": "Fit Center",
+        "save": "Save",
+        "info": "Shortcut Key Info"
+    },
+    "rightSideBar": {
+        "folderOrFiles": "Folder / Files",
+        "label": "Label",
+        "annotation": "Annotation",
+        "statistic": "Statistic",
+        "export": "Export",
+        "reload": "Reload"
+    },
+    "labellingProject": {
+        "project": "Project",
+        "label": "Label",
+        "enterLabel": "Enter Label",
+        "annotation": "Annotation",
+        "delete": "Delete",
+        "labelNotExist": "Label does not exist. Press Enter to add."
+    },
+    "searchLabel": {
+        "labelNotExist": "Label does not exist.",
+        "enterToAdd": "Press enter to add."
+    },
+    "labellingArea": {
+        "mainLabel": "Main Label",
+        "label": "Label",
+        "regionInfo": "Region Info",
+        "subLabel": "Sub Label",
+        "add": "Add",
+        "addedSubLabel": "Added Sub Label",
+        "mainRegionInfo": "Input Main Region Info",
+        "subRegionInfo": "Input Sub Region Info"
+    },
+    "exportModal": {
+        "exportOptions": "Export Project To",
+        "configFile": "Config File",
+        "zipFile": "Zip File",
+        "withData": "(With Data)",
+        "cancel": "Cancel"
+    },
+    "info": {
+        "header": "Keyboard Shortcut Information",
+        "shortcut": {
+            "1": {
+                "key": "Ctrl + z",
+                "functionality": "Undo the last action"
+            },
+            "2": {
+                "key": "Ctrl + c",
+                "functionality": "Copy the selected bounding box"
+            },
+            "3": {
+                "key": "Ctrl + v",
+                "functionality": "Paste the selected bounding box"
+            },
+            "4": {
+                "key": "Delete/Backspace",
+                "functionality": "Delete a selected bounding box"
+            },
+            "5": {
+                "key": "Double click on a selected bounding box",
+                "functionality": "Choose label for the selected bounding box"
+            }
+        }
+    },
+    "footer": {
+        "size": "Size",
+        "image": "Image",
+        "dimension": "Dimension",
+        "copyToClipboard": "Copy to Clipboard"
+    },
+    "exportSuccess": " project was exported successfully!",
+    "exportFailed": "Fail to export ",
+    "reloadSuccess": " project was reload successfully!",
+    "reloadFailed": "Fail to reload ",
+    "labelExist": "Some image in project are using this label. Deleting this label are not allowed.",
+    "location": "File Location: ",
+    "exportTitle": "Export Project",
+    "bulkSave": "Bulk Saving",
+    "singleSave": "Current Image",
+    "advModal": {
+        "title": "Advanced Setting",
+        "noLabel": "No Label",
+        "btnSave": "Save",
+        "instructionText": "Toggle left to disable the label"
+    }
+}

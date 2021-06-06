@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+  ~
+  ~  This program and the accompanying materials are made available under the
+  ~  terms of the Apache License, Version 2.0 which is available at
+  ~  https://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~  License for the specific language governing permissions and limitations
+  ~  under the License.
+  ~
+  ~  SPDX-License-Identifier: Apache-2.0
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>ai.classifai</groupId>
+    <artifactId>classifai</artifactId>
+    <version>2.0.0-alpha</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>classifai-core-hibernate</artifactId>
+  <name>classifai-core-hibernate</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ai.classifai</groupId>
+      <artifactId>classifai-cloud</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-jdbc-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>fontbox</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>jbig2-imageio</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jai-imageio</groupId>
+      <artifactId>jai-imageio-jpeg2000</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.drewnoakes</groupId>
+      <artifactId>metadata-extractor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+    </dependency>
+  </dependencies>
+
+<!--  <build>-->
+<!--    <pluginManagement>&lt;!&ndash; lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) &ndash;&gt;-->
+<!--      <plugins>-->
+<!--        &lt;!&ndash; clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle &ndash;&gt;-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-clean-plugin</artifactId>-->
+<!--          <version>3.1.0</version>-->
+<!--        </plugin>-->
+<!--        &lt;!&ndash; default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging &ndash;&gt;-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-resources-plugin</artifactId>-->
+<!--          <version>3.0.2</version>-->
+<!--        </plugin>-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-compiler-plugin</artifactId>-->
+<!--          <version>3.8.0</version>-->
+<!--        </plugin>-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-surefire-plugin</artifactId>-->
+<!--          <version>2.22.1</version>-->
+<!--        </plugin>-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-jar-plugin</artifactId>-->
+<!--          <version>3.0.2</version>-->
+<!--        </plugin>-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-install-plugin</artifactId>-->
+<!--          <version>2.5.2</version>-->
+<!--        </plugin>-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-deploy-plugin</artifactId>-->
+<!--          <version>2.8.2</version>-->
+<!--        </plugin>-->
+<!--        &lt;!&ndash; site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle &ndash;&gt;-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-site-plugin</artifactId>-->
+<!--          <version>3.7.1</version>-->
+<!--        </plugin>-->
+<!--        <plugin>-->
+<!--          <artifactId>maven-project-info-reports-plugin</artifactId>-->
+<!--          <version>3.0.0</version>-->
+<!--        </plugin>-->
+<!--      </plugins>-->
+<!--    </pluginManagement>-->
+<!--  </build>-->
+</project>

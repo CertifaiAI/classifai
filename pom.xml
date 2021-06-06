@@ -29,6 +29,7 @@
         <module>classifai-api</module>
         <module>classifai-uberjar</module>
         <module>classifai-cloud</module>
+        <module>classifai-core-hibernate</module>
         <!--<module>classifai-test</module>-->
     </modules>
 
@@ -94,6 +95,8 @@
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <apache.commons.version>3.8.1</apache.commons.version>
         <metadata.extractor.version>2.15.0</metadata.extractor.version>
+        <hibernate.core.version>5.5.0.Final</hibernate.core.version>
+        <hibernate.validator.version>7.0.1.Final</hibernate.validator.version>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
         <classifai.release.version>2.0.0-alpha</classifai.release.version>
@@ -173,6 +176,11 @@
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-web-client</artifactId>
+                <version>${vertx.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-config</artifactId>
                 <version>${vertx.version}</version>
             </dependency>
             <dependency>
@@ -256,6 +264,16 @@
                 <groupId>com.drewnoakes</groupId>
                 <artifactId>metadata-extractor</artifactId>
                 <version>${metadata.extractor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate.validator.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

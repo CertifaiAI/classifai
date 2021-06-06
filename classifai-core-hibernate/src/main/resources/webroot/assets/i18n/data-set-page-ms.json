@@ -1,0 +1,54 @@
+{
+    "createNewProject": "Reka Projek Baru",
+    "renameProject": "Tukar Nama Projek",
+    "newProjectName": "Nama Projek Baru:",
+    "projectNameExist": "* Nama projek telah tersedia! Sila cuba nama lain",
+    "projectNameRequired": "* Sila isi nama projek",
+    "labelListFile": "Fail senarai label(*.txt):",
+    "chooseFile": "Pilih Fail",
+    "createButton": "Reka",
+    "updateButton": "Teruskan",
+    "cancelButton": "Batal",
+    "menuName": {
+        "newProject": "Projek Baru",
+        "importProject": "Import Projek",
+        "myProject": "Projek Saya",
+        "starred": "Dibintangi",
+        "recent": "Terbaru",
+        "trash": "Sampah"
+    },
+    "datasetHeader": {
+        "datasetManagement": "Pengurusan Set Data"
+    },
+    "pageHeader": {
+        "home": "Laman Utama",
+        "datasetManagement": "Pengurusan Set Data",
+        "revision": "Semakan",
+        "addUser": "Tambah pengguna",
+        "profile": "Profil"
+    },
+    "datasetCard": {
+        "fetchingProject": "Mengambil projek anda...",
+        "pleaseWait": "Sila tunggu sebentar... sementara kami menyediakan hidangan",
+        "uploading": "Memuat naik",
+        "new": "Terbaru",
+        "available": "Tersedia",
+        "opened": "Telah Dibuka",
+        "uploadFolder": "Memuat naik folder",
+        "uploadPhotos": "Memuat naik foto",
+        "renameProject": "Tukar Nama Projek",
+        "deleteProject": "Padam Projek",
+        "created": "Dicipta pada:",
+        "totalPhoto": "Jumlah foto:",
+        "noProject": "Tunggu sekejap... tidak ada projek pun",
+        "createNew": "Bersedia dan jom mulakan projek baru!"
+    },
+    "deleteSuccess": "telah berjaya dipadam!",
+    "renameSuccess": "telah berjaya dinamakan semula!",
+    "deleteProject": "Padam Projek",
+    "exportProject": "Eksport Projek",
+    "importJson": "Fail Json",
+    "selectJson": "Fail Konfig",
+    "configFileInfoTitle": "Apa itu Fail Konfig? ",
+    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek."
+}

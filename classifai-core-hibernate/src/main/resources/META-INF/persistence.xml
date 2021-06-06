@@ -1,0 +1,38 @@
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.2">
+    <persistence-unit name="ai.classifai.database.jpa" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>ai.classifai.database.model.Project</class>
+        <class>ai.classifai.database.model.Version</class>
+        <class>ai.classifai.database.model.Label</class>
+        <class>ai.classifai.database.model.data.Data</class>
+        <class>ai.classifai.database.model.data.ImageData</class>
+        <class>ai.classifai.database.model.data.VideoData</class>
+        <class>ai.classifai.database.model.annotation.Annotation</class>
+        <class>ai.classifai.database.model.annotation.ImageAnnotation</class>
+        <class>ai.classifai.database.model.annotation.VideoAnnotation</class>
+
+        <properties>
+            <!--H2-->
+            <property name="javax.persistence.jdbc.driver"
+                      value="org.h2.Driver"/>
+
+            <property name="javax.persistence.jdbc.url"
+                      value="jdbc:h2:/home/chuang010896/.classifai/db"/>
+
+            <property name="javax.persistence.jdbc.user"
+                      value="admin"/>
+
+            <property name="javax.persistence.jdbc.password"
+                      value=""/>
+
+            <property name="javax.persistence.schema-generation.database.action"
+                      value="create"/>
+
+            <!--Logging-->
+            <property name="hibernate.show_sql"
+                      value="true"/>
+            <property name="hibernate.format_sql"
+                      value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

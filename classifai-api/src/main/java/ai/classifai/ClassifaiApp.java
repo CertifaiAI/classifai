@@ -42,7 +42,6 @@ public class ClassifaiApp
         vertxOptions.setMaxEventLoopExecuteTime(15); //for bulk images upload
 
         DeploymentOptions opt = new DeploymentOptions();
-        opt.setWorker(true);
 
         Vertx vertx = Vertx.vertx(vertxOptions);
         vertx.deployVerticle(new MainVerticle(), opt);
