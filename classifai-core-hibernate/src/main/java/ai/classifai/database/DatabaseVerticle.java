@@ -15,16 +15,25 @@
  */
 package ai.classifai.database;
 
+import ai.classifai.database.model.Project;
+import ai.classifai.util.ParamConfig;
+import ai.classifai.util.message.ErrorCodes;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Criteria;
+import org.hibernate.Transaction;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.List;
 
 /**
  * verticle that handles database
@@ -39,7 +48,85 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     @Override
     public void onMessage(Message<JsonObject> message)
     {
+        // FIXME:
+        //  Too many duplicate code
+        if (!message.headers().contains(ParamConfig.getActionKeyword()))
+        {
+            log.error("No action header specified for message with headers {} and body {}",
+                    message.headers(), message.body().encodePrettily());
 
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
+
+            return;
+        }
+
+        String action = message.headers().get(ParamConfig.getActionKeyword());
+
+        // FIXME:
+        //  Hardcoded
+        if (action.equals("retrieve-all-project-annotation"))
+        {
+            this.getAllProjectsForAnnotationType(message);
+        }
+        else if (action.equals(PortfolioDbQuery.getUpdateLabelList()))
+        {
+            this.updateLabelList(message);
+        }
+        else if (action.equals(PortfolioDbQuery.getDeleteProject()))
+        {
+            this.deleteProject(message);
+        }
+        //*******************************V2*******************************
+
+        else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
+        {
+            this.getProjectMetadata(message);
+        }
+        else if (action.equals(DbActionConfig.getGetAllProjectMeta()))
+        {
+            this.getAllProjectsMetadata(message);
+        }
+        else if (action.equals(PortfolioDbQuery.getStarProject()))
+        {
+            this.starProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getReloadProject()))
+        {
+            this.reloadProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getExportProject()))
+        {
+            this.exportProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getRenameProject()))
+        {
+            renameProject(message);
+        }
+        else
+        {
+            log.error("Portfolio query error. Action did not have an assigned function for handling.");
+        }
+
+    }
+
+    private void getAllProjectsMetadata(Message<JsonObject> message)
+    {
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        vertx.executeBlocking(promise ->{
+            try {
+                CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+                CriteriaQuery<Project> criteria = builder.createQuery(Project.class);
+                Root<Project> from = criteria.from(Project.class);
+                criteria.select(from);
+                criteria.where(builder.equal(from.get(Project.)))
+            }
+        }).onComplete()
+                .onSuccess()
+                .onFailure();
+        
     }
 
     @Override
@@ -52,8 +139,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void successHandler(Promise<Void> promise)
     {
-        //FIXME: remove hardcoded value
-        vertx.eventBus().consumer("database", this::onMessage);
+        vertx.eventBus().consumer(DbActionConfig.getQueue(), this::onMessage);
         promise.complete();
     }
 
@@ -63,7 +149,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.fail(e.getCause());
     }
 
-    private Future<Void> connectDatabase(Promise<Void> promise)
+    private void connectDatabase(Promise<Void> promise)
     {
         try
         {
@@ -74,6 +160,6 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         {
             promise.fail(e);
         }
-        return promise.future();
+        promise.future();
     }
 }

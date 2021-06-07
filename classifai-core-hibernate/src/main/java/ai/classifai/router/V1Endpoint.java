@@ -112,7 +112,7 @@ public class V1Endpoint {
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsMetadata());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), );
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
