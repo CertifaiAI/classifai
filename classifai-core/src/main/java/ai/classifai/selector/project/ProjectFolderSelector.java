@@ -84,8 +84,6 @@ public class ProjectFolderSelector extends SelectionWindow
             log.info("LabelFileSelector failed to open", e);
         }
     }
-
-
 }
 
 
