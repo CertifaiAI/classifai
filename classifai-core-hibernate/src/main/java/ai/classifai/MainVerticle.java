@@ -16,7 +16,6 @@
 package ai.classifai;
 
 import ai.classifai.database.DatabaseVerticle;
-import ai.classifai.database.wasabis3.WasabiVerticle;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
@@ -35,12 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
-    private static WasabiVerticle wasabiVerticle;
+//    private static WasabiVerticle wasabiVerticle;
     private static EndpointRouter serverVerticle;
 
     static
     {
-        wasabiVerticle = new WasabiVerticle();
+//        wasabiVerticle = new WasabiVerticle();
         serverVerticle = new EndpointRouter();
     }
 
@@ -67,7 +66,7 @@ public class MainVerticle extends AbstractVerticle
         }).compose(id_ -> {
 
             Promise<String> wasabiDeployment = Promise.promise();
-            vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
+//            vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
             return wasabiDeployment.future();
 
         }).onComplete(ar -> {
@@ -113,7 +112,7 @@ public class MainVerticle extends AbstractVerticle
         try
         {
             serverVerticle.stop(Promise.promise());
-            wasabiVerticle.stop(Promise.promise());
+//            wasabiVerticle.stop(Promise.promise());
         }
         catch (Exception e)
         {

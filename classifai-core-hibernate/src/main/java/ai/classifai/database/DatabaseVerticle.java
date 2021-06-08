@@ -64,48 +64,48 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         // FIXME:
         //  Hardcoded
-        if (action.equals("retrieve-all-project-annotation"))
-        {
-            this.getAllProjectsForAnnotationType(message);
-        }
-        else if (action.equals(PortfolioDbQuery.getUpdateLabelList()))
-        {
-            this.updateLabelList(message);
-        }
-        else if (action.equals(PortfolioDbQuery.getDeleteProject()))
-        {
-            this.deleteProject(message);
-        }
-        //*******************************V2*******************************
-
-        else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
-        {
-            this.getProjectMetadata(message);
-        }
-        else if (action.equals(DbActionConfig.getGetAllProjectMeta()))
-        {
-            this.getAllProjectsMetadata(message);
-        }
-        else if (action.equals(PortfolioDbQuery.getStarProject()))
-        {
-            this.starProject(message);
-        }
-        else if(action.equals(PortfolioDbQuery.getReloadProject()))
-        {
-            this.reloadProject(message);
-        }
-        else if(action.equals(PortfolioDbQuery.getExportProject()))
-        {
-            this.exportProject(message);
-        }
-        else if(action.equals(PortfolioDbQuery.getRenameProject()))
-        {
-            renameProject(message);
-        }
-        else
-        {
-            log.error("Portfolio query error. Action did not have an assigned function for handling.");
-        }
+//        if (action.equals("retrieve-all-project-annotation"))
+//        {
+//            this.getAllProjectsForAnnotationType(message);
+//        }
+//        else if (action.equals(PortfolioDbQuery.getUpdateLabelList()))
+//        {
+//            this.updateLabelList(message);
+//        }
+//        else if (action.equals(PortfolioDbQuery.getDeleteProject()))
+//        {
+//            this.deleteProject(message);
+//        }
+//        //*******************************V2*******************************
+//
+//        else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
+//        {
+//            this.getProjectMetadata(message);
+//        }
+//        else if (action.equals(DbActionConfig.getGetAllProjectMeta()))
+//        {
+//            this.getAllProjectsMetadata(message);
+//        }
+//        else if (action.equals(PortfolioDbQuery.getStarProject()))
+//        {
+//            this.starProject(message);
+//        }
+//        else if(action.equals(PortfolioDbQuery.getReloadProject()))
+//        {
+//            this.reloadProject(message);
+//        }
+//        else if(action.equals(PortfolioDbQuery.getExportProject()))
+//        {
+//            this.exportProject(message);
+//        }
+//        else if(action.equals(PortfolioDbQuery.getRenameProject()))
+//        {
+//            renameProject(message);
+//        }
+//        else
+//        {
+//            log.error("Portfolio query error. Action did not have an assigned function for handling.");
+//        }
 
     }
 
@@ -115,17 +115,17 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        vertx.executeBlocking(promise ->{
-            try {
-                CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-                CriteriaQuery<Project> criteria = builder.createQuery(Project.class);
-                Root<Project> from = criteria.from(Project.class);
-                criteria.select(from);
-                criteria.where(builder.equal(from.get(Project.)))
-            }
-        }).onComplete()
-                .onSuccess()
-                .onFailure();
+//        vertx.executeBlocking(promise ->{
+//            try {
+//                CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//                CriteriaQuery<Project> criteria = builder.createQuery(Project.class);
+//                Root<Project> from = criteria.from(Project.class);
+//                criteria.select(from);
+//                criteria.where(builder.equal(from.get(Project.)))
+//            }
+//        }).onComplete()
+//                .onSuccess()
+//                .onFailure();
         
     }
 

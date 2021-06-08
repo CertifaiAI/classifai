@@ -15,29 +15,20 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.action.ActionConfig;
-import ai.classifai.action.ProjectExport;
-import ai.classifai.database.portfolio.PortfolioDbQuery;
-import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.database.model.Project;
 import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 /**
  * Classifai v2 endpoints
@@ -59,79 +50,79 @@ public class V2Endpoint {
      *
      * PUT http://localhost:{port}/:annotation_type/projects/:project_name
      */
-    public void closeProjectState(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            try
-            {
-                JsonObject jsonObject = h.toJsonObject();
-
-                if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
-                {
-                    ProjectHandler.getProjectLoader(projectID).setIsLoadedFrontEndToggle(Boolean.FALSE);
-                }
-                else
-                {
-                    throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
-                }
-
-                HTTPResponseHandler.configureOK(context);
-
-            }
-            catch (Exception e)
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(e.getMessage()));
-
-            }
-        });
-    }
+//    public void closeProjectState(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+//
+//        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+//
+//        context.request().bodyHandler(h ->
+//        {
+//            try
+//            {
+//                JsonObject jsonObject = h.toJsonObject();
+//
+//                if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
+//                {
+//                    ProjectHandler.getProjectLoader(projectID).setIsLoadedFrontEndToggle(Boolean.FALSE);
+//                }
+//                else
+//                {
+//                    throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
+//                }
+//
+//                HTTPResponseHandler.configureOK(context);
+//
+//            }
+//            catch (Exception e)
+//            {
+//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(e.getMessage()));
+//
+//            }
+//        });
+//    }
 
     /***
      * Star a project
      *
      * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
      */
-    public void starProject(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            JsonObject jsonObject = h.toJsonObject();
-
-            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    //set status of starring to project loader.
-                    Boolean isStar = Boolean.parseBoolean(jsonObject.getString(ParamConfig.getStatusParam()));
-                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-                    loader.setIsProjectStarred(isStar);
-
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
-        });
-    }
+//    public void starProject(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+//
+//        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+//
+//        context.request().bodyHandler(h ->
+//        {
+//            JsonObject jsonObject = h.toJsonObject();
+//
+//            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
+//
+//            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
+//
+//            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+//            {
+//                if(reply.succeeded())
+//                {
+//                    //set status of starring to project loader.
+//                    Boolean isStar = Boolean.parseBoolean(jsonObject.getString(ParamConfig.getStatusParam()));
+//                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+//                    loader.setIsProjectStarred(isStar);
+//
+//                    JsonObject response = (JsonObject) reply.result().body();
+//
+//                    HTTPResponseHandler.configureOK(context, response);
+//                }
+//            });
+//        });
+//    }
 
     /**
      * Create new project
@@ -147,9 +138,14 @@ public class V2Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        projectFolderSelector.run(projectName, type);
+        projectFolderSelector.run(projectName, type, this::initiateFolderIteration);
 
         HTTPResponseHandler.configureOK(context);
+    }
+
+    private void initiateFolderIteration(Project project)
+    {
+
     }
 
     /**
@@ -160,49 +156,49 @@ public class V2Endpoint {
      * PUT http://localhost:{port}/v2/bndbox/rename/helloworld/helloworldnewname
      *
      */
-    public void renameProject(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String newProjectName = context.request().getParam(ParamConfig.getNewProjectNameParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
-        {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
-
-            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
-
-            loader.setProjectName(newProjectName);
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
-            {
-                JsonObject response = (JsonObject) fetch.result().body();
-
-                if (ReplyHandler.isReplyOk(response))
-                {
-                    // Update loader in cache after success db update
-                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-                    log.debug("Rename to " + newProjectName + " success.");
-                    HTTPResponseHandler.configureOK(context);
-                }
-                else
-                {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
-                }
-            });
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context);
-        }
-    }
+//    public void renameProject(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        String newProjectName = context.request().getParam(ParamConfig.getNewProjectNameParam());
+//
+//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+//
+//        if(util.checkIfProjectNull(context, loader, projectName)) return;
+//
+//        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
+//        {
+//            JsonObject jsonObject = new JsonObject();
+//            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+//            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
+//
+//            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
+//
+//            loader.setProjectName(newProjectName);
+//
+//            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
+//            {
+//                JsonObject response = (JsonObject) fetch.result().body();
+//
+//                if (ReplyHandler.isReplyOk(response))
+//                {
+//                    // Update loader in cache after success db update
+//                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+//                    log.debug("Rename to " + newProjectName + " success.");
+//                    HTTPResponseHandler.configureOK(context);
+//                }
+//                else
+//                {
+//                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
+//                }
+//            });
+//        }
+//        else
+//        {
+//            HTTPResponseHandler.configureOK(context);
+//        }
+//    }
 
     /**
      * Reload v2 project
@@ -212,38 +208,38 @@ public class V2Endpoint {
      * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
      *
      */
-    public void reloadProject(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-
-        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
-        {
-            JsonObject response = (JsonObject) fetch.result().body();
-
-            if (ReplyHandler.isReplyOk(response))
-            {
-                HTTPResponseHandler.configureOK(context);
-
-            } else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
-            }
-        });
-    }
+//    public void reloadProject(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//
+//        log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
+//
+//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+//
+//        if(util.checkIfProjectNull(context, loader, projectName)) return;
+//
+//        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+//
+//        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+//
+//        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
+//
+//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
+//        {
+//            JsonObject response = (JsonObject) fetch.result().body();
+//
+//            if (ReplyHandler.isReplyOk(response))
+//            {
+//                HTTPResponseHandler.configureOK(context);
+//
+//            } else
+//            {
+//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
+//            }
+//        });
+//    }
 
     /**
      * Get load status of project
@@ -253,95 +249,95 @@ public class V2Endpoint {
      * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
      *
      */
-    public void reloadProjectStatus(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
-
-        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
-        {
-            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
-        {
-            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
-            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
-        {
-            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
-        }
-
-        HTTPResponseHandler.configureOK(context, res);
-    }
+//    public void reloadProjectStatus(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//
+//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+//
+//        if(util.checkIfProjectNull(context, loader, projectName)) return;
+//
+//        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+//
+//        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+//
+//        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
+//        {
+//            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+//        }
+//        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+//        {
+//            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
+//            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
+//        }
+//        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+//        {
+//            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+//            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
+//        }
+//
+//        HTTPResponseHandler.configureOK(context, res);
+//    }
 
     /***
      * export a project to configuration file
      *
      * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/export/:export_type
      */
-    public void exportProject(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//    public void exportProject(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+//
+//        if(util.checkIfProjectNull(context, projectId, projectName)) return;
+//
+//        ActionConfig.ExportType exportType = ProjectExport.getExportType(
+//                context.request().getParam(ActionConfig.getExportTypeParam()));
+//        if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
+//
+//        JsonObject request = new JsonObject()
+//                .put(ParamConfig.getProjectIdParam(), projectId)
+//                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
+//                .put(ActionConfig.getExportTypeParam(), exportType.ordinal());
+//
+//        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
+//
+//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
+//
+//            if (reply.succeeded()) {
+//
+//                JsonObject response = (JsonObject) reply.result().body();
+//
+//                HTTPResponseHandler.configureOK(context, response);
+//            }
+//            else
+//            {
+//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
+//
+//            }
+//        });
+//
+//    }
 
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(util.checkIfProjectNull(context, projectId, projectName)) return;
-
-        ActionConfig.ExportType exportType = ProjectExport.getExportType(
-                context.request().getParam(ActionConfig.getExportTypeParam()));
-        if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
-
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectId)
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
-                .put(ActionConfig.getExportTypeParam(), exportType.ordinal());
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-
-            if (reply.succeeded()) {
-
-                JsonObject response = (JsonObject) reply.result().body();
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
-
-            }
-        });
-
-    }
-
-    public void importProject(RoutingContext context)
-    {
-        if(projectImporter.isWindowOpen())
-        {
-            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
-
-            HTTPResponseHandler.configureOK(context, jsonResonse);
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context);
-        }
-
-        projectImporter.run();
-    }
+//    public void importProject(RoutingContext context)
+//    {
+//        if(projectImporter.isWindowOpen())
+//        {
+//            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
+//
+//            HTTPResponseHandler.configureOK(context, jsonResonse);
+//        }
+//        else
+//        {
+//            HTTPResponseHandler.configureOK(context);
+//        }
+//
+//        projectImporter.run();
+//    }
 
     /**
      * Get file system (file/folder) status for a specific project
@@ -351,45 +347,45 @@ public class V2Endpoint {
      * GET http://localhost:{port}/v2/bndbox/projects/helloworld/filesysstatus
      *
      */
-    public void getFileSystemStatus(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        util.checkIfDockerEnv(context);
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
-
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
-
-        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
-        {
-            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
-        {
-            List<String> newAddedUUIDList = loader.getFileSysNewUuidList();
-
-            res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
-        {
-            // Delete project if user attempt to create project but no path chosen
-            ProjectHandler.deleteProjectFromCache(loader.getProjectId());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
-        {
-            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
-        }
-
-        HTTPResponseHandler.configureOK(context, res);
-    }
+//    public void getFileSystemStatus(RoutingContext context)
+//    {
+//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+//
+//        util.checkIfDockerEnv(context);
+//
+//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//
+//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+//
+//        if(util.checkIfProjectNull(context, loader, projectName)) return;
+//
+//        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+//
+//        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+//
+//        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
+//        {
+//            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+//        }
+//        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+//        {
+//            List<String> newAddedUUIDList = loader.getFileSysNewUuidList();
+//
+//            res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
+//        }
+//        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED))
+//        {
+//            // Delete project if user attempt to create project but no path chosen
+//            ProjectHandler.deleteProjectFromCache(loader.getProjectId());
+//        }
+//        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
+//        {
+//            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
+//            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
+//        }
+//
+//        HTTPResponseHandler.configureOK(context, res);
+//    }
 
     /**
      * Get import project status
@@ -399,17 +395,17 @@ public class V2Endpoint {
      * GET http://localhost:{port}/v2/bndbox/projects/importstatus
      *
      */
-    public void getImportStatus(RoutingContext context)
-    {
-        util.checkIfDockerEnv(context);
-
-        FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
-        JsonObject res = new JsonObject();
-        res.put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
-        res.put(ReplyHandler.getErrorMesageKey(), ProjectImportSelector.getImportErrorMessage());
-
-        HTTPResponseHandler.configureOK(context, res);
-    }
+//    public void getImportStatus(RoutingContext context)
+//    {
+//        util.checkIfDockerEnv(context);
+//
+//        FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
+//        JsonObject res = new JsonObject();
+//        res.put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
+//        res.put(ReplyHandler.getErrorMesageKey(), ProjectImportSelector.getImportErrorMessage());
+//
+//        HTTPResponseHandler.configureOK(context, res);
+//    }
 
 
     /**
@@ -442,22 +438,23 @@ public class V2Endpoint {
      * Example:
      * GET http://localhost:{port}/v2/labelfilestatus
      */
-    public void loadLabelFileStatus(RoutingContext context)
-    {
-        util.checkIfDockerEnv(context);
+//    public void loadLabelFileStatus(RoutingContext context)
+//    {
+//        util.checkIfDockerEnv(context);
+//
+//        FileSystemStatus currentStatus = LabelListSelector.getImportLabelFileSystemStatus();
+//
+//        JsonObject jsonResponse = new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
+//
+//        if(currentStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
+//        {
+//            jsonResponse
+//                    .put(ParamConfig.getLabelFilePathParam(), LabelListSelector.getLabelFilePath())
+//                    .put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
+//
+//        }
+//
+//        HTTPResponseHandler.configureOK(context, jsonResponse);
+//    }
 
-        FileSystemStatus currentStatus = LabelListSelector.getImportLabelFileSystemStatus();
-
-        JsonObject jsonResponse = new JsonObject().put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
-
-        if(currentStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED))
-        {
-            jsonResponse
-                    .put(ParamConfig.getLabelFilePathParam(), LabelListSelector.getLabelFilePath())
-                    .put(ParamConfig.getLabelListParam(), LabelListSelector.getLabelList());
-
-        }
-
-        HTTPResponseHandler.configureOK(context, jsonResponse);
-    }
 }

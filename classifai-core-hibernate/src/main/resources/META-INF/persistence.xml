@@ -11,7 +11,7 @@
         <class>ai.classifai.database.model.data.ImageData</class>
         <class>ai.classifai.database.model.data.VideoData</class>
         <class>ai.classifai.database.model.annotation.Annotation</class>
-        <class>ai.classifai.database.model.annotation.ImageAnnotation</class>
+        <class>ai.classifai.database.model.annotation.ImageAnnotation.ImageAnnotation</class>
         <class>ai.classifai.database.model.annotation.VideoAnnotation</class>
 
         <properties>

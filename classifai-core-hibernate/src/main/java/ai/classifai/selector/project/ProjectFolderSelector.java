@@ -15,6 +15,8 @@
  */
 package ai.classifai.selector.project;
 
+import ai.classifai.database.model.Label;
+import ai.classifai.database.model.Project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
@@ -23,7 +25,6 @@ import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
-import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
@@ -36,8 +37,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Open browser to select folder with importing list of data points in the folder
@@ -47,17 +49,18 @@ import java.util.Objects;
 @Slf4j
 public class ProjectFolderSelector extends SelectionWindow {
 
-    public void run(@NonNull String projectName, @NonNull AnnotationType annotationType)
+    public void run(@NonNull String projectName, @NonNull AnnotationType annotationType, Consumer<Project> consumerFunction)
     {
         try
         {
             EventQueue.invokeLater(() -> {
-                ProjectLoader loader = Objects.requireNonNull(
-                        configureLoader(projectName, annotationType.ordinal(), new File("")));
+                Project project = Project.buildProject(projectName, annotationType.ordinal());
+                List<Label> labelList = Label.fromStringList(LabelListSelector.getLabelList());
+                project.getCurrentVersion().setLabelList(labelList); // Insert the label list to associated project
 
-                loader.setLabelList(LabelListSelector.getLabelList()); // Insert the label list to associated project
-
-                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                // FIXME:
+                //  FileSystemStatus
+//                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
 
                 JFrame frame = initFrame();
                 String title = "Select Folder";
@@ -74,17 +77,18 @@ public class ProjectFolderSelector extends SelectionWindow {
                     File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
 
                     log.debug("Proceed with creating project");
-                    loader.setProjectPath(projectPath.toString());
-                    initFolderIteration(loader);
-
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+                    project.setProjectPath(projectPath.toString());
+                    consumerFunction.accept(project);
+                    // FIXME: FileSystem
+//                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
                 else
                 {
                     // Abort creation if user did not choose any
                     log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
 
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                    // FIXME: FileSystem
+//                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }
@@ -116,7 +120,7 @@ public class ProjectFolderSelector extends SelectionWindow {
                     .isProjectNew(Boolean.TRUE)
                     .projectVersion(new ProjectVersion())
                     .projectInfra(ProjectInfra.ON_PREMISE)
-                    .build();
+                    .build;
 
             ProjectHandler.loadProjectLoader(loader);
 

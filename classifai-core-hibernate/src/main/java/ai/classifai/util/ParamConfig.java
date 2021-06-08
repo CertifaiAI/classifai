@@ -15,7 +15,6 @@
  */
 package ai.classifai.util;
 
-import ai.classifai.database.DbConfig;
 import ai.classifai.ui.component.OSManager;
 import ai.classifai.util.type.OS;
 import lombok.AccessLevel;
@@ -43,7 +42,8 @@ public class ParamConfig
     @Getter private static final String fileSeparator = osManager.getCurrentOS().equals(OS.WINDOWS) ? "\\\\" : File.separator;
 
     @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
-    @Getter private static final String logFilePath = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+    @Getter private static final String logFilePath = "";
+//            DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
 
     @Getter private static final String dateTimeFormat = "yyyy/MM/dd hh:mm:ss a";
 

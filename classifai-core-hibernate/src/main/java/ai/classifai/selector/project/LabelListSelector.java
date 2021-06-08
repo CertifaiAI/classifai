@@ -16,9 +16,11 @@ package ai.classifai.selector.project;
  */
 
 import ai.classifai.action.LabelListImport;
+import ai.classifai.database.model.Project;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
+import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

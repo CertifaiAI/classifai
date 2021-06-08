@@ -15,12 +15,9 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
-import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationType;
 import io.vertx.ext.web.RoutingContext;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -52,21 +49,21 @@ public class Util {
             HTTPResponseHandler.configureOK(context);
         }
     }
-
-    public String getDbQuery(AnnotationType type)
-    {
-        if(type.equals(AnnotationType.BOUNDINGBOX))
-        {
-            return BoundingBoxDbQuery.getQueue();
-        }
-        else if(type.equals(AnnotationType.SEGMENTATION))
-        {
-            return SegDbQuery.getQueue();
-        }
-
-        log.info("DB Query Queue not found: " + type);
-        return null;
-    }
+//
+//    public String getDbQuery(AnnotationType type)
+//    {
+//        if(type.equals(AnnotationType.BOUNDINGBOX))
+//        {
+//            return BoundingBoxDbQuery.getQueue();
+//        }
+//        else if(type.equals(AnnotationType.SEGMENTATION))
+//        {
+//            return SegDbQuery.getQueue();
+//        }
+//
+//        log.info("DB Query Queue not found: " + type);
+//        return null;
+//    }
 
 
 }

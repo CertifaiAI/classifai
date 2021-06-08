@@ -15,7 +15,6 @@
  */
 package ai.classifai.util.type;
 
-import ai.classifai.loader.ProjectLoader;
 import io.vertx.jdbcclient.JDBCPool;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -56,11 +55,6 @@ public class AnnotationHandler
     public static void addJDBCPool(@NonNull AnnotationType type, @NonNull JDBCPool jdbcPool)
     {
         annotationJDBCPool.put(type.ordinal(), jdbcPool);
-    }
-
-    public static JDBCPool getJDBCPool(@NonNull ProjectLoader loader)
-    {
-        return annotationJDBCPool.get(loader.getAnnotationType());
     }
 
     public static AnnotationType getTypeFromEndpoint(@NonNull String annotation)

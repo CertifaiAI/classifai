@@ -16,7 +16,6 @@
 package ai.classifai.selector.project;
 
 import ai.classifai.action.ActionConfig;
-import ai.classifai.action.ProjectImport;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -105,20 +104,20 @@ public class ProjectImportSelector extends SelectionWindow {
 
         log.info("Proceed with importing project with " + jsonFile.getName());
 
-        if(!ProjectImport.importProjectFile(jsonFile))
-        {
-            String mes = "Import project failed.";
-            log.debug(mes);
-            formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-        }
-        else
-        {
-            String mes = "Import project success.";
-            log.debug(mes);
-            formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-        }
+//        if(!ProjectImport.importProjectFile(jsonFile))
+//        {
+//            String mes = "Import project failed.";
+//            log.debug(mes);
+//            formatImportErrorMessage(mes);
+//            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+//        }
+//        else
+//        {
+//            String mes = "Import project success.";
+//            log.debug(mes);
+//            formatImportErrorMessage(mes);
+//            setImportFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+//        }
     }
 
     public static void formatImportErrorMessage(String message)

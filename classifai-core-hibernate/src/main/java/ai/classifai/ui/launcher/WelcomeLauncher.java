@@ -19,7 +19,6 @@ package ai.classifai.ui.launcher;
 import ai.classifai.ui.component.BrowserHandler;
 import ai.classifai.ui.component.LogHandler;
 import ai.classifai.ui.component.LookFeelSetter;
-import ai.classifai.ui.component.ProgramOpener;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.OS;
@@ -64,7 +63,7 @@ public class WelcomeLauncher extends JFrame
     private static final int X_GAP = 88;
 
     private static final String BROWSER_FAILED_MESSAGE;
-    private static final String LOG_FAILED_MESSAGE;
+//    private static final String LOG_FAILED_MESSAGE;
 
     private static JLabel runningStatusText;
     private static JLabel runningStatusLabel;
@@ -83,8 +82,8 @@ public class WelcomeLauncher extends JFrame
         BROWSER_FAILED_MESSAGE = "Initialization of url failed.\n" +
                                "Open classifai in chrome/firefox with http://localhost:" + ParamConfig.getHostingPort();
 
-        LOG_FAILED_MESSAGE = "Log file failed to open in editor.\n" +
-                "Find the log file in " + ParamConfig.getLogFilePath();
+//        LOG_FAILED_MESSAGE = "Log file failed to open in editor.\n" +
+//                "Find the log file in " + ParamConfig.getLogFilePath();
 
         configure();
     }
@@ -129,7 +128,7 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                MainVerticle.closeVerticles();
+//                MainVerticle.closeVerticles();
 
                 log.info("Classifai closed successfully...");
 
@@ -209,10 +208,10 @@ public class WelcomeLauncher extends JFrame
                             command = new String[]{"gio", "open", BrowserHandler.getBrowserURL()};
                         }
 
-                        if (ProgramOpener.runProgramPath(currentOS, command)) {
-                            isOpen = true;
-                            break;
-                        }
+//                        if (ProgramOpener.runProgramPath(currentOS, command)) {
+//                            isOpen = true;
+//                            break;
+//                        }
                     }
                 }
 
@@ -276,17 +275,17 @@ public class WelcomeLauncher extends JFrame
                             command = new String[]{"gio", "open", logPath};
                         }
 
-                        if (ProgramOpener.runProgramPath(currentOS, command))
-                        {
-                            isOpen = true;
-                            break;
-                        }
+//                        if (ProgramOpener.runProgramPath(currentOS, command))
+//                        {
+//                            isOpen = true;
+//                            break;
+//                        }
                     }
                 }
 
                 if (!isOpen)
                 {
-                    failToOpenProgramPathMessage(LOG_FAILED_MESSAGE);
+//                    failToOpenProgramPathMessage(LOG_FAILED_MESSAGE);
                 }
             }
         });
