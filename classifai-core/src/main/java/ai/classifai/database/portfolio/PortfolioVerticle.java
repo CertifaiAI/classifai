@@ -288,20 +288,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         JsonArray newLabelListJson = new JsonArray(message.body().getString(ParamConfig.getLabelListParam()));
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-
-        List<String> newLabelList = new ArrayList<>();
-
-        for(Object label: newLabelListJson)
-        {
-            String trimmedLabel = StringHandler.removeEndOfLineChar((String) label);
-
-            newLabelList.add(trimmedLabel);
-        }
-
         ProjectVersion project = loader.getProjectVersion();
 
-        project.setCurrentVersionLabelList(newLabelList);
-        loader.setLabelList(newLabelList);
+        updateLoaderLabelList(loader, project, newLabelListJson);
 
         Tuple updateUuidListBody = Tuple.of(project.getLabelVersionDbFormat(), projectId);
 
@@ -318,6 +307,22 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(reply.cause()));
                     }
                 });
+    }
+
+
+    private void updateLoaderLabelList(ProjectLoader loader, ProjectVersion project, JsonArray newLabelListJson)
+    {
+        List<String> newLabelList = new ArrayList<>();
+
+        for(Object label: newLabelListJson)
+        {
+            String trimmedLabel = StringHandler.removeEndOfLineChar((String) label);
+
+            newLabelList.add(trimmedLabel);
+        }
+
+        project.setCurrentVersionLabelList(newLabelList);
+        loader.setLabelList(newLabelList);
     }
 
 

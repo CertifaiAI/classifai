@@ -147,7 +147,7 @@ public class V2Endpoint {
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
-        projectFolderSelector.run(projectName, type);
+        projectFolderSelector.run(vertx, projectName, type);
 
         HTTPResponseHandler.configureOK(context);
     }
