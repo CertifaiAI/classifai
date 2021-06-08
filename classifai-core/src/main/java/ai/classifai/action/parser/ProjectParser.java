@@ -93,7 +93,7 @@ public class ProjectParser
 
             String subPath = String.join(File.separator,jsonObject.getString(ParamConfig.getImgPathParam()).split("[/\\\\]"));
 
-            File fullPath = loader.getProjectPath();
+            File fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), subPath).toFile();
 
             // Only proceed to uploading image if image exists. Else skip
             if(fullPath.exists())
