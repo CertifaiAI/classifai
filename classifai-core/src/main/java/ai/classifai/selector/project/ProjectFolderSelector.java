@@ -88,7 +88,7 @@ public class ProjectFolderSelector extends SelectionWindow {
 
                     if(LabelListSelector.getLabelList() != null)
                     {
-                        saveAndClearLabelSelectorLabelList(vertx, loader);
+                        saveAndClearImportedLabels(vertx, loader);
                     }
 
                     log.debug("Proceed with creating project");
@@ -112,7 +112,7 @@ public class ProjectFolderSelector extends SelectionWindow {
         }
     }
 
-    private void saveAndClearLabelSelectorLabelList(Vertx vertx, ProjectLoader loader)
+    private void saveAndClearImportedLabels(Vertx vertx, ProjectLoader loader)
     {
         JsonObject jsonObject = new JsonObject();
         jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
