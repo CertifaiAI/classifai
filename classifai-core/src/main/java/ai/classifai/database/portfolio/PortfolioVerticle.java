@@ -455,7 +455,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
 //            String projectID = ProjectHandler.getProjectId(projName, annotationInt);
 //
-//            if (dataPath != null) ImageHandler.refreshProjectRootPath(loader, true);
+//            if (dataPath != null) ImageHandler.loadProjectRootPath(loader, true);
 
             return;
         }
@@ -634,7 +634,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
-        ImageHandler.refreshProjectRootPathOld(projectID);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+
+        ImageHandler.loadProjectRootPath(loader, false);
     }
 
     @Override

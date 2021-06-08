@@ -19,7 +19,6 @@ import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.selector.status.FileSystemStatus;
-import ai.classifai.selector.status.FileSystemStatus_old;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.wasabis3.WasabiProject;
@@ -87,11 +86,8 @@ public class ProjectLoader
     //this will eventually port into List<Integer>
     @Builder.Default private Set<String> validUUIDSet = new LinkedHashSet<>();
 
-    //deprecated
-    @Builder.Default private FileSystemStatus_old fileSystemStatusOld = FileSystemStatus_old.DID_NOT_INITIATE;
-
     //Status when dealing with file/folder opener
-    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITITATED;
+    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
 
     //list to send the new added datapoints as thumbnails to front end
     @Builder.Default private List<String> fileSysNewUuidList = new ArrayList<>();
@@ -223,20 +219,6 @@ public class ProjectLoader
         fileSystemStatus = currentFileSystemStatus;
     }
 
-    public void resetReloadingProgress(FileSystemStatus_old currentFileSystemStatusOld)
-    {
-        dbListBuffer = new ArrayList<>(uuidListFromDb);
-        reloadAdditionList.clear();
-        reloadDeletionList.clear();
-
-        currentUuidMarker = 0;
-        totalUuidMaxLen = 1;
-
-        progressUpdate = new ArrayList<>(Arrays.asList(currentUuidMarker, totalUuidMaxLen));
-
-        fileSystemStatusOld = currentFileSystemStatusOld;
-    }
-
     //updating project progress from reloading it
     public void updateReloadingProgress(Integer currentSize)
     {
@@ -258,11 +240,6 @@ public class ProjectLoader
     {
         totalUuidMaxLen = totalUUIDSizeBuffer;
         progressUpdate = Arrays.asList(new Integer[]{0, totalUuidMaxLen});
-    }
-
-    public void setFileSystemStatusOld(FileSystemStatus_old status)
-    {
-        fileSystemStatusOld = status;
     }
 
     public boolean isCloud()

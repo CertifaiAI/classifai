@@ -17,7 +17,9 @@ package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
 import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.selector.project.*;
+import ai.classifai.selector.project.LabelFileSelector;
+import ai.classifai.selector.project.ProjectFolderSelector;
+import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -34,10 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    //deprecated
-    private ProjectV1FolderSelector projectV1FolderSelector;
-    private LabelListSelector labelListSelector;
-
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
 
@@ -51,18 +49,11 @@ public class EndpointRouter extends AbstractVerticle
 
     public EndpointRouter()
     {
-        //deprecated
-        Thread projectV1Folder = new Thread(() -> projectV1FolderSelector = new ProjectV1FolderSelector());
-        projectV1Folder.start();
-
         Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
         projectFolder.start();
 
         Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
         projectImport.start();
-
-        Thread labelListImport = new Thread(() -> labelListSelector = new LabelListSelector());
-        labelListImport.start();
 
         Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
         labelFileImport.start();
@@ -87,10 +78,6 @@ public class EndpointRouter extends AbstractVerticle
         v2.setProjectImporter(projectImporter);
 
         v2.setLabelFileSelector(labelFileSelector);
-
-        //deprecated
-        v2.setLabelListSelector(labelListSelector);
-        v2.setProjectV1FolderSelector(projectV1FolderSelector);
 
         cloud.setVertx(vertx);
 
@@ -145,27 +132,15 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 
-        //deprecated
-        router.put("/v2/:annotation_type/newproject/:project_name").handler(v2::createProject_old);
-
         router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
 
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 
         router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
 
-        //deprecated
-        router.get("/v2/:annotation_type/projects/:project_name/filesysstatus").handler(v2::getFileSystemStatus);
-
         router.get("/v2/:annotation_type/projects/importstatus").handler(v2::getImportStatus);
 
         router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
-
-        //deprecated
-        router.put("/v2/labelfile").handler(v2::loadLabelFile);
-
-        //deprecated
-        router.get("/v2/labelfilestatus").handler(v2::loadLabelFileStatus);
 
         router.put("/v2/labelfiles").handler(v2::selectLabelFile);
 
@@ -178,7 +153,6 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/projects").handler(v2::createProject);
 
         router.get(projectV2Endpoint).handler(v2::createProjectStatus);
-
 
         //*******************************Cloud*******************************
 

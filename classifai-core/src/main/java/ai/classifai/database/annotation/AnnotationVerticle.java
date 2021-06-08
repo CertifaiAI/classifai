@@ -176,41 +176,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         loadValidProjectUuid(projectId);
     }
 
-
-    @Deprecated
-    public static void writeUuidToTable(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
-    {
-        String dataSubPath = FileHandler.trimPath(loader.getProjectPath().getAbsolutePath(), dataFullPath.getAbsolutePath());
-
-        String uuid = UuidGenerator.generateUuid();
-
-        Annotation annotation = Annotation.builder()
-                .projectId(loader.getProjectId())
-                .imgPath(dataSubPath)
-                .uuid(uuid)
-                .annotationDict(ProjectParser.buildAnnotationDict(loader))
-                .build();
-
-        loader.getUuidAnnotationDict().put(uuid, annotation);
-
-        JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);
-
-        clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
-                .execute(annotation.getTuple())
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        loader.pushFileSysNewUUIDList(uuid);
-                    }
-                    else
-                    {
-                        log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-                    }
-                    loader.updateLoadingProgress(currentLength);
-                });
-    }
-
     public static void saveDataPoint(@NonNull ProjectLoader loader, @NonNull String dataPath, @NonNull Integer currentLength)
     {
         String uuid = UuidGenerator.generateUuid();

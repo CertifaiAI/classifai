@@ -17,7 +17,7 @@ package ai.classifai.selector.project;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectImport;
-import ai.classifai.selector.status.FileSystemStatus_old;
+import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
@@ -42,7 +42,7 @@ public class ProjectImportSelector extends SelectionWindow {
 
     @Getter
     @Setter
-    private static FileSystemStatus_old importFileSystemStatusOld = FileSystemStatus_old.DID_NOT_INITIATE;
+    private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
 
     @Getter
     @Setter
@@ -60,7 +60,7 @@ public class ProjectImportSelector extends SelectionWindow {
                 if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
-                    setImportFileSystemStatusOld(FileSystemStatus_old.WINDOW_OPEN);
+                    setImportFileSystemStatus(FileSystemStatus.DID_NOT_INITIATED);
 
                     JFrame frame = initFrame();
                     String title = "Select File";
@@ -80,14 +80,14 @@ public class ProjectImportSelector extends SelectionWindow {
                     }
                     else
                     {
-                        setImportFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                        setImportFileSystemStatus(FileSystemStatus.ABORTED);
                         log.debug("Operation of import project aborted");
                     }
                 }
                 else
                 {
                     showAbortImportPopup();
-                    setImportFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                    setImportFileSystemStatus(FileSystemStatus.ABORTED);
                 }
 
                 windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
@@ -102,6 +102,8 @@ public class ProjectImportSelector extends SelectionWindow {
 
     private void runApproveOption(File jsonFile)
     {
+        setImportFileSystemStatus(FileSystemStatus.DATABASE_UPDATING);
+
         ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
         log.info("Proceed with importing project with " + jsonFile.getName());
@@ -111,14 +113,14 @@ public class ProjectImportSelector extends SelectionWindow {
             String mes = "Import project failed.";
             log.debug(mes);
             formatImportErrorMessage(mes);
-            setImportFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+            setImportFileSystemStatus(FileSystemStatus.ABORTED);
         }
         else
         {
             String mes = "Import project success.";
             log.debug(mes);
             formatImportErrorMessage(mes);
-            setImportFileSystemStatusOld(FileSystemStatus_old.WINDOW_CLOSE_DATABASE_UPDATED);
+            setImportFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
         }
     }
 
