@@ -37,8 +37,14 @@ public class LabelListImport
     @Getter
     private List<String> validLabelList = null;
 
-    public LabelListImport(@NonNull File labelFile)
+    public LabelListImport(File labelFile)
     {
+        if(!labelFile.exists())
+        {
+            validLabelList = new ArrayList<>();
+            return;
+        }
+
         try
         {
             String labels = IOUtils.toString(new FileReader(labelFile));
