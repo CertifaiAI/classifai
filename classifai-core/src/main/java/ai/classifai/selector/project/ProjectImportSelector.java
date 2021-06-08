@@ -44,9 +44,9 @@ public class ProjectImportSelector extends SelectionWindow {
     @Setter
     private static FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
 
-    @Getter
     @Setter
-    private static String importErrorMessage;
+    @Getter
+    private static String projectName = null;
 
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Json Files", "json");
@@ -55,12 +55,13 @@ public class ProjectImportSelector extends SelectionWindow {
     {
         try
         {
-            EventQueue.invokeLater(() -> {
-                clearImportErrorMessage();
+            EventQueue.invokeLater(() ->
+            {
                 if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
-                    setImportFileSystemStatus(FileSystemStatus.DID_NOT_INITIATED);
+                    importFileSystemStatus = FileSystemStatus.ITERATING_FOLDER;
+                    projectName = null;
 
                     JFrame frame = initFrame();
                     String title = "Select File";
@@ -75,19 +76,20 @@ public class ProjectImportSelector extends SelectionWindow {
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
+                        windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
                         File jsonFile =  chooser.getSelectedFile().getAbsoluteFile();
                         runApproveOption(jsonFile);
                     }
                     else
                     {
-                        setImportFileSystemStatus(FileSystemStatus.ABORTED);
+                        windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
+                        importFileSystemStatus = FileSystemStatus.ABORTED;
                         log.debug("Operation of import project aborted");
                     }
                 }
                 else
                 {
                     showAbortImportPopup();
-                    setImportFileSystemStatus(FileSystemStatus.ABORTED);
                 }
 
                 windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
@@ -102,7 +104,7 @@ public class ProjectImportSelector extends SelectionWindow {
 
     private void runApproveOption(File jsonFile)
     {
-        setImportFileSystemStatus(FileSystemStatus.DATABASE_UPDATING);
+        importFileSystemStatus = FileSystemStatus.DATABASE_UPDATING;
 
         ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
@@ -112,26 +114,13 @@ public class ProjectImportSelector extends SelectionWindow {
         {
             String mes = "Import project failed.";
             log.debug(mes);
-            formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.ABORTED);
+            importFileSystemStatus = FileSystemStatus.ABORTED;
         }
         else
         {
             String mes = "Import project success.";
             log.debug(mes);
-            formatImportErrorMessage(mes);
-            setImportFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
+            importFileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
         }
     }
-
-    public static void formatImportErrorMessage(String message)
-    {
-        setImportErrorMessage(getImportErrorMessage() + "\n" + message);
-    }
-
-    public static void clearImportErrorMessage()
-    {
-        setImportErrorMessage("");
-    }
-
 }

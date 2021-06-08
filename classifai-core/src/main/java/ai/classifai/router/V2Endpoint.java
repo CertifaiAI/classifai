@@ -419,12 +419,15 @@ public class V2Endpoint extends EndpointBase {
     {
         util.checkIfDockerEnv(context);
 
-        FileSystemStatus currentStatus = ProjectImportSelector.getImportFileSystemStatus();
-        JsonObject res = new JsonObject();
-        res.put(ReplyHandler.getMessageKey(), currentStatus.ordinal());
-        res.put(ReplyHandler.getErrorMesageKey(), ProjectImportSelector.getImportErrorMessage());
+        FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
+        JsonObject response = compileFileSysStatusResponse(fileSysStatus);
 
-        HTTPResponseHandler.configureOK(context, res);
+        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            response.put(ParamConfig.getProjectNameParam(), ProjectImportSelector.getProjectName());
+        }
+
+        HTTPResponseHandler.configureOK(context, response);
     }
 
     /**

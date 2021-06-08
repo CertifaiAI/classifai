@@ -22,10 +22,11 @@ package ai.classifai.selector.status;
  */
 public enum FileSystemStatus
 {
-    ABORTED,
-    DATABASE_NOT_UPDATED,
+    DID_NOT_INITIATED,
     ITERATING_FOLDER,
     DATABASE_UPDATING,
     DATABASE_UPDATED,
-    DID_NOT_INITIATED
+    DATABASE_NOT_UPDATED,
+    ABORTED
 }
+

@@ -31,6 +31,7 @@ import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
+import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -59,8 +60,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.*;
-
-import static ai.classifai.selector.project.ProjectImportSelector.formatImportErrorMessage;
 
 /**
  * General database processing to get high level infos of each created project
@@ -192,7 +191,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         if(!newProjName.equals(""))
         {
             String message = "Name Overlapped. Rename as " + newProjName + ".";
-            formatImportErrorMessage(message);
             log.info(message);
         }
 
@@ -211,6 +209,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
+                        //to reflect the project name to send back to front end
+                        ProjectImportSelector.setProjectName(loader.getProjectName());
                         log.info("Import project " + loader.getProjectName() + " success!");
                     }
                     else
