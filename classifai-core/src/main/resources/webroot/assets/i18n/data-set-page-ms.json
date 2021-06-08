@@ -1,7 +1,7 @@
 {
     "createNewProject": "Reka Projek Baru",
     "renameProject": "Tukar Nama Projek",
-    "newProjectName": "Nama Projek Baru:",
+    "newProjectName": "Nama Projek:",
     "projectNameExist": "* Nama projek telah tersedia! Sila cuba nama lain",
     "projectNameRequired": "* Sila isi nama projek",
     "projectFolder": "Folder Projek:",

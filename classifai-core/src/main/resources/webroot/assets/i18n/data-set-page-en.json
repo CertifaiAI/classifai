@@ -1,7 +1,7 @@
 {
     "createNewProject": "Create New Project",
     "renameProject": "Rename Project",
-    "newProjectName": "New Project Name:",
+    "newProjectName": "Project Name:",
     "projectNameExist": "* Project name already exist! Try other name",
     "projectNameRequired": "* Project name is required",
     "projectFolder": "Project Folder:",
