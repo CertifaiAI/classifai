@@ -441,7 +441,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void buildProjectFromCLI()
     {
-        throw new UnsupportedOperationException();
+        // To build project from cli
     }
 
     public void getProjectMetadata(Message<JsonObject> message)
