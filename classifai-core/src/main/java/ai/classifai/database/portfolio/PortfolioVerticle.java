@@ -27,7 +27,6 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -152,7 +151,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    public static void renameProject(@NonNull Message<JsonObject> message)
+    public void renameProject(@NonNull Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
         String newProjectName = message.body().getString(ParamConfig.getNewProjectNameParam());
@@ -442,11 +441,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void buildProjectFromCLI()
     {
-        //from cli argument
-        CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
 
-        if (initiator == null) return;
-        
     }
 
     public void getProjectMetadata(Message<JsonObject> message)
