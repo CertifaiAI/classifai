@@ -665,3 +665,5 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         });
     }
 }
+
+

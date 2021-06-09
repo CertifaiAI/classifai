@@ -348,7 +348,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     //not exist , create data point
                     if (rowSet.size() == 0)
                     {
-                        if(ImageHandler.isImageReadable(dataFullPath))
+                        if(ImageHandler.isImageReadable(dataFullPath) && ImageHandler.isImageFileValid(dataFullPath))
                         {
                             writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
                         }

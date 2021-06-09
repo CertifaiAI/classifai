@@ -255,7 +255,7 @@ public class ImageHandler {
 
         if (FileHandler.isFileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
         {
-            if (isImageFileValid(currentFileFullPath))
+            if (isImageFileValid(file))
             {
                 verifiedFilesList.add(file.getAbsolutePath());
             }
@@ -264,11 +264,11 @@ public class ImageHandler {
         return verifiedFilesList;
     }
 
-    private static boolean isImageFileValid(String file)
+    public static boolean isImageFileValid(File file)
     {
         try
         {
-            Metadata metadata = ImageMetadataReader.readMetadata(new File(file));
+            Metadata metadata = ImageMetadataReader.readMetadata(file);
 
             ImageData imgData = new ImageDataFactory().getImageData(metadata);
 
@@ -359,7 +359,15 @@ public class ImageHandler {
      */
     public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, boolean isNewProject)
     {
-        loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
+        if(isNewProject)
+        {
+            loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
+        }
+        else
+        {
+            //refreshing project
+            loader.resetReloadingProgress(FileSystemStatus.ITERATING_FOLDER);
+        }
 
         File rootPath = loader.getProjectPath();
 

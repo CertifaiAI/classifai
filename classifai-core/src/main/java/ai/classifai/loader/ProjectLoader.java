@@ -199,6 +199,7 @@ public class ProjectLoader
 
         sanityUuidList.add(uuid);
         reloadAdditionList.add(uuid);
+
     }
 
     public void uploadSanityUuidFromConfigFile(@NonNull String uuid)
@@ -210,6 +211,20 @@ public class ProjectLoader
     {
         validUUIDSet.clear();
         fileSysNewUuidList.clear();
+
+        currentUuidMarker = 0;
+        totalUuidMaxLen = 1;
+
+        progressUpdate = new ArrayList<>(Arrays.asList(currentUuidMarker, totalUuidMaxLen));
+
+        fileSystemStatus = currentFileSystemStatus;
+    }
+
+    public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
+    {
+        dbListBuffer = new ArrayList<>(sanityUuidList);
+        reloadAdditionList.clear();
+        reloadDeletionList.clear();
 
         currentUuidMarker = 0;
         totalUuidMaxLen = 1;
