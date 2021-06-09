@@ -251,14 +251,11 @@ public class ImageHandler {
     {
         List<String> verifiedFilesList = new ArrayList<>();
 
-        String currentFileFullPath = file.getAbsolutePath();
+        String fullPath = file.getAbsolutePath();
 
-        if (FileHandler.isFileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
+        if (FileHandler.isFileSupported(fullPath, ImageFileType.getImageFileTypes()) && isImageFileValid(file))
         {
-            if (isImageFileValid(file))
-            {
-                verifiedFilesList.add(file.getAbsolutePath());
-            }
+            verifiedFilesList.add(file.getAbsolutePath());
         }
 
         return verifiedFilesList;
