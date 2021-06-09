@@ -247,6 +247,53 @@ public class ImageHandler {
         return null;
     }
 
+    public static List<String> iterateFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
+    {
+        List<String> totalFilelist = new ArrayList<>();
+
+        Stack<File> folderStack = new Stack<>();
+
+        folderStack.push(rootPath);
+
+        while (folderStack.isEmpty() != true)
+        {
+            File currentFolderPath = folderStack.pop();
+
+            File[] folderList = currentFolderPath.listFiles();
+
+            for (File file : folderList)
+            {
+                if (file.isDirectory())
+                {
+                    folderStack.push(file);
+                }
+                else
+                {
+                    totalFilelist.addAll(ImageHandler.checkFile(file));
+                }
+            }
+        }
+
+        return totalFilelist;
+    }
+
+    public static List<String> checkFile(@NonNull File file)
+    {
+        List<String> verifiedFilesList = new ArrayList<>();
+
+        String currentFileFullPath = file.getAbsolutePath();
+
+        if (FileHandler.isFileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
+        {
+            if (isImageFileValid(currentFileFullPath))
+            {
+                verifiedFilesList.add(file.getAbsolutePath());
+            }
+        }
+
+        return verifiedFilesList;
+    }
+
     private static boolean isImageFileValid(String file)
     {
         try
@@ -302,7 +349,7 @@ public class ImageHandler {
     {
         String[] fileExtension = ImageFileType.getImageFileTypes();
 
-        return FileHandler.processFolder(rootPath, fileExtension);
+        return iterateFolder(rootPath, fileExtension);
     }
 
 

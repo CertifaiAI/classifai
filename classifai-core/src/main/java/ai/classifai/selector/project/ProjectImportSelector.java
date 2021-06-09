@@ -60,8 +60,8 @@ public class ProjectImportSelector extends SelectionWindow {
                 if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
-                    importFileSystemStatus = FileSystemStatus.ITERATING_FOLDER;
-                    projectName = null;
+                    setImportFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
+                    setProjectName(null);
 
                     JFrame frame = initFrame();
                     String title = "Select File";
@@ -83,7 +83,7 @@ public class ProjectImportSelector extends SelectionWindow {
                     else
                     {
                         windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
-                        importFileSystemStatus = FileSystemStatus.ABORTED;
+                        setImportFileSystemStatus(FileSystemStatus.ABORTED);
                         log.debug("Operation of import project aborted");
                     }
                 }
@@ -104,7 +104,7 @@ public class ProjectImportSelector extends SelectionWindow {
 
     private void runApproveOption(File jsonFile)
     {
-        importFileSystemStatus = FileSystemStatus.DATABASE_UPDATING;
+        setImportFileSystemStatus(FileSystemStatus.DATABASE_UPDATING);
 
         ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(jsonFile.toString())).toString());
 
@@ -114,13 +114,13 @@ public class ProjectImportSelector extends SelectionWindow {
         {
             String mes = "Import project failed.";
             log.debug(mes);
-            importFileSystemStatus = FileSystemStatus.ABORTED;
+            setImportFileSystemStatus(FileSystemStatus.ABORTED);
         }
         else
         {
             String mes = "Import project success.";
             log.debug(mes);
-            importFileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
+            setImportFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
         }
     }
 }

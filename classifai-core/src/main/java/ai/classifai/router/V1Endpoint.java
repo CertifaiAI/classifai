@@ -41,8 +41,6 @@ import java.util.Objects;
 @Slf4j
 public class V1Endpoint extends EndpointBase
 {
-    Util util = new Util();
-
     /**
      * Retrieve specific project metadata
      *
@@ -59,7 +57,7 @@ public class V1Endpoint extends EndpointBase
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         if(loader == null)
         {
@@ -135,7 +133,7 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = util.getDbQuery(type);
+        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -143,7 +141,7 @@ public class V1Endpoint extends EndpointBase
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
 
@@ -209,7 +207,7 @@ public class V1Endpoint extends EndpointBase
 
         ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if (util.checkIfProjectNull(context, projectLoader, projectName)) return;
+        if (helper.checkIfProjectNull(context, projectLoader, projectName)) return;
 
         ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
 
@@ -256,7 +254,7 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = util.getDbQuery(type);
+        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
@@ -294,7 +292,7 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = util.getDbQuery(type);
+        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
@@ -332,13 +330,13 @@ public class V1Endpoint extends EndpointBase
     public void updateData(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        String queue = util.getDbQuery(type);
+        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -388,7 +386,7 @@ public class V1Endpoint extends EndpointBase
 
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -430,13 +428,13 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = util.getDbQuery(type);
+        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectID);

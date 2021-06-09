@@ -44,7 +44,7 @@ public class SelectionWindow {
 
     public boolean isWindowOpen()
     {
-        return windowStatus.equals(SelectionWindowStatus.WINDOW_OPEN) ? true : false;
+        return windowStatus.equals(SelectionWindowStatus.WINDOW_OPEN);
     }
 
     public static JFrame initFrame()

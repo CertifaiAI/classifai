@@ -446,20 +446,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         CLIProjectInitiator initiator = ProjectHandler.getCliProjectInitiator();
 
         if (initiator == null) return;
-
-        String projName = initiator.getProjectName();
-        Integer annotationInt = initiator.getProjectType().ordinal();
-        File dataPath = initiator.getRootDataPath();
-
-        if(!ProjectHandler.isProjectNameUnique(projName, annotationInt))
-        {
-//            String projectID = ProjectHandler.getProjectId(projName, annotationInt);
-//
-//            if (dataPath != null) ImageHandler.loadProjectRootPath(loader, true);
-
-            return;
-        }
-
+        
     }
 
     public void getProjectMetadata(Message<JsonObject> message)

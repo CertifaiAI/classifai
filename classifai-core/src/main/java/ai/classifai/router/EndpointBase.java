@@ -32,7 +32,7 @@ public abstract class EndpointBase
 {
     @Setter protected Vertx vertx = null;
 
-    protected Util util = new Util();
+    protected Util helper = new Util();
 
     public JsonObject compileFileSysStatusResponse(FileSystemStatus status)
     {

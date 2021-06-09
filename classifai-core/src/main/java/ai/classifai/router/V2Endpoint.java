@@ -70,7 +70,7 @@ public class V2Endpoint extends EndpointBase {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -110,7 +110,7 @@ public class V2Endpoint extends EndpointBase {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
         {
@@ -233,7 +233,7 @@ public class V2Endpoint extends EndpointBase {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
@@ -286,7 +286,7 @@ public class V2Endpoint extends EndpointBase {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
@@ -325,7 +325,7 @@ public class V2Endpoint extends EndpointBase {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(util.checkIfProjectNull(context, loader, projectName)) return;
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
@@ -361,7 +361,7 @@ public class V2Endpoint extends EndpointBase {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        if(util.checkIfProjectNull(context, projectId, projectName)) return;
+        if(helper.checkIfProjectNull(context, projectId, projectName)) return;
 
         ActionConfig.ExportType exportType = ProjectExport.getExportType(
                 context.request().getParam(ActionConfig.getExportTypeParam()));
@@ -417,7 +417,7 @@ public class V2Endpoint extends EndpointBase {
      */
     public void getImportStatus(RoutingContext context)
     {
-        util.checkIfDockerEnv(context);
+        helper.checkIfDockerEnv(context);
 
         FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
         JsonObject response = compileFileSysStatusResponse(fileSysStatus);
@@ -439,7 +439,7 @@ public class V2Endpoint extends EndpointBase {
      */
     public void selectLabelFile(RoutingContext context)
     {
-        util.checkIfDockerEnv(context);
+        helper.checkIfDockerEnv(context);
 
         if(!labelFileSelector.isWindowOpen())
         {
@@ -459,7 +459,7 @@ public class V2Endpoint extends EndpointBase {
      */
     public void selectLabelFileStatus(RoutingContext context)
     {
-        util.checkIfDockerEnv(context);
+        helper.checkIfDockerEnv(context);
 
         SelectionWindowStatus status = labelFileSelector.getWindowStatus();
 
@@ -483,7 +483,7 @@ public class V2Endpoint extends EndpointBase {
      */
     public void selectProjectFolder(RoutingContext context)
     {
-        util.checkIfDockerEnv(context);
+        helper.checkIfDockerEnv(context);
 
         if(!projectFolderSelector.isWindowOpen())
         {
@@ -502,7 +502,7 @@ public class V2Endpoint extends EndpointBase {
      */
     public void selectProjectFolderStatus(RoutingContext context)
     {
-        util.checkIfDockerEnv(context);
+        helper.checkIfDockerEnv(context);
 
         SelectionWindowStatus status = projectFolderSelector.getWindowStatus();
 
