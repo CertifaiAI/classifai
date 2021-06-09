@@ -30,7 +30,6 @@ import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
@@ -329,7 +328,7 @@ public class V2Endpoint extends EndpointBase {
 
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
-        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
+        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
 
         if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
         {
@@ -339,11 +338,6 @@ public class V2Endpoint extends EndpointBase {
         {
             res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
             res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATED))
-        {
-            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
         }
 
         HTTPResponseHandler.configureOK(context, res);
