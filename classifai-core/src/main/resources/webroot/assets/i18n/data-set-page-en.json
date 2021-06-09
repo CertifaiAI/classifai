@@ -52,5 +52,7 @@
     "importJson": "Select Config File",
     "selectJson": "Config File",
     "configFileInfoTitle": "What is Config File? ",
-    "configFileInfoDest": "JSON file exported from project."
+    "configFileInfoDest": "JSON file exported from project.",
+    "importSuccess": "Import project success. Rename as ",
+    "importAborted": "Import project aborted."
 }
