@@ -319,13 +319,13 @@ public class ImageHandler {
     {
         List<String> imageList = new ArrayList<>();
 
-        Stack<File> iterativeStack = new Stack<>();
+        Deque<File> fileQueue = new ArrayDeque<>();
 
-        iterativeStack.push(rootPath);
+        fileQueue.push(rootPath);
 
-        while (!iterativeStack.isEmpty())
+        while (!fileQueue.isEmpty())
         {
-            File currentFolderPath = iterativeStack.pop();
+            File currentFolderPath = fileQueue.pop();
 
             File[] folderList = currentFolderPath.listFiles();
 
@@ -333,7 +333,7 @@ public class ImageHandler {
             {
                 if (file.isDirectory())
                 {
-                    iterativeStack.push(file);
+                    fileQueue.push(file);
                 }
                 else
                 {
