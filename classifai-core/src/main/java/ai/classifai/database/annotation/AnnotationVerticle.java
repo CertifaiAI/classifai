@@ -52,6 +52,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation of Functionalities for each annotation type
@@ -462,54 +463,59 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteSelectionUuidList(Message<JsonObject> message)
+    public void deleteProjectData(Message<JsonObject> message)
     {
         String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
         JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-        List<String> dbUUIDList = loader.getUuidListFromDb();
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
         String uuidQueryParam = String.join(",", deleteUUIDList);
 
         Tuple params = Tuple.of(projectId, uuidQueryParam);
 
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteSelectionUuidList())
+        jdbcPool.preparedQuery(AnnotationQuery.getDeleteProjectData())
                 .execute(params)
                 .onComplete(fetch -> {
                     if (fetch.succeeded())
                     {
-                        if (dbUUIDList.removeAll(deleteUUIDList))
-                        {
-                            loader.setUuidListFromDb(dbUUIDList);
-
-                            List<String> sanityUUIDList = loader.getSanityUuidList();
-
-                            if (sanityUUIDList.removeAll(deleteUUIDList))
-                            {
-                                loader.setSanityUuidList(sanityUUIDList);
-                            }
-                            else
-                            {
-                                log.info("Error in removing uuid list");
-                            }
-
-                            //update Portfolio Verticle
-                            PortfolioVerticle.updateFileSystemUuidList(projectId);
-
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-                        }
+                        deleteProjectDataFetchSuccess(message, loader, deleteUUIDList);
                     }
                     else
                     {
                         message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                     }
                 });
+   }
+
+   private void deleteProjectDataFetchSuccess(Message<JsonObject> message, ProjectLoader loader, List<String> deleteUUIDList)
+   {
+       List<String> dbUUIDList = loader.getUuidListFromDb();
+       if (dbUUIDList.removeAll(deleteUUIDList))
+       {
+           loader.setUuidListFromDb(dbUUIDList);
+
+           List<String> sanityUUIDList = loader.getSanityUuidList();
+
+           if (sanityUUIDList.removeAll(deleteUUIDList))
+           {
+               loader.setSanityUuidList(sanityUUIDList);
+           }
+           else
+           {
+               log.info("Error in removing uuid list");
+           }
+
+           //update Portfolio Verticle
+           PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
+
+           message.replyAndRequest(ReplyHandler.getOkReply());
+       }
+       else
+       {
+           message.reply(ReplyHandler.reportUserDefinedError(
+                   "Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
+       }
    }
 
 

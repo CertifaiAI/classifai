@@ -21,6 +21,7 @@ import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -29,6 +30,7 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -527,4 +529,39 @@ public class V1Endpoint {
             }
         });
     }
+
+    public void deleteProjectData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        String query = AnnotationQuery.getDeleteProjectData();
+
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
+
+            request.put(ParamConfig.getProjectIdParam(), projectID).put(ParamConfig.getUuidListParam(), uuidListArray);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+            vertx.eventBus().request(util.getDbQuery(type), request, options, reply ->
+            {
+                if (reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+    }
+
 }
