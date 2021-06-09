@@ -317,15 +317,15 @@ public class ImageHandler {
 
     public static List<String> getValidImagesFromFolder(File rootPath)
     {
-        List<String> totalFilelist = new ArrayList<>();
+        List<String> imageList = new ArrayList<>();
 
-        Stack<File> folderStack = new Stack<>();
+        Stack<File> iterativeStack = new Stack<>();
 
-        folderStack.push(rootPath);
+        iterativeStack.push(rootPath);
 
-        while (folderStack.isEmpty() != true)
+        while (!iterativeStack.isEmpty())
         {
-            File currentFolderPath = folderStack.pop();
+            File currentFolderPath = iterativeStack.pop();
 
             File[] folderList = currentFolderPath.listFiles();
 
@@ -333,16 +333,16 @@ public class ImageHandler {
             {
                 if (file.isDirectory())
                 {
-                    folderStack.push(file);
+                    iterativeStack.push(file);
                 }
                 else
                 {
-                    totalFilelist.addAll(ImageHandler.checkFile(file));
+                    imageList.addAll(ImageHandler.checkFile(file));
                 }
             }
         }
 
-        return totalFilelist;
+        return imageList;
     }
 
 

@@ -41,7 +41,7 @@ public class FileHandler
 
         folderStack.push(rootPath);
 
-        while (folderStack.isEmpty() != true)
+        while (!folderStack.isEmpty())
         {
             File currentFolderPath = folderStack.pop();
 
