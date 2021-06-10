@@ -1,10 +1,12 @@
 {
     "createNewProject": "Reka Projek Baru",
     "renameProject": "Tukar Nama Projek",
-    "newProjectName": "Nama Projek Baru:",
+    "newProjectName": "Nama Projek:",
     "projectNameExist": "* Nama projek telah tersedia! Sila cuba nama lain",
     "projectNameRequired": "* Sila isi nama projek",
-    "labelListFile": "Fail senarai label(*.txt):",
+    "projectFolder": "Folder Projek:",
+    "chooseFolder": "Pilih Folder",
+    "labelListFile": "Fail Label (Pilihan):",
     "chooseFile": "Pilih Fail",
     "createButton": "Reka",
     "updateButton": "Teruskan",
@@ -50,5 +52,7 @@
     "importJson": "Fail Json",
     "selectJson": "Fail Konfig",
     "configFileInfoTitle": "Apa itu Fail Konfig? ",
-    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek."
+    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek.",
+    "importSuccess": "Import projek telah berjaya. Dinamakan semula sebagai ",
+    "importAborted": "Import projek dibatalkan."
 }

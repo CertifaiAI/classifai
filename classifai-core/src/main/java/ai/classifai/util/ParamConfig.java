@@ -61,7 +61,7 @@ public class ParamConfig
     @Getter private static final String totalUuidParam = "total_uuid";
     @Getter private static final String uuidListParam = "uuid_list";
     @Getter private static final String labelListParam = "label_list";
-    @Getter private static final String labelFilePathParam = "label_file_path";
+    @Getter private static final String labelPathParam = "label_file_path";
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
@@ -77,9 +77,6 @@ public class ParamConfig
     @Getter private static final String imgOriHParam = "img_ori_h";
 
     @Getter private static final String imgDepth = "img_depth";
-
-    @Getter private static final String fileParam = "file";
-    @Getter private static final String folderParam = "folder";
 
     @Getter private final static String fileSizeParam = "file_size";
 
@@ -101,6 +98,14 @@ public class ParamConfig
     @Getter private static final String uuidVersionListParam = "uuid_version_list";
     @Getter private static final String labelVersionListParam = "label_version_list";
 
+    //file system status
+    @Getter private static final String fileSysStatusParam = "file_system_status";
+    @Getter private static final String fileSysMessageParam = "file_system_message";
+
+    //selector window status
+    @Getter private static final String selectionWindowStatusParam = "window_status";
+    @Getter private static final String selectionWindowMessageParam = "window_message";
+
     //keyword to retrieve image thumbnail
     @Getter private static final String imgThumbnailParam = "img_thumbnail";
     @Getter private static final String base64Param = "base64";
@@ -109,7 +114,6 @@ public class ParamConfig
     @Getter private static final String projectContentParam = "content";
 
     //router endpoint
-    @Getter private static final String fileSysParam = "file_sys";
     @Getter private static final String emptyArray = "[]";
 
     //reload project

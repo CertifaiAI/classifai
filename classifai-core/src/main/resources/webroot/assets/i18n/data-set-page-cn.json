@@ -4,7 +4,9 @@
     "newProjectName": "新项目名称 : ",
     "projectNameExist": "* 项目名称已被使用。请选择其他名称",
     "projectNameRequired": "* 项目名称空缺",
-    "labelListFile": "标签列表文件 (*.txt): ",
+    "projectFolder": "项目文件:",
+    "chooseFolder": "选择文件",
+    "labelListFile": "标签文件 (可选): ",
     "chooseFile": "选择文件",
     "createButton": "创建",
     "updateButton": "继续",
@@ -50,5 +52,7 @@
     "importJson": "导入配置文件",
     "selectJson": "配置文件",
     "configFileInfoTitle": "什么是配置文件? ",
-    "configFileInfoDest": "从项目导出的配置文件"
+    "configFileInfoDest": "从项目导出的配置文件",
+    "importSuccess": "导入项目成功。重命名为",
+    "importAborted": "导入项目报错。"
 }

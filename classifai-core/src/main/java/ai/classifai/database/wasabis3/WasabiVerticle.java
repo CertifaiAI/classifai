@@ -1,12 +1,27 @@
+/*
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.database.wasabis3;
 
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.loader.LoaderStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.loader.ProjectLoaderStatus;
+import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;
@@ -86,8 +101,8 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .projectId(UuidGenerator.generateUuid())
                     .projectName(projectName)
                     .annotationType(annotationInt)
-                    .projectPath("")
-                    .loaderStatus(LoaderStatus.LOADED)
+                    .projectPath(null)
+                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                     .isProjectStarred(Boolean.FALSE)
                     .isProjectNew(Boolean.TRUE)
                     .projectInfra(ProjectInfra.WASABI_S3)
@@ -129,7 +144,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
     private static void saveObjectsInBucket(@NonNull ProjectLoader loader)
     {
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
+        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
         WasabiProject project = loader.getWasabiProject();
 
@@ -139,7 +154,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
         ListObjectsV2Iterable response = project.getWasabiS3Client().listObjectsV2Paginator(req);
 
-        List<Object> dataPaths = new ArrayList<>();
+        List<String> dataPaths = new ArrayList<>();
 
         for (ListObjectsV2Response page : response)
         {
@@ -149,7 +164,6 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
                 if(FileHandler.isFileSupported(inputObject, ImageFileType.getImageFileTypes()))
                 {
-                    System.out.println("Path: " + inputObject);
                     dataPaths.add(inputObject);
                 }
             });

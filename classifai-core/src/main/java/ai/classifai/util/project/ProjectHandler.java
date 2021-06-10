@@ -19,7 +19,6 @@ import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.SelectionWindow;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
@@ -84,7 +83,7 @@ public class ProjectHandler {
     {
         try
         {
-            return (ProjectLoader) projectIDLoaderDict.get(projectID);
+            return projectIDLoaderDict.get(projectID);
         }
         catch (Exception e)
         {
@@ -133,18 +132,7 @@ public class ProjectHandler {
         loader.getSanityUuidList().addAll(project.getCurrentUuidList());
 
         loader.getLabelList().addAll(project.getCurrentLabelList());
-    }
 
-    public static boolean initSelector(String selection)
-    {
-        if ((selection.equals(ParamConfig.getFileParam())) || selection.equals(ParamConfig.getFolderParam())) {
-            return true;
-        }
-        else
-        {
-            log.error("Current input selector not allowed: " + selection + ". Allowed parameters are file/folder");
-            return false;
-        }
     }
 
     public static boolean isProjectNameUnique(String projectName, Integer annotationType)
@@ -243,4 +231,6 @@ public class ProjectHandler {
             log.debug("Error: ", e);
         }
     }
+
+
 }

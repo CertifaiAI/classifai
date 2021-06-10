@@ -21,9 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * File Handler
@@ -33,17 +34,17 @@ import java.util.Stack;
 @Slf4j
 public class FileHandler
 {
-    public static List<File> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
+    public static List<String> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
     {
-        List<File> totalFilelist = new ArrayList<>();
+        List<String> totalFilelist = new ArrayList<>();
 
-        Stack<File> folderStack = new Stack<>();
+        Deque<File> queue = new ArrayDeque<>();
 
-        folderStack.push(rootPath);
+        queue.push(rootPath);
 
-        while (folderStack.isEmpty() != true)
+        while (!queue.isEmpty())
         {
-            File currentFolderPath = folderStack.pop();
+            File currentFolderPath = queue.pop();
 
             File[] folderList = currentFolderPath.listFiles();
 
@@ -51,13 +52,13 @@ public class FileHandler
             {
                 if (file.isDirectory())
                 {
-                    folderStack.push(file);
+                    queue.push(file);
                 }
                 else
                 {
                     if (isFileSupported(file.getAbsolutePath(), extensionFormat))
                     {
-                        totalFilelist.add(file);
+                        totalFilelist.add(file.getAbsolutePath());
                     }
                 }
             }

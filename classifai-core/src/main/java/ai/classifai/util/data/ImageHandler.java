@@ -20,9 +20,8 @@ import ai.classifai.data.type.image.ImageDataFactory;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.jpeg.JpegMetadataReader;
 import com.drew.metadata.Directory;
@@ -38,7 +37,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 
@@ -249,11 +247,25 @@ public class ImageHandler {
         return null;
     }
 
-    private static boolean isImageFileValid(String file)
+    public static List<String> checkFile(@NonNull File file)
+    {
+        List<String> verifiedFilesList = new ArrayList<>();
+
+        String fullPath = file.getAbsolutePath();
+
+        if (FileHandler.isFileSupported(fullPath, ImageFileType.getImageFileTypes()) && isImageFileValid(file))
+        {
+            verifiedFilesList.add(file.getAbsolutePath());
+        }
+
+        return verifiedFilesList;
+    }
+
+    public static boolean isImageFileValid(File file)
     {
         try
         {
-            Metadata metadata = ImageMetadataReader.readMetadata(new File(file));
+            Metadata metadata = ImageMetadataReader.readMetadata(file);
 
             ImageData imgData = new ImageDataFactory().getImageData(metadata);
 
@@ -272,40 +284,9 @@ public class ImageHandler {
         return true;
     }
 
-    public static List<Object> checkFile(@NonNull File file)
+    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<String> filesPath)
     {
-        List<Object> verifiedFilesList = new ArrayList<>();
-
-        String currentFileFullPath = file.getAbsolutePath();
-
-        if (FileHandler.isFileSupported(currentFileFullPath, ImageFileType.getImageFileTypes()))
-        {
-            if (isImageFileValid(currentFileFullPath))
-            {
-                verifiedFilesList.add(file);
-            }
-        }
-
-        return verifiedFilesList;
-    }
-
-    @Deprecated
-    public static void saveToDatabase(@NonNull String projectID, @NonNull List<Object> filesFullPath)
-    {
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-
-        loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
-        loader.setFileSysTotalUUIDSize(filesFullPath.size());
-
-        for (int i = 0; i < filesFullPath.size(); ++i)
-        {
-            AnnotationVerticle.writeUuidToDb(loader, (File) filesFullPath.get(i), i + 1);
-        }
-    }
-
-    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<Object> filesPath)
-    {
-        loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesPath.size());
 
         //cloud
@@ -313,7 +294,7 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesPath.size(); ++i)
             {
-                AnnotationVerticle.saveDataPoint(loader, (String) filesPath.get(i), i + 1);
+                AnnotationVerticle.saveDataPoint(loader, filesPath.get(i), i + 1);
             }
 
         }
@@ -322,165 +303,111 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesPath.size(); ++i)
             {
-                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(loader.getProjectPath(), ((File) filesPath.get(i)).getAbsolutePath()));
+                String projectFullPath = loader.getProjectPath().getAbsolutePath();
+                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, filesPath.get(i)));
 
                 AnnotationVerticle.saveDataPoint(loader, dataSubPath, i + 1);
             }
 
         }
-
     }
 
-    @Deprecated
-    public static void processFile(@NonNull String projectID, @NonNull List<File> filesInput)
+    public static List<String> getValidImagesFromFolder(File rootPath)
     {
-        List<Object> validatedFilesList = new ArrayList<>();
+        List<String> imageList = new ArrayList<>();
 
-        for (File file : filesInput)
+        Deque<File> fileQueue = new ArrayDeque<>();
+
+        fileQueue.push(rootPath);
+
+        while (!fileQueue.isEmpty())
         {
-            List<Object> files = checkFile(file);
-            validatedFilesList.addAll(files);
-        }
+            File currentFolderPath = fileQueue.pop();
 
-        saveToDatabase(projectID, validatedFilesList);
-    }
-
-    @Deprecated
-    public static void processFolder(@NonNull String projectID, @NonNull File rootPath)
-    {
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
-
-        if (dataList.isEmpty())
-        {
-            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-            return;
-        }
-
-        Stack<File> folderStack = new Stack<>();
-        folderStack.push(rootPath);
-
-        List<Object> totalFileList = new ArrayList<>();
-
-        while (!folderStack.isEmpty())
-        {
-            File currentFolderPath = folderStack.pop();
-
-            File[] folderList = Objects.requireNonNull(currentFolderPath.listFiles());
+            File[] folderList = currentFolderPath.listFiles();
 
             for (File file : folderList)
             {
                 if (file.isDirectory())
                 {
-                    folderStack.push(file);
+                    fileQueue.push(file);
                 }
                 else
                 {
-                    List<Object> files = checkFile(file);
-                    totalFileList.addAll(files);
+                    imageList.addAll(ImageHandler.checkFile(file));
                 }
             }
         }
 
-        saveToDatabase(projectID, totalFileList);
+        return imageList;
     }
 
-    public static boolean iterateFolder(@NonNull String projectID, @NonNull File rootPath)
+
+    /**
+     * Iterate through project path to reflect changes
+     * when create/refresh project
+     *
+     * search through rootpath and check if list of files exists
+     *     scenario 1: root file missing
+     *     scenario 2: files missing - removed from ProjectLoader
+     *     scenario 3: existing uuids previously missing from current paths, but returns to the original paths
+     *     scenario 4: adding new files
+     *     scenario 5: evrything stills the same
+     */
+    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, boolean isNewProject)
     {
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-        List<File> dataList = FileHandler.processFolder(rootPath, fileExtension);
-
-        if (dataList.isEmpty())
+        if(isNewProject)
         {
-            loader.resetFileSysProgress(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-            return false;
+            loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
+        }
+        else
+        {
+            //refreshing project
+            loader.resetReloadingProgress(FileSystemStatus.ITERATING_FOLDER);
         }
 
-        Stack<File> folderStack = new Stack<>();
-        folderStack.push(rootPath);
-
-        List<Object> totalFileList = new ArrayList<>();
-
-        while (!folderStack.isEmpty())
-        {
-            File currentFolderPath = folderStack.pop();
-
-            File[] folderList = Objects.requireNonNull(currentFolderPath.listFiles());
-
-            for (File file : folderList)
-            {
-                if (file.isDirectory())
-                {
-                    folderStack.push(file);
-                }
-                else
-                {
-                    List<Object> files = checkFile(file);
-                    totalFileList.addAll(files);
-                }
-            }
-        }
-
-        saveToProjectTable(loader, totalFileList);
-        return true;
-    }
-
-    public static List<File> getValidImagesFromFolder(File rootPath)
-    {
-        String[] fileExtension = ImageFileType.getImageFileTypes();
-
-        return FileHandler.processFolder(rootPath, fileExtension);
-    }
-
-    /*
-    search through rootpath and check if list of files exists
-    scenario 1: root file missing
-    scenario 2: files missing - removed from ProjectLoader
-    scenario 3: existing uuids previously missing from current paths, but returns to the original paths
-    scenario 4: adding new files
-    scenario 5: evrything stills the same
-    */
-    public static void refreshProjectRootPath(@NonNull String projectID)
-    {
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-
-        loader.resetReloadingProgress(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-
-        File rootPath = new File(loader.getProjectPath());
+        File rootPath = loader.getProjectPath();
 
         //scenario 1
         if(!rootPath.exists())
         {
             loader.setSanityUuidList(new ArrayList<>());
-            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+            loader.setFileSystemStatus(FileSystemStatus.ABORTED);
 
             log.info("Project home path of " + rootPath.getAbsolutePath() + " is missing.");
-            return;
+            return false;
         }
 
-        List<File> dataFullPathList = getValidImagesFromFolder(rootPath);
+        List<String> dataFullPathList = getValidImagesFromFolder(rootPath);
 
         //Scenario 2 - 1: root path exist but all images missing
         if(dataFullPathList.isEmpty())
         {
             loader.getSanityUuidList().clear();
-            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-            return;
+            loader.setFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
+            return false;
         }
 
-        loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
+        loader.setFileSystemStatus(FileSystemStatus.DATABASE_UPDATING);
 
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-
-        for(int i = 0; i < dataFullPathList.size(); ++i)
+        if(isNewProject)
         {
-            AnnotationVerticle.createUuidIfNotExist(loader, dataFullPathList.get(i), i + 1);
+            saveToProjectTable(loader, dataFullPathList);
         }
+        else // when refreshing project folder
+        {
+            for (int i = 0; i < dataFullPathList.size(); ++i)
+            {
+                AnnotationVerticle.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
+            }
+        }
+
+        return true;
     }
+
+
+
 }
