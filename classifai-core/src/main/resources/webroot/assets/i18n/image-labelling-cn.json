@@ -59,6 +59,7 @@
         "cancel": "取消"
     },
     "footer": {
+        "projectName": "项目名",
         "size": "容量",
         "image": "格式",
         "dimension": "尺寸",

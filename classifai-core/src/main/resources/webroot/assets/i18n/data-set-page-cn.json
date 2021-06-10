@@ -52,5 +52,7 @@
     "importJson": "导入配置文件",
     "selectJson": "配置文件",
     "configFileInfoTitle": "什么是配置文件? ",
-    "configFileInfoDest": "从项目导出的配置文件"
+    "configFileInfoDest": "从项目导出的配置文件",
+    "importSuccess": "导入项目成功。重命名为",
+    "importAborted": "导入项目报错。"
 }

@@ -59,6 +59,7 @@
         "cancel": "Batal"
     },
     "footer": {
+        "projectName": "Nama Projek",
         "size": "Saiz",
         "image": "Imej",
         "dimension": "Dimensi",
