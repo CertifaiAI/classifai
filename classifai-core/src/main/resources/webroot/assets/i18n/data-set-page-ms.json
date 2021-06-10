@@ -52,7 +52,5 @@
     "importJson": "Fail Json",
     "selectJson": "Fail Konfig",
     "configFileInfoTitle": "Apa itu Fail Konfig? ",
-    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek.",
-    "importSuccess": "Import projek telah berjaya. Dinamakan semula sebagai ",
-    "importAborted": "Import projek dibatalkan."
+    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek."
 }
