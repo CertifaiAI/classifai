@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
+import ai.classifai.action.FileMover;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -472,14 +473,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
         String uuidQueryParam = String.join(",", deleteUUIDList);
 
-        Tuple params = Tuple.of(projectId, uuidQueryParam);
+        Tuple params = Tuple.of(projectId, (uuidQueryParam));
 
         jdbcPool.preparedQuery(AnnotationQuery.getDeleteProjectData())
                 .execute(params)
                 .onComplete(fetch -> {
                     if (fetch.succeeded())
                     {
-                        deleteProjectDataFetchSuccess(message, loader, deleteUUIDList);
+                        try {
+                            deleteProjectDataOnComplete(message, loader, deleteUUIDList);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     else
                     {
@@ -488,9 +493,20 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
    }
 
-   private void deleteProjectDataFetchSuccess(Message<JsonObject> message, ProjectLoader loader, List<String> deleteUUIDList)
-   {
+    private static HashMap<String, String> formatProjectDataUUID(List<String> filesToMove, List<String> deletedUUIDdata) {
+        HashMap<String, String> formattedDataUUID = new HashMap<>();
+
+        for(int i = 0; i < filesToMove.size(); i++) {
+            formattedDataUUID.put(deletedUUIDdata.get(i), filesToMove.get(i));
+        }
+
+        return formattedDataUUID;
+    }
+
+   private void deleteProjectDataOnComplete(Message<JsonObject> message, ProjectLoader loader, List<String> deleteUUIDList) throws IOException {
        List<String> dbUUIDList = loader.getUuidListFromDb();
+       JsonArray deletedDataPath = message.body().getJsonArray(ParamConfig.getImgPathListParam());
+       List<String> deletedDataPathList = ConversionHandler.jsonArray2StringList(deletedDataPath);
        if (dbUUIDList.removeAll(deleteUUIDList))
        {
            loader.setUuidListFromDb(dbUUIDList);
@@ -500,6 +516,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
            if (sanityUUIDList.removeAll(deleteUUIDList))
            {
                loader.setSanityUuidList(sanityUUIDList);
+               FileMover.moveFileToDirectory(loader.getProjectPath(), deletedDataPathList);
            }
            else
            {

@@ -17,6 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectExport;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.filesystem.FileSystemStatus;
@@ -24,6 +25,7 @@ import ai.classifai.selector.project.LabelListSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -32,12 +34,14 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Classifai v2 endpoints
@@ -459,5 +463,57 @@ public class V2Endpoint {
         }
 
         HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+    /**
+     * Load data based on uuid
+     * DELETE http://localhost:{port}/v2/:annotation_type/projects/:project_name/uuids
+     *
+     * json payload = {
+     *      "uuid_list": ["d99fed36-4eb5-4572-b2c7-ca8d4136e692", "d99fed36-4eb5-4572-b2c7-ca8d4136d2d3f"],
+     *      "img_path_list": [
+     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\12.jpg",
+     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\1.jpg"
+     *       ]
+     *  }
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/uuids
+     */
+    public void deleteProjectData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        String query = AnnotationQuery.getDeleteProjectData();
+
+        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
+            JsonArray uuidImgPathList = request.getJsonArray(ParamConfig.getImgPathListParam());
+
+            request.put(ParamConfig.getProjectIdParam(), projectID);
+            request.put(ParamConfig.getUuidListParam(), uuidListArray);
+            request.put(ParamConfig.getImgPathListParam(), uuidImgPathList);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+            vertx.eventBus().request(util.getDbQuery(type), request, options, reply ->
+            {
+                if (reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
     }
 }

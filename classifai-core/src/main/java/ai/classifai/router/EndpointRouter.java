@@ -112,8 +112,6 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete(projectEndpoint).handler(v1::deleteProject);
 
-        router.delete("/:annotation_type/projects/:project_name/uuids").handler(v1::deleteProjectData);
-
         router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
 
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
@@ -149,6 +147,8 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/labelfile").handler(v2::loadLabelFile);
 
         router.get("/v2/labelfilestatus").handler(v2::loadLabelFileStatus);
+
+        router.delete("/v2/:annotation_type/projects/:project_name/uuids").handler(v2::deleteProjectData);
 
         //*******************************Cloud*******************************
 

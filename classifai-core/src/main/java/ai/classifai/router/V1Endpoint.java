@@ -530,38 +530,4 @@ public class V1Endpoint {
         });
     }
 
-    public void deleteProjectData(RoutingContext context)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        String query = AnnotationQuery.getDeleteProjectData();
-
-        if(util.checkIfProjectNull(context, projectID, projectName)) return;
-
-        context.request().bodyHandler(h ->
-        {
-            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
-
-            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
-
-            request.put(ParamConfig.getProjectIdParam(), projectID).put(ParamConfig.getUuidListParam(), uuidListArray);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-            vertx.eventBus().request(util.getDbQuery(type), request, options, reply ->
-            {
-                if (reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
-        });
-    }
-
 }
