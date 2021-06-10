@@ -84,6 +84,7 @@
         }
     },
     "footer": {
+        "projectName": "Project Name",
         "size": "Size",
         "image": "Image",
         "dimension": "Dimension",
