@@ -569,7 +569,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void renameProjectData(Message<JsonObject> message)
     {
-        RenameProjectData.renameProjectData(message);
+        RenameProjectData.renameProjectData(jdbcPool, message);
     }
 
 }

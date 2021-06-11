@@ -29,6 +29,7 @@ import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -44,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Classifai v2 endpoints
@@ -512,16 +514,16 @@ public class V2Endpoint extends EndpointBase {
     }
 
     /**
-     * Get status of choosing a project folder
-     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/imgsrc/rename
+     * Rename data filename
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/imgsrc/rename
      *
      * Example:
-     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/imgsrc/rename
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/imgsrc/rename
      *
      * json payload = {
-     *      "uuid" = "f592a6e2-53f8-4730-930c-8357d191de48"
-     *      "img_path" = "C:\\Users\\Deven.Yantis\\Desktop\\classifai-car-images\\7.jpg"
-     *      "new_fname" = "new_7.jpg"
+     *      "uuid" : "f592a6e2-53f8-4730-930c-8357d191de48"
+     *      "img_path" : "C:\\Users\\Deven.Yantis\\Desktop\\classifai-car-images\\8.jpg"
+     *      "new_fname" : "new_7.jpg"
      * }
      *
      */
@@ -532,20 +534,25 @@ public class V2Endpoint extends EndpointBase {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectId)
-                .put(ParamConfig.getUuidParam(), context.request().getParam(ParamConfig.getUuidParam()))
-                .put(ParamConfig.getImgPathParam(), context.request().getParam(ParamConfig.getImgPathParam()))
-                .put(ParamConfig.getNewFileNameParam(), context.request().getParam(ParamConfig.getNewFileNameParam()));
+        context.request().bodyHandler(h -> {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
+            request.put(ParamConfig.getProjectIdParam(), projectId);
+            request.put(ParamConfig.getUuidParam(), request.getString(ParamConfig.getUuidParam()));
+            request.put(ParamConfig.getImgPathParam(), request.getString(ParamConfig.getImgPathParam()));
+            request.put(ParamConfig.getNewFileNameParam(), request.getString(ParamConfig.getNewFileNameParam()));
 
-        vertx.eventBus().request(helper.getDbQuery(type), request, options, reply -> {
-            if(reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-                HTTPResponseHandler.configureOK(context, response);
-            }
+            log.info("DEVEN: " + request);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
+
+            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply -> {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
         });
 
     }
