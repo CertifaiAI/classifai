@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -36,7 +35,7 @@ public class FileMover {
     private static void moveFiles(String newDirStr, List<String> filesToMove) throws IOException {
         for(String srcFile: filesToMove) {
             String fName = Paths.get(srcFile).getFileName().toString();
-            log.info("DEVEN: \n" + Paths.get(srcFile) + "\n" + Paths.get(newDirStr, fName));
+            log.debug("Move deleted file:\n" + "From: " + Paths.get(srcFile) + "\nTo: " + Paths.get(newDirStr, fName));
             Files.move(
                     Paths.get(srcFile),
                     Paths.get(newDirStr, fName));

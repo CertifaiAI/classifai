@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
+import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.FileMover;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
@@ -37,23 +38,18 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Implementation of Functionalities for each annotation type
@@ -466,78 +462,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public void deleteProjectData(Message<JsonObject> message)
     {
-        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
-        String uuidQueryParam = String.join(",", deleteUUIDList);
-
-        Tuple params = Tuple.of(projectId, (uuidQueryParam));
-
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteProjectData())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded())
-                    {
-                        try {
-                            deleteProjectDataOnComplete(message, loader, deleteUUIDList);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
-   }
-
-    private static HashMap<String, String> formatProjectDataUUID(List<String> filesToMove, List<String> deletedUUIDdata) {
-        HashMap<String, String> formattedDataUUID = new HashMap<>();
-
-        for(int i = 0; i < filesToMove.size(); i++) {
-            formattedDataUUID.put(deletedUUIDdata.get(i), filesToMove.get(i));
-        }
-
-        return formattedDataUUID;
+        DeleteProjectData.deleteProjectData(jdbcPool, message);
     }
 
-   private void deleteProjectDataOnComplete(Message<JsonObject> message, ProjectLoader loader, List<String> deleteUUIDList) throws IOException {
-       List<String> dbUUIDList = loader.getUuidListFromDb();
-       JsonArray deletedDataPath = message.body().getJsonArray(ParamConfig.getImgPathListParam());
-       List<String> deletedDataPathList = ConversionHandler.jsonArray2StringList(deletedDataPath);
-       if (dbUUIDList.removeAll(deleteUUIDList))
-       {
-           loader.setUuidListFromDb(dbUUIDList);
-
-           List<String> sanityUUIDList = loader.getSanityUuidList();
-
-           if (sanityUUIDList.removeAll(deleteUUIDList))
-           {
-               loader.setSanityUuidList(sanityUUIDList);
-               FileMover.moveFileToDirectory(loader.getProjectPath(), deletedDataPathList);
-           }
-           else
-           {
-               log.info("Error in removing uuid list");
-           }
-
-           //update Portfolio Verticle
-           PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
-
-           message.replyAndRequest(ReplyHandler.getOkReply());
-       }
-       else
-       {
-           message.reply(ReplyHandler.reportUserDefinedError(
-                   "Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-       }
-   }
-
-
-   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-   {
+    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
+    {
         JsonObject requestBody = message.body();
 
         try
