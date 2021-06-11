@@ -1,10 +1,12 @@
 {
     "createNewProject": "Create New Project",
     "renameProject": "Rename Project",
-    "newProjectName": "New Project Name:",
+    "newProjectName": "Project Name:",
     "projectNameExist": "* Project name already exist! Try other name",
     "projectNameRequired": "* Project name is required",
-    "labelListFile": "Label list file (*.txt):",
+    "projectFolder": "Project Folder:",
+    "chooseFolder": "Choose Folder",
+    "labelListFile": "Label File (Optional):",
     "chooseFile": "Choose File",
     "createButton": "Create",
     "updateButton": "Proceed",
@@ -50,5 +52,7 @@
     "importJson": "Select Config File",
     "selectJson": "Config File",
     "configFileInfoTitle": "What is Config File? ",
-    "configFileInfoDest": "JSON file exported from project."
+    "configFileInfoDest": "JSON file exported from project.",
+    "importSuccess": "Import project success. Rename as ",
+    "importAborted": "Import project aborted."
 }

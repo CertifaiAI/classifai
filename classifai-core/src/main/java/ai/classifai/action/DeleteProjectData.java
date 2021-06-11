@@ -67,7 +67,7 @@ public class DeleteProjectData {
             if (sanityUUIDList.removeAll(deleteUUIDList))
             {
                 loader.setSanityUuidList(sanityUUIDList);
-                FileMover.moveFileToDirectory(loader.getProjectPath(), deletedDataPathList);
+                FileMover.moveFileToDirectory(loader.getProjectPath().toString(), deletedDataPathList);
             }
             else
             {

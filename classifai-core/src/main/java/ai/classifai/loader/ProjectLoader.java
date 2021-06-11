@@ -18,7 +18,8 @@ package ai.classifai.loader;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.wasabis3.WasabiProject;
 import lombok.Builder;
@@ -26,7 +27,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -44,7 +49,7 @@ public class ProjectLoader
     private String projectName;
 
     private Integer annotationType;
-    private String projectPath;
+    private File projectPath;
 
     private Boolean isProjectNew;
     private Boolean isProjectStarred;
@@ -53,7 +58,7 @@ public class ProjectLoader
 
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
-    private LoaderStatus loaderStatus;
+    private ProjectLoaderStatus projectLoaderStatus;
 
     private ProjectVersion projectVersion;
 
@@ -82,7 +87,7 @@ public class ProjectLoader
     @Builder.Default private Set<String> validUUIDSet = new LinkedHashSet<>();
 
     //Status when dealing with file/folder opener
-    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATE;
+    @Builder.Default private FileSystemStatus fileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
 
     //list to send the new added datapoints as thumbnails to front end
     @Builder.Default private List<String> fileSysNewUuidList = new ArrayList<>();
@@ -93,19 +98,6 @@ public class ProjectLoader
     @Builder.Default private List<String> reloadDeletionList = new ArrayList<>();
 
     @Builder.Default private List<Integer> progressUpdate = Arrays.asList(0, 1);
-
-    public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
-    {
-        validUUIDSet.clear();
-        fileSysNewUuidList.clear();
-
-        currentUuidMarker = 0;
-        totalUuidMaxLen = 1;
-
-        progressUpdate = new ArrayList<>(Arrays.asList(currentUuidMarker, totalUuidMaxLen));
-
-        fileSystemStatus = currentFileSystemStatus;
-    }
 
     public String getCurrentVersionUuid()
     {
@@ -140,12 +132,12 @@ public class ProjectLoader
 
         if (totalUuidMaxLen.equals(0))
         {
-            loaderStatus = LoaderStatus.LOADED;
+            projectLoaderStatus = ProjectLoaderStatus.LOADED;
         }
         else if (totalUuidMaxLen.compareTo(0) < 0)
         {
             log.debug("UUID Size less than 0. UUIDSize: " + totalUUIDSizeBuffer);
-            loaderStatus = LoaderStatus.ERROR;
+            projectLoaderStatus = ProjectLoaderStatus.ERROR;
         }
     }
 
@@ -160,7 +152,7 @@ public class ProjectLoader
 
             validUUIDSet.clear();
 
-            loaderStatus = LoaderStatus.LOADED;
+            projectLoaderStatus = ProjectLoaderStatus.LOADED;
         }
     }
 
@@ -174,21 +166,6 @@ public class ProjectLoader
         fileSysNewUuidList.add(uuid);
     }
 
-    //updating project from file system
-    @Deprecated
-    public void updateFileSysLoadingProgress(Integer currentSize)
-    {
-        currentUuidMarker = currentSize;
-        progressUpdate.set(0, currentUuidMarker);
-
-        //if done, offload set to list
-        if (currentUuidMarker.equals(totalUuidMaxLen))
-        {
-            offloadFileSysNewList2List();
-        }
-    }
-
-
     public void updateLoadingProgress(Integer currentSize)
     {
         currentUuidMarker = currentSize;
@@ -199,7 +176,7 @@ public class ProjectLoader
         {
             if (fileSysNewUuidList.isEmpty())
             {
-                fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
+                fileSystemStatus = FileSystemStatus.DATABASE_NOT_UPDATED;
             }
             else
             {
@@ -207,28 +184,12 @@ public class ProjectLoader
                 uuidListFromDb.addAll(fileSysNewUuidList);
 
                 projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
+                projectVersion.setCurrentVersionLabelList(labelList);
 
                 PortfolioVerticle.createNewProject(projectId);
 
-                fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
+                fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
             }
-        }
-    }
-
-    @Deprecated
-    private void offloadFileSysNewList2List()
-    {
-        if (fileSysNewUuidList.isEmpty())
-        {
-            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
-        }
-        else
-        {
-            sanityUuidList.addAll(fileSysNewUuidList);
-            uuidListFromDb.addAll(fileSysNewUuidList);
-
-            PortfolioVerticle.updateFileSystemUuidList(projectId);
-            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
         }
     }
 
@@ -238,6 +199,7 @@ public class ProjectLoader
 
         sanityUuidList.add(uuid);
         reloadAdditionList.add(uuid);
+
     }
 
     public void uploadSanityUuidFromConfigFile(@NonNull String uuid)
@@ -245,9 +207,22 @@ public class ProjectLoader
         sanityUuidList.add(uuid);
     }
 
+    public void resetFileSysProgress(FileSystemStatus currentFileSystemStatus)
+    {
+        validUUIDSet.clear();
+        fileSysNewUuidList.clear();
+
+        currentUuidMarker = 0;
+        totalUuidMaxLen = 1;
+
+        progressUpdate = new ArrayList<>(Arrays.asList(currentUuidMarker, totalUuidMaxLen));
+
+        fileSystemStatus = currentFileSystemStatus;
+    }
+
     public void resetReloadingProgress(FileSystemStatus currentFileSystemStatus)
     {
-        dbListBuffer = new ArrayList<>(uuidListFromDb);
+        dbListBuffer = new ArrayList<>(sanityUuidList);
         reloadAdditionList.clear();
         reloadDeletionList.clear();
 
@@ -271,7 +246,7 @@ public class ProjectLoader
             reloadDeletionList = dbListBuffer;
 
             PortfolioVerticle.updateFileSystemUuidList(projectId);
-            fileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED;
+            fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
         }
     }
 
@@ -282,14 +257,34 @@ public class ProjectLoader
         progressUpdate = Arrays.asList(new Integer[]{0, totalUuidMaxLen});
     }
 
-    public void setFileSystemStatus(FileSystemStatus status)
-    {
-        fileSystemStatus = status;
-    }
-
     public boolean isCloud()
     {
         return wasabiProject != null;
+    }
+
+    public void initFolderIteration()
+    {
+        try
+        {
+            if(!ImageHandler.loadProjectRootPath(this, true))
+            {
+                // Get example image from metadata
+                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
+                File destImageFile = Paths.get(projectPath.getAbsolutePath(), "example_img.png").toFile();
+                FileUtils.copyFile(srcImgFile, destImageFile);
+                log.info("Empty folder. Example image added.");
+
+                // Run loadProjectRootPath again
+                if(!ImageHandler.loadProjectRootPath(this, true))
+                {
+                    log.debug("Loading files in project folder failed");
+                }
+            }
+        }
+        catch(IOException e)
+        {
+            log.info("Error while copying file: ", e);
+        }
     }
 
 }
