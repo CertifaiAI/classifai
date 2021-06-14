@@ -88,6 +88,4 @@ public class DeleteProjectData {
         }
     }
 
-    private static void updateProjectLoader
-
 }
