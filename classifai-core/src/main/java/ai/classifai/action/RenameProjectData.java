@@ -1,6 +1,8 @@
 package ai.classifai.action;
 
 import ai.classifai.database.annotation.AnnotationQuery;
+import ai.classifai.database.versioning.Annotation;
+import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ReplyHandler;
@@ -14,23 +16,28 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
 public class RenameProjectData {
 
     private static ProjectLoader loader;
+    private static String dataUUID;
+    private static Annotation annotation;
 
     public static void renameProjectData(JDBCPool jdbcPool, Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
         loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        dataUUID = message.body().getString(ParamConfig.getUuidParam());
+        getAnnotationVersion();
 
-        String dataUUID = message.body().getString(ParamConfig.getUuidParam());
         String newDataFileName = message.body().getString(ParamConfig.getNewFileNameParam());
-        String oldDataFilename = message.body().getString(ParamConfig.getImgPathParam());
+        String oldDataFilename = getOldDataFilename();
 
-        File newDataPath = createNewDataPath(newDataFileName);
+        String updatedFilename = modifyFilenameFromCache(newDataFileName);
+        File newDataPath = createNewDataPath(updatedFilename);
 
         if(newDataPath.exists()) {
             // Abort if name exists
@@ -38,11 +45,12 @@ public class RenameProjectData {
             return;
         }
 
-        Tuple params = Tuple.of(newDataFileName, dataUUID, projectId);
+        Tuple params = Tuple.of(updatedFilename, dataUUID, projectId);
 
         if(renameDataPath(newDataPath, oldDataFilename))
         {
-            invokeJDBCPool(jdbcPool, message, params);
+            invokeJDBCPool(jdbcPool, message, params, newDataPath.toString());
+            updateAnnotationCache(updatedFilename);
         }
         else
         {
@@ -51,14 +59,16 @@ public class RenameProjectData {
 
     }
 
-    private static void invokeJDBCPool(JDBCPool jdbcPool, Message<JsonObject> message, Tuple params)
+    private static void invokeJDBCPool(JDBCPool jdbcPool, Message<JsonObject> message, Tuple params, String newDataPath)
     {
         jdbcPool.preparedQuery(AnnotationQuery.getRenameProjectData())
                 .execute(params)
                 .onComplete(fetch -> {
                     if(fetch.succeeded())
                     {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
+                        JsonObject response = ReplyHandler.getOkReply();
+                        response.put(ParamConfig.getImgPathParam(), newDataPath);
+                        message.replyAndRequest(response);
                     }
                     else
                     {
@@ -77,6 +87,26 @@ public class RenameProjectData {
         return oldDataPath.renameTo(newDataPath);
     }
 
+    private static String getOldDataFilename()
+    {
+        return Paths.get(loader.getProjectPath().toString(), annotation.getImgPath()).toString();
+    }
+
+    private static String modifyFilenameFromCache(String newFilename)
+    {
+        String oldDataPath = annotation.getImgPath();
+        // get only the filename after last slash before file extension
+        String oldDataPathFName = oldDataPath.substring(oldDataPath.lastIndexOf(File.separator) + 1, oldDataPath.lastIndexOf("."));
+
+        String newDataPathFName = newFilename.substring(newFilename.lastIndexOf(File.separator) + 1, newFilename.lastIndexOf("."));
+
+        // Rename old data path filename
+        String newDataPathModified = oldDataPath.replace(oldDataPathFName, newDataPathFName);
+        log.debug("New modified path: " + newDataPathModified);
+
+        return newDataPathModified;
+    }
+
     private static File createNewDataPath(String newDataFileName)
     {
         File newDataPath = Paths.get(
@@ -86,5 +116,20 @@ public class RenameProjectData {
         return newDataPath;
     }
 
-    private static void updateProjectLoader
+    private static void getAnnotationVersion()
+    {
+        Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
+        annotation = uuidAnnotationDict.get(dataUUID);
+    }
+
+    private static void updateAnnotationCache(String newImagePath)
+    {
+        Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
+
+        annotation.setImgPath(newImagePath);
+        uuidAnnotationDict.put(dataUUID, annotation);
+
+        loader.setUuidAnnotationDict(uuidAnnotationDict);
+
+    }
 }

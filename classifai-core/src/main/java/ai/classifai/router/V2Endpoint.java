@@ -522,7 +522,6 @@ public class V2Endpoint extends EndpointBase {
      *
      * json payload = {
      *      "uuid" : "f592a6e2-53f8-4730-930c-8357d191de48"
-     *      "img_path" : "C:\\Users\\Deven.Yantis\\Desktop\\classifai-car-images\\8.jpg"
      *      "new_fname" : "new_7.jpg"
      * }
      *
@@ -539,10 +538,7 @@ public class V2Endpoint extends EndpointBase {
 
             request.put(ParamConfig.getProjectIdParam(), projectId);
             request.put(ParamConfig.getUuidParam(), request.getString(ParamConfig.getUuidParam()));
-            request.put(ParamConfig.getImgPathParam(), request.getString(ParamConfig.getImgPathParam()));
             request.put(ParamConfig.getNewFileNameParam(), request.getString(ParamConfig.getNewFileNameParam()));
-
-            log.info("DEVEN: " + request);
 
             DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
 
