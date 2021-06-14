@@ -45,14 +45,19 @@
         "noProject": "Tunggu sekejap... tidak ada projek pun",
         "createNew": "Bersedia dan jom mulakan projek baru!"
     },
-    "deleteSuccess": "telah berjaya dipadam!",
+    "deleteMsg": "dipadam ",
+    "success": "berjaya",
+    "renameMsg": "dinamakan semula",
     "renameSuccess": "telah berjaya dinamakan semula!",
     "deleteProject": "Padam Projek",
     "exportProject": "Eksport Projek",
     "importJson": "Fail Json",
     "selectJson": "Fail Konfig",
+    "labelFileDest1": "Fail label ialah fail TXT yang dihasilkan oleh Classifai.",
+    "labelFileDest2": "Fail ini memudahkan penggunaan label dengan susunan dan penggunaan huruf besar yang sama dalam pelbagai projek.\nIa boleh dihasilkan semula mneggunakan fungsi eksport label.",
     "configFileInfoTitle": "Apa itu Fail Konfig? ",
-    "configFileInfoDest": "Fail JSON telah Dieksport dari Projek.",
+    "configFileInfoDest1": "Fail konfig ialah fail JSON yang dihasilkan oleh Classifai.",
+    "configFileInfoDest2": "Fail ini mengandungi metadata projek dan ianya boleh digunakan untuk menghasilkan semula projek menggunakan fungsi eksport projek.",
     "importSuccess": "Import projek telah berjaya. Dinamakan semula sebagai ",
     "importAborted": "Import projek dibatalkan."
 }
