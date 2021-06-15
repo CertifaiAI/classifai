@@ -2,7 +2,6 @@ package ai.classifai.action;
 
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ReplyHandler;
@@ -14,7 +13,6 @@ import io.vertx.sqlclient.Tuple;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
