@@ -1,6 +1,6 @@
 # Classifai Code of Conduct
 
-In the interest in fostering an open and welcoming environment, we as contributors and maintainers pledge to make participation in our project and our community a harassment-free experience for everyone, regardless of age, body size, disability, ethinicity, gender identity, and expression, level of expertise, nationality, personal appearance, race, religion, or sexual identity or orientation.
+In the interest in fostering an open and welcoming environment, we as contributors and maintainers pledge to make participation in our project and our community a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity, and expression, level of expertise, nationality, personal appearance, race, religion, or sexual identity or orientation.
 
 ## **Our Standard**
 
@@ -17,7 +17,7 @@ Examples of unacceptable behavior by participants include:
 - The use of sexualized language or imagery and unwelcome sexual attention or advances
 - Trolling, insulting/derogatory comments, and personal or political attacks
 - Public or private harassment
-- Publishing others' private information, such as a physical or electronic address, without explicit permission
+- Publishing other’s private information, such as a physical or electronic address, without explicit permission
 - Other conduct which could reasonably be considered inappropriate in a professional setting
 
 ## **Our Responsibilities**
@@ -28,15 +28,15 @@ Project maintainers have the right and responsibility to remove, edit, or reject
 
 ## **Scope**
 
-This Code of Conduct applies to all content in Certifai and Classifai github, within all project spaces, and it also applies when an individual is representing Cerifai or Classifai, the project or its community in public spaces.
+This Code of Conduct applies to all content in Certifai and Classifai GitHub, within all project spaces, and it also applies when an individual is representing Certifai or Classifai, the project, or its community in public spaces.
 
 Examples of representing a project or community include using an official project e-mail address, posting via an official social media account, or acting as an appointed representative at an online or offline event. Representation of a project may be further defined and clarified by project maintainers.
 
 ## **Enforcement**
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at <hello@classifai.ai>. Classifai project team will determine whether the Code of Conduct was violated, and will issue the related individual with an appropriate sanction, a written warning or expulsion from the project.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at <hello@classifai.ai>. Classifai project team will determine whether the Code of Conduct was violated, and will issue the related individual with an appropriate sanction, a written warning, or expulsion from the project.
 
-All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality with regard to the reporter of an incident. Further details of specific enforcement policies may be posted separately.
+All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances. The project team is obligated to maintain confidentiality about the reporter of an incident. Further details of specific enforcement policies may be posted separately.
 
 Project maintainers who do not follow or enforce the Code of Conduct in good faith may face temporary or permanent repercussions as determined by other members of the project’s leadership.
 
@@ -45,3 +45,4 @@ Project maintainers who do not follow or enforce the Code of Conduct in good fai
 This Code of Conduct is adapted from the Contributor Covenant, version 1.4, available at <https://www.contributor-covenant.org/version/1/4/code-of-conduct.html>
 
 For answers to common questions about this code of conduct, see <https://www.contributor-covenant.org/faq>
+
