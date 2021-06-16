@@ -94,7 +94,7 @@ public class ImageHandler {
     {
         if ((dataFullPath.exists() == false) && (dataFullPath.length() < 5)) //length() stands for file size
         {
-            log.info(dataFullPath + " not found. Check if the data is in the corresponding path. ");
+            log.debug(dataFullPath + " not found. Check if the data is in the corresponding path. ");
 
             return false;
         }
@@ -251,14 +251,17 @@ public class ImageHandler {
     {
         List<String> verifiedFilesList = new ArrayList<>();
 
-        String fullPath = file.getAbsolutePath();
-
-        if (FileHandler.isFileSupported(fullPath, ImageFileType.getImageFileTypes()) && isImageFileValid(file))
+        if (isImageFileValid(file))
         {
             verifiedFilesList.add(file.getAbsolutePath());
         }
 
         return verifiedFilesList;
+    }
+
+    public static boolean isImageFileValid(String filePath)
+    {
+        return isImageFileValid(new File(filePath));
     }
 
     public static boolean isImageFileValid(File file)
@@ -277,7 +280,7 @@ public class ImageHandler {
         }
         catch (Exception e)
         {
-            log.info("Skipped " + file, e);
+            log.debug(String.format("Skipped %s.%n%s", file, e.getMessage()));
             return false;
         }
 
@@ -314,32 +317,7 @@ public class ImageHandler {
 
     public static List<String> getValidImagesFromFolder(File rootPath)
     {
-        List<String> imageList = new ArrayList<>();
-
-        Deque<File> fileQueue = new ArrayDeque<>();
-
-        fileQueue.push(rootPath);
-
-        while (!fileQueue.isEmpty())
-        {
-            File currentFolderPath = fileQueue.pop();
-
-            File[] folderList = currentFolderPath.listFiles();
-
-            for (File file : folderList)
-            {
-                if (file.isDirectory())
-                {
-                    fileQueue.push(file);
-                }
-                else
-                {
-                    imageList.addAll(ImageHandler.checkFile(file));
-                }
-            }
-        }
-
-        return imageList;
+        return FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
     }
 
 

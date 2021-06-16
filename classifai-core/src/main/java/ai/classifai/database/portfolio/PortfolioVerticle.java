@@ -483,7 +483,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
                 .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
-                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size()));
+                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
+                .put(ParamConfig.getIsRootPathValid(), projectPath.exists()));
     }
 
     /**
