@@ -247,23 +247,6 @@ public class ImageHandler {
         return null;
     }
 
-    public static List<String> checkFile(@NonNull File file)
-    {
-        List<String> verifiedFilesList = new ArrayList<>();
-
-        if (isImageFileValid(file))
-        {
-            verifiedFilesList.add(file.getAbsolutePath());
-        }
-
-        return verifiedFilesList;
-    }
-
-    public static boolean isImageFileValid(String filePath)
-    {
-        return isImageFileValid(new File(filePath));
-    }
-
     public static boolean isImageFileValid(File file)
     {
         try
@@ -320,6 +303,16 @@ public class ImageHandler {
         return FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
     }
 
+    private static boolean isImageUnsupported(File file)
+    {
+        return (FileHandler.isFileSupported(file.getAbsolutePath(), ImageFileType.getImageFileTypes()) && !isImageFileValid(file));
+    }
+
+    private static List<String> getUnsupportedImagesFromFolder(File rootPath)
+    {
+        return FileHandler.processFolder(rootPath, ImageHandler::isImageUnsupported);
+    }
+
 
     /**
      * Iterate through project path to reflect changes
@@ -357,6 +350,7 @@ public class ImageHandler {
         }
 
         List<String> dataFullPathList = getValidImagesFromFolder(rootPath);
+        loader.setUnsupportedImageList(getUnsupportedImagesFromFolder(rootPath));
 
         //Scenario 2 - 1: root path exist but all images missing
         if(dataFullPathList.isEmpty())
@@ -385,7 +379,5 @@ public class ImageHandler {
 
         return true;
     }
-
-
 
 }

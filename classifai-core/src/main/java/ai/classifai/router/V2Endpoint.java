@@ -210,7 +210,14 @@ public class V2Endpoint extends EndpointBase {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        JsonObject response = compileFileSysStatusResponse(loader.getFileSystemStatus());
+        FileSystemStatus status = loader.getFileSystemStatus();
+
+        JsonObject response = compileFileSysStatusResponse(status);
+
+        if (status.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            response.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
+        }
 
         HTTPResponseHandler.configureOK(context, response);
     }
@@ -338,6 +345,7 @@ public class V2Endpoint extends EndpointBase {
         {
             res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
             res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
+            res.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
         }
 
         HTTPResponseHandler.configureOK(context, res);

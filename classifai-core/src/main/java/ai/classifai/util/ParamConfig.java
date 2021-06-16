@@ -90,7 +90,7 @@ public class ParamConfig
     @Getter private static final String isStarredParam = "is_starred";
     @Getter private static final String isLoadedParam = "is_loaded";
     @Getter private static final String createdDateParam = "created_date";
-    @Getter private static final String isRootPathValid = "root_path_valid";
+    @Getter private static final String isRootPathValidParam = "root_path_valid";
 
     @Getter private static final String statusParam = "status";
 
@@ -129,6 +129,9 @@ public class ParamConfig
     @Getter private static final String nextVersionUuidParam = "next_version_uuid";
 
     @Getter private static final String annotationDataParam = "annotation_data";
+
+    //Unsupported Image
+    @Getter private static final String unsupportedImageListParam = "unsupported_image_list";
 
     //hash
     @Getter private static final String checkSumParam = "checksum";
