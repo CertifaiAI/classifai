@@ -15,6 +15,7 @@
  */
 package ai.classifai.ui;
 
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
@@ -35,21 +36,15 @@ import static javax.swing.JOptionPane.showMessageDialog;
 @Slf4j
 public class SelectionWindow {
 
-    public enum ImportSelectionWindowStatus
-    {
-        WINDOW_OPEN,
-        WINDOW_CLOSE
-    }
-
     // To make sure window open once only
     @Getter @Setter
-    public ImportSelectionWindowStatus windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
+    protected SelectionWindowStatus windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
 
     private static JFrame frame = initFrame();
 
     public boolean isWindowOpen()
     {
-        return windowStatus.equals(ImportSelectionWindowStatus.WINDOW_OPEN) ? true : false;
+        return windowStatus.equals(SelectionWindowStatus.WINDOW_OPEN);
     }
 
     public static JFrame initFrame()

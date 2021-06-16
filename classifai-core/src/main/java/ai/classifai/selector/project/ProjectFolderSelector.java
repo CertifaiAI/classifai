@@ -15,144 +15,75 @@
  */
 package ai.classifai.selector.project;
 
-import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.loader.LoaderStatus;
-import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import ai.classifai.util.collection.UuidGenerator;
-import ai.classifai.util.data.ImageHandler;
-import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
-import lombok.NonNull;
-import lombok.SneakyThrows;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Locale;
-import java.util.Objects;
 
 /**
- * Open browser to select folder with importing list of data points in the folder
+ * Open browser to select project folder
  *
  * @author codenamewei
  */
 @Slf4j
-public class ProjectFolderSelector extends SelectionWindow {
+public class ProjectFolderSelector extends SelectionWindow
+{
+    @Getter private File projectFolderPath = null;
 
-    public void run(@NonNull String projectName, @NonNull AnnotationType annotationType)
+    public String getProjectFolderPath()
+    {
+        return (projectFolderPath != null) ? projectFolderPath.getAbsolutePath() : "";
+    }
+
+    public void run()
     {
         try
         {
             EventQueue.invokeLater(() -> {
-                ProjectLoader loader = Objects.requireNonNull(
-                        configureLoader(projectName, annotationType.ordinal(), new File("")));
 
-                loader.setLabelList(LabelListSelector.getLabelList()); // Insert the label list to associated project
-
-                loader.setFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
-
-                JFrame frame = initFrame();
-                String title = "Select Folder";
-                JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
-
-                //Important: prevent Welcome Console from popping out
-                WelcomeLauncher.setToBackground();
-
-                int res = chooser.showOpenDialog(frame);
-                frame.dispose();
-
-                if (res == JFileChooser.APPROVE_OPTION)
+                if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
-                    File projectPath =  chooser.getSelectedFile().getAbsoluteFile();
+                    windowStatus = SelectionWindowStatus.WINDOW_OPEN;
 
-                    log.debug("Proceed with creating project");
-                    loader.setProjectPath(projectPath.toString());
-                    initFolderIteration(loader);
+                    projectFolderPath = null;
 
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
+                    JFrame frame = initFrame();
+                    String title = "Select Project Folder";
+                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
+
+                    //Important: prevent Welcome Console from popping out
+                    WelcomeLauncher.setToBackground();
+
+                    int res = chooser.showOpenDialog(frame);
+                    frame.dispose();
+
+                    if (res == JFileChooser.APPROVE_OPTION)
+                    {
+                        projectFolderPath = chooser.getSelectedFile();
+                    }
+                    else
+                    {
+                        log.debug("Operation of import project aborted");
+                    }
+
+                    windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
                 }
                 else
                 {
-                    // Abort creation if user did not choose any
-                    log.info("Creation of " + projectName + " with " + annotationType.name() + " aborted");
-
-                    loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
+                    showAbortImportPopup();
                 }
             });
         }
         catch (Exception e)
         {
-            log.info("ProjectFolderSelector failed to open", e);
+            log.info("LabelFileSelector failed to open", e);
         }
     }
-
-    private ProjectLoader configureLoader(@NonNull String projectName, @NonNull Integer annotationInt, @NonNull File rootPath)
-    {
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
-        {
-            String annotationName = AnnotationHandler.getType(annotationInt).name();
-
-            log.debug("Creating " + annotationName.toLowerCase(Locale.ROOT) + " project with name: " + projectName);
-
-            String projectID = UuidGenerator.generateUuid();
-
-            String rootProjectPath = rootPath.getAbsolutePath();
-
-            ProjectLoader loader = ProjectLoader.builder()
-                    .projectId(projectID)
-                    .projectName(projectName)
-                    .annotationType(annotationInt)
-                    .projectPath(rootProjectPath)
-                    .loaderStatus(LoaderStatus.LOADED)
-                    .isProjectStarred(Boolean.FALSE)
-                    .isProjectNew(Boolean.TRUE)
-                    .projectVersion(new ProjectVersion())
-                    .projectInfra(ProjectInfra.ON_PREMISE)
-                    .build();
-
-            ProjectHandler.loadProjectLoader(loader);
-
-            return loader;
-        }
-
-        return null;
-    }
-
-    public void initFolderIteration(@NonNull ProjectLoader loader)
-    {
-        try
-        {
-            loader.setFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_LOADING_FILES);
-
-            String projectPath = loader.getProjectPath();
-            File fileProjectPath = new File(projectPath);
-
-            if(!ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath))
-            {
-                // Get example image from metadata
-                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
-                File destImageFile = Paths.get(projectPath, "example_img.png").toFile();
-                FileUtils.copyFile(srcImgFile, destImageFile);
-                log.info("Empty folder. Example image added.");
-
-                // Run initiate image again
-                ImageHandler.iterateFolder(loader.getProjectId(), fileProjectPath);
-            }
-        }
-        catch(IOException e)
-        {
-            log.info("Error while copying file: ", e);
-        }
-
-    }
-
 }
+
+
