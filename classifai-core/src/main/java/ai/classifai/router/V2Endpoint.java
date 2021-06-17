@@ -385,6 +385,32 @@ public class V2Endpoint extends EndpointBase {
 
     }
 
+    /**
+     * Get export project status
+     * GET http://localhost:{port}/v2/:annotation_type/projects/exportstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/exportstatus
+     *
+     */
+    public void getExportStatus(RoutingContext context)
+    {
+        helper.checkIfDockerEnv(context);
+
+        ProjectExport.ProjectExportStatus exportStatus = ProjectExport.getExportStatus();
+        JsonObject response = ReplyHandler.getOkReply();
+        response.put(ActionConfig.getExportStatusParam(), exportStatus.ordinal());
+        response.put(ActionConfig.getExportStatusMessageParam(), exportStatus.name());
+
+        if(exportStatus.equals(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS))
+        {
+            response.put(ActionConfig.getProjectConfigPathParam(), ProjectExport.getExportPath());
+        }
+
+        HTTPResponseHandler.configureOK(context, response);
+        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_NOT_INITIATED);
+    }
+
     public void importProject(RoutingContext context)
     {
         if(projectImporter.isWindowOpen())
