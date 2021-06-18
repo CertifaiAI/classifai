@@ -108,7 +108,7 @@ public class ProjectExport
                     try {
                         addToEntry(new File(s), out, loader.getProjectPath());
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.info("Fail to add data into zip file");
                     }
                 }
         );
