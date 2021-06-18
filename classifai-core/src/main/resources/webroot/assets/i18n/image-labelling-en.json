@@ -107,5 +107,10 @@
     },
     "configFileInfoTitle": "Choosing the Right Export",
     "configFileInfoDest1": "Config File is the configuration file contains of metadata of a project. It is suitable when the data is readily available in the system to be imported to.",
-    "configFileInfoDest2": "Zip File contains the Config File with dataset used in a project. It compiles all the components of a project to be reproduced in a different system."
+    "configFileInfoDest2": "Zip File contains the Config File with dataset used in a project. It compiles all the components of a project to be reproduced in a different system.",
+    "unsupportedImage": "Unsupported Image Found!",
+    "containsUnsupportedImage1": "There are ",
+    "containsUnsupportedImage2": " unsupported images included in the project!",
+    "unsupportedImageList1": "The list of images is in the downloaded TXT file.",
+    "unsupportedImageList2": "Kindly convert them to jpg/png type and reimport them again."
 }
