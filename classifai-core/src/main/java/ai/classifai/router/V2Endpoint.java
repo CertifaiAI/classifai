@@ -196,10 +196,10 @@ public class V2Endpoint extends EndpointBase {
 
     /**
      * Create new project status
-     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name
      *
      * Example:
-     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld
      */
     public void createProjectStatus(RoutingContext context)
     {
