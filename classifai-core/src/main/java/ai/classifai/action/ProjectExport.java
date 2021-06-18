@@ -25,9 +25,7 @@ import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -47,6 +45,18 @@ import java.util.zip.ZipOutputStream;
 @NoArgsConstructor
 public class ProjectExport
 {
+    public enum ProjectExportStatus {
+        EXPORT_NOT_INITIATED,
+        EXPORT_STARTING,
+        EXPORT_SUCCESS,
+        EXPORT_FAIL
+    }
+
+    @Getter @Setter
+    private static ProjectExportStatus exportStatus = ProjectExportStatus.EXPORT_NOT_INITIATED;
+    @Getter @Setter
+    private static String exportPath = "";
+
     public static JsonObject getConfigSkeletonStructure()
     {
         return new JsonObject()
@@ -93,10 +103,15 @@ public class ProjectExport
         addToEntry(new File(configPath), out, loader.getProjectPath());
 
         // Add all data
-        for(String dataPath: validImagePaths)
-        {
-            addToEntry(new File(dataPath), out, loader.getProjectPath());
-        }
+        validImagePaths.forEach(
+                s -> {
+                    try {
+                        addToEntry(new File(s), out, loader.getProjectPath());
+                    } catch (IOException e) {
+                        log.info("Fail to add data into zip file");
+                    }
+                }
+        );
         out.close();
         fos.close();
 

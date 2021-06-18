@@ -285,28 +285,27 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 .onComplete(annotationFetch ->{
                                     if (annotationFetch.succeeded())
                                     {
-                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(),
-                                                message, loader);
+                                        int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
+                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(), loader, exportType);
                                     }
                                 });
+                        message.replyAndRequest(ReplyHandler.getOkReply());
                     }
                     else
                     {
                         message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
                     }
                 });
 
     }
 
-    private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, Message<JsonObject> message,
-                                             ProjectLoader loader)
+    private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, ProjectLoader loader, int exportType)
     {
         JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
         if(configContent == null) return;
 
-        int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
-
-        fileGenerator.run(message, loader, configContent, exportType);
+        fileGenerator.run(loader, configContent, exportType);
     }
 
 
