@@ -33,7 +33,6 @@ public class FileGenerator {
 
     public void run(@NonNull ProjectLoader loader, @NonNull JsonObject configContent, @NonNull int exportType) {
         EventQueue.invokeLater(() -> {
-            ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_STARTING);
             String exportPath = null;
             if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
             {

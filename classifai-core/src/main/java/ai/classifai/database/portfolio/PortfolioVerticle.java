@@ -294,6 +294,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     else
                     {
                         message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
                     }
                 });
 

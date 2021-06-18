@@ -368,6 +368,10 @@ public class V2Endpoint extends EndpointBase {
 
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
 
+        // Initiate export status
+        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_STARTING);
+        ProjectExport.setExportPath("");
+
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
             if (reply.succeeded()) {
@@ -379,7 +383,7 @@ public class V2Endpoint extends EndpointBase {
             else
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
-
+                ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
             }
         });
 
@@ -408,7 +412,6 @@ public class V2Endpoint extends EndpointBase {
         }
 
         HTTPResponseHandler.configureOK(context, response);
-        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_NOT_INITIATED);
     }
 
     public void importProject(RoutingContext context)
