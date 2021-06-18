@@ -1,0 +1,12 @@
+{
+    "comingSoon": "Akan Datang",
+    "tabular": "Jadual",
+    "image": "Imej",
+    "video": "Video",
+    "voice": "Suara",
+    "imageOpt": {
+        "selection": "Sila pilih salah satu daripada pilihan berikut:",
+        "boundingBoxes": "Kotak",
+        "polygons": "Poligon"
+    }
+}
