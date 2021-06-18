@@ -12,6 +12,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Added CodeofConduct.md and Contributing.md 
 - Changed create project workflow  
   to insert project name, project folder, and label file in the same window
+- Frontend auto pr
 - CHANGELOG.md
 - Project renaming 
 - Project reloading
