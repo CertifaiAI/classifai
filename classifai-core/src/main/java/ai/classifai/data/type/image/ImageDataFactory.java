@@ -45,7 +45,7 @@ public class ImageDataFactory
         }
         else
         {
-            throw new NotSupportedImageTypeException("File type not supported");
+            throw new NotSupportedImageTypeException(String.format("%s type not supported", metadata.getDirectories()));
         }
     }
 }
