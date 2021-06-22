@@ -23,6 +23,7 @@ jobs:
             
             - It will triggered once codes in [***dist folder***][3] from repo [***Classifai_FrontEnd***][1] has been pushed.
             - Files & sub-folder in [***dist folder***][3] of repo [***Classifai_FrontEnd***][1] will be copied into [***classifai's webroot***][2]
+            - Committed frontend PR's URL can be found in the commit history below.
 
             [1]: https://github.com/CertifaiAI/Classifai_FrontEnd
             [2]: https://github.com/CertifaiAI/classifai/tree/v2_alpha/classifai-core/src/main/resources/webroot

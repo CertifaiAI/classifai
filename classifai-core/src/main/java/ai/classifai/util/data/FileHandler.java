@@ -24,7 +24,10 @@ import java.nio.file.Files;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * File Handler
@@ -36,6 +39,13 @@ public class FileHandler
 {
     public static List<String> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
     {
+        Predicate<File> func = file -> isFileSupported(file.getAbsolutePath(), extensionFormat);
+
+        return processFolder(rootPath, func);
+    }
+
+    public static List<String> processFolder(@NonNull File rootPath, @NonNull Predicate<File> filterFunction)
+    {
         List<String> totalFilelist = new ArrayList<>();
 
         Deque<File> queue = new ArrayDeque<>();
@@ -46,7 +56,7 @@ public class FileHandler
         {
             File currentFolderPath = queue.pop();
 
-            File[] folderList = currentFolderPath.listFiles();
+            List<File> folderList = listFiles(currentFolderPath);
 
             for (File file : folderList)
             {
@@ -56,7 +66,7 @@ public class FileHandler
                 }
                 else
                 {
-                    if (isFileSupported(file.getAbsolutePath(), extensionFormat))
+                    if (filterFunction.test(file))
                     {
                         totalFilelist.add(file.getAbsolutePath());
                     }
@@ -65,6 +75,19 @@ public class FileHandler
         }
 
         return totalFilelist;
+    }
+
+    private static List<File> listFiles(File rootPath)
+    {
+        List<File> outputList = new ArrayList<>();
+
+        if (rootPath.exists())
+        {
+            outputList = Arrays.stream(rootPath.listFiles())
+                    .collect(Collectors.toList());
+        }
+
+        return outputList;
     }
 
     public static boolean isFileSupported(String file, String[] formatTypes)
