@@ -37,6 +37,7 @@
         "new": "Terbaru",
         "available": "Tersedia",
         "opened": "Telah Dibuka",
+        "invalidPath": "Pautan Hilang",
         "uploadFolder": "Memuat naik folder",
         "uploadPhotos": "Memuat naik foto",
         "renameProject": "Tukar Nama Projek",
@@ -44,7 +45,8 @@
         "created": "Dicipta pada:",
         "totalPhoto": "Jumlah foto:",
         "noProject": "Tunggu sekejap... tidak ada projek pun",
-        "createNew": "Bersedia dan jom mulakan projek baru!"
+        "createNew": "Bersedia dan jom mulakan projek baru!",
+        "projectPath": "Lokasi Projek"
     },
     "deleteMsg": "dipadam ",
     "success": "berjaya",
@@ -60,5 +62,10 @@
     "configFileInfoDest1": "Fail konfig ialah fail JSON yang dihasilkan oleh Classifai.",
     "configFileInfoDest2": "Fail ini mengandungi metadata projek dan ianya boleh digunakan untuk menghasilkan semula projek menggunakan fungsi eksport projek.",
     "importSuccess": "Import projek telah berjaya. Dinamakan semula sebagai ",
-    "importAborted": "Import projek dibatalkan."
+    "importAborted": "Import projek dibatalkan.",
+    "unsupportedImage": "Imej Tidak Disokong Ditemui!",
+    "containsUnsupportedImage1": "Terdapat ",
+    "containsUnsupportedImage2": " imej yang tidak disokong di dalam projek ini!",
+    "unsupportedImageList1": "Senarai imej tersebut terdapat di dalam fail TXT yang telah dimuat turun.",
+    "unsupportedImageList2": "Sila tukar format imej tersebut ke format jpg/png dan import semula."
 }

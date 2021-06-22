@@ -99,6 +99,8 @@ public class ProjectLoader
 
     @Builder.Default private List<Integer> progressUpdate = Arrays.asList(0, 1);
 
+    @Builder.Default private List<String> unsupportedImageList = new ArrayList<>();
+
     public String getCurrentVersionUuid()
     {
         return projectVersion.getCurrentVersion().getVersionUuid();
@@ -286,5 +288,6 @@ public class ProjectLoader
             log.info("Error while copying file: ", e);
         }
     }
+
 
 }

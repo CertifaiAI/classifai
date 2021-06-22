@@ -94,7 +94,7 @@ public class ImageHandler {
     {
         if ((dataFullPath.exists() == false) && (dataFullPath.length() < 5)) //length() stands for file size
         {
-            log.info(dataFullPath + " not found. Check if the data is in the corresponding path. ");
+            log.debug(dataFullPath + " not found. Check if the data is in the corresponding path. ");
 
             return false;
         }
@@ -249,20 +249,6 @@ public class ImageHandler {
         return null;
     }
 
-    public static List<String> checkFile(@NonNull File file)
-    {
-        List<String> verifiedFilesList = new ArrayList<>();
-
-        String fullPath = file.getAbsolutePath();
-
-        if (FileHandler.isFileSupported(fullPath, ImageFileType.getImageFileTypes()) && isImageFileValid(file))
-        {
-            verifiedFilesList.add(file.getAbsolutePath());
-        }
-
-        return verifiedFilesList;
-    }
-
     public static boolean isImageFileValid(File file)
     {
         try
@@ -279,7 +265,7 @@ public class ImageHandler {
         }
         catch (Exception e)
         {
-            log.info("Skipped " + file, e);
+            log.debug(String.format("Skipped %s.%n%s", file, e.getMessage()));
             return false;
         }
 
@@ -316,32 +302,17 @@ public class ImageHandler {
 
     public static List<String> getValidImagesFromFolder(File rootPath)
     {
-        List<String> imageList = new ArrayList<>();
+        return FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
+    }
 
-        Deque<File> fileQueue = new ArrayDeque<>();
+    private static boolean isImageUnsupported(File file)
+    {
+        return (FileHandler.isFileSupported(file.getAbsolutePath(), ImageFileType.getImageFileTypes()) && !isImageFileValid(file));
+    }
 
-        fileQueue.push(rootPath);
-
-        while (!fileQueue.isEmpty())
-        {
-            File currentFolderPath = fileQueue.pop();
-
-            File[] folderList = currentFolderPath.listFiles();
-
-            for (File file : folderList)
-            {
-                if (file.isDirectory())
-                {
-                    fileQueue.push(file);
-                }
-                else
-                {
-                    imageList.addAll(ImageHandler.checkFile(file));
-                }
-            }
-        }
-
-        return imageList;
+    private static List<String> getUnsupportedImagesFromFolder(File rootPath)
+    {
+        return FileHandler.processFolder(rootPath, ImageHandler::isImageUnsupported);
     }
 
 
@@ -381,6 +352,7 @@ public class ImageHandler {
         }
 
         List<String> dataFullPathList = getValidImagesFromFolder(rootPath);
+        loader.setUnsupportedImageList(getUnsupportedImagesFromFolder(rootPath));
 
         //Scenario 2 - 1: root path exist but all images missing
         if(dataFullPathList.isEmpty())
@@ -409,7 +381,5 @@ public class ImageHandler {
 
         return true;
     }
-
-
 
 }

@@ -285,28 +285,27 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 .onComplete(annotationFetch ->{
                                     if (annotationFetch.succeeded())
                                     {
-                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(),
-                                                message, loader);
+                                        int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
+                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(), loader, exportType);
                                     }
                                 });
+                        message.replyAndRequest(ReplyHandler.getOkReply());
                     }
                     else
                     {
                         message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
                     }
                 });
 
     }
 
-    private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, Message<JsonObject> message,
-                                             ProjectLoader loader)
+    private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, ProjectLoader loader, int exportType)
     {
         JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
         if(configContent == null) return;
 
-        int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
-
-        fileGenerator.run(message, loader, configContent, exportType);
+        fileGenerator.run(loader, configContent, exportType);
     }
 
 
@@ -464,7 +463,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         Version currentVersion = loader.getProjectVersion().getCurrentVersion();
 
-        List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(loader.getProjectPath());
+        File projectPath = loader.getProjectPath();
+
+        if (!projectPath.exists())
+        {
+            log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
+        }
+
+        List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(projectPath);
 
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
@@ -476,7 +482,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
                 .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
-                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size()));
+                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
+                .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
     }
 
     /**
