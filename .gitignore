@@ -34,3 +34,29 @@ target/
 
 #log file
 classifai.log
+.project
+classifai-api/.classpath
+classifai-api/.factorypath
+classifai-api/.project
+classifai-api/.settings/org.eclipse.jdt.apt.core.prefs
+classifai-api/.settings/org.eclipse.jdt.core.prefs
+classifai-cloud/.classpath
+classifai-cloud/.factorypath
+classifai-cloud/.project
+classifai-cloud/.settings/org.eclipse.jdt.apt.core.prefs
+classifai-cloud/.settings/org.eclipse.jdt.core.prefs
+classifai-cloud/bin/pom.xml
+classifai-core/.classpath
+classifai-core/.factorypath
+classifai-core/.project
+classifai-core/.settings/org.eclipse.jdt.apt.core.prefs
+classifai-core/.settings/org.eclipse.jdt.core.prefs
+classifai-test/.classpath
+classifai-test/.factorypath
+classifai-test/.project
+classifai-test/.settings/org.eclipse.jdt.apt.core.prefs
+classifai-test/.settings/org.eclipse.jdt.core.prefs
+classifai-uberjar/.classpath
+classifai-uberjar/.project
+classifai-uberjar/.settings/org.eclipse.jdt.apt.core.prefs
+classifai-uberjar/.settings/org.eclipse.jdt.core.prefs
