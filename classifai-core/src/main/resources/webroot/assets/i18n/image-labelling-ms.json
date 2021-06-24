@@ -58,6 +58,35 @@
         "withData": "(Bersama Data)",
         "cancel": "Batal"
     },
+    "info": {
+        "header": "Informasi Kekunci Pintasan",
+        "shortcut": {
+            "1": {
+                "key": "Ctrl + z",
+                "functionality": "Kembali ke tindakan terakhir"
+            },
+            "2": {
+                "key": "Ctrl + c",
+                "functionality": "Menyalin kotak sempadan/poligon yang dipilih"
+            },
+            "3": {
+                "key": "Ctrl + v",
+                "functionality": "Menampal kotak sempadan/poligon yang telah disalin"
+            },
+            "4": {
+                "key": "Delete/Backspace",
+                "functionality": "Memadam kotak sempadan/poligon yang dipilih"
+            },
+            "5": {
+                "key": "Klik dua kali pada kotak sempadan/poligon yang dipilih",
+                "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
+            },
+            "6": {
+                "key": "F2",
+                "functionality": "Menamakan semula imej semasa"
+            }
+        }
+    },
     "footer": {
         "projectName": "Nama Projek",
         "size": "Saiz",
@@ -79,6 +108,14 @@
         "noLabel": "Tiada label wujud",
         "btnSave": "Simpan",
         "instructionText": "Togol ke kiri untuk melumpuhkan label"
+    },
+    "renameModal": {
+        "renameImg": "Namakan Semula Imej",
+        "imageName": "Nama Imej",
+        "typeNewName": "Masukkan nama baru",
+        "nameExist": "Nama imej telah tersedia!",
+        "nameEmpty": "Nama imej diperlukan!",
+        "submit": "Hantar"
     },
     "configFileInfoTitle": "Pilih Fail Eksport",
     "configFileInfoDest1": "Fail Konfig ialah fail konfigurasi yang mengandungi metadata sesuatu projek. Pilihan ini sesuai jika data sudah tersedia dalam sistem untuk diimport.",

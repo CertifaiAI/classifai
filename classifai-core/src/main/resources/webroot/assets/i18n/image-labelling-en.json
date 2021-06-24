@@ -67,19 +67,23 @@
             },
             "2": {
                 "key": "Ctrl + c",
-                "functionality": "Copy the selected bounding box"
+                "functionality": "Copy the selected bounding box/ polygon"
             },
             "3": {
                 "key": "Ctrl + v",
-                "functionality": "Paste the selected bounding box"
+                "functionality": "Paste the selected bounding box/ polygon"
             },
             "4": {
                 "key": "Delete/Backspace",
-                "functionality": "Delete a selected bounding box"
+                "functionality": "Delete a selected bounding box/ polygon"
             },
             "5": {
-                "key": "Double click on a selected bounding box",
+                "key": "Double click on a selected bounding box/ polygon",
                 "functionality": "Choose label for the selected bounding box"
+            },
+            "6": {
+                "key": "F2",
+                "functionality": "Rename the current image"
             }
         }
     },
@@ -104,6 +108,14 @@
         "noLabel": "No Label",
         "btnSave": "Save",
         "instructionText": "Toggle left to disable the label"
+    },
+    "renameModal": {
+        "renameImg": "Rename Image",
+        "imageName": "Image Name",
+        "typeNewName": "Enter new name",
+        "nameExist": "Image name already exist!",
+        "nameEmpty": "Image name is required!",
+        "submit": "Proceed"
     },
     "configFileInfoTitle": "Choosing the Right Export",
     "configFileInfoDest1": "Config File is the configuration file contains of metadata of a project. It is suitable when the data is readily available in the system to be imported to.",
