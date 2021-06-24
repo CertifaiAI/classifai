@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
-public class RenameProjectData {
+public final class RenameProjectData {
 
     private static ProjectLoader loader;
     private static String dataUUID;
