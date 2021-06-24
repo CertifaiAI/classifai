@@ -124,5 +124,15 @@
     "containsUnsupportedImage1": "项目中包含",
     "containsUnsupportedImage2": "个不受支持的图像！",
     "unsupportedImageList1": "图像列表在下载的TXT 文件中。",
-    "unsupportedImageList2": "请将它们转换为 jpg/png 类型并再次重新导入。"
+    "unsupportedImageList2": "请将它们转换为 jpg/png 类型并再次重新导入。",
+    "warningNoLabel": "没有选择标签！请至少选择一个要导出的标签。",
+    "warning": {
+        "noMetadata": "没有元数据。",
+        "noBoundingBox": "没有边界框。",
+        "noLabelList": "没有标签列表。",
+        "noImageList": "没有图像列表。 ",
+        "noProgress": "没有标签进展。",
+        "noLabelSelected": "没有选择标签。",
+        "noPolygon": "There are no polygon."
+    }
 }

@@ -124,5 +124,15 @@
     "containsUnsupportedImage1": "There are ",
     "containsUnsupportedImage2": " unsupported images included in the project!",
     "unsupportedImageList1": "The list of images is in the downloaded TXT file.",
-    "unsupportedImageList2": "Kindly convert them to jpg/png type and reimport them again."
+    "unsupportedImageList2": "Kindly convert them to jpg/png type and reimport them again.",
+    "warningNoLabel": "No label is selected! Please select at least one label to export.",
+    "warning": {
+        "noMetadata": "There are no metadata.",
+        "noBoundingBox": "There are no bounding box.",
+        "noLabelList": "There are no label list.",
+        "noImageList": "There are no image list.",
+        "noProgress": " There are no labelling progress.",
+        "noLabelSelected": "There are no label selected.",
+        "noPolygon": "There are no polygon."
+    }
 }

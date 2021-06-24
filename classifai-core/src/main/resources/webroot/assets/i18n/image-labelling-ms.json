@@ -124,5 +124,15 @@
     "containsUnsupportedImage1": "Terdapat ",
     "containsUnsupportedImage2": " imej yang tidak disokong di dalam projek ini!",
     "unsupportedImageList1": "Senarai imej tersebut terdapat di dalam fail TXT yang telah dimuat turun.",
-    "unsupportedImageList2": "Sila tukar format imej tersebut ke format jpg/png dan import semula."
+    "unsupportedImageList2": "Sila tukar format imej tersebut ke format jpg/png dan import semula.",
+    "warningNoLabel": "Tiada label dipilih! Sila pilih sekurang-kurangnya satu label untuk dieksport.",
+    "warning": {
+        "noMetadata": "Tidak ada metadata.",
+        "noBoundingBox": "Tidak ada kotak sempadan.",
+        "noLabelList": "Tidak ada senarai label.",
+        "noImageList": "Tidak ada senarai imej.",
+        "noProgress": " Tidak ada kemajuan pelabelan.",
+        "noLabelSelected": "Tidak ada label yang dipilih.",
+        "noPolygon": "Tidak ada poligon."
+    }
 }
