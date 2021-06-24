@@ -24,6 +24,10 @@ public final class RenameProjectData {
     private static String dataUUID;
     private static Annotation annotation;
 
+    private RenameProjectData() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static void renameProjectData(JDBCPool jdbcPool, Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
