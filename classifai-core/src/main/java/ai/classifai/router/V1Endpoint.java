@@ -20,6 +20,7 @@ import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -352,10 +353,7 @@ public class V1Endpoint extends EndpointBase
                 {
                     if (fetch.succeeded())
                     {
-                        JsonObject response = (JsonObject) fetch.result().body();
-
-                        HTTPResponseHandler.configureOK(context, response);
-
+                        updateLastModifiedDate(projectID, context);
                     }
                     else
                     {
@@ -367,6 +365,33 @@ public class V1Endpoint extends EndpointBase
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
             }
+        });
+    }
+
+    private void updateLastModifiedDate(String projectID, RoutingContext)
+    {
+        String queue = PortfolioDbQuery.getQueue();
+
+        JsonObject jsonObj = new JsonObject();
+
+        jsonObj.put(ParamConfig.getProjectIdParam(), projectID);
+        jsonObj.put(ParamConfig.getLastModifiedDate(), new DateTime().toString());
+
+        DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLastModifiedDate());
+
+        vertx.eventBus().request(queue, jsonObj, updateOptions, fetch ->
+        {
+            if (fetch.succeeded())
+            {
+                JsonObject response = (JsonObject) fetch.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+            }
+            else
+            {
+
+            }
+
         });
     }
 

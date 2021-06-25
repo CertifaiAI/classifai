@@ -56,4 +56,6 @@ public class PortfolioDbQuery
     @Getter private static final String exportProject = "SELECT * FROM Portfolio WHERE project_id = ?";
 
     @Getter private static final String reloadProject = "SELECT project_path FROM Portfolio WHERE project_id = ?";
+
+    @Getter private static final String updateLastModifiedDate = "UPDATE Portfolio SET last_modified_date = ? WHERE project_id = ?";
 }
