@@ -22,6 +22,7 @@ import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Version single unit
@@ -40,6 +41,7 @@ public class Version
 
     private DateTime createdDate;
 
+    @Setter
     private DateTime lastModifiedDate;
 
     private String nextVersionUuid = null; //linked-list, to get sequential in creation

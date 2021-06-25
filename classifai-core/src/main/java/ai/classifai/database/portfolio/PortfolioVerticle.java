@@ -123,6 +123,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.renameProject(message);
         }
+        else if(action.equals(PortfolioDbQuery.getUpdateLastModifiedDate()))
+        {
+            this.updateLastModifiedDate(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -147,6 +151,28 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                     else
                     {
                         log.debug("Create project failed from database");
+                    }
+                });
+    }
+
+    private void updateLastModifiedDate(Message<JsonObject> message)
+    {
+        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
+        String currentVersion = message.body().getString(ParamConfig.getCurrentVersionParam());
+
+        Tuple params = Tuple.of(currentVersion, projectId);
+
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateLastModifiedDate())
+                .execute(params)
+                .onComplete(fetch -> {
+
+                    if (fetch.succeeded())
+                    {
+                        message.replyAndRequest(ReplyHandler.getOkReply());
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
                     }
                 });
     }
