@@ -27,7 +27,7 @@ public class PortfolioDbQuery
     @Getter private static final String queue = "portfolio.queue";
 
     @Getter private static final String createPortfolioTable = "CREATE TABLE IF NOT EXISTS Portfolio (project_id UUID, project_name VARCHAR(255), annotation_type INT, " +
-            "project_path VARCHAR(255), is_new BOOLEAN, is_starred BOOLEAN, project_infra VARCHAR(25), current_version VARCHAR(200), project_version VARCHAR(5000), uuid_project_version CLOB, label_project_version CLOB, PRIMARY KEY (project_id))";
+            "project_path VARCHAR(255), is_new BOOLEAN, is_starred BOOLEAN, project_infra VARCHAR(25), current_version VARCHAR(200), project_version VARCHAR(5000), uuid_project_version CLOB, label_project_version CLOB,  PRIMARY KEY (project_id))";
 
     @Getter private static final String createNewProject = "INSERT INTO Portfolio VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

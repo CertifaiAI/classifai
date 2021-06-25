@@ -480,7 +480,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
                 .put(ParamConfig.getIsCloudParam(), loader.isCloud())
                 .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
-                .put(ParamConfig.getCreatedDateParam(), currentVersion.getDateTime().toString())
+                .put(ParamConfig.getCreatedDateParam(), currentVersion.getCreatedDate().toString())
+                .put(ParamConfig.getLastModifiedDate(), currentVersion.getLastModifiedDate().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
