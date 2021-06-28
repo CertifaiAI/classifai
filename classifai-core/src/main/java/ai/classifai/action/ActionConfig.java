@@ -41,6 +41,8 @@ public class ActionConfig
     @Getter private static final String updatedDateParam = "updated_date";
 
     @Getter private static final String exportTypeParam = "export_type";
+    @Getter private static final String exportStatusParam = "export_status";
+    @Getter private static final String exportStatusMessageParam = "export_status_message";
 
     @Getter private static final String toolName = "classifai";
 
