@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package ai.classifai.action;
 
 import ai.classifai.database.annotation.AnnotationQuery;
@@ -17,6 +32,11 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Utility class for renaming data points
+ *
+ * @author devenyantis
+ */
 @Slf4j
 public final class RenameProjectData {
 
@@ -36,23 +56,23 @@ public final class RenameProjectData {
         getAnnotationVersion();
 
         String newDataFileName = message.body().getString(ParamConfig.getNewFileNameParam());
-        String oldDataFilename = getOldDataFilename();
+        String oldDataFileName = getOldDataFileName();
 
-        String updatedFilename = modifyFilenameFromCache(newDataFileName);
-        File newDataPath = createNewDataPath(updatedFilename);
+        String updatedFileName = modifyFileNameFromCache(newDataFileName);
+        File newDataPath = createNewDataPath(updatedFileName);
 
         if(newDataPath.exists()) {
             // Abort if name exists
-            message.reply(ReplyHandler.reportUserDefinedError("Name exists"));
+            message.reply(ReplyHandler.reportUserDefinedError("Name exists: " +  newDataPath));
             return;
         }
 
-        Tuple params = Tuple.of(updatedFilename, dataUUID, projectId);
+        Tuple params = Tuple.of(updatedFileName, dataUUID, projectId);
 
-        if(renameDataPath(newDataPath, oldDataFilename))
+        if(renameDataPath(newDataPath, oldDataFileName))
         {
             invokeJDBCPool(jdbcPool, message, params, newDataPath.toString());
-            updateAnnotationCache(updatedFilename);
+            updateAnnotationCache(updatedFileName);
         }
         else
         {
@@ -75,35 +95,35 @@ public final class RenameProjectData {
                     else
                     {
                         message.reply(ReplyHandler.reportUserDefinedError(
-                                "Fail to update filename in database"));
+                                "Fail to update filename in database: " + params));
                     }
                 });
     }
 
-    private static boolean renameDataPath(File newDataPath, String oldDataFilename)
+    private static boolean renameDataPath(File newDataPath, String oldDataFileName)
     {
-        File oldDataPath = new File(oldDataFilename);
+        File oldDataPath = new File(oldDataFileName);
 
         log.debug("Rename file:\nFrom: " + oldDataPath + "\nTo: " + newDataPath);
 
         return oldDataPath.renameTo(newDataPath);
     }
 
-    private static String getOldDataFilename()
+    private static String getOldDataFileName()
     {
         return Paths.get(loader.getProjectPath().toString(), annotation.getImgPath()).toString();
     }
 
-    private static String modifyFilenameFromCache(String newFilename)
+    private static String modifyFileNameFromCache(String newFileName)
     {
         String oldDataPath = annotation.getImgPath();
         // get only the filename after last slash before file extension
-        String oldDataPathFName = oldDataPath.substring(oldDataPath.lastIndexOf(File.separator) + 1, oldDataPath.lastIndexOf("."));
+        String oldDataPathFileName = oldDataPath.substring(oldDataPath.lastIndexOf(File.separator) + 1, oldDataPath.lastIndexOf("."));
 
-        String newDataPathFName = newFilename.substring(newFilename.lastIndexOf(File.separator) + 1, newFilename.lastIndexOf("."));
+        String newDataPathFName = newFileName.substring(newFileName.lastIndexOf(File.separator) + 1, newFileName.lastIndexOf("."));
 
         // Rename old data path filename
-        String newDataPathModified = oldDataPath.replace(oldDataPathFName, newDataPathFName);
+        String newDataPathModified = oldDataPath.replace(oldDataPathFileName, newDataPathFName);
         log.debug("New modified path: " + newDataPathModified);
 
         return newDataPathModified;
