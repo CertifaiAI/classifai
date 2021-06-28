@@ -58,6 +58,35 @@
         "withData": "(包括数据)",
         "cancel": "取消"
     },
+    "info": {
+        "header": "快捷键资讯",
+        "shortcut": {
+            "1": {
+                "key": "Ctrl + z",
+                "functionality": "撤销上一步的操作"
+            },
+            "2": {
+                "key": "Ctrl + c",
+                "functionality": "复制选定的边界框/多边形"
+            },
+            "3": {
+                "key": "Ctrl + v",
+                "functionality": "粘贴选定的边界框/多边形"
+            },
+            "4": {
+                "key": "Delete/Backspace",
+                "functionality": "删除选定的边界框/多边形"
+            },
+            "5": {
+                "key": "双击选定的边界框/多边形",
+                "functionality": "为选定的边界框选择标签/多边形"
+            },
+            "6": {
+                "key": "F2",
+                "functionality": "重命名当前图像"
+            }
+        }
+    },
     "footer": {
         "projectName": "项目名",
         "size": "容量",
@@ -80,6 +109,14 @@
         "btnSave": "保存",
         "instructionText": "向左切换以禁用标签"
     },
+    "renameModal": {
+        "renameImg": "重命名图像",
+        "imageName": "图片名称",
+        "typeNewName": "输入新名称",
+        "nameExist": "图像名称已存在！",
+        "nameEmpty": "图片名称为必填项!",
+        "submit": "提交"
+    },
     "configFileInfoTitle": "选择正确的导出格式",
     "configFileInfoDest1": "配置文件是包含项目元数据的配置文件。当数据在要导入到的系统中随时可用时，它是合适的。",
     "configFileInfoDest2": "压缩文件包含带有项目中使用的数据集的配置文件。它编译要在不同系统中复制的项目的所有组件。",
@@ -87,5 +124,15 @@
     "containsUnsupportedImage1": "项目中包含",
     "containsUnsupportedImage2": "个不受支持的图像！",
     "unsupportedImageList1": "图像列表在下载的TXT 文件中。",
-    "unsupportedImageList2": "请将它们转换为 jpg/png 类型并再次重新导入。"
+    "unsupportedImageList2": "请将它们转换为 jpg/png 类型并再次重新导入。",
+    "warningNoLabel": "没有选择标签！请至少选择一个要导出的标签。",
+    "warning": {
+        "noMetadata": "没有元数据。",
+        "noBoundingBox": "没有边界框。",
+        "noLabelList": "没有标签列表。",
+        "noImageList": "没有图像列表。 ",
+        "noProgress": "没有标签进展。",
+        "noLabelSelected": "没有选择标签。",
+        "noPolygon": "There are no polygon."
+    }
 }
