@@ -101,7 +101,7 @@ public final class RenameProjectData {
     }
 
     private static boolean containIllegalChars(String filename) {
-        Pattern pattern = Pattern.compile("[:;'?~#@*+%{}<>/\\[\\]|\"^]");
+        Pattern pattern = Pattern.compile("[ `&:;'?$~#@=*+%{}<>/\\[\\]|\"^]");
         Matcher matcher = pattern.matcher(filename);
 
         return matcher.find();
