@@ -237,6 +237,8 @@ public class ImageHandler {
 
             String encodedfile = new String(Base64.getEncoder().encode(bytes));
 
+            fileInputStreamReader.close();
+
             return getImageHeader(file.getAbsolutePath()) + encodedfile;
         }
         catch (Exception e)
