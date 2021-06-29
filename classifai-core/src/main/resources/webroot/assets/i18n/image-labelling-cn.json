@@ -113,6 +113,8 @@
         "renameImg": "重命名图像",
         "imageName": "图片名称",
         "typeNewName": "输入新名称",
+        "fail": "重命名失败!",
+        "illegal": "名称包含无效字符!",
         "nameExist": "图像名称已存在！",
         "nameEmpty": "图片名称为必填项!",
         "submit": "提交"

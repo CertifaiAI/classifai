@@ -113,6 +113,8 @@
         "renameImg": "Namakan Semula Imej",
         "imageName": "Nama Imej",
         "typeNewName": "Masukkan nama baru",
+        "fail": "Gagal menamakan semula!",
+        "illegal": "Nama imej mengandungi karakter yang tidak sah!",
         "nameExist": "Nama imej telah tersedia!",
         "nameEmpty": "Nama imej diperlukan!",
         "submit": "Hantar"

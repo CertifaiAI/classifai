@@ -113,6 +113,8 @@
         "renameImg": "Rename Image",
         "imageName": "Image Name",
         "typeNewName": "Enter new name",
+        "fail": "Rename failed!",
+        "illegal": "Image name contains illegal characters!",
         "nameExist": "Image name already exist!",
         "nameEmpty": "Image name is required!",
         "submit": "Proceed"
