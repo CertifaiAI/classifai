@@ -29,7 +29,7 @@ jobs:
             [2]: https://github.com/CertifaiAI/classifai/tree/v2_alpha/classifai-core/src/main/resources/webroot
             [3]: https://github.com/CertifaiAI/Classifai_FrontEnd/tree/main/dist/classifai
 
-          pr_reviewer: "codenamewei"  # Reviewer(s), can be Comma-separated list (no spaces)                                            
+          pr_reviewer: "codenamewei,devenyantis"  # Reviewer(s), can be Comma-separated list (no spaces)                                            
           pr_label: "auto-pr" # Set label for the PR                              
           pr_allow_empty: true # Creates pull request even if there are no changes
 
