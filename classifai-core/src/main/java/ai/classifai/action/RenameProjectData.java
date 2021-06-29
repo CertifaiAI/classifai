@@ -19,6 +19,7 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.eventbus.Message;
@@ -31,6 +32,8 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for renaming data points
@@ -39,6 +42,13 @@ import java.util.Objects;
  */
 @Slf4j
 public final class RenameProjectData {
+
+    private enum RenameDataErrorCode {
+        RENAME_FAIL,
+        FILENAME_EXIST,
+        FILENAME_CONTAIN_ILLEGAL_CHAR,
+        RENAME_SUCCESS
+    }
 
     private static ProjectLoader loader;
     private static String dataUUID;
@@ -56,6 +66,13 @@ public final class RenameProjectData {
         getAnnotationVersion();
 
         String newDataFileName = message.body().getString(ParamConfig.getNewFileNameParam());
+        if(containIllegalChars(newDataFileName)) {
+            // Abort if filename contain illegal chars
+            String illegal_char_str = "Contain illegal character";
+            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_CONTAIN_ILLEGAL_CHAR.ordinal(), illegal_char_str));
+            return;
+        }
+
         String oldDataFileName = getOldDataFileName();
 
         String updatedFileName = modifyFileNameFromCache(newDataFileName);
@@ -63,7 +80,8 @@ public final class RenameProjectData {
 
         if(newDataPath.exists()) {
             // Abort if name exists
-            message.reply(ReplyHandler.reportUserDefinedError("Name exists: " +  newDataPath));
+            String name_exist_str = "Name exists";
+            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_EXIST.ordinal(), name_exist_str));
             return;
         }
 
@@ -76,9 +94,17 @@ public final class RenameProjectData {
         }
         else
         {
-            message.reply(ReplyHandler.reportUserDefinedError("Fail to rename file"));
+            String fail_rename_str = "Fail to rename file";
+            message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), fail_rename_str));
         }
 
+    }
+
+    private static boolean containIllegalChars(String filename) {
+        Pattern pattern = Pattern.compile("[:;'?~#@*+%{}<>/\\[\\]|\"^]");
+        Matcher matcher = pattern.matcher(filename);
+
+        return matcher.find();
     }
 
     private static void invokeJDBCPool(JDBCPool jdbcPool, Message<JsonObject> message, Tuple params, String newDataPath)
@@ -94,8 +120,8 @@ public final class RenameProjectData {
                     }
                     else
                     {
-                        message.reply(ReplyHandler.reportUserDefinedError(
-                                "Fail to update filename in database: " + params));
+                        String query_error_str = "Fail to update filename in database";
+                        message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), query_error_str));
                     }
                 });
     }
@@ -153,5 +179,14 @@ public final class RenameProjectData {
 
         loader.setUuidAnnotationDict(uuidAnnotationDict);
 
+    }
+
+    private static JsonObject reportRenameError(int errorKey, String errorMessage)
+    {
+        log.info(errorMessage);
+
+        return new JsonObject().put("message", 0)
+                .put("error_code", errorKey)
+                .put("error_message", errorMessage);
     }
 }
