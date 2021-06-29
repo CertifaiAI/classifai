@@ -119,8 +119,8 @@ public final class RenameProjectData {
                     }
                     else
                     {
-                        String query_error_str = "Fail to update filename in database";
-                        message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), query_error_str));
+                        String queryErrorMes = "Fail to update filename in database";
+                        message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), queryErrorMes));
                     }
                 });
     }
