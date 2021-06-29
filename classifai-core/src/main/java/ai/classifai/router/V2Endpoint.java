@@ -18,6 +18,7 @@ package ai.classifai.router;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.ProjectLoader;
@@ -29,6 +30,7 @@ import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.NewProjectStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -44,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Classifai v2 endpoints
@@ -581,5 +584,45 @@ public class V2Endpoint extends EndpointBase {
         }
 
         HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+    /**
+     * Rename data filename
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/imgsrc/rename
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/imgsrc/rename
+     *
+     * json payload = {
+     *      "uuid" : "f592a6e2-53f8-4730-930c-8357d191de48"
+     *      "new_fname" : "new_7.jpg"
+     * }
+     *
+     */
+    public void renameData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        context.request().bodyHandler(h -> {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            request.put(ParamConfig.getProjectIdParam(), projectId);
+            request.put(ParamConfig.getUuidParam(), request.getString(ParamConfig.getUuidParam()));
+            request.put(ParamConfig.getNewFileNameParam(), request.getString(ParamConfig.getNewFileNameParam()));
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
+
+            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply -> {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+
     }
 }
