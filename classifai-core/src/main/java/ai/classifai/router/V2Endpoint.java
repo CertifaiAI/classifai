@@ -26,6 +26,7 @@ import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.selector.status.NewProjectStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
@@ -141,57 +142,108 @@ public class V2Endpoint extends EndpointBase {
      * PUT http://localhost:{port}/v2/projects
      *
      * Request Body
+     * create raw project
      * {
+     *   "status": "raw",
      *   "project_name": "test-project",
      *   "annotation_type": "boundingbox",
      *   "project_path": "/Users/codenamwei/Desktop/Education/books",
      *   "label_file_path": "/Users/codenamewei/Downloads/test_label.txt",
      * }
      *
+     * create config project
+     * {
+     *   "status": "config"
+     * }
      */
     public void createProject(RoutingContext context)
     {
         context.request().bodyHandler(h ->
         {
-            JsonObject requestBody = h.toJsonObject();
-
-            String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
-
-            String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
-            Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
-
-            if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+            try
             {
-                String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
+                JsonObject requestBody = h.toJsonObject();
 
-                String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
-                List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+                String projectStatus = requestBody.getString(ParamConfig.getStatusParam()).toUpperCase();
 
-                ProjectLoader loader = ProjectLoader.builder()
-                        .projectId(UuidGenerator.generateUuid())
-                        .projectName(projectName)
-                        .annotationType(annotationInt)
-                        .projectPath(new File(projectPath))
-                        .labelList(labelList)
-                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                        .isProjectStarred(Boolean.FALSE)
-                        .isProjectNew(Boolean.TRUE)
-                        .projectVersion(new ProjectVersion())
-                        .projectInfra(ProjectInfra.ON_PREMISE)
-                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                        .build();
+                if(projectStatus.equals(NewProjectStatus.CONFIG.name()))
+                {
+                    createConfigProject(context);
+                }
+                else if(projectStatus.equals(NewProjectStatus.RAW.name()))
+                {
+                    createRawProject(requestBody, context);
+                }
+                else
+                {
+                    String errorMessage = "Project status: " + projectStatus + " not recognizable. Expect " + NewProjectStatus.getParamList();
 
-                ProjectHandler.loadProjectLoader(loader);
-
-                loader.initFolderIteration();
-
-                HTTPResponseHandler.configureOK(context);
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+                }
             }
-            else
+            catch(Exception e)
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project name exist: " + projectName));
+                String errorMessage = "Parameter of status with " + NewProjectStatus.getParamList() + " is compulsory in request body";
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+
             }
         });
+    }
+
+    protected void createConfigProject(RoutingContext context)
+    {
+        if(projectImporter.isWindowOpen())
+        {
+            JsonObject jsonResponse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
+
+            HTTPResponseHandler.configureOK(context, jsonResponse);
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
+
+        projectImporter.run();
+    }
+
+    protected void createRawProject(JsonObject requestBody, RoutingContext context)
+    {
+        String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
+
+        String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
+        Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
+
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        {
+            String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
+
+            String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
+            List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+
+            ProjectLoader loader = ProjectLoader.builder()
+                    .projectId(UuidGenerator.generateUuid())
+                    .projectName(projectName)
+                    .annotationType(annotationInt)
+                    .projectPath(new File(projectPath))
+                    .labelList(labelList)
+                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                    .isProjectStarred(Boolean.FALSE)
+                    .isProjectNew(Boolean.TRUE)
+                    .projectVersion(new ProjectVersion())
+                    .projectInfra(ProjectInfra.ON_PREMISE)
+                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                    .build();
+
+            ProjectHandler.loadProjectLoader(loader);
+
+            loader.initFolderIteration();
+
+            HTTPResponseHandler.configureOK(context);
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project name exist: " + projectName));
+        }
     }
 
     /**
@@ -420,22 +472,6 @@ public class V2Endpoint extends EndpointBase {
         }
 
         HTTPResponseHandler.configureOK(context, response);
-    }
-
-    public void importProject(RoutingContext context)
-    {
-        if(projectImporter.isWindowOpen())
-        {
-            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
-
-            HTTPResponseHandler.configureOK(context, jsonResonse);
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context);
-        }
-
-        projectImporter.run();
     }
 
     /**
