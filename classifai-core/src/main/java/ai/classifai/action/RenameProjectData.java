@@ -67,8 +67,8 @@ public final class RenameProjectData {
         String newDataFileName = message.body().getString(ParamConfig.getNewFileNameParam());
         if(containIllegalChars(newDataFileName)) {
             // Abort if filename contain illegal chars
-            String illegal_char_str = "Contain illegal character";
-            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_CONTAIN_ILLEGAL_CHAR.ordinal(), illegal_char_str));
+            String illegalCharMes = "Contain illegal character";
+            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_CONTAIN_ILLEGAL_CHAR.ordinal(), illegalCharMes));
             return;
         }
 
@@ -79,8 +79,8 @@ public final class RenameProjectData {
 
         if(newDataPath.exists()) {
             // Abort if name exists
-            String name_exist_str = "Name exists";
-            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_EXIST.ordinal(), name_exist_str));
+            String nameExistMes = "Name exists";
+            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_EXIST.ordinal(), nameExistMes));
             return;
         }
 
@@ -93,8 +93,8 @@ public final class RenameProjectData {
         }
         else
         {
-            String fail_rename_str = "Fail to rename file";
-            message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), fail_rename_str));
+            String failRenameMes = "Fail to rename file";
+            message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), failRenameMes));
         }
 
     }
