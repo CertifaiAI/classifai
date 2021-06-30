@@ -119,6 +119,12 @@
         "nameEmpty": "图片名称为必填项!",
         "submit": "提交"
     },
+    "deleteModal": {
+        "deleteImg": "删除图片",
+        "confirmation": "确定要删除吗",
+        "dontask": "不再显示",
+        "confirm": "确认"
+    },
     "configFileInfoTitle": "选择正确的导出格式",
     "configFileInfoDest1": "配置文件是包含项目元数据的配置文件。当数据在要导入到的系统中随时可用时，它是合适的。",
     "configFileInfoDest2": "压缩文件包含带有项目中使用的数据集的配置文件。它编译要在不同系统中复制的项目的所有组件。",
