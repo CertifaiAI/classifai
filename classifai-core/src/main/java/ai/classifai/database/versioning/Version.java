@@ -58,7 +58,7 @@ public class Version
 
         if (lastModifiedDate == null)
         {
-            lastModifiedDate = currentDateTime;
+            lastModifiedDate = new DateTime(currentDateTime.toString());
         }
 
         this.lastModifiedDate = lastModifiedDate;
@@ -74,8 +74,8 @@ public class Version
         JsonObject jsonObject = ActionOps.getKeyWithItem(strVersion);
 
         versionUuid = jsonObject.getString(ParamConfig.getVersionUuidParam());
-        createdDate = new DateTime(jsonObject.getString(ParamConfig.getCreatedDateParam()));
-        lastModifiedDate = new DateTime(jsonObject.getString(ParamConfig.getLastModifiedDate()));
+        createdDate = new DateTime();
+        lastModifiedDate = new DateTime(createdDate.toString());
 
         String nextVersionBuffer = jsonObject.getString(ParamConfig.getNextVersionUuidParam());
 
