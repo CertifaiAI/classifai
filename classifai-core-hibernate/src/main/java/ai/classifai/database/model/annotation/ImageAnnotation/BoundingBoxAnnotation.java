@@ -4,7 +4,7 @@ import ai.classifai.database.model.Label;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "BOUNDING_BOX_ANNOTATION")
 public class BoundingBoxAnnotation extends ImageAnnotation
 {
     private float x1;

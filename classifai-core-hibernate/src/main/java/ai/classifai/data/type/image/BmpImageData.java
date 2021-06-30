@@ -26,20 +26,55 @@ import com.drew.metadata.bmp.BmpHeaderDirectory;
  */
 public class BmpImageData extends ImageData
 {
-    public BmpImageData(Metadata metadata)
+    private final int S_RGB_COLOR_SPACE = 1934772034;
+
+    protected BmpImageData(Metadata metadata)
     {
-        super(metadata);
+        super(metadata, BmpHeaderDirectory.class);
     }
 
     @Override
-    public int getWidth() throws MetadataException
+    public int getWidth()
     {
-        return metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+        try
+        {
+            return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
     }
 
     @Override
-    public int getHeight() throws MetadataException
+    public int getHeight()
     {
-        return metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        try {
+            return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    /**
+     * color space type: [1934772034: sRGB, null: BnW]
+     * @return number of channels 1 or 3
+     */
+    @Override
+    public int getDepth() {
+        try {
+            int colorSpaceType = directory.getInt(BmpHeaderDirectory.TAG_COLOR_SPACE_TYPE);
+            if (colorSpaceType == S_RGB_COLOR_SPACE)
+            {
+                return 3;
+            }
+        }
+        catch (MetadataException ignored){}
+
+        return 1;
     }
 }

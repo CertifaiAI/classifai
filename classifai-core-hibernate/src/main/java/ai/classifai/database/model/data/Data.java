@@ -1,18 +1,17 @@
 package ai.classifai.database.model.data;
 
+
 import ai.classifai.database.model.Project;
-import ai.classifai.database.model.annotation.Annotation;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@Entity
+@Entity(name = "DATA")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Data
 {
     @Id
@@ -27,9 +26,20 @@ public abstract class Data
     private String checksum;
 
     @Column(name = "file_size")
-    private int fileSize;
+    private long fileSize;
 
     @ManyToOne
-    @Column(name = "project_id")
+    @JoinColumn(name="project_id", nullable = false)
     private Project project;
+
+    public Data(String dataPath, String checksum, long fileSize)
+    {
+        this.dataPath = dataPath;
+        this.checksum = checksum;
+        this.fileSize = fileSize;
+    }
+
+    public Data()
+    {
+    }
 }

@@ -21,11 +21,9 @@ import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -35,20 +33,40 @@ import lombok.extern.slf4j.Slf4j;
  * @author devenyantis
  */
 @Slf4j
-public class V1Endpoint {
-
-    @Setter private Vertx vertx = null;
-
-    Util util = new Util();
-
-/**
+public class V1Endpoint extends EndpointBase
+{
     /**
      * Retrieve specific project metadata
      *
      * GET http://localhost:{port}/:annotation_type/projects/:project_name/meta
      *
      */
-//    public void getProjectMetadata(RoutingContext context)
+    public void getProjectMetadata(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
+                .put(ParamConfig.getProjectNameParam(), projectName);
+
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.GET_PROJECT_META);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options, reply -> {
+
+            if(reply.succeeded())
+            {
+                JsonObject response = (JsonObject) reply.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
+            }
+        });
+    }
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
@@ -58,7 +76,7 @@ public class V1Endpoint {
 //
 //        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 //
-//        if(util.checkIfProjectNull(context, loader, projectName)) return;
+//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 //
 //        if(loader == null)
 //        {
@@ -104,9 +122,9 @@ public class V1Endpoint {
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.getGetAllProjectMeta());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.GET_ALL_PROJECT_META);
 
-        vertx.eventBus().request(DbActionConfig.getQueue(), request, options, reply -> {
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options, reply -> {
 
             if(reply.succeeded())
             {
@@ -121,20 +139,20 @@ public class V1Endpoint {
         });
     }
 
-    /**
-     * Load existing project from the bounding box database
-     *
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name
-     *
-     * Example:
-     * GET http://localhost:{port}/bndbox/projects/helloworld
-     *
-     */
+//    /**
+//     * Load existing project from the bounding box database
+//     *
+//     * GET http://localhost:{port}/:annotation_type/projects/:project_name
+//     *
+//     * Example:
+//     * GET http://localhost:{port}/bndbox/projects/helloworld
+//     *
+//     */
 //    public void loadProject(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
-//        String queue = util.getDbQuery(type);
+//        String queue = helper.getDbQuery(type);
 //
 //        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 //
@@ -142,7 +160,7 @@ public class V1Endpoint {
 //
 //        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 //
-//        if(util.checkIfProjectNull(context, loader, projectName)) return;
+//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
 //
 //        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
 //
@@ -153,12 +171,12 @@ public class V1Endpoint {
 //        }
 //        else
 //        {
-//            LoaderStatus loaderStatus = loader.getLoaderStatus();
+//            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
 //
 //            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-//            if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.LOADED))
+//            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
 //            {
-//                loader.setLoaderStatus(LoaderStatus.LOADING);
+//                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
 //
 //                JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
 //
@@ -180,26 +198,26 @@ public class V1Endpoint {
 //                });
 //
 //            }
-//            else if(loaderStatus.equals(LoaderStatus.LOADING))
+//            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
 //            {
 //                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
 //            }
-//            else if(loaderStatus.equals(LoaderStatus.ERROR))
+//            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
 //            {
 //                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
 //            }
 //        }
 //    }
-
-
-    /**
-     * Get status of loading a project
-     *
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
-     *
-     * Example:
-     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
-     */
+//
+//
+//    /**
+//     * Get status of loading a project
+//     *
+//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
+//     *
+//     * Example:
+//     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
+//     */
 //    public void loadProjectStatus(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
@@ -208,99 +226,54 @@ public class V1Endpoint {
 //
 //        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
 //
-//        if (util.checkIfProjectNull(context, projectLoader, projectName)) return;
+//        if (helper.checkIfProjectNull(context, projectLoader, projectName)) return;
 //
-//        LoaderStatus loaderStatus = projectLoader.getLoaderStatus();
+//        ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
 //
-//        if (loaderStatus.equals(LoaderStatus.LOADING))
+//        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
 //        {
 //            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
+//            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
 //
 //            jsonObject.put(ParamConfig.getProgressMetadata(), projectLoader.getProgress());
 //
 //            HTTPResponseHandler.configureOK(context, jsonObject);
 //
-//        } else if (loaderStatus.equals(LoaderStatus.LOADED)) {
+//        } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
 //
 //            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), loaderStatus.ordinal());
+//            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
 //
 //            // Remove empty string from label list
 //            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
 //
 //            jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-//
 //            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
 //
 //            HTTPResponseHandler.configureOK(context, jsonObject);
 //
 //        }
-//        else if (loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED) || loaderStatus.equals(LoaderStatus.ERROR))
+//        else if (projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
 //        {
 //            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), LoaderStatus.ERROR.ordinal());
+//            jsonObject.put(ReplyHandler.getMessageKey(), ProjectLoaderStatus.ERROR.ordinal());
 //            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
 //
 //            HTTPResponseHandler.configureOK(context, jsonObject);
 //        }
 //    }
-
-    /**
-     * Get file system (file/folder) status for a specific project
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/filesysstatus
-     *
-     * Example:
-     * GET http://localhost:{port}/bndbox/projects/helloworld/filesysstatus
-     *
-     */
-//    public void getFileSystemStatus(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
-//        util.checkIfDockerEnv(context);
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(util.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-//
-//        JsonObject res = new JsonObject().put(ReplyHandler.getMessageKey(), fileSysStatus.ordinal());
-//
-//        if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING))
-//        {
-//            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-//        }
-//        else if(fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED) || (fileSysStatus.equals(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED)))
-//        {
-//            List<String> newAddedUUIDList = loader.getFileSysNewUuidList();
-//
-//            res.put(ParamConfig.getUuidListParam(), newAddedUUIDList);
-//
-//        }
-//        else if(fileSysStatus.equals(FileSystemStatus.DID_NOT_INITIATE))
-//        {
-//            res.put(ReplyHandler.getErrorCodeKey(), ErrorCodes.USER_DEFINED_ERROR.ordinal());
-//            res.put(ReplyHandler.getErrorMesageKey(), "File / folder selection for project: " + projectName + " did not initiated");
-//        }
-//
-//        HTTPResponseHandler.configureOK(context, res);
-//    }
-
-    /**
-     * Retrieve thumbnail with metadata
-     *
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
-     *
-     */
+//    /**
+//     * Retrieve thumbnail with metadata
+//     *
+//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
+//     *
+//     */
 //    public void getThumbnail(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
-//        String queue = util.getDbQuery(type);
+//        String queue = helper.getDbQuery(type);
 //
 //        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 //        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
@@ -326,19 +299,19 @@ public class V1Endpoint {
 //            }
 //        });
 //    }
-
-    /***
-     *
-     * Get Image Source
-     *
-     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
-     *
-     */
+//
+//    /***
+//     *
+//     * Get Image Source
+//     *
+//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
+//     *
+//     */
 //    public void getImageSource(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
-//        String queue = util.getDbQuery(type);
+//        String queue = helper.getDbQuery(type);
 //
 //        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 //        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
@@ -365,24 +338,24 @@ public class V1Endpoint {
 //            }
 //        });
 //    }
-
-    /***
-     *
-     * Update labelling information
-     *
-     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
-     *
-     */
+//
+//    /***
+//     *
+//     * Update labelling information
+//     *
+//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
+//     *
+//     */
 //    public void updateData(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//        String queue = util.getDbQuery(type);
+//        String queue = helper.getDbQuery(type);
 //
 //        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 //
 //        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 //
-//        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 //
 //        context.request().bodyHandler(h ->
 //        {
@@ -415,15 +388,15 @@ public class V1Endpoint {
 //            }
 //        });
 //    }
-
-
-    /***
-     *
-     * Update labels
-     *
-     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
-     *
-     */
+//
+//
+//    /***
+//     *
+//     * Update labels
+//     *
+//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
+//     *
+//     */
 //    public void updateLabels(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
@@ -432,7 +405,7 @@ public class V1Endpoint {
 //
 //        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 //
-//        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 //
 //        context.request().bodyHandler(h ->
 //        {
@@ -460,27 +433,27 @@ public class V1Endpoint {
 //            }
 //        });
 //    }
-
-    /**
-     * Delete project
-     *
-     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
-     *
-     * Example:
-     * DELETE http://localhost:{port}/bndbox/projects/helloworld
-     *
-     */
+//
+//    /**
+//     * Delete project
+//     *
+//     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
+//     *
+//     * Example:
+//     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+//     *
+//     */
 //    public void deleteProject(RoutingContext context)
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
-//        String queue = util.getDbQuery(type);
+//        String queue = helper.getDbQuery(type);
 //
 //        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 //
 //        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 //
-//        if(util.checkIfProjectNull(context, projectID, projectName)) return;
+//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 //
 //        JsonObject request = new JsonObject()
 //                .put(ParamConfig.getProjectIdParam(), projectID);

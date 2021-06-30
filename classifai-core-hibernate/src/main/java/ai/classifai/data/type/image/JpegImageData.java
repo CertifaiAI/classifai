@@ -17,6 +17,7 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 
 /**
@@ -26,18 +27,93 @@ import com.drew.metadata.jpeg.JpegDirectory;
  */
 public class JpegImageData extends ImageData
 {
-    public JpegImageData(Metadata metadata)
+    protected JpegImageData(Metadata metadata)
     {
-        super(metadata);
+        super(metadata, JpegDirectory.class);
+    }
+
+    private int getRawWidth()
+    {
+        try
+        {
+            return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    private int getRawHeight()
+    {
+        try
+        {
+            return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    /**
+     * get Exif orientation from metatdata
+     * orientation value: [1: 0 deg, 8: 270 deg, 3: 180 deg, 6: 90 deg]
+     * ref: https://www.impulseadventure.com/photo/exif-orientation.html
+     *
+     * @return orientation
+     */
+    private int getOrientation()
+    {
+        try
+        {
+            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
+        }
+        catch (Exception ignored)
+        {
+            // if can't find orientation set as 0 deg
+            return 1;
+        }
     }
 
     @Override
-    public int getWidth() throws MetadataException {
-        return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+    public int getWidth()
+    {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6)
+        {
+            return getRawHeight();
+        }
+
+        return getRawWidth();
     }
 
     @Override
-    public int getHeight() throws MetadataException {
-        return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
+    public int getHeight()
+    {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6)
+        {
+            return getRawWidth();
+        }
+
+        return getRawHeight();
+    }
+
+    @Override
+    public int getDepth()
+    {
+        try
+        {
+            return directory.getInt(JpegDirectory.TAG_NUMBER_OF_COMPONENTS);
+        }
+        catch (Exception ignored)
+        {
+            return 3;
+        }
     }
 }

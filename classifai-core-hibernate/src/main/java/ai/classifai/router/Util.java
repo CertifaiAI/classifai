@@ -49,7 +49,7 @@ public class Util {
             HTTPResponseHandler.configureOK(context);
         }
     }
-//
+
 //    public String getDbQuery(AnnotationType type)
 //    {
 //        if(type.equals(AnnotationType.BOUNDINGBOX))

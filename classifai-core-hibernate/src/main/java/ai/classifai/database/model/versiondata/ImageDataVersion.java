@@ -3,7 +3,8 @@ package ai.classifai.database.model.versiondata;
 import javax.persistence.*;
 
 @Entity
-public class ImageVersionData extends DataVersion
+@Table(name = "IMAGE_DATA_VERSION")
+public class ImageDataVersion extends DataVersion
 {
     @Column(name = "img_x")
     private int imgX;

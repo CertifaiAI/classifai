@@ -35,20 +35,18 @@ import java.util.List;
 public class LabelListImport
 {
     @Getter
-    private List<String> validLabelList = null;
+    private List<String> validLabelList;
 
-    public LabelListImport(@NonNull File labelFile)
+    public LabelListImport(File labelFile)
     {
+        validLabelList = new ArrayList<>();
         try
         {
             String labels = IOUtils.toString(new FileReader(labelFile));
 
             validLabelList = Arrays.asList(getValidLabelList(labels.split("\n")));
         }
-        catch(Exception e)
-        {
-            log.info("Error in importing label list. ", e);
-        }
+        catch(Exception ignored) {}
     }
 
     /**

@@ -1,5 +1,5 @@
 <persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.2">
-    <persistence-unit name="ai.classifai.database.jpa" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="database" transaction-type="RESOURCE_LOCAL">
         <provider>
             org.hibernate.jpa.HibernatePersistenceProvider
         </provider>
@@ -8,8 +8,7 @@
         <class>ai.classifai.database.model.Version</class>
         <class>ai.classifai.database.model.Label</class>
         <class>ai.classifai.database.model.data.Data</class>
-        <class>ai.classifai.database.model.data.ImageData</class>
-        <class>ai.classifai.database.model.data.VideoData</class>
+        <class>ai.classifai.database.model.data.Image</class>
         <class>ai.classifai.database.model.annotation.Annotation</class>
         <class>ai.classifai.database.model.annotation.ImageAnnotation.ImageAnnotation</class>
         <class>ai.classifai.database.model.annotation.VideoAnnotation</class>
@@ -20,7 +19,7 @@
                       value="org.h2.Driver"/>
 
             <property name="javax.persistence.jdbc.url"
-                      value="jdbc:h2:/home/chuang010896/.classifai/db"/>
+                      value="jdbc:h2:~/.classifai/db"/>
 
             <property name="javax.persistence.jdbc.user"
                       value="admin"/>
@@ -30,6 +29,8 @@
 
             <property name="javax.persistence.schema-generation.database.action"
                       value="create"/>
+
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
 
             <!--Logging-->
             <property name="hibernate.show_sql"

@@ -16,7 +16,6 @@
 package ai.classifai.ui.launcher;
 
 
-import ai.classifai.MainVerticle;
 import ai.classifai.ui.component.BrowserHandler;
 import ai.classifai.ui.component.LogHandler;
 import ai.classifai.ui.component.LookFeelSetter;
@@ -130,7 +129,7 @@ public class WelcomeLauncher extends JFrame
             @Override
             public void windowClosing(WindowEvent e)
             {
-                MainVerticle.closeVerticles();
+//                MainVerticle.closeVerticles();
 
                 log.info("Classifai closed successfully...");
 

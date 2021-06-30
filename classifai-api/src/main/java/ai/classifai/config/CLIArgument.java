@@ -17,7 +17,6 @@ package ai.classifai.config;
 
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import com.formdev.flatlaf.FlatLightLaf;
@@ -194,7 +193,7 @@ public class CLIArgument
 
         }
 
-        ProjectHandler.setCliProjectInitiator(initiator);
+//        ProjectHandler.setCliProjectInitiator(initiator);
     }
 
     private void printMessageForCLIProjectFailed()

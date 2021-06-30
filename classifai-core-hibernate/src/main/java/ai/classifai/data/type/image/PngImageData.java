@@ -15,9 +15,17 @@
  */
 package ai.classifai.data.type.image;
 
+import ai.classifai.util.exception.NotSupportedImageTypeException;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
+import com.drew.metadata.Tag;
 import com.drew.metadata.png.PngDirectory;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Provides metadata of png images
@@ -26,20 +34,71 @@ import com.drew.metadata.png.PngDirectory;
  */
 public class PngImageData extends ImageData
 {
-    public PngImageData(Metadata metadata)
+    protected PngImageData(Metadata metadata)
     {
-        super(metadata);
+        super(metadata, PngDirectory.class);
     }
 
     @Override
-    public int getWidth() throws MetadataException
+    public int getWidth()
     {
-        return metadata.getFirstDirectoryOfType(PngDirectory.class).getInt(PngDirectory.TAG_IMAGE_WIDTH);
+        try {
+            return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
     }
 
     @Override
-    public int getHeight() throws MetadataException
+    public int getHeight()
     {
-        return metadata.getFirstDirectoryOfType(PngDirectory.class).getInt(PngDirectory.TAG_IMAGE_HEIGHT);
+        try {
+            return directory.getInt(PngDirectory.TAG_IMAGE_HEIGHT);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    /**
+     * get color type: [0: grayscale, 2: trueColor(RGB)]
+     *
+     * @return number of channel 1 or 3
+     */
+    @Override
+    public int getDepth()
+    {
+        try {
+            int colorType = directory.getInt(PngDirectory.TAG_COLOR_TYPE);
+
+            if (colorType == 0) return 1;
+        }
+        catch (Exception ignored) {}
+
+        return 3;
+    }
+
+    // TODO: delete this when testing is done
+    public static void main(String[] args) throws ImageProcessingException, IOException, NotSupportedImageTypeException
+    {
+        String path = "C:\\Users\\yinch\\Pictures\\colorImage\\gray.bmp";
+
+        Metadata metadata = ImageMetadataReader.readMetadata(new File(path));
+
+        ImageData img = ImageData.getFactory().getImageData(metadata);
+
+        for (Directory dir : img.metadata.getDirectories())
+        {
+            for (Tag tag : dir.getTags())
+            {
+                System.out.println(tag);
+            }
+        }
+        System.out.println(img.getDepth());
     }
 }

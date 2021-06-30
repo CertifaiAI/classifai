@@ -1,5 +1,6 @@
 package ai.classifai.database.model.data;
 
+import ai.classifai.database.model.Project;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,8 +11,8 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @Entity
-@Table(name = "IMAGEDATA")
-public class ImageData extends Data
+@Table(name = "IMAGE")
+public class Image extends Data
 {
     @Column(name = "img_depth")
     private int depth;
@@ -24,4 +25,14 @@ public class ImageData extends Data
 
     @Column(name = "thumbnail")
     private String thumbnail;
+
+    public Image(String dataPath, String checksum, long fileSize, int depth, int width, int height)
+    {
+        super(dataPath, checksum, fileSize);
+        this.depth = depth;
+        this.width = width;
+        this.height = height;
+    }
+
+    public Image() {}
 }

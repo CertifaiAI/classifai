@@ -116,6 +116,12 @@
             <groupId>com.drewnoakes</groupId>
             <artifactId>metadata-extractor</artifactId>
         </dependency>
+        <dependency>
+            <groupId>ai.classifai</groupId>
+            <artifactId>classifai-core-hibernate</artifactId>
+            <version>2.0.0-alpha</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 

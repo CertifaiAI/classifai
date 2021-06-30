@@ -15,25 +15,35 @@
  */
 package ai.classifai.database;
 
+import ai.classifai.action.LabelListImport;
+import ai.classifai.database.model.Label;
 import ai.classifai.database.model.Project;
+import ai.classifai.database.model.data.Data;
+import ai.classifai.database.repository.ProjectRepository;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.data.DataHandler;
+import ai.classifai.util.data.DataHandlerFactory;
+import ai.classifai.util.exception.projectExistedException;
 import ai.classifai.util.message.ErrorCodes;
+import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Criteria;
-import org.hibernate.Transaction;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * verticle that handles database
@@ -64,10 +74,18 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         // FIXME:
         //  Hardcoded
-//        if (action.equals("retrieve-all-project-annotation"))
-//        {
-//            this.getAllProjectsForAnnotationType(message);
-//        }
+        if (action.equals(DbActionConfig.GET_ALL_PROJECT_META))
+        {
+            this.getAllProjectsMetadata(message);
+        }
+        else if (action.equals(DbActionConfig.CREATE_PROJECT))
+        {
+            this.createProject(message);
+        }
+        else if (action.equals(DbActionConfig.GET_PROJECT_META))
+        {
+            this.getProjectMetadata(message);
+        }
 //        else if (action.equals(PortfolioDbQuery.getUpdateLabelList()))
 //        {
 //            this.updateLabelList(message);
@@ -109,29 +127,152 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     }
 
+    private void getProjectMetadata(Message<JsonObject> message)
+    {
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
+
+        String projectName = message.body().getString(ParamConfig.getProjectNameParam());
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        Handler<Promise<Project>> getProjectMeta = promise ->
+        {
+            ProjectRepository projectRepository = new ProjectRepository(entityManager);
+            Project project = projectRepository.getProjectByNameAndAnnotation(projectName, annotationTypeIndex);
+
+            if (project == null) promise.fail(String.format("No entity found for project: [%s] %s",
+                    AnnotationType.values()[annotationTypeIndex], projectName));
+
+
+        };
+
+        Handler<AsyncResult<Project>> resultHandler = result ->
+        {
+            if (result.succeeded())
+            {
+                JsonObject jsonObj = ReplyHandler.getOkReply();
+
+                JsonObject projectMeta = result.result().getProjectMeta();
+
+                jsonObj.put("content", projectMeta); //TODO: hardcoded key
+
+                message.replyAndRequest(jsonObj);
+            }
+            else
+            {
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(result.cause()));
+            }
+        };
+
+        vertx.executeBlocking(getProjectMeta, resultHandler);
+
+    }
+
+    private void createProject(Message<JsonObject> message)
+    {
+        JsonObject msgBody = message.body();
+
+        String annotation = msgBody.getString(ParamConfig.getAnnotationTypeParam());
+        Integer annotationTypeIndex = AnnotationHandler.getType(annotation).ordinal();
+
+        String projectName = msgBody.getString(ParamConfig.getProjectNameParam());
+
+        String projectPath = msgBody.getString(ParamConfig.getProjectPathParam());
+
+        String labelPath = msgBody.getString(ParamConfig.getLabelPathParam());
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        Handler<Promise<Project>> createProject = promise ->
+        {
+            try
+            {
+                ProjectRepository projectRepository = new ProjectRepository(entityManager);
+
+                // check if data is repeated
+                if (projectRepository.getProjectByNameAndAnnotation(projectName, annotationTypeIndex) != null)
+                {
+                    throw new projectExistedException(String.format("[%s] %s project existed", annotation, projectName));
+                }
+
+                // create new project
+                Project project = Project.buildNewProject(projectName, annotationTypeIndex, projectPath, labelPath);
+
+                projectRepository.createNewProject(project);
+
+                promise.complete(project);
+            }
+            catch (Exception e)
+            {
+                log.error(e.getMessage());
+                promise.fail(e);
+            }
+        };
+
+        Handler<AsyncResult<Project>> resultHandler = result ->
+        {
+            if (result.succeeded())
+            {
+                JsonObject jsonObj = ReplyHandler.getOkReply();
+
+                List<JsonObject> metaList = new ArrayList<>();
+                metaList.add(result.result().getProjectMeta());
+
+                jsonObj.put("content", metaList);
+
+                message.replyAndRequest(jsonObj);
+            }
+            else
+            {
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(result.cause()));
+            }
+        };
+
+        vertx.executeBlocking(createProject, resultHandler);
+
+    }
+
     private void getAllProjectsMetadata(Message<JsonObject> message)
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
 
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-//        vertx.executeBlocking(promise ->{
-//            try {
-//                CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-//                CriteriaQuery<Project> criteria = builder.createQuery(Project.class);
-//                Root<Project> from = criteria.from(Project.class);
-//                criteria.select(from);
-//                criteria.where(builder.equal(from.get(Project.)))
-//            }
-//        }).onComplete()
-//                .onSuccess()
-//                .onFailure();
-        
+        Handler<Promise<List<Project>>> getAllProjectMeta = promise ->
+        {
+            ProjectRepository projectRepository = new ProjectRepository(entityManager);
+            List<Project> projectList = projectRepository.getProjectListByAnnotation(annotationTypeIndex);
+
+            promise.complete(projectList);
+        };
+
+        Handler<AsyncResult<List<Project>>> resultHandler = result ->
+        {
+            if (result.succeeded())
+            {
+                JsonObject jsonObj = ReplyHandler.getOkReply();
+
+                List<JsonObject> metaList = result.result().stream()
+                        .map(Project::getProjectMeta)
+                        .collect(Collectors.toList());
+
+                jsonObj.put("content", metaList); //TODO: hardcoded key
+
+                message.replyAndRequest(jsonObj);
+            }
+            else
+            {
+                message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(result.cause()));
+            }
+        };
+
+        vertx.executeBlocking(getAllProjectMeta, resultHandler);
     }
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception
     {
+        System.out.println("do something \n\n\n\n\n\n\n\n\n\n");
         vertx.executeBlocking(this::connectDatabase)
                 .onSuccess(r -> successHandler(startPromise))
                 .onFailure(r -> failureHandler(startPromise, r));
@@ -139,13 +280,13 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void successHandler(Promise<Void> promise)
     {
-        vertx.eventBus().consumer(DbActionConfig.getQueue(), this::onMessage);
+        vertx.eventBus().consumer(DbActionConfig.QUEUE, this::onMessage);
         promise.complete();
     }
 
     private void failureHandler(Promise<Void> promise, Throwable e)
     {
-        log.error("Portfolio database preparation error", e.getCause());
+        log.error("Database preparation error", e.getCause());
         promise.fail(e.getCause());
     }
 
@@ -153,13 +294,13 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     {
         try
         {
-            entityManagerFactory = Persistence.createEntityManagerFactory("ai.classifai.database.jpa");
-            promise.complete();
+            entityManagerFactory = Persistence.createEntityManagerFactory("database");
         }
         catch (Exception e)
         {
             promise.fail(e);
         }
-        promise.future();
+
+        promise.complete();
     }
 }

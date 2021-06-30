@@ -22,8 +22,7 @@ import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -34,13 +33,45 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
-//    private static WasabiVerticle wasabiVerticle;
     private static EndpointRouter serverVerticle;
 
     static
     {
-//        wasabiVerticle = new WasabiVerticle();
         serverVerticle = new EndpointRouter();
+    }
+
+
+    private Future<Void> deployOtherVerticles()
+    {
+        Future<String> deployDbVerticle = Future.future(promise -> vertx.deployVerticle(new DatabaseVerticle(), promise));
+        Future<String> deployServerVerticle = Future.future(promise -> vertx.deployVerticle(serverVerticle, promise));
+
+
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
+        // TODO: deploy other verticles here
+
+        return CompositeFuture.all(deployDbVerticle, deployServerVerticle).mapEmpty();
+    }
+
+    private void logAppStart()
+    {
+        LogoLauncher.print();
+
+        log.info("Classifai started successfully");
+        log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
+
+        //docker environment not enabling welcome launcher
+        if (!ParamConfig.isDockerEnv())
+        {
+            try
+            {
+                WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
+            }
+            catch (Exception e)
+            {
+                log.info("Welcome Launcher failed to launch: ", e);
+            }
+        }
     }
 
     @Override
@@ -54,57 +85,15 @@ public class MainVerticle extends AbstractVerticle
 
         if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
-        Promise<String> dbDeployment = Promise.promise();
-        vertx.deployVerticle(new DatabaseVerticle(), dbDeployment);
+        Handler<Void> successHandler = unused ->
+        {
+            logAppStart();
+            promise.complete();
+        };
 
-        dbDeployment.future().compose(id_ -> {
-
-            Promise<String> serverDeployment = Promise.promise();
-            vertx.deployVerticle(serverVerticle, serverDeployment);
-            return serverDeployment.future();
-
-        }).compose(id_ -> {
-
-            Promise<String> wasabiDeployment = Promise.promise();
-//            vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
-            return wasabiDeployment.future();
-
-        }).onComplete(ar -> {
-
-            if (ar.succeeded())
-            {
-                //TODO:
-                // configProjectLoader
-                // buildProjectFromCLI
-//                portfolioVerticle.configProjectLoaderFromDb();
-//                portfolioVerticle.buildProjectFromCLI();
-
-                LogoLauncher.print();
-
-                log.info("Classifai started successfully");
-                log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
-
-                //docker environment not enabling welcome launcher
-                if (!ParamConfig.isDockerEnv())
-                {
-                    try
-                    {
-                        WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
-                    }
-                    catch (Exception e)
-                    {
-                        log.info("Welcome Launcher failed to launch: ", e);
-                    }
-                }
-
-                promise.complete();
-
-            }
-            else
-            {
-                promise.fail(ar.cause());
-            }
-        });
+        deployOtherVerticles()
+                .onSuccess(successHandler)
+                .onFailure(result -> promise.fail(result.getCause()));
     }
 
     public static void closeVerticles()
