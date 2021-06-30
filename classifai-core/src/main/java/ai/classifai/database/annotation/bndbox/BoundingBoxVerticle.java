@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
@@ -75,10 +75,6 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         else if (action.equals(AnnotationQuery.getDeleteProjectData()))
         {
             this.deleteProjectData(message);
-        }
-        else if(action.equals(AnnotationQuery.getRenameProjectData()))
-        {
-            this.renameProjectData(message);
         }
         else
         {

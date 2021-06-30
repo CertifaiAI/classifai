@@ -144,8 +144,6 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
 
-        router.put("/v2/:annotation_type/projects/:project_name/imgsrc/rename").handler(v2::renameData);
-
         router.put("/v2/labelfiles").handler(v2::selectLabelFile);
 
         router.get("/v2/labelfiles").handler(v2::selectLabelFileStatus);
