@@ -65,7 +65,9 @@ public class ParamConfig
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
+
     @Getter private static final String newFileNameParam = "new_fname";
+    @Getter private static final String imgPathListParam = "img_path_list";
 
     @Getter private static final String imgSrcParam = "img_src";
 
