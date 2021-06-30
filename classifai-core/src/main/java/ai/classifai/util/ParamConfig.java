@@ -65,6 +65,7 @@ public class ParamConfig
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
+    @Getter private static final String newFileNameParam = "new_fname";
 
     @Getter private static final String imgSrcParam = "img_src";
 
@@ -90,6 +91,7 @@ public class ParamConfig
     @Getter private static final String isStarredParam = "is_starred";
     @Getter private static final String isLoadedParam = "is_loaded";
     @Getter private static final String createdDateParam = "created_date";
+    @Getter private static final String lastModifiedDate = "last_modified_date";
     @Getter private static final String isRootPathValidParam = "root_path_valid";
 
     @Getter private static final String statusParam = "status";

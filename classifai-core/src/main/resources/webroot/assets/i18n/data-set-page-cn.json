@@ -43,6 +43,7 @@
         "renameProject": "重新命名项目",
         "deleteProject": "删除现有项目",
         "created": "已创建:",
+        "modified": "最后修改:",
         "totalPhoto": "图像总数:",
         "noProject": "没有项目",
         "createNew": "开始新的项目吧！",

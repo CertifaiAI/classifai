@@ -23,9 +23,9 @@ public class CloudEndpoint
      *
      * response body
      * {
-     *      cloud_id id / email: codenamewei/codenamewei@yahoo.com
-     *      access_key         : DFRTDROTOX8Q30ZSHV15
-     *      secret_access_key  : 2C7EYgzkfDWdtNCe12B5E7iQeQuCCEYEg9v62zqB
+     *      cloud_id id / email: johndoe / johndoe@xxx.com
+     *      access_key         : xxxxxxxxxxxxxxxxxxxxxxxxxx
+     *      secret_access_key  : xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      *      bucket_list        : ["bucket 1, bucket 2"]
      * }
      *
