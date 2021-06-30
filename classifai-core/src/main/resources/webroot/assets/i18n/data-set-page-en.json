@@ -43,6 +43,7 @@
         "renameProject": "Rename Project",
         "deleteProject": "Delete Project",
         "created": "Created:",
+        "modified": "Last Modified:",
         "totalPhoto": "Total Photo:",
         "noProject": "Wait a minute... there's no project",
         "createNew": "Gear up and start creating new project!",

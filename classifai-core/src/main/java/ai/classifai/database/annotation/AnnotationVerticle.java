@@ -15,8 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.action.DeleteProjectData;
-import ai.classifai.action.FileMover;
+import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -38,18 +37,22 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of Functionalities for each annotation type
@@ -392,13 +395,59 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteProjectData(Message<JsonObject> message)
+    public void deleteSelectionUuidList(Message<JsonObject> message)
     {
-        DeleteProjectData.deleteProjectData(jdbcPool, message);
-    }
+        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
+        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
 
-    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-    {
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        List<String> dbUUIDList = loader.getUuidListFromDb();
+
+        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
+        String uuidQueryParam = String.join(",", deleteUUIDList);
+
+        Tuple params = Tuple.of(projectId, uuidQueryParam);
+
+        jdbcPool.preparedQuery(AnnotationQuery.getDeleteSelectionUuidList())
+                .execute(params)
+                .onComplete(fetch -> {
+                    if (fetch.succeeded())
+                    {
+                        if (dbUUIDList.removeAll(deleteUUIDList))
+                        {
+                            loader.setUuidListFromDb(dbUUIDList);
+
+                            List<String> sanityUUIDList = loader.getSanityUuidList();
+
+                            if (sanityUUIDList.removeAll(deleteUUIDList))
+                            {
+                                loader.setSanityUuidList(sanityUUIDList);
+                            }
+                            else
+                            {
+                                log.info("Error in removing uuid list");
+                            }
+
+                            //update Portfolio Verticle
+                            PortfolioVerticle.updateFileSystemUuidList(projectId);
+
+                            message.replyAndRequest(ReplyHandler.getOkReply());
+                        }
+                        else
+                        {
+                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
+                        }
+                    }
+                    else
+                    {
+                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+                    }
+                });
+   }
+
+
+   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
+   {
         JsonObject requestBody = message.body();
 
         try
@@ -517,4 +566,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         message.replyAndRequest(response);
     }
+
+    public void renameProjectData(Message<JsonObject> message)
+    {
+        RenameProjectData.renameProjectData(jdbcPool, message);
+    }
+
 }
