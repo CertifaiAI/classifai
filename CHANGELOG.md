@@ -12,6 +12,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Project versioning [WIP]
 - Project import image from cloud storage [WIP]
 - Database migration [WIP]
+- Sorting of project card with option of created date, last modified date or project name.
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added
