@@ -13,6 +13,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Project import image from cloud storage [WIP]
 - Database migration [WIP]
 - Sorting of project card with options of created date, last modified date or project name.
+- Renaming data from workspace - UI and F2 shortcut key
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added
