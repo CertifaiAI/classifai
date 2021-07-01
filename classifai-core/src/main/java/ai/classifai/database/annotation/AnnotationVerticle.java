@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.annotation;
 
+import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
@@ -395,55 +396,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteSelectionUuidList(Message<JsonObject> message)
+    public void deleteProjectData(Message<JsonObject> message)
     {
-        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-        List<String> dbUUIDList = loader.getUuidListFromDb();
-
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
-        String uuidQueryParam = String.join(",", deleteUUIDList);
-
-        Tuple params = Tuple.of(projectId, uuidQueryParam);
-
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteSelectionUuidList())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded())
-                    {
-                        if (dbUUIDList.removeAll(deleteUUIDList))
-                        {
-                            loader.setUuidListFromDb(dbUUIDList);
-
-                            List<String> sanityUUIDList = loader.getSanityUuidList();
-
-                            if (sanityUUIDList.removeAll(deleteUUIDList))
-                            {
-                                loader.setSanityUuidList(sanityUUIDList);
-                            }
-                            else
-                            {
-                                log.info("Error in removing uuid list");
-                            }
-
-                            //update Portfolio Verticle
-                            PortfolioVerticle.updateFileSystemUuidList(projectId);
-
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
-   }
+        DeleteProjectData.deleteProjectData(jdbcPool, message);
+    }
 
 
    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)

@@ -38,6 +38,7 @@ import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -588,5 +589,57 @@ public class V2Endpoint extends EndpointBase {
             });
         });
 
+    }
+
+    /**
+     * Load data based on uuid
+     * DELETE http://localhost:{port}/v2/:annotation_type/projects/:project_name/uuids
+     *
+     * json payload = {
+     *      "uuid_list": ["d99fed36-4eb5-4572-b2c7-ca8d4136e692", "d99fed36-4eb5-4572-b2c7-ca8d4136d2d3f"],
+     *      "img_path_list": [
+     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\12.jpg",
+     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\1.jpg"
+     *       ]
+     *  }
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/uuids
+     */
+    public void deleteProjectData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        String query = AnnotationQuery.getDeleteProjectData();
+
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
+            JsonArray uuidImgPathList = request.getJsonArray(ParamConfig.getImgPathListParam());
+
+            request.put(ParamConfig.getProjectIdParam(), projectID);
+            request.put(ParamConfig.getUuidListParam(), uuidListArray);
+            request.put(ParamConfig.getImgPathListParam(), uuidImgPathList);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply ->
+            {
+                if (reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
     }
 }
