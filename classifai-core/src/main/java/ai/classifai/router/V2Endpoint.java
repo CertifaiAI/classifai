@@ -177,10 +177,6 @@ public class V2Endpoint extends EndpointBase {
                 {
                     createRawProject(requestBody, context);
                 }
-                else if(projectStatus.equals(NewProjectStatus.LABEL_YOLO.name()))
-                {
-                    //TODO: add content
-                }
                 else
                 {
                     String errorMessage = "Project status: " + projectStatus + " not recognizable. Expect " + NewProjectStatus.getParamList();
