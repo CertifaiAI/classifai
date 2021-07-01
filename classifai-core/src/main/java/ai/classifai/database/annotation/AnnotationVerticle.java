@@ -15,8 +15,8 @@
  */
 package ai.classifai.database.annotation;
 
+
 import ai.classifai.action.DeleteProjectData;
-import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -24,7 +24,6 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -401,9 +400,8 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         DeleteProjectData.deleteProjectData(jdbcPool, message);
     }
 
-
-   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-   {
+    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
+    {
         JsonObject requestBody = message.body();
 
         try
@@ -522,10 +520,4 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         message.replyAndRequest(response);
     }
-
-    public void renameProjectData(Message<JsonObject> message)
-    {
-        RenameProjectData.renameProjectData(jdbcPool, message);
-    }
-
 }

@@ -63,7 +63,7 @@ public class DeleteProjectData {
                         try {
                             deleteProjectDataOnComplete(message, deleteUUIDList);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            log.info("Fail to delete. IO exception occurs.");
                         }
                     }
                     else
