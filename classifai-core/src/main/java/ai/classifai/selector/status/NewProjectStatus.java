@@ -26,10 +26,9 @@ package ai.classifai.selector.status;
 public enum NewProjectStatus
 {
     RAW,
-    CONFIG,
-    LABEL_YOLO;
+    CONFIG;
 
     public static String getParamList() {
-        return RAW.name() + ", " + CONFIG.name() + ", " + LABEL_YOLO.name();
+        return RAW.name() + ", " + CONFIG.name();
     }
 }
