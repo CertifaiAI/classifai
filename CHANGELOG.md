@@ -16,7 +16,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 
 
 ### Fixed
-- Fixed the display of full image path instead of intentional image name in ubuntu OS [#446](https://github.com/CertifaiAI/classifai/issues/446)
+- Fixed the display of full image path instead of intentional image name in Ubuntu and Mac OS [#446](https://github.com/CertifaiAI/classifai/issues/446)
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added
