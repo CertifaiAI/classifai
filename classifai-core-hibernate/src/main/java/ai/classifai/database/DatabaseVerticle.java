@@ -142,10 +142,35 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     }
 
     private void deleteProject(Message<JsonObject> message) {
+        // store object due to reference passing throughout multiple composes
+        final JsonObject STORE = new JsonObject();
+        
         ProjectRepository projectRepository = getProjectRepository();
         DataVersionRepository dataVersionRepository = getDataVersionRepository();
 
+        int annotationTypeIdx = getAnnotationTypeIdx(message);
+        String projectName = getProjectName(message);
 
+        Handler<Promise<Project>> getProjectHandler = promise -> getProject(promise, projectName, annotationTypeIdx, projectRepository);
+
+        Function<Project, Future<List<Data>>> getDataListHandler = project ->
+                vertx.executeBlocking(promise -> getDataList(promise, project));
+        
+        Function<Project, Future<List<DataVersion>>> getDataVersionListHandler = dataList ->
+                vertx.executeBlocking(promise -> getDataVersionList(promise, dataList));
+        
+        Function<Void, Future<Void>> deleteProjectHandler = unused -> 
+                vertx.executeBlocking(promise -> deleteProject(STORE, projectRepository, dataVersionRepository));
+
+    }
+
+    private void deleteProject(JsonObject store, ProjectRepository projectRepository, DataVersionRepository dataVersionRepository) {
+    }
+
+    private void getDataVersionList(Promise<List<DataVersion>> promise, Project dataList) {
+    }
+
+    private void getDataList(Promise<List<Data>> promise, Project project) {
     }
 
     private void starProject(Message<JsonObject> message) {
