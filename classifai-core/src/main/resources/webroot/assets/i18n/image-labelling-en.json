@@ -62,28 +62,36 @@
         "header": "Keyboard Shortcut Information",
         "shortcut": {
             "1": {
-                "key": "Ctrl + z",
+                "key": "Ctrl/Command + z",
                 "functionality": "Undo the last action"
             },
             "2": {
-                "key": "Ctrl + c",
-                "functionality": "Copy the selected bounding box/ polygon"
+                "key": "Ctrl/Command + Shift + z",
+                "functionality": "Redo the last undone action"
             },
             "3": {
-                "key": "Ctrl + v",
-                "functionality": "Paste the selected bounding box/ polygon"
+                "key": "Ctrl/Command + c",
+                "functionality": "Copy the selected bounding box/ polygon"
             },
             "4": {
-                "key": "Delete/Backspace",
-                "functionality": "Delete a selected bounding box/ polygon"
+                "key": "Ctrl/Command + v",
+                "functionality": "Paste the selected bounding box/ polygon"
             },
             "5": {
-                "key": "Double click on a selected bounding box/ polygon",
-                "functionality": "Choose label for the selected bounding box"
+                "key": "Delete/Backspace (With selected bounding box/polygon)",
+                "functionality": "Delete a selected bounding box/ polygon"
             },
             "6": {
+                "key": "Delete",
+                "functionality": "Delete the current image"
+            },
+            "7": {
                 "key": "F2",
                 "functionality": "Rename the current image"
+            },
+            "8": {
+                "key": "Double click on a selected bounding box/ polygon",
+                "functionality": "Choose label for the selected bounding box"
             }
         }
     },
@@ -118,6 +126,12 @@
         "nameExist": "Image name already exist!",
         "nameEmpty": "Image name is required!",
         "submit": "Proceed"
+    },
+    "deleteModal": {
+        "deleteImg": "Delete Image",
+        "confirmation": "Are you sure you want to delete",
+        "dontask": "Don't ask me again",
+        "confirm": "Confirm"
     },
     "configFileInfoTitle": "Choosing the Right Export",
     "configFileInfoDest1": "Config File is the configuration file contains of metadata of a project. It is suitable when the data is readily available in the system to be imported to.",
