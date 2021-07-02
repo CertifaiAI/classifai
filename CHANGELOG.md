@@ -43,6 +43,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Database from HSQLDB -> H2
 - Image UUID from incremental integer -> UUID
 - Project id from incremental integer -> UUID
+- Updated keyShortcut.md
 
 ### Removed
 - Import images from folder
