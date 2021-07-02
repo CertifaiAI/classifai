@@ -177,9 +177,6 @@ public class V2Endpoint extends EndpointBase {
                         .projectPath(new File(projectPath))
                         .labelList(labelList)
                         .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                        .isProjectStarred(Boolean.FALSE)
-                        .isProjectNew(Boolean.TRUE)
-                        .projectVersion(new ProjectVersion())
                         .projectInfra(ProjectInfra.ON_PREMISE)
                         .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                         .build();

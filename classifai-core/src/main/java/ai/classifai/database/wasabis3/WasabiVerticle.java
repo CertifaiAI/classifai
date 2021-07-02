@@ -103,11 +103,8 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .annotationType(annotationInt)
                     .projectPath(null)
                     .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                    .isProjectStarred(Boolean.FALSE)
-                    .isProjectNew(Boolean.TRUE)
                     .projectInfra(ProjectInfra.WASABI_S3)
                     .wasabiProject(wasabiProject)
-                    .projectVersion(new ProjectVersion())
                     .build();
 
             Tuple wasabiTuple = buildWasabiTuple(request, loader.getProjectId());
