@@ -14,4 +14,17 @@ public class BoundingBoxAnnotation extends ImageAnnotation
     private float dist2ImgX;
     private float dist2ImgY;
 
+    public BoundingBoxAnnotation(Long annotationId, String color, String label, int lineWidth, float x1, float x2,
+                                 float y1, float y2, float dist2ImgX, float dist2ImgY)
+    {
+        super(annotationId, color, label, lineWidth);
+        this.x1 = x1;
+        this.x2 = x2;
+        this.y1 = y1;
+        this.y2 = y2;
+        this.dist2ImgX = dist2ImgX;
+        this.dist2ImgY = dist2ImgY;
+    }
+
+    public BoundingBoxAnnotation() {}
 }

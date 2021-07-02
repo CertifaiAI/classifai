@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @Setter
@@ -37,13 +34,27 @@ public class Version
     @ManyToMany(mappedBy = "versionList")
     private List<Label> labelList;
 
-    public Version() {
+    public Version(Project project)
+    {
+        labelList = new ArrayList<>();
+        this.project = project;
         createdDate = new Date();
         lastModifiedDate = new Date();
+    }
+
+    public Version() {}
+
+    public void addLabel(Label label)
+    {
+        labelList.add(label);
     }
 
     public void updateLastModifiedDate()
     {
         lastModifiedDate = new Date();
+    }
+
+    public boolean equals(Version version) {
+        return versionId.equals(version.getVersionId());
     }
 }

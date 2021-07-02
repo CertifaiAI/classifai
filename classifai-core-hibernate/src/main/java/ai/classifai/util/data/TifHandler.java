@@ -43,7 +43,9 @@ public class TifHandler
     public String saveTif2Image(@NonNull File tifFullPath, String outputPath, @NonNull String extensionFormat)
     {
         String message = null;
-        String fileName = FileHandler.getFileName(tifFullPath.getAbsolutePath());
+
+        FileHandler fileHandler = new FileHandler();
+        String fileName = fileHandler.getFileName(tifFullPath.getAbsolutePath());
 
         try
         {
@@ -75,7 +77,7 @@ public class TifHandler
                 String savedPath;
                 if (outputPath == null)
                 {
-                    savedPath = FileHandler.getAbsolutePath(tifFullPath);
+                    savedPath = fileHandler.getAbsolutePath(tifFullPath);
                 }
                 else
                 {

@@ -8,13 +8,11 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
-public class ProjectRepository 
+public class ProjectRepository extends BaseRepository
 {
-    private EntityManager entityManager;
-
     public ProjectRepository(EntityManager entityManager)
     {
-        this.entityManager = entityManager;
+        super(entityManager);
     }
 
     public Project getProjectByNameAndAnnotation(String projectName, Integer annotationTypeIndex)
@@ -23,14 +21,15 @@ public class ProjectRepository
         query.setParameter("annoType", annotationTypeIndex);
         query.setParameter("projectName", projectName);
 
+        Project result = null;
+
         try
         {
-            return query.getSingleResult();
+            result = query.getSingleResult();
         }
-        catch (Exception ignored)
-        {
-            return null;
-        }
+        catch (Exception ignored) {}
+
+        return result;
     }
 
     @SuppressWarnings("unchecked")
@@ -39,15 +38,18 @@ public class ProjectRepository
         Query query = entityManager.createQuery("select p from Project p where p.annoType = :annoType");
         query.setParameter("annoType", annotationTypeIndex);
 
-        return query.getResultList();
+        List<Project> result = query.getResultList();
+
+        return result;
     }
 
-    public Project createNewProject(Project project)
+    public void saveProject(Project project)
     {
-        EntityTransaction transaction = entityManager.getTransaction();
+        saveItem(() -> this.addProject(project));
+    }
 
-        transaction.begin();
-
+    private void addProject(Project project)
+    {
         if (project.getProjectId() == null)
         {
             entityManager.persist(project);
@@ -56,9 +58,5 @@ public class ProjectRepository
         {
             entityManager.merge(project);
         }
-
-        transaction.commit();
-
-        return project;
     }
 }

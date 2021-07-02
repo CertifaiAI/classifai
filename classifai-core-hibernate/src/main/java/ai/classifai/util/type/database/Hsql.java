@@ -27,17 +27,17 @@ public class Hsql extends RelationalDb
         lockAbsPathList = null;
     }
 
-    public boolean removeLckIfExist()
-    {
-        for(File filePath : lockAbsPathList)
-        {
-            if (filePath.exists() && !FileHandler.deleteFile(filePath)){
-
-                return false;
-            }
-        }
-
-        return true;
-    }
+//    public boolean removeLckIfExist()
+//    {
+//        for(File filePath : lockAbsPathList)
+//        {
+//            if (filePath.exists() && !FileHandler.deleteFile(filePath)){
+//
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
 
 }

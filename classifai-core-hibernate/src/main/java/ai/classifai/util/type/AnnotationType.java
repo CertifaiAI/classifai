@@ -23,7 +23,12 @@ package ai.classifai.util.type;
 public enum AnnotationType
 {
     BOUNDINGBOX,
-    SEGMENTATION
+    SEGMENTATION;
     //ADD WHEN HAVE NEW ANNOTATION TYPE
+
+    public static AnnotationType fromInt(int idx)
+    {
+        return AnnotationType.values()[idx];
+    }
 }
 

@@ -1,17 +1,15 @@
 package ai.classifai.database.model.annotation;
 
-import ai.classifai.database.model.Version;
-import ai.classifai.database.model.data.Data;
-import ai.classifai.database.model.versiondata.DataVersion;
+import ai.classifai.database.model.dataVersion.DataVersion;
 
 import javax.persistence.*;
-import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Annotation
 {
     @Id
+    @Column(name = "annotation_id")
     private Long annotationId;
 
     @ManyToOne
@@ -20,4 +18,11 @@ public abstract class Annotation
             @JoinColumn(name = "version_id", referencedColumnName = "version_id")
     })
     private DataVersion dataVersion;
+
+    public Annotation(Long annotationId)
+    {
+        this.annotationId = annotationId;
+    }
+
+    public Annotation() {}
 }

@@ -19,7 +19,6 @@ import ai.classifai.database.DbActionConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
@@ -43,72 +42,15 @@ public class V1Endpoint extends EndpointBase
      */
     public void getProjectMetadata(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        JsonObject request = paramHandler.projectParamToJson(context);
 
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.GET_PROJECT_META);
 
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
-                .put(ParamConfig.getProjectNameParam(), projectName);
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.GET_PROJECT_META);
-
-        vertx.eventBus().request(DbActionConfig.QUEUE, request, options, reply -> {
-
-            if(reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
-            }
-        });
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failed to retrieve metadata")));
     }
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        log.debug("Get metadata of project: " + projectName + " of annotation type: " + type.name());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        if(loader == null)
-//        {
-//            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving metadata of project: " + projectName));
-//        }
-//
-//        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), Objects.requireNonNull(loader).getProjectId());
-//
-//        //load label list
-//        DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveProjectMetadata());
-//
-//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, metadataOptions, metaReply ->
-//        {
-//            if (metaReply.succeeded()) {
-//
-//                JsonObject metaResponse = (JsonObject) metaReply.result().body();
-//
-//                if (ReplyHandler.isReplyOk(metaResponse))
-//                {
-//                    HTTPResponseHandler.configureOK(context, metaResponse);
-//                }
-//                else
-//                {
-//                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
-//                }
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving project metadata " + projectName));
-//            }
-//        });
-//    }
 
     /**
      * Get metadata of all projects
@@ -117,227 +59,105 @@ public class V1Endpoint extends EndpointBase
      */
     public void getAllProjectsMeta(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        JsonObject request = paramHandler.annoParamToJson(context);
 
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.GET_ALL_PROJECT_META);
 
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.GET_ALL_PROJECT_META);
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failure in getting all the projects")));
+    }
+
+    /**
+     * Load existing project from the bounding box database
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    public void loadProject(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.LOAD_PROJECT);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Fail to load project")));
+    }
+
+
+    /**
+     * Get status of loading a project
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
+     */
+    // FIXME: To be deleted
+    public void loadProjectStatus(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.LOAD_PROJECT);
 
         vertx.eventBus().request(DbActionConfig.QUEUE, request, options, reply -> {
 
-            if(reply.succeeded())
+            if (reply.succeeded())
             {
                 JsonObject response = (JsonObject) reply.result().body();
+                response.put("message", 2); // FIXME: hardcoded
 
                 HTTPResponseHandler.configureOK(context, response);
             }
             else
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Fail to load project"));
             }
         });
     }
 
-//    /**
-//     * Load existing project from the bounding box database
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    public void loadProject(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String queue = helper.getDbQuery(type);
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        log.info("Load project: " + projectName + " of annotation type: " + type.name());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
-//
-//        if(loader.isCloud())
-//        {
-//            //FIXME
-//            HTTPResponseHandler.configureOK(context);
-//        }
-//        else
-//        {
-//            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
-//
-//            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-//            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
-//            {
-//                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-//
-//                JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-//
-//                DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getLoadValidProjectUuid());
-//
-//                //start checking uuid if it's path is still exist
-//                vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
-//                {
-//                    JsonObject removalResponse = (JsonObject) fetch.result().body();
-//
-//                    if (ReplyHandler.isReplyOk(removalResponse))
-//                    {
-//                        HTTPResponseHandler.configureOK(context);
-//                    }
-//                    else
-//                    {
-//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-//                    }
-//                });
-//
-//            }
-//            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
-//            }
-//            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
-//            }
-//        }
-//    }
-//
-//
-//    /**
-//     * Get status of loading a project
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
-//     */
-//    public void loadProjectStatus(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if (helper.checkIfProjectNull(context, projectLoader, projectName)) return;
-//
-//        ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
-//
-//        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
-//        {
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
-//
-//            jsonObject.put(ParamConfig.getProgressMetadata(), projectLoader.getProgress());
-//
-//            HTTPResponseHandler.configureOK(context, jsonObject);
-//
-//        } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
-//
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
-//
-//            // Remove empty string from label list
-//            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
-//
-//            jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-//            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
-//
-//            HTTPResponseHandler.configureOK(context, jsonObject);
-//
-//        }
-//        else if (projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
-//        {
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), ProjectLoaderStatus.ERROR.ordinal());
-//            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
-//
-//            HTTPResponseHandler.configureOK(context, jsonObject);
-//        }
-//    }
-//
-//    /**
-//     * Retrieve thumbnail with metadata
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
-//     *
-//     */
-//    public void getThumbnail(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String queue = helper.getDbQuery(type);
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        JsonObject request = new JsonObject().put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID);
-//
-//        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getQueryData());
-//
-//        vertx.eventBus().request(queue, request, thumbnailOptions, fetch -> {
-//
-//            if (fetch.succeeded())
-//            {
-//                JsonObject result = (JsonObject) fetch.result().body();
-//
-//                HTTPResponseHandler.configureOK(context, result);
-//
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail: " + fetch.cause().getMessage()));
-//            }
-//        });
-//    }
-//
-//    /***
-//     *
-//     * Get Image Source
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
-//     *
-//     */
-//    public void getImageSource(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String queue = helper.getDbQuery(type);
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID)
-//                .put(ParamConfig.getProjectNameParam(), projectName);
-//
-//        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRetrieveDataPath());
-//
-//        vertx.eventBus().request(queue, request, imgSrcOptions, fetch -> {
-//
-//            if (fetch.succeeded()) {
-//
-//                JsonObject result = (JsonObject) fetch.result().body();
-//
-//                HTTPResponseHandler.configureOK(context, result);
-//
-//            }
-//            else {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting image source."));
-//            }
-//        });
-//    }
+    /**
+     * Retrieve thumbnail with metadata
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
+     *
+     */
+    public void getThumbnail(RoutingContext context)
+    {
+        JsonObject request = paramHandler.dataParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.GET_THUMBNAIL);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail")));
+    }
+
+    /***
+     *
+     * Get Image Source
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
+     *
+     */
+    public void getImageSource(RoutingContext context)
+    {
+        JsonObject request = paramHandler.dataParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.GET_IMAGE_SOURCE);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failure in retrieving image source")));
+    }
 //
 //    /***
 //     *
@@ -433,17 +253,27 @@ public class V1Endpoint extends EndpointBase
 //            }
 //        });
 //    }
-//
-//    /**
-//     * Delete project
-//     *
-//     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    public void deleteProject(RoutingContext context)
+
+    /**
+     * Delete project
+     *
+     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    public void deleteProject(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.DELETE_PROJECT);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failure in deleting project")));
+    }
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
@@ -492,4 +322,5 @@ public class V1Endpoint extends EndpointBase
 //            }
 //        });
 //    }
+
 }

@@ -46,7 +46,9 @@ public class PdfHandler
 
         PDDocument document = null;
 
-        String fileName = FileHandler.getFileName(pdfFullPath.getAbsolutePath());
+        FileHandler fileHandler = new FileHandler();
+
+        String fileName = fileHandler.getFileName(pdfFullPath.getAbsolutePath());
         try
         {
             document = PDDocument.load(pdfFullPath);
@@ -63,7 +65,7 @@ public class PdfHandler
 
                 if (outputPath == null)
                 {
-                    savedPath = FileHandler.getAbsolutePath(pdfFullPath);
+                    savedPath = fileHandler.getAbsolutePath(pdfFullPath);
                 }
                 else
                 {

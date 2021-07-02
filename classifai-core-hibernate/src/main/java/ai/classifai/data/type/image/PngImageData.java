@@ -40,6 +40,11 @@ public class PngImageData extends ImageData
     }
 
     @Override
+    public String getMimeType() {
+        return "image/png";
+    }
+
+    @Override
     public int getWidth()
     {
         try {
@@ -86,7 +91,7 @@ public class PngImageData extends ImageData
     // TODO: delete this when testing is done
     public static void main(String[] args) throws ImageProcessingException, IOException, NotSupportedImageTypeException
     {
-        String path = "C:\\Users\\yinch\\Pictures\\colorImage\\gray.bmp";
+        String path = "C:\\Users\\yinch\\Pictures\\colorImage\\color.jpg";
 
         Metadata metadata = ImageMetadataReader.readMetadata(new File(path));
 

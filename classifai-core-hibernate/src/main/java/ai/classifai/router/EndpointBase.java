@@ -18,9 +18,15 @@ package ai.classifai.router;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
+import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 
 /**
@@ -30,6 +36,9 @@ import lombok.Setter;
  */
 public abstract class EndpointBase
 {
+    protected ParamHandler paramHandler = new ParamHandler();
+    protected BodyHandler bodyHandler = new BodyHandler();
+
     @Setter protected Vertx vertx = null;
 
     protected Util helper = new Util();
@@ -52,5 +61,17 @@ public abstract class EndpointBase
                 .put(ParamConfig.getSelectionWindowMessageParam(), status.name());
 
         return response;
+    }
+
+    protected void sendResponseBody(Message<Object> msg, RoutingContext context)
+    {
+        JsonObject response = (JsonObject) msg.body();
+
+        HTTPResponseHandler.configureOK(context, response);
+    }
+
+    protected DeliveryOptions getDeliveryOptions(String action)
+    {
+        return new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), action);
     }
 }

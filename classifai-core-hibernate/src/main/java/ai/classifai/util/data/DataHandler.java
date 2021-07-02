@@ -2,10 +2,51 @@ package ai.classifai.util.data;
 
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
+import ai.classifai.util.exception.NotSupportedDataTypeException;
+import ai.classifai.util.type.AnnotationType;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-public interface DataHandler
+@Slf4j
+public abstract class DataHandler
 {
-    List<Data> getDataList(String projectPath);
+    @Getter
+    private static DataHandlerFactory factory = new DataHandlerFactory();
+    protected FileHandler fileHandler = new FileHandler();
+
+    public abstract List<Data> getDataList(Project project);
+
+    protected DataHandler(){}
+
+    public static DataHandler getDataHandler(int annoType)
+    {
+        try
+        {
+            DataHandlerFactory factory = new DataHandlerFactory();
+            return factory.getDataHandler(annoType);
+        } catch (NotSupportedDataTypeException e)
+        {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
+
+    public static class DataHandlerFactory
+    {
+        private DataHandlerFactory() {}
+
+        public DataHandler getDataHandler(Integer annoTypeIdx) throws NotSupportedDataTypeException {
+            if (annoTypeIdx == AnnotationType.BOUNDINGBOX.ordinal() ||
+                    annoTypeIdx == AnnotationType.SEGMENTATION.ordinal())
+            {
+                return new ImageHandler();
+            }
+            else
+            {
+                throw new NotSupportedDataTypeException(String.format("file type %d not supported", annoTypeIdx));
+            }
+        }
+    }
 }

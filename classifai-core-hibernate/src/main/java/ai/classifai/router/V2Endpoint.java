@@ -92,44 +92,31 @@ public class V2Endpoint extends EndpointBase {
 //        });
 //    }
 //
-//    /***
-//     * Star a project
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
-//     */
-//    public void starProject(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(h ->
-//        {
-//            JsonObject jsonObject = h.toJsonObject();
-//
-//            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-//
-//            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
-//
-//            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-//            {
-//                if(reply.succeeded())
-//                {
-//                    //set status of starring to project loader.
-//                    Boolean isStar = Boolean.parseBoolean(jsonObject.getString(ParamConfig.getStatusParam()));
-//                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-//                    loader.setIsProjectStarred(isStar);
-//
-//                    JsonObject response = (JsonObject) reply.result().body();
-//
-//                    HTTPResponseHandler.configureOK(context, response);
-//                }
-//            });
-//        });
-//    }
+    /***
+     * Star a project
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
+     */
+    public void starProject(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        Handler<Buffer> requestHandler = h ->
+        {
+            JsonObject status = h.toJsonObject();
+
+            request.mergeIn(status);
+
+            DeliveryOptions options = getDeliveryOptions(DbActionConfig.STAR_PROJECT);
+
+
+
+            vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                    .onSuccess(msg -> sendResponseBody(msg, context));
+        };
+
+        context.request().bodyHandler(requestHandler);
+    }
 
     /**
      * Create new project
@@ -146,27 +133,21 @@ public class V2Endpoint extends EndpointBase {
      */
     public void createProject(RoutingContext context)
     {
-        Handler<Buffer> bufferHandler = h ->
+        Handler<Buffer> requestHandler = h ->
         {
             JsonObject requestBody = h.toJsonObject();
+            String annoTypeKey = "annotation_type";
+            AnnotationType type = bodyHandler.getAnnoType(requestBody.getString(annoTypeKey));
+            requestBody.put(annoTypeKey, type.ordinal());
+
             DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.CREATE_PROJECT);
 
-            vertx.eventBus().request(DbActionConfig.QUEUE, requestBody, createOptions,
-                    reply -> {
-                        if (reply.succeeded())
-                        {
-                            JsonObject response = (JsonObject) reply.result().body();
-
-                            HTTPResponseHandler.configureOK(context, response);
-                        }
-                        else
-                        {
-                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(reply.cause().getMessage()));
-                        }
-                    });
+            vertx.eventBus().request(DbActionConfig.QUEUE, requestBody, createOptions)
+                    .onSuccess(msg -> sendResponseBody(msg, context))
+                    .onFailure(throwable -> HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Unable to create project")));
         };
 
-        context.request().bodyHandler(bufferHandler);
+        context.request().bodyHandler(requestHandler);
     }
 
 //    /**
@@ -430,7 +411,7 @@ public class V2Endpoint extends EndpointBase {
 //
 //        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
 //        {
-//            response.put(ParamConfig.getProjectNameParam(), ProjectImportSelector.getProjectName());
+//            response.put(ParamConfig.getProjectNameParam(), ProjectImportSelector.getProjectNameParam());
 //        }
 //
 //        HTTPResponseHandler.configureOK(context, response);

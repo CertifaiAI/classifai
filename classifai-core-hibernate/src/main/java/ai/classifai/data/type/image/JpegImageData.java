@@ -19,6 +19,7 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import lombok.Getter;
 
 /**
  * Provides metadata of jpeg images
@@ -65,7 +66,7 @@ public class JpegImageData extends ImageData
      *
      * @return orientation
      */
-    private int getOrientation()
+    public int getOrientation()
     {
         try
         {
@@ -76,6 +77,11 @@ public class JpegImageData extends ImageData
             // if can't find orientation set as 0 deg
             return 1;
         }
+    }
+
+    @Override
+    public String getMimeType() {
+        return "image/jpeg";
     }
 
     @Override

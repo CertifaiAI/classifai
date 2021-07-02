@@ -2,12 +2,16 @@ package ai.classifai.database.model.data;
 
 
 import ai.classifai.database.model.Project;
+import ai.classifai.database.model.dataVersion.DataVersion;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
-import java.util.UUID;
+import java.io.File;
+import java.util.*;
 
+@Slf4j
 @Getter
 @Setter
 @Entity(name = "DATA")
@@ -32,14 +36,51 @@ public abstract class Data
     @JoinColumn(name="project_id", nullable = false)
     private Project project;
 
-    public Data(String dataPath, String checksum, long fileSize)
+    @OneToMany(mappedBy = "data")
+    protected List<DataVersion> dataVersions;
+
+
+    public Data(String dataPath, String checksum, long fileSize, Project project)
     {
+        dataVersions = new ArrayList<>();
+
+        this.project = project;
         this.dataPath = dataPath;
         this.checksum = checksum;
         this.fileSize = fileSize;
     }
 
-    public Data()
+    public Data() {}
+
+    public abstract void addNewDataVersion();
+
+    public DataVersion getCurrentDataVersion()
     {
+        Optional<DataVersion> dataVersion = dataVersions.stream()
+                .filter(dv -> dv.isVersion(this.getProject().getCurrentVersion()))
+                .findFirst();
+
+        if (dataVersion.isEmpty())
+        {
+            log.error("No data_version found! This should be created when every version & data is created");
+            return null;
+        }
+
+        return dataVersion.get();
+    }
+
+    public boolean withId(String id)
+    {
+        return this.getDataId().toString().equals(id);
+    }
+
+    public String getFullPath()
+    {
+        return new File(this.project.getProjectPath(), this.dataPath).getAbsolutePath();
+    }
+
+    public boolean validateData()
+    {
+        return true;
     }
 }

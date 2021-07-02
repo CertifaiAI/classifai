@@ -32,7 +32,6 @@ public class Project
     public static final String PROJECT_INFRA_KEY = "project_infra";
     public static final String CURRENT_VERSION_KEY = "current_version";
 
-
     @Id
     @GeneratedValue
     @Column(name = PROJECT_ID_KEY)
@@ -69,37 +68,39 @@ public class Project
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Version> versionList;
 
-    public Project() {}
+    public Project()
+    {}
 
     public Project(String projectName, int annoType, String projectPath,
                    boolean isNew, boolean isStarred,int projectInfra)
     {
+        this.dataList = new ArrayList<>();
+        this.versionList = new ArrayList<>();
+        this.currentVersion = addNewVersion();
         this.projectName = projectName;
         this.annoType = annoType;
         this.projectPath = projectPath;
         this.isNew = isNew;
         this.isStarred = isStarred;
         this.projectInfra = projectInfra;
-        this.dataList = new ArrayList<>();
-        this.versionList = new ArrayList<>();
     }
 
-    // FIXME: implement method
     private Boolean isRootPathValid()
     {
-        return true;
+        return new File(projectPath).exists();
     }
 
-    public void addVersion(Version version)
+    public Version addNewVersion()
     {
-        versionList.add(version);
-        version.setProject(this);
+        Version newVersion = new Version(this);
+        versionList.add(newVersion);
+
+        return newVersion;
     }
 
     public void addData(Data data)
     {
         dataList.add(data);
-        data.setProject(this);
     }
 
     public JsonObject getProjectMeta()
@@ -131,19 +132,15 @@ public class Project
 
         // create new Data
         DataHandler dataHandler = new DataHandlerFactory().getDataHandler(annoType);
-        List<Data> dataList = dataHandler.getDataList(projectPath);
+        List<Data> dataList = dataHandler.getDataList(project);
+
+        dataList.forEach(project::addData);
 
         // process label path get label list
         List<String> strLabelList = new LabelListImport(new File(labelPath)).getValidLabelList();
         List<Label> labelList = Label.fromStringList(strLabelList);
 
-        // create new Version
-        Version version = new Version();
-        version.setLabelList(labelList);
-
-        project.addVersion(version);
-        project.setCurrentVersion(version);
-        dataList.forEach(project::addData);
+        labelList.forEach(project.currentVersion::addLabel);
 
         return project;
     }

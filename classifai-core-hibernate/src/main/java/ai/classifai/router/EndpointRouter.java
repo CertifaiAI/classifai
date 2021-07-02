@@ -100,17 +100,17 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/:annotation_type/projects/meta").handler(v1::getAllProjectsMeta);
 
-//        router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
-//
-//        router.get(projectV1Endpoint).handler(v1::loadProject);
-//
-//        router.delete(projectV1Endpoint).handler(v1::deleteProject);
-//
-//        router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
-//
-//        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
-//
-//        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(v1::getImageSource);
+        router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
+
+        router.get(projectV1Endpoint).handler(v1::loadProject);
+
+        router.delete(projectV1Endpoint).handler(v1::deleteProject);
+
+        router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
+
+        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
+
+        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(v1::getImageSource);
 //
 //        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(v1::updateData);
 //
@@ -122,7 +122,7 @@ public class EndpointRouter extends AbstractVerticle
 //
 //        router.put(projectV1Endpoint).handler(v2::closeProjectState);
 //
-//        router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
+        router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 //
 //        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
 //

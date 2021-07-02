@@ -15,7 +15,11 @@
  */
 package ai.classifai.data.type.image;
 
+import ai.classifai.util.data.DataHandler;
+import ai.classifai.util.exception.NotSupportedDataTypeException;
 import ai.classifai.util.exception.NotSupportedImageTypeException;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
@@ -24,6 +28,10 @@ import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * ImageData provides metadata of images
@@ -47,8 +55,52 @@ public abstract class ImageData
     public abstract int getWidth();
     public abstract int getHeight();
     public abstract int getDepth();
-    // mime type;
-    // thumbnail;
+    public abstract String getMimeType();
+
+    public String getBase64Header()
+    {
+        return String.format("data:%s;base64,", getMimeType());
+    }
+
+    public static ImageData getImageData(String filePath)
+    {
+        try
+        {
+            Metadata metadata = ImageMetadataReader.readMetadata(new File(filePath));
+
+            return ImageData.factory.getImageData(metadata);
+        }
+        catch (ImageProcessingException | IOException e)
+        {
+            log.debug(String.format("%s is not an image", filePath));
+            return null;
+        }
+        catch (NotSupportedImageTypeException e)
+        {
+            log.debug(String.format("%s is not supported \n %s", filePath, e.getMessage()));
+            return null;
+        }
+    }
+
+    public static ImageData getImageData(byte[] bytes)
+    {
+        try
+        {
+            Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
+
+            return ImageData.factory.getImageData(metadata);
+        }
+        catch (ImageProcessingException | IOException e)
+        {
+            log.debug("byte array received is not an image");
+            return null;
+        }
+        catch (NotSupportedImageTypeException e)
+        {
+            log.debug("byte array received is not supported");
+            return null;
+        }
+    }
 
     protected void logMetadataError()
     {

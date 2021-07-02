@@ -9,6 +9,8 @@
         <class>ai.classifai.database.model.Label</class>
         <class>ai.classifai.database.model.data.Data</class>
         <class>ai.classifai.database.model.data.Image</class>
+        <class>ai.classifai.database.model.dataVersion.DataVersion</class>
+        <class>ai.classifai.database.model.dataVersion.ImageDataVersion</class>
         <class>ai.classifai.database.model.annotation.Annotation</class>
         <class>ai.classifai.database.model.annotation.ImageAnnotation.ImageAnnotation</class>
         <class>ai.classifai.database.model.annotation.VideoAnnotation</class>
@@ -28,9 +30,9 @@
                       value=""/>
 
             <property name="javax.persistence.schema-generation.database.action"
-                      value="create"/>
+                      value="drop-and-create"/>
 
-            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
 
             <!--Logging-->
             <property name="hibernate.show_sql"

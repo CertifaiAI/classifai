@@ -34,6 +34,11 @@ public class BmpImageData extends ImageData
     }
 
     @Override
+    public String getMimeType() {
+        return "image/bmp";
+    }
+
+    @Override
     public int getWidth()
     {
         try

@@ -33,14 +33,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FileHandler
 {
-    public static List<String> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
+    public List<String> processFolder(@NonNull File rootPath, @NonNull String[] extensionFormat)
     {
         Predicate<File> func = file -> isFileSupported(file.getAbsolutePath(), extensionFormat);
 
         return processFolder(rootPath, func);
     }
 
-    public static List<String> processFolder(@NonNull File rootPath, @NonNull Predicate<File> filterFunction)
+    public List<String> processFolder(@NonNull File rootPath, @NonNull Predicate<File> filterFunction)
     {
         List<String> totalFilelist = new ArrayList<>();
 
@@ -73,7 +73,7 @@ public class FileHandler
         return totalFilelist;
     }
 
-    private static List<File> listFiles(File rootPath)
+    private List<File> listFiles(File rootPath)
     {
         List<File> outputList = new ArrayList<>();
 
@@ -86,7 +86,7 @@ public class FileHandler
         return outputList;
     }
 
-    public static boolean isFileSupported(String file, String[] formatTypes)
+    public boolean isFileSupported(String file, String[] formatTypes)
     {
         for (String format : formatTypes)
         {
@@ -101,12 +101,12 @@ public class FileHandler
         return false;
     }
 
-    public static String trimPath(String rootPath, String fullPath)
+    public String trimPath(String rootPath, String fullPath)
     {
         return fullPath.substring(rootPath.length());
     }
 
-    public static String getAbsolutePath(@NonNull File filePath)
+    public String getAbsolutePath(@NonNull File filePath)
     {
         String fullPath = filePath.getAbsolutePath();
 
@@ -119,7 +119,7 @@ public class FileHandler
         return fullPath.substring(0, fileStartIndex);
     }
 
-    public static String getFileName(@NonNull String filePath)
+    public String getFileName(@NonNull String filePath)
     {
         String[] subString = filePath.split(ParamConfig.getFileSeparator());
 
@@ -135,7 +135,7 @@ public class FileHandler
         return fileName;
     }
 
-    private static void delete(File file)
+    private void delete(File file)
     {
         try
         {
@@ -147,7 +147,7 @@ public class FileHandler
         }
     }
 
-    public static boolean deleteFile(File file)
+    public boolean deleteFile(File file)
     {
         try
         {
@@ -179,7 +179,7 @@ public class FileHandler
         }
     }
 
-    public static boolean createFolderIfNotExist(File file)
+    public boolean createFolderIfNotExist(File file)
     {
         if(!file.exists() && !file.mkdir())
         {

@@ -60,7 +60,9 @@ public class Task extends SwingWorker<Void, Void> {
 
         File inputPath = new File(ConverterLauncher.getInputFolderPath());
 
-        List<String> inputFiles = FileHandler.processFolder(inputPath, inputExtension);
+        FileHandler fileHandler = new FileHandler();
+
+        List<String> inputFiles = fileHandler.processFolder(inputPath, inputExtension);
 
         ConverterLauncher.appendTaskOutput("Total number of files to convert: " + inputFiles.size());
 

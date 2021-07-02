@@ -19,6 +19,7 @@ package ai.classifai.util.data;
 import ai.classifai.data.type.image.ImageData;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.data.type.image.JpegImageData;
+import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.data.Image;
 import ai.classifai.util.Hash;
@@ -27,10 +28,17 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Metadata;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -41,26 +49,86 @@ import java.util.stream.Collectors;
  * @author codenamewei
  */
 @Slf4j
-public class ImageHandler extends FileHandler implements DataHandler
+public class ImageHandler extends DataHandler
 {
+    public static final int THUMBNAIL_SIZE = 100;
+    public static final int MAX_SIZE = 15000;
+
     @Override
-    public List<Data> getDataList(String projectPath)
+    public List<Data> getDataList(Project project)
     {
+        String projectPath = project.getProjectPath();
         List<String> imageFiles = getValidImagesFromFolder(new File(projectPath));
 
         return imageFiles.stream()
-                .map(path -> fileToData(path, projectPath))
+                .map(path -> fileToData(path, project))
                 .collect(Collectors.toList());
     }
 
-    private Image fileToData(String filePath, String projectPath)
+    public String generateImageSource(Image image)
     {
+        String fullPath = image.getFullPath();
+
+        try
+        {
+            return getBase64String(fullPath);
+        }
+        catch (Exception ignored)
+        {
+            log.error(String.format("Invalid path for %s", fullPath));
+            return "";
+        }
+    }
+
+
+    // FIXME: rotateImage must fix
+    public String generateThumbnail(Image image)
+    {
+        String fullPath = image.getFullPath();
+
+        try
+        {
+            BufferedImage bufferedImage = ImageIO.read(new File(fullPath));
+
+            int width = image.getWidth();
+            int height = image.getHeight();
+
+            // width, height
+            Pair<Integer, Integer> thumbnailSize = getThumbnailSize(width, height);
+
+            BufferedImage thumbnail = resizeImage(bufferedImage, thumbnailSize.getLeft(), thumbnailSize.getRight());
+
+            return getBase64String(thumbnail);
+        }
+        catch (Exception ignored)
+        {
+            log.error(String.format("Invalid path for %s", fullPath));
+            return "";
+        }
+    }
+
+
+
+    private BufferedImage resizeImage(BufferedImage bufferedImage, Integer width, Integer height)
+    {
+        java.awt.Image img = bufferedImage.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        return resized;
+    }
+
+    private Image fileToData(String filePath, Project project)
+    {
+        String projectPath = project.getProjectPath();
         File file = new File(filePath);
-        ImageData imageData = Objects.requireNonNull(getImageData(filePath));
+        ImageData imageData = Objects.requireNonNull(ImageData.getImageData(filePath));
 
         // general data
         // relative path
-        String relativePath = trimPath(projectPath, filePath);
+        String relativePath = fileHandler.trimPath(projectPath, filePath);
         // checksum
         String checksum = Hash.getHash256String(file);
         // file size
@@ -74,7 +142,7 @@ public class ImageHandler extends FileHandler implements DataHandler
         // image_height
         int height = imageData.getHeight();
 
-        return new Image(relativePath, checksum, fileSize, depth, width, height);
+        return new Image(project, relativePath, checksum, fileSize, depth, width, height);
     }
 
     //    private static String getImageHeader(String input)
@@ -200,7 +268,7 @@ public class ImageHandler extends FileHandler implements DataHandler
 //    }
 //
 //
-//    public static Map<String, String> getThumbNail(BufferedImage img, boolean toCheckOrientation, File file)
+//    public Map<String, String> getThumbNail(BufferedImage img, boolean toCheckOrientation, File file)
 //    {
 //        Map<String, String> imageData = new HashMap<>();
 //
@@ -276,9 +344,61 @@ public class ImageHandler extends FileHandler implements DataHandler
 //        return null;
 //    }
 //
+    private String getBase64String(BufferedImage img)
+    {
+        try
+        {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ImageIO.write(img, "PNG", out);
+            byte[] bytes = out.toByteArray();
+
+            return getBase64String(bytes);
+        }
+        catch (Exception e)
+        {
+            log.debug("Error in converting BufferedImage into base64: ", e);
+            return "";
+        }
+    }
+
+    private String getBase64String(String filePath)
+    {
+        try
+        {
+            File file = new File(filePath);
+            byte[] bytes = FileUtils.readFileToByteArray(file);
+
+            return getBase64String(bytes);
+        } catch (Exception e)
+        {
+            log.debug("Error in converting BufferedImage into base64: ", e);
+            return "";
+        }
+    }
+
+    private String getBase64String(byte[] bytes)
+    {
+        ImageData imageData = ImageData.getImageData(bytes);
+
+        String base64bytes = Base64.getEncoder().encodeToString(bytes);
+        String src = imageData.getBase64Header() + base64bytes;
+
+        return src;
+    }
+
+    // width, height
+    private Pair<Integer, Integer> getThumbnailSize(int width, int height)
+    {
+        int max = Math.max(width, height);
+        int newWidth = THUMBNAIL_SIZE * width / max;
+        int newHeight = THUMBNAIL_SIZE * height / max;
+
+        return new ImmutablePair<>(newWidth, newHeight);
+    }
+
     public boolean isImageFileValid(File file)
     {
-        ImageData imgData = getImageData(file.getAbsolutePath());
+        ImageData imgData = ImageData.getImageData(file.getAbsolutePath());
 
         // is image valid
         if (imgData == null)
@@ -295,25 +415,6 @@ public class ImageHandler extends FileHandler implements DataHandler
         }
 
         return true;
-    }
-
-    public ImageData getImageData(String filePath)
-    {
-        try
-        {
-            Metadata metadata = ImageMetadataReader.readMetadata(new File(filePath));
-            return ImageData.getFactory().getImageData(metadata);
-        }
-        catch (ImageProcessingException | IOException e)
-        {
-            log.debug(String.format("%s is not an image", filePath));
-            return null;
-        }
-        catch (NotSupportedImageTypeException e)
-        {
-            log.debug(String.format("%s is not supported \n %s", filePath, e.getMessage()));
-            return null;
-        }
     }
 //
 //    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<String> filesPath)
@@ -346,7 +447,7 @@ public class ImageHandler extends FileHandler implements DataHandler
 //
     public List<String> getValidImagesFromFolder(File rootPath)
     {
-        return FileHandler.processFolder(rootPath, this::isImageFileValid);
+        return fileHandler.processFolder(rootPath, this::isImageFileValid);
     }
 //
 //    private static boolean isImageUnsupported(File file)
