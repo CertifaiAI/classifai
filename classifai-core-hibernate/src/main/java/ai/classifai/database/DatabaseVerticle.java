@@ -162,6 +162,12 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         Function<Void, Future<Void>> deleteProjectHandler = unused -> 
                 vertx.executeBlocking(promise -> deleteProject(STORE, projectRepository, dataVersionRepository));
 
+        vertx.executeBlocking(getProjectHandler)
+                .compose(getDataListHandler)
+                .compose(getDataVersionListHandler)
+                .onSuccess()
+                .onFailure()
+                .onComplete();
     }
 
     private void deleteProject(JsonObject store, ProjectRepository projectRepository, DataVersionRepository dataVersionRepository) {
