@@ -268,7 +268,7 @@ public class ProjectLoader
     {
         try
         {
-            if(!ImageHandler.loadProjectRootPath(this, true))
+            if(!ImageHandler.loadProjectRootPath(this))
             {
                 // Get example image from metadata
                 File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
@@ -277,7 +277,7 @@ public class ProjectLoader
                 log.info("Empty folder. Example image added.");
 
                 // Run loadProjectRootPath again
-                if(!ImageHandler.loadProjectRootPath(this, true))
+                if(!ImageHandler.loadProjectRootPath(this))
                 {
                     log.debug("Loading files in project folder failed");
                 }

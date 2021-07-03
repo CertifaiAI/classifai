@@ -18,7 +18,6 @@ package ai.classifai.database.wasabis3;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
-import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.status.FileSystemStatus;

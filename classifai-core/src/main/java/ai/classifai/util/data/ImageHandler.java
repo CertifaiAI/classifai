@@ -327,9 +327,9 @@ public class ImageHandler {
      *     scenario 4: adding new files
      *     scenario 5: evrything stills the same
      */
-    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, boolean isNewProject)
+    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader)
     {
-        if(isNewProject)
+        if(loader.getIsProjectNew())
         {
             loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
         }
@@ -367,7 +367,7 @@ public class ImageHandler {
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-        if(isNewProject)
+        if(loader.getIsProjectNew())
         {
             saveToProjectTable(loader, dataFullPathList);
         }
