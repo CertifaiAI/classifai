@@ -57,19 +57,19 @@ public class ProjectRepository extends Repository
         saveItem(project);
 
         // save version
-        saveItem((Object[]) versionList.toArray(Version[]::new));
+        saveItem(versionList.toArray());
 
         // save label
-        saveItem((Object[]) labelList.toArray(Label[]::new));
+        saveItem(labelList.toArray());
 
         // save data
-        saveItem((Object[]) dataList.toArray(Data[]::new));
+        saveItem(dataList.toArray());
 
         // save dataversion
-        saveItem((Object[]) dataVersionList.toArray(DataVersion[]::new));
+        saveItem(dataVersionList.toArray());
 
         // save annotation
-        saveItem((Object[]) annotationList.toArray(Annotation[]::new));
+        saveItem(annotationList.toArray());
     }
 
     public void deleteProject(Project project) {

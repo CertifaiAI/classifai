@@ -20,11 +20,13 @@ import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.data.Image;
 import ai.classifai.database.repository.DataRepository;
+import ai.classifai.database.repository.LabelRepository;
 import ai.classifai.database.repository.ProjectRepository;
 import ai.classifai.database.repository.Repository;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.DataHandler;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.LabelHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.exception.projectExistedException;
 import ai.classifai.util.message.ErrorCodes;
@@ -77,7 +79,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             case DbActionConfig.GET_THUMBNAIL -> this.getThumbnail(message);
             case DbActionConfig.GET_IMAGE_SOURCE -> this.getImageSource(message);
             case DbActionConfig.STAR_PROJECT -> this.starProject(message);
-//            case DbActionConfig.ADD_LABEL -> this.addLabel(message);
+            case DbActionConfig.ADD_LABEL -> this.addLabel(message);
             case DbActionConfig.DELETE_PROJECT -> this.deleteProject(message);
 
 //        //*******************************V2*******************************
@@ -111,29 +113,33 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         }
     }
 
-//    private void addLabel(Message<JsonObject> message) {
-//        ProjectRepository projectRepository = getProjectRepository();
-//        LabelRepository labelRepository = getLabelRepository();
-//
-//        int annotationTypeIdx = getAnnotationTypeIdx(message);
-//        String projectName = getProjectName(message);
-//        List<String> strLabelList = getStrLabelList(message);
-//
-//        Handler<Promise<Project>> getProjectHandler = promise ->
-//                getProject(promise, projectName, annotationTypeIdx, projectRepository);
-//
-//        Function<Project, Future<List<Label>>> mergeLabelListHandler = project ->
-//                vertx.executeBlocking((promise -> mergeLabelList(promise, project)));
-//
-//        Function<List<Label>, Future<Void>> persistLabelListHandler = labelList ->
-//                vertx.executeBlocking((promise -> persistLabelList(promise, labelList, labelRepository)));
-//
-//        // get project
-//        // merge label list
-//        // persist
-//        vertx.executeBlocking(getProjectHandler)
-//                .compose()
-//    }
+    private void addLabel(Message<JsonObject> message) {
+        ProjectRepository projectRepository = getProjectRepository();
+        LabelRepository labelRepository = getLabelRepository();
+
+        int annotationTypeIdx = getAnnotationTypeIdx(message);
+        String projectName = getProjectName(message);
+        List<String> strLabelList = getStrLabelList(message);
+
+        Handler<Promise<Project>> getProjectHandler = promise ->
+                getProject(promise, projectName, annotationTypeIdx, projectRepository);
+
+        Function<Project, Future<List<Label>>> mergeLabelListHandler = project ->
+                vertx.executeBlocking((promise -> mergeLabelList(promise, project, strLabelList)));
+
+        Function<List<Label>, Future<Void>> persistLabelListHandler = labelList ->
+                vertx.executeBlocking((promise -> persistLabelList(promise, labelList, labelRepository)));
+
+        // get project
+        // merge label list
+        // persist
+        vertx.executeBlocking(getProjectHandler)
+                .compose(mergeLabelListHandler)
+                .compose(persistLabelListHandler)
+                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+                .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
+                .onComplete(unused -> Repository.closeRepositories(projectRepository, labelRepository));
+    }
 
     private void reloadProject(Message<JsonObject> message) {
         ProjectRepository projectRepository = getProjectRepository();
@@ -422,6 +428,23 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
+    private void mergeLabelList(Promise<List<Label>> promise, Project project, List<String> strLabelList)
+    {
+        LabelHandler labelHandler = new LabelHandler();
+
+        List<Label> labelList = labelHandler.getLabelList(project, strLabelList);
+
+        promise.complete(labelList);
+    }
+
+
+    private void persistLabelList(Promise<Void> promise, List<Label> labelList, LabelRepository repository)
+    {
+        repository.saveLabelList(labelList);
+
+        promise.complete();
+    }
+
     private void persistDataList(Promise<Void> promise, List<Data> dataList, DataRepository repository)
     {
         repository.saveDataList(dataList);
@@ -562,6 +585,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     private int getAnnotationTypeIdx(Message<JsonObject> message)
     {
         return message.body().getInteger(ParamConfig.getAnnotationTypeParam());
+    }
+
+    private LabelRepository getLabelRepository() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        return new LabelRepository(entityManager);
     }
 
     private DataRepository getDataRepository()

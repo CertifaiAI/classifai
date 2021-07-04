@@ -4,6 +4,7 @@ import ai.classifai.action.LabelListImport;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.util.data.DataHandler;
 import ai.classifai.util.data.DataHandlerFactory;
+import ai.classifai.util.data.LabelHandler;
 import ai.classifai.util.exception.NotSupportedDataTypeException;
 import ai.classifai.util.project.ProjectInfra;
 import io.vertx.core.json.JsonObject;
@@ -138,8 +139,9 @@ public class Project implements Model
         dataList.forEach(project::addData);
 
         // process label path get label list
+        LabelHandler labelHandler = new LabelHandler();
         List<String> strLabelList = new LabelListImport(new File(labelPath)).getValidLabelList();
-        List<Label> labelList = Label.fromStringList(strLabelList);
+        List<Label> labelList = labelHandler.getLabelList(project, strLabelList);
 
         labelList.forEach(project.currentVersion::addLabel);
 

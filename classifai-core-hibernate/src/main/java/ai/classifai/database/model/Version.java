@@ -32,7 +32,7 @@ public class Version implements Model
     @JoinColumn(name=Project.PROJECT_ID_KEY, nullable = false)
     private Project project;
 
-    @ManyToMany(mappedBy = "versionList")
+    @OneToMany(mappedBy = "version")
     private List<Label> labelList;
 
     @OneToMany(mappedBy = "version")

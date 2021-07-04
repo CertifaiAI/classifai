@@ -19,12 +19,12 @@ public class DataRepository extends Repository
         List<Annotation> annotationList = DataVersion.getAnnotationListFromDataVersionList(dataVersionList);
 
         // save data
-        saveItem((Object[]) dataList.toArray(Data[]::new));
+        saveItem(dataList.toArray());
 
         // save dataversion
-        saveItem((Object[]) dataVersionList.toArray(DataVersion[]::new));
+        saveItem(dataVersionList.toArray());
 
         // save annotation
-        saveItem((Object[]) annotationList.toArray(Annotation[]::new));
+        saveItem(annotationList.toArray());
     }
 }

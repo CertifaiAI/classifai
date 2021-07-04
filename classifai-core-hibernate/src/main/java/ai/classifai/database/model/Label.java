@@ -23,25 +23,22 @@ public class Label implements Model
     @Column(name = VALUE_KEY)
     private String value;
 
-    @ManyToMany
-    @JoinTable(
-            name = LABEL_VERSION_TABLE_NAME,
-            joinColumns = @JoinColumn(name = LABEL_ID_KEY),
-            inverseJoinColumns = @JoinColumn(name = Version.VERSION_ID_KEY)
-    )
-    private List<Version> versionList;
+    @ManyToOne
+    @JoinColumn(name = Version.VERSION_ID_KEY, nullable = false)
+    private Version version;
 
-    public Label(String value)
+    public Label(String value, Version version)
     {
         this.value = value;
+        this.version = version;
     }
 
     public Label() {}
 
-    public static List<Label> fromStringList(List<String> list)
+    public static List<Label> labelListFromStringList(List<String> list, Version version)
     {
         return list.stream()
-                .map(Label::new)
+                .map(string -> new Label(string, version))
                 .collect(Collectors.toList());
     }
 
@@ -51,6 +48,12 @@ public class Label implements Model
                 .map(Version::getLabelList)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Label label = (Label) obj;
+        return value.equals(label.value);
     }
 
     @Override
