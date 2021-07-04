@@ -22,6 +22,7 @@ import ai.classifai.util.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Version single unit
@@ -38,15 +39,31 @@ public class Version
     //key identifier
     private String versionUuid;
 
-    private DateTime dateTime;
+    private DateTime createdDate;
+
+    @Setter
+    private DateTime lastModifiedDate;
 
     private String nextVersionUuid = null; //linked-list, to get sequential in creation
 
     public Version(@NonNull String currentVersionUuid, @NonNull DateTime currentDateTime)
     {
-        versionUuid = currentVersionUuid;
-        dateTime = currentDateTime;
+        this(currentVersionUuid, currentDateTime, currentDateTime);
     }
+
+    public Version(@NonNull String currentVersionUuid, @NonNull DateTime currentDateTime, DateTime lastModifiedDate)
+    {
+        versionUuid = currentVersionUuid;
+        createdDate = currentDateTime;
+
+        if (lastModifiedDate == null)
+        {
+            lastModifiedDate = new DateTime(currentDateTime.toString());
+        }
+
+        this.lastModifiedDate = lastModifiedDate;
+    }
+
     public Version()
     {
         this(UuidGenerator.generateUuid(), new DateTime());
@@ -57,7 +74,8 @@ public class Version
         JsonObject jsonObject = ActionOps.getKeyWithItem(strVersion);
 
         versionUuid = jsonObject.getString(ParamConfig.getVersionUuidParam());
-        dateTime = new DateTime(jsonObject.getString(ParamConfig.getCreatedDateParam()));
+        createdDate = new DateTime();
+        lastModifiedDate = new DateTime(createdDate.toString());
 
         String nextVersionBuffer = jsonObject.getString(ParamConfig.getNextVersionUuidParam());
 
@@ -76,7 +94,8 @@ public class Version
     {
         JsonObject jsonObject = new JsonObject()
                 .put(ParamConfig.getVersionUuidParam(), versionUuid)
-                .put(ParamConfig.getCreatedDateParam(), dateTime.toString())
+                .put(ParamConfig.getCreatedDateParam(), createdDate.toString())
+                .put(ParamConfig.getLastModifiedDate(), lastModifiedDate.toString())
                 .put(ParamConfig.getNextVersionUuidParam(), nextVersionUuid != null ? nextVersionUuid : "null");
 
         return jsonObject;
