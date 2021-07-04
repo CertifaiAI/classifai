@@ -12,8 +12,7 @@ import java.util.List;
 @Slf4j
 public abstract class DataHandler
 {
-    @Getter
-    private static DataHandlerFactory factory = new DataHandlerFactory();
+    private static final DataHandlerFactory FACTORY = new DataHandlerFactory();
     protected FileHandler fileHandler = new FileHandler();
 
     public abstract List<Data> getDataList(Project project);
@@ -24,8 +23,7 @@ public abstract class DataHandler
     {
         try
         {
-            DataHandlerFactory factory = new DataHandlerFactory();
-            return factory.getDataHandler(annoType);
+            return FACTORY.getDataHandler(annoType);
         } catch (NotSupportedDataTypeException e)
         {
             log.error(e.getMessage());

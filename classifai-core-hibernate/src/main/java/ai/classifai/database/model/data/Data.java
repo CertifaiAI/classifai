@@ -1,6 +1,7 @@
 package ai.classifai.database.model.data;
 
 
+import ai.classifai.database.model.Model;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.dataVersion.DataVersion;
 import lombok.Getter;
@@ -17,24 +18,29 @@ import java.util.stream.Collectors;
 @Setter
 @Entity(name = "DATA")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Data
+public abstract class Data implements Model
 {
+    public static final String DATA_ID_KEY = "data_id";
+    public static final String DATA_PATH_KEY = "data_path";
+    public static final String CHECKSUM_KEY = "checksum";
+    public static final String FILE_SIZE_KEY = "file_size";
+
     @Id
     @GeneratedValue
-    @Column(name = "data_id")
+    @Column(name = DATA_ID_KEY)
     private UUID dataId;
 
-    @Column(name = "data_path")
+    @Column(name = DATA_PATH_KEY)
     private String dataPath;
 
-    @Column(name = "checksum")
+    @Column(name = CHECKSUM_KEY)
     private String checksum;
 
-    @Column(name = "file_size")
+    @Column(name = FILE_SIZE_KEY)
     private long fileSize;
 
     @ManyToOne
-    @JoinColumn(name="project_id", nullable = false)
+    @JoinColumn(name=Project.PROJECT_ID_KEY, nullable = false)
     private Project project;
 
     @OneToMany(mappedBy = "data")
@@ -91,5 +97,16 @@ public abstract class Data
                 .map(Data::getDataVersions)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Data data = (Data) obj;
+        return (data.getDataPath().equals(dataPath) && data.getChecksum().equals(checksum));
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return dataId != null;
     }
 }

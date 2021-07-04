@@ -7,7 +7,6 @@ import ai.classifai.util.data.DataHandlerFactory;
 import ai.classifai.util.exception.NotSupportedDataTypeException;
 import ai.classifai.util.project.ProjectInfra;
 import io.vertx.core.json.JsonObject;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "PROJECT")
-public class Project
+public class Project implements Model
 {
     public static final String PROJECT_ID_KEY = "project_id";
     public static final String PROJECT_NAME_KEY = "project_name";
@@ -85,6 +84,8 @@ public class Project
         this.projectInfra = projectInfra;
     }
 
+
+
     private Boolean isRootPathValid()
     {
         return new File(projectPath).exists();
@@ -143,5 +144,10 @@ public class Project
         labelList.forEach(project.currentVersion::addLabel);
 
         return project;
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return projectId != null;
     }
 }

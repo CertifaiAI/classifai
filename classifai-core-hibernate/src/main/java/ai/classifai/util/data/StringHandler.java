@@ -15,7 +15,12 @@
  */
 package ai.classifai.util.data;
 
+import ai.classifai.util.ParamConfig;
+import io.vertx.core.json.JsonArray;
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * String processing operation
@@ -37,5 +42,13 @@ public class StringHandler
     public static String removeFirstSlashes(@NonNull String input)
     {
         return removeSlashes(input.substring(0,2)) + input.substring(2);
+    }
+
+    public static List<String> stringToStringList(String string)
+    {
+        return new JsonArray(string)
+                .stream()
+                .map(obj -> (String) obj)
+                .collect(Collectors.toList());
     }
 }

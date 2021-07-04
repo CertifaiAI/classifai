@@ -1,5 +1,6 @@
 package ai.classifai.database.repository;
 
+import ai.classifai.database.model.Model;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.EntityManager;
@@ -46,11 +47,15 @@ public abstract class Repository
 
     private void persistObject(Object obj)
     {
-        try {
-            entityManager.persist(obj);
-        } catch (Exception e)
+        Model model = (Model) obj;
+
+        if (model.isPersisted())
         {
-            log.debug(String.format("Error in persisting object:%n%s", e.getMessage()));
+            entityManager.merge(model);
+        }
+        else
+        {
+            entityManager.persist(model);
         }
     }
 

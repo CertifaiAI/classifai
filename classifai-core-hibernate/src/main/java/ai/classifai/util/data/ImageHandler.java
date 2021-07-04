@@ -122,6 +122,8 @@ public class ImageHandler extends DataHandler
 
     private Image fileToData(String filePath, Project project)
     {
+        List<Data> existingData = project.getDataList();
+
         String projectPath = project.getProjectPath();
         File file = new File(filePath);
         ImageData imageData = Objects.requireNonNull(ImageData.getImageData(filePath));
@@ -142,7 +144,11 @@ public class ImageHandler extends DataHandler
         // image_height
         int height = imageData.getHeight();
 
-        return new Image(project, relativePath, checksum, fileSize, depth, width, height);
+        Image image = new Image(project, relativePath, checksum, fileSize, depth, width, height);
+
+        int idx = existingData.indexOf(image);
+
+        return idx == -1 ? image : (Image) existingData.get(idx);
     }
 
     //    private static String getImageHeader(String input)

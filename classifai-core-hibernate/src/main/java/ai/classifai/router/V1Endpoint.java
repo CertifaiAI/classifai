@@ -20,6 +20,8 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationType;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -210,14 +212,33 @@ public class V1Endpoint extends EndpointBase
 //    }
 //
 //
-//    /***
-//     *
-//     * Update labels
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
-//     *
-//     */
-//    public void updateLabels(RoutingContext context)
+    /***
+     *
+     * Update labels
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
+     *
+     */
+    public void updateLabels(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        Handler<Buffer> requestHandler = h ->
+        {
+            JsonObject labelList = h.toJsonObject();
+
+            request.mergeIn(labelList);
+
+            DeliveryOptions options = getDeliveryOptions(DbActionConfig.ADD_LABEL);
+
+            vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                    .onSuccess(msg -> sendResponseBody(msg, context))
+                    .onFailure(msg -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Failed to add label")));
+        };
+
+        context.request().bodyHandler(requestHandler);
+    }
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
@@ -274,53 +295,4 @@ public class V1Endpoint extends EndpointBase
                 .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
                         ReplyHandler.reportUserDefinedError("Failure in deleting project")));
     }
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String queue = helper.getDbQuery(type);
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getProjectIdParam(), projectID);
-//
-//        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getDeleteProject());
-//
-//        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
-//
-//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-//
-//            if(reply.succeeded())
-//            {
-//                JsonObject response = (JsonObject) reply.result().body();
-//
-//                if(ReplyHandler.isReplyOk(response)) {
-//                    //delete in respective Table
-//                    DeliveryOptions deleteListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getDeleteProject());
-//
-//                    vertx.eventBus().request(queue, request, deleteListOptions, fetch -> {
-//
-//                        if (fetch.succeeded()) {
-//                            JsonObject replyResponse = (JsonObject) fetch.result().body();
-//
-//                            //delete in Project Handler
-//                            ProjectHandler.deleteProjectFromCache(projectID);
-//                            HTTPResponseHandler.configureOK(context, replyResponse);
-//                        } else {
-//                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
-//                        }
-//                    });
-//                }
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage  + " from Portfolio Database"));
-//            }
-//        });
-//    }
-
 }

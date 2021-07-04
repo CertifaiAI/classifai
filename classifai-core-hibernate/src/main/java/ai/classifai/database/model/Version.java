@@ -1,5 +1,6 @@
 package ai.classifai.database.model;
 
+import ai.classifai.database.model.dataVersion.DataVersion;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,7 @@ import java.util.*;
 @Setter
 @Entity
 @Table(name = "VERSION")
-public class Version
+public class Version implements Model
 {
     public static final String VERSION_ID_KEY = "version_id";
     public static final String CREATED_DATE_KEY = "created_date";
@@ -34,6 +35,9 @@ public class Version
     @ManyToMany(mappedBy = "versionList")
     private List<Label> labelList;
 
+    @OneToMany(mappedBy = "version")
+    protected List<DataVersion> dataVersions;
+
     public Version(Project project)
     {
         labelList = new ArrayList<>();
@@ -56,5 +60,10 @@ public class Version
 
     public boolean equals(Version version) {
         return versionId.equals(version.getVersionId());
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return versionId != null;
     }
 }

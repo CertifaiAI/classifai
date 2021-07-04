@@ -1,5 +1,6 @@
 package ai.classifai.database.repository;
 
+import ai.classifai.database.model.Label;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.Version;
 import ai.classifai.database.model.annotation.Annotation;
@@ -47,6 +48,7 @@ public class ProjectRepository extends Repository
     public void saveProject(Project project)
     {
         List<Version> versionList = project.getVersionList();
+        List<Label> labelList = Label.getLabelListFromVersionList(versionList);
         List<Data> dataList = project.getDataList();
         List<DataVersion> dataVersionList = Data.getDataVersionListFromDataList(dataList);
         List<Annotation> annotationList = DataVersion.getAnnotationListFromDataVersionList(dataVersionList);
@@ -56,6 +58,9 @@ public class ProjectRepository extends Repository
 
         // save version
         saveItem((Object[]) versionList.toArray(Version[]::new));
+
+        // save label
+        saveItem((Object[]) labelList.toArray(Label[]::new));
 
         // save data
         saveItem((Object[]) dataList.toArray(Data[]::new));
@@ -69,6 +74,7 @@ public class ProjectRepository extends Repository
 
     public void deleteProject(Project project) {
         List<Version> versionList = project.getVersionList();
+        List<Label> labelList = Label.getLabelListFromVersionList(versionList);
         List<Data> dataList = project.getDataList();
         List<DataVersion> dataVersionList = Data.getDataVersionListFromDataList(dataList);
         List<Annotation> annotationList = DataVersion.getAnnotationListFromDataVersionList(dataVersionList);
@@ -82,22 +88,13 @@ public class ProjectRepository extends Repository
         // remove data
         removeItem((Object[]) dataList.toArray(Data[]::new));
 
+        // remove label
+        removeItem((Object[]) labelList.toArray(Label[]::new));
+
         // remove version
         removeItem((Object[]) versionList.toArray(Version[]::new));
 
         // remove project
         removeItem(project);
-    }
-
-    private void addProject(Project project)
-    {
-        if (project.getProjectId() == null)
-        {
-            entityManager.persist(project);
-        }
-        else
-        {
-            entityManager.merge(project);
-        }
     }
 }

@@ -15,18 +15,13 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.action.ActionConfig;
-import ai.classifai.action.LabelListImport;
 import ai.classifai.database.DbActionConfig;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
-import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -35,9 +30,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Classifai v2 endpoints
@@ -135,16 +127,17 @@ public class V2Endpoint extends EndpointBase {
     {
         Handler<Buffer> requestHandler = h ->
         {
-            JsonObject requestBody = h.toJsonObject();
+            JsonObject request = h.toJsonObject();
             String annoTypeKey = "annotation_type";
-            AnnotationType type = bodyHandler.getAnnoType(requestBody.getString(annoTypeKey));
-            requestBody.put(annoTypeKey, type.ordinal());
+            AnnotationType type = bodyHandler.getAnnoType(request.getString(annoTypeKey));
+            request.put(annoTypeKey, type.ordinal());
 
-            DeliveryOptions createOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), DbActionConfig.CREATE_PROJECT);
+            DeliveryOptions createOptions = getDeliveryOptions(DbActionConfig.CREATE_PROJECT);
 
-            vertx.eventBus().request(DbActionConfig.QUEUE, requestBody, createOptions)
+            vertx.eventBus().request(DbActionConfig.QUEUE, request, createOptions)
                     .onSuccess(msg -> sendResponseBody(msg, context))
-                    .onFailure(throwable -> HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Unable to create project")));
+                    .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Unable to create project")));
         };
 
         context.request().bodyHandler(requestHandler);
@@ -230,15 +223,25 @@ public class V2Endpoint extends EndpointBase {
 //        }
 //    }
 //
-//    /**
-//     * Reload v2 project
-//     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/reload
-//     *
-//     * Example:
-//     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
-//     *
-//     */
-//    public void reloadProject(RoutingContext context)
+    /**
+     * Reload v2 project
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/reload
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
+     *
+     */
+    public void reloadProject(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.RELOAD_PROJECT);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Unable to reload project")));
+    }
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
@@ -270,7 +273,7 @@ public class V2Endpoint extends EndpointBase {
 //            }
 //        });
 //    }
-//
+
 //    /**
 //     * Get load status of project
 //     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/reloadstatus

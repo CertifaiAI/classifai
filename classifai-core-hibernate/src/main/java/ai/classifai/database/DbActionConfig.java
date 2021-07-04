@@ -1,8 +1,5 @@
 package ai.classifai.database;
 
-import lombok.Getter;
-
-
 public class DbActionConfig
 {
     public static final String QUEUE = "database";
@@ -14,4 +11,6 @@ public class DbActionConfig
     public static final String GET_IMAGE_SOURCE = "get_image_source";
     public static final String STAR_PROJECT = "star_project";
     public static final String DELETE_PROJECT = "delete_project";
+    public static final String RELOAD_PROJECT = "reload_project";
+    public static final String ADD_LABEL = "add_label";
 }

@@ -1,5 +1,6 @@
 package ai.classifai.database.model.dataVersion;
 
+import ai.classifai.database.model.Model;
 import ai.classifai.database.model.Version;
 import ai.classifai.database.model.annotation.Annotation;
 import ai.classifai.database.model.data.Data;
@@ -20,39 +21,22 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "DATA_VERSION")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class DataVersion
+public abstract class DataVersion implements Model
 {
-    @Embeddable
-    public static class DataVersionKey implements Serializable
-    {
-        @Serial
-        private static final long serialVersionUID = 8036480971883487344L;
+    public static final String DATA_VERSION_ID_KEY = "data_version_id";
 
-        private UUID dataId;
 
-        private UUID versionId;
-
-        public DataVersionKey(Data data, Version version)
-        {
-            dataId = data.getDataId();
-
-            versionId = version.getVersionId();
-        }
-
-        public DataVersionKey() {}
-    }
-
-    @EmbeddedId
-    private DataVersionKey dataVersionKey;
+    @Id
+    @GeneratedValue
+    @Column(name = DATA_VERSION_ID_KEY)
+    private UUID dataVersionId;
 
     @ManyToOne
-    @MapsId("dataId")
-    @JoinColumn(name = "data_id")
+    @JoinColumn(name = Data.DATA_ID_KEY)
     private Data data;
 
     @ManyToOne
-    @MapsId("versionId")
-    @JoinColumn(name = "version_id")
+    @JoinColumn(name = Version.VERSION_ID_KEY)
     private Version version;
 
     @Getter
@@ -65,11 +49,15 @@ public abstract class DataVersion
 
         this.data = data;
         this.version = version;
-        this.dataVersionKey = new DataVersionKey(data, version);
     }
 
     public DataVersion()
     {}
+
+    @Override
+    public boolean isPersisted() {
+        return dataVersionId != null;
+    }
 
     public Boolean isVersion(Version version)
     {
@@ -88,4 +76,5 @@ public abstract class DataVersion
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
+
 }
