@@ -36,6 +36,9 @@ public class ClassifaiApp
         //initiate to run cli arguments
         new CLIArgument(args);
 
+        // Load native library to implement OpenCV Java
+        nu.pattern.OpenCV.loadLocally();
+
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);

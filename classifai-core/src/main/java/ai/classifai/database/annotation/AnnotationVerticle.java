@@ -17,6 +17,7 @@ package ai.classifai.database.annotation;
 
 import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
+import ai.classifai.data.type.image.ImageData;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
@@ -44,6 +45,8 @@ import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -527,7 +530,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
             //not checking orientation for on cloud version
-            imgData = ImageHandler.getThumbNail(img, false, null);
+//            imgData = ImageHandler.getThumbNail(img);
         }
         else
         {
@@ -535,13 +538,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
-                File fileDataPath = new File(dataPath);
+                Mat imageMat  = Imgcodecs.imread(dataPath);
 
-                BufferedImage img  = ImageIO.read(fileDataPath);
+                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
 
-                imgData = ImageHandler.getThumbNail(img, true, fileDataPath);
+                imgData = ImageHandler.getThumbNail(img);
             }
-            catch(IOException e)
+            catch(Exception e)
             {
                 log.debug("Failure in reading image of path " + dataPath, e);
             }

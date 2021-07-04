@@ -17,6 +17,7 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 
 /**
@@ -26,18 +27,100 @@ import com.drew.metadata.jpeg.JpegDirectory;
  */
 public class JpegImageData extends ImageData
 {
-    public JpegImageData(Metadata metadata)
-    {
-        super(metadata);
+    /**
+     * 1 = 0 degree                  (correct orientation and no adjustment is required)
+     * 2 = 0 degree,mirrored         (this image is mirrored image of 1)
+     * 3 = 180 degree                (image is turn upside down 180 degree)
+     * 4 = 180 degree,mirrored       (this image is mirrored image of 3)
+     * 5 = 90 degree                 (image turn 90 degree anticlockwise)
+     * 6 = 90 degree,mirrored        (this image is mirror image to 5)
+     * 7 = 270 degree                (image turn 270 degree anticlockwise)
+     * 8 = 270 degree,mirrored       (this image is mirror image of 7)
+     */
+//    private enum orientation {
+//        zero_degree,
+//        zero_degree_mirrored,
+//        one_hundred_eight_degree,
+//        one_hundred_eighty_degree_mirrored,
+//        ninety_degree,
+//        ninety_degree_mirrored,
+//        two_hundred_seventy_degree,
+//        two_hundred_seventy_degree_mirrored,
+//    }
+
+    protected JpegImageData(Metadata metadata) {
+        super(metadata, JpegDirectory.class);
+    }
+
+    private int getWidth() {
+        try {
+            return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+        } catch (MetadataException e) {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    private int getHeight() {
+        try {
+            return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
+        } catch (MetadataException e) {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    /**
+     * get Exif orientation from metatdata
+     * orientation value: [1: 0 deg, 8: 270 deg, 3: 180 deg, 6: 90 deg]
+     * ref: https://www.impulseadventure.com/photo/exif-orientation.html
+     *
+     * @return orientation
+     */
+    public int getOrientation() {
+        try {
+            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
+        } catch (Exception ignored) {
+            // if can't find orientation set as 0 deg
+            return 1;
+        }
     }
 
     @Override
-    public int getWidth() throws MetadataException {
-        return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+    public int getRawWidth() {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6) {
+            return getHeight();
+        }
+
+        return getWidth();
     }
 
     @Override
-    public int getHeight() throws MetadataException {
-        return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
+    public int getRawHeight() {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6) {
+            return getWidth();
+        }
+
+        return getHeight();
     }
+
+    @Override
+    public int getDepth() {
+        try {
+            return directory.getInt(JpegDirectory.TAG_NUMBER_OF_COMPONENTS);
+        } catch (Exception ignored) {
+            return 3;
+        }
+    }
+
+    @Override
+    public String getMimeType() {
+        return "image/jpg";
+    }
+
+
 }

@@ -257,6 +257,11 @@
                 <artifactId>metadata-extractor</artifactId>
                 <version>${metadata.extractor.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.openpnp</groupId>
+                <artifactId>opencv</artifactId>
+                <version>4.5.1-2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
