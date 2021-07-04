@@ -33,6 +33,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Utility class for delete data
+ *
+ * @author devenyantis
+ */
 @Slf4j
 public class DeleteProjectData {
 
