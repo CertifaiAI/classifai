@@ -10,8 +10,10 @@ import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -53,6 +55,7 @@ public abstract class DataVersion
     @JoinColumn(name = "version_id")
     private Version version;
 
+    @Getter
     @OneToMany(mappedBy = "dataVersion")
     private List<Annotation> annotations;
 
@@ -76,5 +79,13 @@ public abstract class DataVersion
     public void addAnnotation()
     {
 
+    }
+
+    public static List<Annotation> getAnnotationListFromDataVersionList(List<DataVersion> dataVersionList)
+    {
+        return dataVersionList.stream()
+                .map(DataVersion::getAnnotations)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 }

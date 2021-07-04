@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.persistence.*;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -82,5 +83,13 @@ public abstract class Data
     public boolean validateData()
     {
         return true;
+    }
+
+    public static List<DataVersion> getDataVersionListFromDataList(List<Data> dataList)
+    {
+        return dataList.stream()
+                .map(Data::getDataVersions)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 }

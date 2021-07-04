@@ -19,15 +19,13 @@ import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.data.Image;
 import ai.classifai.database.model.dataVersion.DataVersion;
-import ai.classifai.database.repository.DataRepository;
-import ai.classifai.database.repository.DataVersionRepository;
 import ai.classifai.database.repository.ProjectRepository;
+import ai.classifai.database.repository.Repository;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.exception.projectExistedException;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
@@ -142,41 +140,22 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     }
 
     private void deleteProject(Message<JsonObject> message) {
-        // store object due to reference passing throughout multiple composes
-        final JsonObject STORE = new JsonObject();
-        
+
         ProjectRepository projectRepository = getProjectRepository();
-        DataVersionRepository dataVersionRepository = getDataVersionRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
 
         Handler<Promise<Project>> getProjectHandler = promise -> getProject(promise, projectName, annotationTypeIdx, projectRepository);
-
-        Function<Project, Future<List<Data>>> getDataListHandler = project ->
-                vertx.executeBlocking(promise -> getDataList(promise, project));
         
-        Function<Project, Future<List<DataVersion>>> getDataVersionListHandler = dataList ->
-                vertx.executeBlocking(promise -> getDataVersionList(promise, dataList));
-        
-        Function<Void, Future<Void>> deleteProjectHandler = unused -> 
-                vertx.executeBlocking(promise -> deleteProject(STORE, projectRepository, dataVersionRepository));
+        Function<Project, Future<Void>> deleteProjectHandler = project ->
+                vertx.executeBlocking(promise -> deleteProject(promise, project, projectRepository));
 
         vertx.executeBlocking(getProjectHandler)
-                .compose(getDataListHandler)
-                .compose(getDataVersionListHandler)
-                .onSuccess()
-                .onFailure()
-                .onComplete();
-    }
-
-    private void deleteProject(JsonObject store, ProjectRepository projectRepository, DataVersionRepository dataVersionRepository) {
-    }
-
-    private void getDataVersionList(Promise<List<DataVersion>> promise, Project dataList) {
-    }
-
-    private void getDataList(Promise<List<Data>> promise, Project project) {
+                .compose(deleteProjectHandler)
+                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+                .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
+                .onComplete(unused -> Repository.closeRepositories(projectRepository));
     }
 
     private void starProject(Message<JsonObject> message) {
@@ -195,7 +174,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .compose(starProjectHandler)
                 .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(throwable.getCause())))
-                .onComplete(unused -> repository.closeEntityManager());
+                .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
 
@@ -229,7 +208,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .compose(getImgSourceHandler) // can send to other verticles in future
                 .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getCause().getMessage())))
-                .onComplete(unused -> repository.closeEntityManager());
+                .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
     // FIXME: is this only for image
@@ -268,7 +247,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .compose(getThumbnailHandler) // can send to other verticles in future
                 .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getCause().getMessage())))
-                .onComplete(unused -> repository.closeEntityManager());
+                .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
     // FIXME: perform image validation here!!!!!
@@ -299,7 +278,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         vertx.executeBlocking(getProjectHandler)
                 .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(throwable.getCause())))
-                .onComplete(unused -> repository.closeEntityManager());
+                .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
     private void getProjectMetadata(Message<JsonObject> message)
@@ -327,13 +306,12 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         vertx.executeBlocking(getProjectHandler)
                 .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(throwable.getCause())))
-                .onComplete(unused -> repository.closeEntityManager());
+                .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
     private void createProject(Message<JsonObject> message)
     {
         ProjectRepository projectRepository = getProjectRepository();
-        DataVersionRepository dataVersionRepository = getDataVersionRepository();
 
         JsonObject msgBody = message.body();
 
@@ -363,14 +341,6 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
                 projectRepository.saveProject(project);
 
-                List<DataVersion> dataVersionList = project.getDataList()
-                        .stream()
-                        .map(Data::getDataVersions)
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList());
-
-                dataVersionRepository.saveDataVersionList(dataVersionList);
-
                 promise.complete(project);
             }
             catch (Exception e)
@@ -392,16 +362,10 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             message.replyAndRequest(jsonObj);
         };
 
-        Handler<AsyncResult<Project>> closeRepositoryHandler = unused ->
-        {
-            projectRepository.closeEntityManager();
-            dataVersionRepository.closeEntityManager();
-        };
-
         vertx.executeBlocking(createProject)
                 .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(throwable.getCause())))
-                .onComplete(closeRepositoryHandler);
+                .onComplete(unused -> Repository.closeRepositories(projectRepository));
 
     }
 
@@ -433,7 +397,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         vertx.executeBlocking(getAllProjectMeta)
                 .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(throwable.getCause())))
-                .onComplete(unused -> repository.closeEntityManager());
+                .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
     private void getImageSource(Promise<String> promise, Image image)
@@ -470,6 +434,13 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         }
 
         promise.complete(thumbnail);
+    }
+
+    private void deleteProject(Promise<Void> promise, Project project, ProjectRepository projectRepository)
+    {
+        projectRepository.deleteProject(project);
+        promise.complete();
+
     }
 
     // TODO: required further thought on API writing
@@ -533,23 +504,9 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         return message.body().getString(ParamConfig.getProjectNameParam());
     }
 
-    // FIXME: create confusion in developer
-    //   define clearly when to use which data type
     private int getAnnotationTypeIdx(Message<JsonObject> message)
     {
         return message.body().getInteger(ParamConfig.getAnnotationTypeParam());
-    }
-
-    private DataRepository getDataRepository()
-    {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        return new DataRepository(entityManager);
-    }
-
-    private DataVersionRepository getDataVersionRepository()
-    {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        return new DataVersionRepository(entityManager);
     }
 
     private ProjectRepository getProjectRepository()
