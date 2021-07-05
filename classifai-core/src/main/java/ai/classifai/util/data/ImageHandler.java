@@ -171,19 +171,24 @@ public class ImageHandler
 
         double angle = 0;
 
+        // the image turn 270 degree
         if (imgData.getOrientation() == 8) {
-            angle = -Math.PI/2;
-        } else if (imgData.getOrientation() == 3) {
+            angle = (Math.PI)*(3/2);
+        }
+        // the image turn 180 degree
+        else if (imgData.getOrientation() == 3) {
             angle = Math.PI;
-        } else if (imgData.getOrientation() == 6) {
+        }
+        // the image turn 90 degree
+        else if (imgData.getOrientation() == 6) {
             angle = Math.PI/2;
         }
 
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
 
-        int w = image.getWidth();
-        int h = image.getHeight();
+        int w = imgData.getRawWidth();
+        int h = imgData.getRawHeight();
 
         int newW = (int) Math.floor(w * cos + h * sin);
         int newH = (int) Math.floor(h * cos + w * sin);
@@ -195,7 +200,7 @@ public class ImageHandler
 
         g.translate((newW - w) / 2, (newH - h) / 2);
         g.rotate(angle,((double)w) / 2, ((double)h) / 2);
-        g.drawRenderedImage(image, null);
+        g.drawRenderedImage(image, null );
 
         return result;
     }
@@ -207,7 +212,7 @@ public class ImageHandler
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-        ImageIO.write(image, "jpeg", os);
+        ImageIO.write(image, "png", os);
 
         InputStream is = new ByteArrayInputStream(os.toByteArray());
 
@@ -227,12 +232,13 @@ public class ImageHandler
 
             oriWidth = imgData.getRawWidth();
 
-            image = rotateWithOrientation(image);
-
         } else
         {
             oriHeight = imgData.getRawHeight();
+
             oriWidth = imgData.getRawWidth();
+
+            image = rotateWithOrientation(image);
 
         }
 

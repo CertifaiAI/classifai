@@ -27,27 +27,6 @@ import com.drew.metadata.jpeg.JpegDirectory;
  */
 public class JpegImageData extends ImageData
 {
-    /**
-     * 1 = 0 degree                  (correct orientation and no adjustment is required)
-     * 2 = 0 degree,mirrored         (this image is mirrored image of 1)
-     * 3 = 180 degree                (image is turn upside down 180 degree)
-     * 4 = 180 degree,mirrored       (this image is mirrored image of 3)
-     * 5 = 90 degree                 (image turn 90 degree anticlockwise)
-     * 6 = 90 degree,mirrored        (this image is mirror image to 5)
-     * 7 = 270 degree                (image turn 270 degree anticlockwise)
-     * 8 = 270 degree,mirrored       (this image is mirror image of 7)
-     */
-//    private enum orientation {
-//        zero_degree,
-//        zero_degree_mirrored,
-//        one_hundred_eight_degree,
-//        one_hundred_eighty_degree_mirrored,
-//        ninety_degree,
-//        ninety_degree_mirrored,
-//        two_hundred_seventy_degree,
-//        two_hundred_seventy_degree_mirrored,
-//    }
-
     protected JpegImageData(Metadata metadata) {
         super(metadata, JpegDirectory.class);
     }
@@ -74,6 +53,16 @@ public class JpegImageData extends ImageData
      * get Exif orientation from metatdata
      * orientation value: [1: 0 deg, 8: 270 deg, 3: 180 deg, 6: 90 deg]
      * ref: https://www.impulseadventure.com/photo/exif-orientation.html
+     *
+     *
+     * 1 = 0 degree                  (Horizontal, normal)
+     * 2 = 0 degree,mirrored         (Mirror horizontally)
+     * 3 = 180 degree                (Rotate 180 degree)
+     * 4 = 180 degree,mirrored       (Mirror vertically)
+     * 5 = 90 degree, mirrored       (Mirror horizontal and rotate 270 degree clockwise)
+     * 6 = 90 degree  CW             (Rotate 90 degree clockwise)
+     * 7 = 270 degree, mirrored      (Mirror horizontal and rotate 90 degree clockwise)
+     * 8 = 270 degree CW             (Rotate 270 degree clockwise)
      *
      * @return orientation
      */
