@@ -62,28 +62,36 @@
         "header": "Informasi Kekunci Pintasan",
         "shortcut": {
             "1": {
-                "key": "Ctrl + z",
-                "functionality": "Kembali ke tindakan terakhir"
+                "key": "Ctrl/Command  + z",
+                "functionality": "Membatalkan perubahan terakhir yang dibuat."
             },
             "2": {
-                "key": "Ctrl + c",
-                "functionality": "Menyalin kotak sempadan/poligon yang dipilih"
+                "key": "Ctrl/Command + Shift + z",
+                "functionality": "Ulangi perintah terakhir yang dilaksanakan."
             },
             "3": {
-                "key": "Ctrl + v",
-                "functionality": "Menampal kotak sempadan/poligon yang telah disalin"
+                "key": "Ctrl/Command  + c",
+                "functionality": "Menyalin kotak sempadan/poligon yang dipilih"
             },
             "4": {
-                "key": "Delete/Backspace",
-                "functionality": "Memadam kotak sempadan/poligon yang dipilih"
+                "key": "Ctrl/Command  + v",
+                "functionality": "Menampal kotak sempadan/poligon yang telah disalin"
             },
             "5": {
-                "key": "Klik dua kali pada kotak sempadan/poligon yang dipilih",
-                "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
+                "key": "Delete/Backspace (ketika kotak sempadan/poligon dipilih)",
+                "functionality": "Memadam kotak sempadan/poligon yang dipilih"
             },
             "6": {
+                "key": "Delete",
+                "functionality": "Memadam imej semasa"
+            },
+            "7": {
                 "key": "F2",
                 "functionality": "Menamakan semula imej semasa"
+            },
+            "8": {
+                "key": "Klik dua kali pada kotak sempadan/poligon yang dipilih",
+                "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
             }
         }
     },

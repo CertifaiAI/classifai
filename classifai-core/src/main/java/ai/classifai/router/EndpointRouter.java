@@ -127,8 +127,6 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************V2 Endpoints*******************************
 
-        router.put("/v2/newproject").handler(v2::importProject);
-
         router.put(projectV1Endpoint).handler(v2::closeProjectState);
 
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
