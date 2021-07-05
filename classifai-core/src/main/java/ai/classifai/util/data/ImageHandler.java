@@ -329,7 +329,7 @@ public class ImageHandler {
      */
     public static boolean loadProjectRootPath(@NonNull ProjectLoader loader)
     {
-        if(loader.getIsProjectNew())
+        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
         {
             loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
         }
@@ -367,7 +367,7 @@ public class ImageHandler {
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-        if(loader.getIsProjectNew())
+        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
         {
             saveToProjectTable(loader, dataFullPathList);
         }
