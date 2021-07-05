@@ -124,6 +124,7 @@ public class ParamConfig
     //reload project
     @Getter private static final String uuidDeletionListParam = "uuid_delete_list";
     @Getter private static final String uuidAdditionListParam = "uuid_add_list";
+    @Getter private static final String deleteDataFolderName = ".classifai_deleted_data";
 
     //versioning
     @Getter private static final String currentVersionParam = "current_version";

@@ -15,6 +15,7 @@
  */
 package ai.classifai.action;
 
+import ai.classifai.util.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
@@ -39,7 +40,7 @@ public class FileMover {
 
     public static void moveFileToDirectory(String oldDir, List<String> filesToMove) throws IOException {
 
-        String newDirStr = createNewDirFromOld(oldDir, "deleted");
+        String newDirStr = createNewDirFromOld(oldDir, ParamConfig.getDeleteDataFolderName());
         File newDir = Paths.get(newDirStr).toFile();
 
         if(!newDir.exists() && !newDir.mkdir()) {
@@ -50,8 +51,8 @@ public class FileMover {
         moveFiles(newDirStr, filesToMove);
     }
 
-    public static String createNewDirFromOld(String oldDir, String newDirIdentifier) {
-        String folderName = oldDir + "_" + newDirIdentifier;
+    public static String createNewDirFromOld(String oldDir, String newDirName) {
+        String folderName = Paths.get(oldDir, newDirName).toString();
         log.debug("Creating new dir with identifier: " + folderName);
         return folderName;
     }
