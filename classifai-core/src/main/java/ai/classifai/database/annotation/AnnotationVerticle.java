@@ -15,7 +15,8 @@
  */
 package ai.classifai.database.annotation;
 
-import ai.classifai.action.RenameProjectData;
+
+import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.data.type.image.ImageData;
 import ai.classifai.database.VerticleServiceable;
@@ -24,7 +25,6 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -398,59 +398,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteSelectionUuidList(Message<JsonObject> message)
+    public void deleteProjectData(Message<JsonObject> message)
     {
-        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
+        DeleteProjectData.deleteProjectData(jdbcPool, message);
+    }
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-        List<String> dbUUIDList = loader.getUuidListFromDb();
-
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
-        String uuidQueryParam = String.join(",", deleteUUIDList);
-
-        Tuple params = Tuple.of(projectId, uuidQueryParam);
-
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteSelectionUuidList())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded())
-                    {
-                        if (dbUUIDList.removeAll(deleteUUIDList))
-                        {
-                            loader.setUuidListFromDb(dbUUIDList);
-
-                            List<String> sanityUUIDList = loader.getSanityUuidList();
-
-                            if (sanityUUIDList.removeAll(deleteUUIDList))
-                            {
-                                loader.setSanityUuidList(sanityUUIDList);
-                            }
-                            else
-                            {
-                                log.info("Error in removing uuid list");
-                            }
-
-                            //update Portfolio Verticle
-                            PortfolioVerticle.updateFileSystemUuidList(projectId);
-
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
-   }
-
-
-   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-   {
+    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
+    {
         JsonObject requestBody = message.body();
 
         try
@@ -569,10 +523,4 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         message.replyAndRequest(response);
     }
-
-    public void renameProjectData(Message<JsonObject> message)
-    {
-        RenameProjectData.renameProjectData(jdbcPool, message);
-    }
-
 }

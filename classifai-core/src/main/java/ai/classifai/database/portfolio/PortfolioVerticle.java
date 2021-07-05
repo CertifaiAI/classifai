@@ -652,7 +652,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
-        ImageHandler.loadProjectRootPath(loader, false);
+        ImageHandler.loadProjectRootPath(loader);
     }
 
     @Override

@@ -23,6 +23,7 @@ import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -126,8 +127,6 @@ public class EndpointRouter extends AbstractVerticle
 
         //*******************************V2 Endpoints*******************************
 
-        router.put("/v2/newproject").handler(v2::importProject);
-
         router.put(projectV1Endpoint).handler(v2::closeProjectState);
 
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
@@ -144,8 +143,6 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
 
-        router.put("/v2/:annotation_type/projects/:project_name/imgsrc/rename").handler(v2::renameData);
-
         router.put("/v2/labelfiles").handler(v2::selectLabelFile);
 
         router.get("/v2/labelfiles").handler(v2::selectLabelFileStatus);
@@ -157,6 +154,8 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/projects").handler(v2::createProject);
 
         router.get(projectV2Endpoint).handler(v2::createProjectStatus);
+
+        router.delete("/v2/:annotation_type/projects/:project_name/uuids").handler(v2::deleteProjectData);
 
         //*******************************Cloud*******************************
 

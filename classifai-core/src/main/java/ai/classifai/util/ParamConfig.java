@@ -65,7 +65,9 @@ public class ParamConfig
 
     @Getter private static final String uuidParam = "uuid";
     @Getter private static final String imgPathParam = "img_path";
+
     @Getter private static final String newFileNameParam = "new_fname";
+    @Getter private static final String imgPathListParam = "img_path_list";
 
     @Getter private static final String imgSrcParam = "img_src";
 
@@ -122,6 +124,7 @@ public class ParamConfig
     //reload project
     @Getter private static final String uuidDeletionListParam = "uuid_delete_list";
     @Getter private static final String uuidAdditionListParam = "uuid_add_list";
+    @Getter private static final String deleteDataFolderName = ".classifai_deleted_data";
 
     //versioning
     @Getter private static final String currentVersionParam = "current_version";

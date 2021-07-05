@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ClassifaiApp
 {
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
     {
         //initiate to run cli arguments
         new CLIArgument(args);

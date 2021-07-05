@@ -51,16 +51,16 @@ public class ProjectLoader
     private Integer annotationType;
     private File projectPath;
 
-    private Boolean isProjectNew;
-    private Boolean isProjectStarred;
-
     private ProjectInfra projectInfra;
 
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private ProjectLoaderStatus projectLoaderStatus;
 
-    private ProjectVersion projectVersion;
+    @Builder.Default private ProjectVersion projectVersion = new ProjectVersion();
+
+    @Builder.Default private Boolean isProjectNew = Boolean.TRUE;
+    @Builder.Default private Boolean isProjectStarred = Boolean.FALSE;
 
     @Builder.Default private WasabiProject wasabiProject = null;
 
@@ -268,7 +268,7 @@ public class ProjectLoader
     {
         try
         {
-            if(!ImageHandler.loadProjectRootPath(this, true))
+            if(!ImageHandler.loadProjectRootPath(this))
             {
                 // Get example image from metadata
                 File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
@@ -277,7 +277,7 @@ public class ProjectLoader
                 log.info("Empty folder. Example image added.");
 
                 // Run loadProjectRootPath again
-                if(!ImageHandler.loadProjectRootPath(this, true))
+                if(!ImageHandler.loadProjectRootPath(this))
                 {
                     log.debug("Loading files in project folder failed");
                 }

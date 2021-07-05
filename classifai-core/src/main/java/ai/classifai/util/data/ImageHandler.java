@@ -355,6 +355,10 @@ public class ImageHandler
      */
     public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, boolean isNewProject) {
         if (isNewProject) {
+    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader)
+    {
+        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
+        {
             loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
         } else {
             //refreshing project
@@ -388,6 +392,8 @@ public class ImageHandler
 
         //scenario 3 - 5
         if (isNewProject) {
+        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
+        {
             saveToProjectTable(loader, dataFullPathList);
         } else // when refreshing project folder
         {
