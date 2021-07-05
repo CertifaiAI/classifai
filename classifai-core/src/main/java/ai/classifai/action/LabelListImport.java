@@ -67,7 +67,7 @@ public class LabelListImport
 
         for(String label : inputLabelList)
         {
-            String buffer = label.replaceAll("(\\r| )", "");;
+            String buffer = label.replaceAll("\\s", "");
 
             if(buffer.length() > 0)
             {
