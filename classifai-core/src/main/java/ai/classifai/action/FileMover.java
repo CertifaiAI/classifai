@@ -40,7 +40,7 @@ public class FileMover {
 
     public static void moveFileToDirectory(String oldDir, List<String> filesToMove) throws IOException {
 
-        String newDirStr = createNewDirFromOld(oldDir, ParamConfig.getDeleteDataFolderName());
+        String newDirStr = createDeletedDataFolder(oldDir, ParamConfig.getDeleteDataFolderName());
         File newDir = Paths.get(newDirStr).toFile();
 
         if(!newDir.exists() && !newDir.mkdir()) {
@@ -51,7 +51,7 @@ public class FileMover {
         moveFiles(newDirStr, filesToMove);
     }
 
-    public static String createNewDirFromOld(String oldDir, String newDirName) {
+    public static String createDeletedDataFolder(String oldDir, String newDirName) {
         String folderName = Paths.get(oldDir, newDirName).toString();
         log.debug("Creating new dir with identifier: " + folderName);
         return folderName;

@@ -20,6 +20,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Predicate;
@@ -73,13 +75,23 @@ public class FileHandler
         return totalFilelist;
     }
 
+    private static FilenameFilter getDeletedImageFolderFilter()
+    {
+        return (dir, name) -> {
+            if (name.equals(ParamConfig.getDeleteDataFolderName())) {
+                return false;
+            }
+            return true;
+        };
+    }
+
     private static List<File> listFiles(File rootPath)
     {
         List<File> outputList = new ArrayList<>();
 
         if (rootPath.exists())
         {
-            outputList = Arrays.stream(rootPath.listFiles())
+            outputList = Arrays.stream(Objects.requireNonNull(rootPath.listFiles(getDeletedImageFolderFilter())))
                     .collect(Collectors.toList());
         }
 
