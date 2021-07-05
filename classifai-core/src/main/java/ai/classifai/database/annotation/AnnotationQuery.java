@@ -40,7 +40,7 @@ public class AnnotationQuery
 
     @Getter private static final String deleteProject = "DELETE FROM Project WHERE project_id = ?";
 
-    @Getter private static final String deleteSelectionUuidList = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
+    @Getter private static final String deleteProjectData = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
 
     @Getter private static final String retrieveAllProjects = "SELECT * FROM Project";
 
