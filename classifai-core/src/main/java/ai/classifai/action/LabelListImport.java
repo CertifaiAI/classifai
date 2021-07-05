@@ -67,11 +67,11 @@ public class LabelListImport
 
         for(String label : inputLabelList)
         {
-            String buffer = label.replace(" ", "");
+            String buffer = label.replaceAll("\\s", "");
 
             if(buffer.length() > 0)
             {
-                validLabelList.add(label);
+                validLabelList.add(buffer);
             }
         }
 
