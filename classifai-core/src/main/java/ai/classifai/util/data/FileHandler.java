@@ -77,12 +77,8 @@ public class FileHandler
 
     private static FilenameFilter getDeletedImageFolderFilter()
     {
-        return (dir, name) -> {
-            if (name.equals(ParamConfig.getDeleteDataFolderName())) {
-                return false;
-            }
-            return true;
-        };
+        // Return false if name is equal to delete folder name, true otherwise
+        return (dir, name) -> !name.equals(ParamConfig.getDeleteDataFolderName());
     }
 
     private static List<File> listFiles(File rootPath)
