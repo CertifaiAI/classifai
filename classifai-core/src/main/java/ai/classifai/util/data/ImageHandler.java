@@ -20,37 +20,21 @@ import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.status.FileSystemStatus;
-import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.exception.NotSupportedImageTypeException;
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.imaging.jpeg.JpegMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.api.JavaObjectSerializer;
-import org.h2.message.DbException;
-import org.h2.store.Data;
-import org.h2.store.DataHandler;
-import org.h2.store.FileStore;
-import org.h2.store.LobStorageInterface;
-import org.h2.util.SmallLRUCache;
-import org.h2.util.TempFileDeleter;
-import org.h2.value.CompareMode;
 import org.opencv.core.Mat;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Image Handler
@@ -60,40 +44,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ImageHandler
 {
-//    @Override
-//    public List<Data> getDataList(String projectPath) {
-//        List<String> imageFiles = getValidImagesFromFolder(new File(projectPath));
-//
-//        return imageFiles.stream()
-//                .map(path -> fileToData(path, projectPath))
-//                .collect(Collectors.toList());
-//    }
-//
-//    private Image fileToData(String filePath, String projectPath) {
-//        File file = new File(filePath);
-//        ImageData imageData = (ImageData) Objects.requireNonNull(getImageData(filePath));
-//
-//        // general data
-//        // relative path
-//        String relativePath = trimPath(projectPath, filePath);
-//        // checksum
-//        String checksum = Hash.getHash256String(file);
-//        // file size
-//        long fileSize = file.length();
-//
-//        // image data
-//        // image_depth
-//        int depth = imageData.getDepth();
-//        // image_width
-//        int width = imageData.getRawWidth();
-//        // image_height
-//        int height = imageData.getRawHeight();
-//
-//        return Image(relativePath, checksum, fileSize, depth, width, height);
-//    }
-
-
-    public static BufferedImage toBufferedImage(Mat matrix) {
+    public static BufferedImage toBufferedImage(Mat matrix)
+    {
         int type = BufferedImage.TYPE_BYTE_GRAY;
         if (matrix.channels() > 1) {
             type = BufferedImage.TYPE_3BYTE_BGR;
@@ -108,7 +60,8 @@ public class ImageHandler
     }
 
 
-    private static String getImageHeader(String input) {
+    private static String getImageHeader(String input)
+    {
         Integer lastIndex = input.length();
 
         Iterator<Map.Entry<String, String>> itr = ImageFileType.getBase64Header().entrySet().iterator();
@@ -147,7 +100,8 @@ public class ImageHandler
         }
     }
 
-    public static boolean isImageReadable(File dataFullPath) {
+    public static boolean isImageReadable(File dataFullPath)
+    {
         if ((dataFullPath.exists() == false) && (dataFullPath.length() < 5)) //length() stands for file size
         {
             log.debug(dataFullPath + " not found. Check if the data is in the corresponding path. ");
@@ -158,22 +112,17 @@ public class ImageHandler
         return true;
     }
 
-    private static BufferedImage rotateWithOrientation(BufferedImage image) throws NotSupportedImageTypeException, ImageProcessingException, IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        ImageIO.write(image, "jpeg", os);
-
-        InputStream is = new ByteArrayInputStream(os.toByteArray());
-
-        Metadata metadata = ImageMetadataReader.readMetadata(is);
-
-        ImageData imgData = new ImageData.ImageDataFactory().getImageData(metadata);
+    private static BufferedImage rotateWithOrientation(BufferedImage image) throws IOException
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        ImageData imgData = ImageData.getImageData(out.toByteArray());
 
         double angle = 0;
 
         // the image turn 270 degree
         if (imgData.getOrientation() == 8) {
-            angle = (Math.PI)*(3/2);
+            angle = -Math.PI/2;
         }
         // the image turn 180 degree
         else if (imgData.getOrientation() == 3) {
@@ -187,8 +136,8 @@ public class ImageHandler
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
 
-        int w = imgData.getRawWidth();
-        int h = imgData.getRawHeight();
+        int w = imgData.getWidth();
+        int h = imgData.getHeight();
 
         int newW = (int) Math.floor(w * cos + h * sin);
         int newH = (int) Math.floor(h * cos + w * sin);
@@ -205,42 +154,22 @@ public class ImageHandler
         return result;
     }
 
-    public static Map<String, String> getThumbNail(BufferedImage image) throws ImageProcessingException, IOException, NotSupportedImageTypeException
+    public static Map<String, String> getThumbNail(BufferedImage image) throws IOException
     {
 
         Map<String, String> imageData = new HashMap<>();
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-        ImageIO.write(image, "png", os);
+        int oriWidth = imgData.getWidth();
 
-        InputStream is = new ByteArrayInputStream(os.toByteArray());
+        int oriHeight = imgData.getHeight();
 
-        Metadata metadata = ImageMetadataReader.readMetadata(is);
+        int depth = imgData.getDepth();
 
-        ImageData imgData = new ImageData.ImageDataFactory().getImageData(metadata);
-
-        Integer oriHeight;
-
-        Integer oriWidth;
-
-        Integer depth = imgData.getDepth();
-
-        if (imgData.getOrientation() == 1) {
-
-            oriHeight = imgData.getRawHeight();
-
-            oriWidth = imgData.getRawWidth();
-
-        } else
-        {
-            oriHeight = imgData.getRawHeight();
-
-            oriWidth = imgData.getRawWidth();
-
-            image = rotateWithOrientation(image);
-
-        }
+        image = rotateWithOrientation(image);
 
         Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
         Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -268,7 +197,8 @@ public class ImageHandler
         return imageData;
     }
 
-    public static String encodeFileToBase64Binary(File file) {
+    public static String encodeFileToBase64Binary(File file)
+    {
         try {
             FileInputStream fileInputStreamReader = new FileInputStream(file);
 
@@ -288,13 +218,12 @@ public class ImageHandler
         return null;
     }
 
-    public static boolean isImageFileValid(File file) {
+    public static boolean isImageFileValid(File file)
+    {
         try {
-            Metadata metadata = ImageMetadataReader.readMetadata(file);
+            ImageData imgData = ImageData.getImageData(file);
 
-            ImageData imgData = new ImageData.ImageDataFactory().getImageData(metadata);
-
-            if (imgData.getRawWidth() > ImageFileType.getMaxWidth() || imgData.getRawHeight() > ImageFileType.getMaxHeight()) {
+            if (imgData.getWidth() > ImageFileType.getMaxWidth() || imgData.getHeight() > ImageFileType.getMaxHeight()) {
                 log.info("Image size bigger than maximum allowed input size. Skipped " + file);
                 return false;
             }
@@ -306,7 +235,8 @@ public class ImageHandler
         return true;
     }
 
-    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<String> filesPath) {
+    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<String> filesPath)
+    {
         loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesPath.size());
 
@@ -329,15 +259,18 @@ public class ImageHandler
         }
     }
 
-    public static List<String> getValidImagesFromFolder(File rootPath) {
+    public static List<String> getValidImagesFromFolder(File rootPath)
+    {
         return FileHandler.processFolder(rootPath, ImageHandler::isImageFileValid);
     }
 
-    private static boolean isImageUnsupported(File file) {
+    private static boolean isImageUnsupported(File file)
+    {
         return (FileHandler.isFileSupported(file.getAbsolutePath(), ImageFileType.getImageFileTypes()) && !isImageFileValid(file));
     }
 
-    private static List<String> getUnsupportedImagesFromFolder(File rootPath) {
+    private static List<String> getUnsupportedImagesFromFolder(File rootPath)
+    {
         return FileHandler.processFolder(rootPath, ImageHandler::isImageUnsupported);
     }
 
@@ -353,12 +286,10 @@ public class ImageHandler
      * scenario 4: adding new files
      * scenario 5: evrything stills the same
      */
-    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, boolean isNewProject) {
-        if (isNewProject) {
+
     public static boolean loadProjectRootPath(@NonNull ProjectLoader loader)
     {
-        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
-        {
+        if (Boolean.TRUE.equals(loader.getIsProjectNew())) {
             loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
         } else {
             //refreshing project
@@ -391,9 +322,8 @@ public class ImageHandler
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-        if (isNewProject) {
-        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
-        {
+
+        if (Boolean.TRUE.equals(loader.getIsProjectNew())) {
             saveToProjectTable(loader, dataFullPathList);
         } else // when refreshing project folder
         {
@@ -403,5 +333,6 @@ public class ImageHandler
         }
 
         return true;
+
     }
 }

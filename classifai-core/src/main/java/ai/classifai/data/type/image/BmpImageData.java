@@ -34,11 +34,12 @@ public class BmpImageData extends ImageData
 
     @Override
     public int getOrientation() {
+        // image same as original
         return 1;
     }
 
     @Override
-    public int getRawWidth()
+    public int getWidth()
     {
         try
         {
@@ -52,7 +53,7 @@ public class BmpImageData extends ImageData
     }
 
     @Override
-    public int getRawHeight()
+    public int getHeight()
     {
         try {
             return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);

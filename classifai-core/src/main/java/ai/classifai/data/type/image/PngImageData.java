@@ -33,11 +33,12 @@ public class PngImageData extends ImageData
 
     @Override
     public int getOrientation() {
+        // image same as original
         return 1;
     }
 
     @Override
-    public int getRawWidth() {
+    public int getWidth() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
@@ -47,7 +48,7 @@ public class PngImageData extends ImageData
     }
 
     @Override
-    public int getRawHeight() {
+    public int getHeight() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {

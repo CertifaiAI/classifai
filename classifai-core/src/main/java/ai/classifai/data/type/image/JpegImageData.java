@@ -31,7 +31,7 @@ public class JpegImageData extends ImageData
         super(metadata, JpegDirectory.class);
     }
 
-    private int getWidth() {
+    private int getRawWidth() {
         try {
             return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
@@ -40,7 +40,7 @@ public class JpegImageData extends ImageData
         }
     }
 
-    private int getHeight() {
+    private int getRawHeight() {
         try {
             return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {
@@ -53,7 +53,6 @@ public class JpegImageData extends ImageData
      * get Exif orientation from metatdata
      * orientation value: [1: 0 deg, 8: 270 deg, 3: 180 deg, 6: 90 deg]
      * ref: https://www.impulseadventure.com/photo/exif-orientation.html
-     *
      *
      * 1 = 0 degree                  (Horizontal, normal)
      * 2 = 0 degree,mirrored         (Mirror horizontally)
@@ -76,25 +75,25 @@ public class JpegImageData extends ImageData
     }
 
     @Override
-    public int getRawWidth() {
+    public int getWidth() {
         int orientation = getOrientation();
 
         if (orientation == 8 || orientation == 6) {
-            return getHeight();
+            return getRawHeight();
         }
 
-        return getWidth();
+        return getRawWidth();
     }
 
     @Override
-    public int getRawHeight() {
+    public int getHeight() {
         int orientation = getOrientation();
 
         if (orientation == 8 || orientation == 6) {
-            return getWidth();
+            return getRawWidth();
         }
 
-        return getHeight();
+        return getRawHeight();
     }
 
     @Override

@@ -14,7 +14,7 @@ public class WebpImageData extends ImageData
         super(metadata, WebpDirectory.class);
     }
 
-    public int getWidth()
+    private int getRawWidth()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_WIDTH);
@@ -24,7 +24,7 @@ public class WebpImageData extends ImageData
         }
     }
 
-    public int getHeight()
+    private int getRawHeight()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_HEIGHT);
@@ -54,25 +54,25 @@ public class WebpImageData extends ImageData
     }
 
     @Override
-    public int getRawWidth() {
+    public int getWidth() {
         int orientation = getOrientation();
 
         if (orientation == 8 || orientation == 6) {
-            return getHeight();
+            return getRawHeight();
         }
 
-        return getWidth();
+        return getRawWidth();
     }
 
     @Override
-    public int getRawHeight() {
+    public int getHeight() {
         int orientation = getOrientation();
 
         if (orientation == 8 || orientation == 6) {
-            return getWidth();
+            return getRawWidth();
         }
 
-        return getHeight();
+        return getRawHeight();
     }
 
     @Override
