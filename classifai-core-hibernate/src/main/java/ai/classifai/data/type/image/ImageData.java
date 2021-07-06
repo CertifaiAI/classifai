@@ -15,14 +15,11 @@
  */
 package ai.classifai.data.type.image;
 
-import ai.classifai.util.data.DataHandler;
-import ai.classifai.util.exception.NotSupportedDataTypeException;
 import ai.classifai.util.exception.NotSupportedImageTypeException;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
-import com.drew.metadata.MetadataException;
 import com.drew.metadata.bmp.BmpHeaderDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
@@ -41,8 +38,7 @@ import java.io.IOException;
 @Slf4j
 public abstract class ImageData
 {
-    @Getter
-    private static ImageDataFactory factory = new ImageDataFactory();
+    private static final ImageDataFactory FACTORY = new ImageDataFactory();
     protected Metadata metadata;
     protected Directory directory;
 
@@ -68,7 +64,7 @@ public abstract class ImageData
         {
             Metadata metadata = ImageMetadataReader.readMetadata(new File(filePath));
 
-            return ImageData.factory.getImageData(metadata);
+            return FACTORY.getImageData(metadata);
         }
         catch (ImageProcessingException | IOException e)
         {
@@ -88,7 +84,7 @@ public abstract class ImageData
         {
             Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
 
-            return ImageData.factory.getImageData(metadata);
+            return FACTORY.getImageData(metadata);
         }
         catch (ImageProcessingException | IOException e)
         {

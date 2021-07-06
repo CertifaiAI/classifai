@@ -30,7 +30,7 @@
                       value=""/>
 
             <property name="javax.persistence.schema-generation.database.action"
-                      value="drop-and-create"/>
+                      value="create"/>
 
             <property name="hibernate.hbm2ddl.auto" value="update"/>
 

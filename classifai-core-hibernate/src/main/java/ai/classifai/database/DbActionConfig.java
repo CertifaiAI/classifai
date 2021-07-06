@@ -13,4 +13,5 @@ public class DbActionConfig
     public static final String DELETE_PROJECT = "delete_project";
     public static final String RELOAD_PROJECT = "reload_project";
     public static final String ADD_LABEL = "add_label";
+    public static final String UPDATE_DATA = "update_data";
 }

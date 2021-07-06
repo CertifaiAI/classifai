@@ -3,7 +3,6 @@ package ai.classifai.database.model;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.util.data.DataHandler;
-import ai.classifai.util.data.DataHandlerFactory;
 import ai.classifai.util.data.LabelHandler;
 import ai.classifai.util.exception.NotSupportedDataTypeException;
 import ai.classifai.util.project.ProjectInfra;
@@ -133,7 +132,7 @@ public class Project implements Model
                 false, ProjectInfra.ON_PREMISE.ordinal());
 
         // create new Data
-        DataHandler dataHandler = new DataHandlerFactory().getDataHandler(annoType);
+        DataHandler dataHandler = DataHandler.getDataHandler(annoType);
         List<Data> dataList = dataHandler.getDataList(project);
 
         dataList.forEach(project::addData);

@@ -93,10 +93,9 @@ public class PngImageData extends ImageData
     {
         String path = "C:\\Users\\yinch\\Pictures\\colorImage\\color.jpg";
 
-        Metadata metadata = ImageMetadataReader.readMetadata(new File(path));
+        ImageData img = ImageData.getImageData(path);
 
-        ImageData img = ImageData.getFactory().getImageData(metadata);
-
+        assert img != null;
         for (Directory dir : img.metadata.getDirectories())
         {
             for (Tag tag : dir.getTags())

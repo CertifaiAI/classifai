@@ -3,13 +3,16 @@ package ai.classifai.database.model.dataVersion;
 import ai.classifai.database.model.Model;
 import ai.classifai.database.model.Version;
 import ai.classifai.database.model.annotation.Annotation;
+import ai.classifai.database.model.annotation.AnnotationListFactory;
 import ai.classifai.database.model.data.Data;
+import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +27,6 @@ import java.util.stream.Collectors;
 public abstract class DataVersion implements Model
 {
     public static final String DATA_VERSION_ID_KEY = "data_version_id";
-
 
     @Id
     @GeneratedValue
@@ -64,11 +66,6 @@ public abstract class DataVersion implements Model
         return this.version.equals(version);
     }
 
-    public void addAnnotation()
-    {
-
-    }
-
     public static List<Annotation> getAnnotationListFromDataVersionList(List<DataVersion> dataVersionList)
     {
         return dataVersionList.stream()
@@ -77,4 +74,15 @@ public abstract class DataVersion implements Model
                 .collect(Collectors.toList());
     }
 
+    public void updateDataFromJson(JsonObject request) throws Exception {
+        updateDataFromJsonImplementation(request);
+
+        AnnotationListFactory factory = new AnnotationListFactory();
+
+        annotations = factory.getAnnotationListFromJson(request, this);
+    }
+
+    protected abstract void updateDataFromJsonImplementation(JsonObject request);
+
+    public abstract JsonObject outputJson();
 }

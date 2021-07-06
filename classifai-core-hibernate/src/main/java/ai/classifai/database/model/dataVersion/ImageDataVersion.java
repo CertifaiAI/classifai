@@ -1,7 +1,10 @@
 package ai.classifai.database.model.dataVersion;
 
 import ai.classifai.database.model.Version;
+import ai.classifai.database.model.annotation.Annotation;
 import ai.classifai.database.model.data.Data;
+import ai.classifai.util.type.AnnotationHandler;
+import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,17 +16,22 @@ import javax.persistence.*;
 @Table(name = "IMAGE_DATA_VERSION")
 public class ImageDataVersion extends DataVersion
 {
-    @Column(name = "img_x")
-    private int imgX;
+    public static final String IMG_X_KEY = "img_x";
+    public static final String IMG_Y_KEY = "img_y";
+    public static final String IMG_W_KEY = "img_w";
+    public static final String IMG_H_KEY = "img_h";
 
-    @Column(name = "img_y")
-    private int imgY;
+    @Column(name = IMG_X_KEY)
+    private float imgX;
 
-    @Column(name = "img_w")
-    private int imgW;
+    @Column(name = IMG_Y_KEY)
+    private float imgY;
 
-    @Column(name = "img_h")
-    private int imgH;
+    @Column(name = IMG_W_KEY)
+    private float imgW;
+
+    @Column(name = IMG_H_KEY)
+    private float imgH;
 
     public ImageDataVersion(Data data, Version version)
     {
@@ -35,4 +43,25 @@ public class ImageDataVersion extends DataVersion
     }
 
     public ImageDataVersion() {}
+
+    @Override
+    protected void updateDataFromJsonImplementation(JsonObject request) {
+        imgX = request.getFloat(IMG_X_KEY);
+        imgY = request.getFloat(IMG_Y_KEY);
+        imgW = request.getFloat(IMG_W_KEY);
+        imgH = request.getFloat(IMG_H_KEY);
+    }
+
+    @Override
+    public JsonObject outputJson() {
+        JsonObject jsonObj = new JsonObject();
+        jsonObj.put(IMG_X_KEY, imgX);
+        jsonObj.put(IMG_Y_KEY, imgY);
+        jsonObj.put(IMG_W_KEY, imgW);
+        jsonObj.put(IMG_H_KEY, imgH);
+        jsonObj.put(AnnotationHandler.getMetaKey(getData().getProject().getAnnoType()),
+                Annotation.getAnnotationJsonList(getAnnotations()));
+
+        return jsonObj;
+    }
 }

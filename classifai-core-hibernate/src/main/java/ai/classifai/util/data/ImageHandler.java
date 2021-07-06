@@ -18,15 +18,10 @@ package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageData;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.data.type.image.JpegImageData;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.data.Image;
 import ai.classifai.util.Hash;
-import ai.classifai.util.exception.NotSupportedImageTypeException;
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Metadata;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -65,21 +60,20 @@ public class ImageHandler extends DataHandler
                 .collect(Collectors.toList());
     }
 
-    public String generateImageSource(Image image)
+    @Override
+    public String generateDataSource(Data data)
     {
-        String fullPath = image.getFullPath();
+        String fullPath = data.getFullPath();
 
         try
         {
             return getBase64String(fullPath);
         }
-        catch (Exception ignored)
-        {
-            log.error(String.format("Invalid path for %s", fullPath));
-            return "";
-        }
-    }
+        catch (Exception ignored) {}
 
+        log.error(String.format("Invalid path for %s", fullPath));
+        return "";
+    }
 
     // FIXME: rotateImage must fix
     public String generateThumbnail(Image image)

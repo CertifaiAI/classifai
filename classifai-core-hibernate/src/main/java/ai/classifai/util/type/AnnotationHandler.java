@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Check for annotation type
@@ -105,6 +106,11 @@ public class AnnotationHandler
         log.debug("Annotation type from integer resulted in failure: " + type);
 
         return null;
+    }
+
+    public static String getMetaKey(int type)
+    {
+        return Objects.requireNonNull(getType(type)).META_KEY;
     }
 
 

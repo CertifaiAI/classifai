@@ -57,14 +57,7 @@ public class Image extends Data
         jsonObj.put("img_ori_w", width);
         jsonObj.put("img_ori_h", height);
         jsonObj.put("img_thumbnail", thumbnail);
-
-        ImageDataVersion dataVersion = (ImageDataVersion) getCurrentDataVersion();
-
-        jsonObj.put("bnd_box", dataVersion.getAnnotations()); //FIXME: key needed to be change
-        jsonObj.put("img_x", dataVersion.getImgX());
-        jsonObj.put("img_y", dataVersion.getImgY());
-        jsonObj.put("img_w", dataVersion.getImgW());
-        jsonObj.put("img_h", dataVersion.getImgH());
+        jsonObj.mergeIn(getCurrentDataVersion().outputJson());
 
         return jsonObj;
     }

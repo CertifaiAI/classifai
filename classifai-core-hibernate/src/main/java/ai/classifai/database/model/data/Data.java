@@ -4,6 +4,7 @@ package ai.classifai.database.model.data;
 import ai.classifai.database.model.Model;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.dataVersion.DataVersion;
+import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

@@ -112,7 +112,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(v1::getImageSource);
 //
-//        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(v1::updateData);
+        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(v1::updateData);
 
         router.put("/:annotation_type/projects/:project_name/newlabels").handler(v1::updateLabels);
 

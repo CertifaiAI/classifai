@@ -50,6 +50,13 @@ public class Label implements Model
                 .collect(Collectors.toList());
     }
 
+    public static List<String> getStringListFromLabelList(List<Label> labelList)
+    {
+        return labelList.stream()
+                .map(Label::toString)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public boolean equals(Object obj) {
         Label label = (Label) obj;
@@ -59,5 +66,10 @@ public class Label implements Model
     @Override
     public boolean isPersisted() {
         return labelId != null;
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }

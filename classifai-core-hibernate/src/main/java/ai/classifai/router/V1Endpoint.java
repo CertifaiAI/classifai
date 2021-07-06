@@ -23,6 +23,7 @@ import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.extern.slf4j.Slf4j;
@@ -108,20 +109,18 @@ public class V1Endpoint extends EndpointBase
 
         DeliveryOptions options = getDeliveryOptions(DbActionConfig.LOAD_PROJECT);
 
-        vertx.eventBus().request(DbActionConfig.QUEUE, request, options, reply -> {
+        Handler<Message<Object>> successHandler = msg ->
+        {
+            JsonObject response = (JsonObject) msg.body();
+            response.put("message", 2); // FIXME: hardcoded
 
-            if (reply.succeeded())
-            {
-                JsonObject response = (JsonObject) reply.result().body();
-                response.put("message", 2); // FIXME: hardcoded
+            HTTPResponseHandler.configureOK(context, response);
+        };
 
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Fail to load project"));
-            }
-        });
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(successHandler)
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Fail to load project")));
     }
 
     /**
@@ -160,15 +159,32 @@ public class V1Endpoint extends EndpointBase
                 .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
                         ReplyHandler.reportUserDefinedError("Failure in retrieving image source")));
     }
-//
-//    /***
-//     *
-//     * Update labelling information
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
-//     *
-//     */
-//    public void updateData(RoutingContext context)
+
+    /***
+     *
+     * Update labelling information
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
+     *
+     */
+    public void updateData(RoutingContext context)
+    {
+        JsonObject request = paramHandler.dataParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.UPDATE_DATA);
+
+        Handler<Buffer> requestHandler = h ->
+        {
+            request.mergeIn(h.toJsonObject());
+
+            vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                    .onSuccess(msg -> sendResponseBody(msg, context))
+                    .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Failed to update data")));
+        };
+
+        context.request().bodyHandler(requestHandler);
+    }
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //        String queue = helper.getDbQuery(type);
@@ -225,9 +241,7 @@ public class V1Endpoint extends EndpointBase
 
         Handler<Buffer> requestHandler = h ->
         {
-            JsonObject labelList = h.toJsonObject();
-
-            request.mergeIn(labelList);
+            request.mergeIn(h.toJsonObject());
 
             DeliveryOptions options = getDeliveryOptions(DbActionConfig.ADD_LABEL);
 
@@ -239,41 +253,6 @@ public class V1Endpoint extends EndpointBase
 
         context.request().bodyHandler(requestHandler);
     }
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(h ->
-//        {
-//            try
-//            {
-//                JsonObject jsonObject = h.toJsonObject();
-//
-//                jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-//
-//                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLabelList());
-//
-//                vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-//                {
-//                    if (reply.succeeded()) {
-//                        JsonObject response = (JsonObject) reply.result().body();
-//
-//                        HTTPResponseHandler.configureOK(context, response);
-//                    }
-//                });
-//            }
-//            catch (Exception e)
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-//
-//            }
-//        });
-//    }
 
     /**
      * Delete project

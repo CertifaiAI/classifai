@@ -12,6 +12,22 @@ import java.util.List;
 @Slf4j
 public abstract class DataHandler
 {
+
+    public static class DataHandlerFactory
+    {
+        private DataHandlerFactory() {}
+        public DataHandler getDataHandler(Integer AnnotationTypeIndex) throws NotSupportedDataTypeException {
+            if (AnnotationTypeIndex == AnnotationType.BOUNDINGBOX.ordinal() ||
+                    AnnotationTypeIndex == AnnotationType.SEGMENTATION.ordinal())
+            {
+                return new ImageHandler();
+            }
+            else
+            {
+                throw new NotSupportedDataTypeException("File type not supported");
+            }
+        }
+    }
     private static final DataHandlerFactory FACTORY = new DataHandlerFactory();
     protected FileHandler fileHandler = new FileHandler();
 
@@ -31,20 +47,5 @@ public abstract class DataHandler
         }
     }
 
-    public static class DataHandlerFactory
-    {
-        private DataHandlerFactory() {}
-
-        public DataHandler getDataHandler(Integer annoTypeIdx) throws NotSupportedDataTypeException {
-            if (annoTypeIdx == AnnotationType.BOUNDINGBOX.ordinal() ||
-                    annoTypeIdx == AnnotationType.SEGMENTATION.ordinal())
-            {
-                return new ImageHandler();
-            }
-            else
-            {
-                throw new NotSupportedDataTypeException(String.format("file type %d not supported", annoTypeIdx));
-            }
-        }
-    }
+    public abstract String generateDataSource(Data data);
 }

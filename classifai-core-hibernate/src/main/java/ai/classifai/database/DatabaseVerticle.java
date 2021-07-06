@@ -19,10 +19,8 @@ import ai.classifai.database.model.Label;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.data.Image;
-import ai.classifai.database.repository.DataRepository;
-import ai.classifai.database.repository.LabelRepository;
-import ai.classifai.database.repository.ProjectRepository;
-import ai.classifai.database.repository.Repository;
+import ai.classifai.database.model.dataVersion.DataVersion;
+import ai.classifai.database.repository.*;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.DataHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -77,10 +75,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             case DbActionConfig.GET_PROJECT_META -> this.getProjectMetadata(message);
             case DbActionConfig.LOAD_PROJECT -> this.loadProject(message);
             case DbActionConfig.GET_THUMBNAIL -> this.getThumbnail(message);
-            case DbActionConfig.GET_IMAGE_SOURCE -> this.getImageSource(message);
+            case DbActionConfig.GET_IMAGE_SOURCE -> this.getDataSource(message);
             case DbActionConfig.STAR_PROJECT -> this.starProject(message);
             case DbActionConfig.ADD_LABEL -> this.addLabel(message);
             case DbActionConfig.DELETE_PROJECT -> this.deleteProject(message);
+            case DbActionConfig.UPDATE_DATA -> this.updateData(message);
 
 //        //*******************************V2*******************************
             case DbActionConfig.RELOAD_PROJECT -> this.reloadProject(message);
@@ -113,6 +112,42 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         }
     }
 
+    private void updateData(Message<JsonObject> message) {
+        ProjectRepository projectRepository = getProjectRepository();
+        DataVersionRepository dataVersionRepository = getDataVersionRepository();
+
+        int annotationTypeIdx = getAnnotationTypeIdx(message);
+        String projectName = getProjectName(message);
+        String uuid = getUuid(message);
+
+        JsonObject request = message.body();
+
+        Handler<Promise<Project>> getProjectHandler = promise ->
+                getProject(promise, projectName, annotationTypeIdx, projectRepository);
+
+        Function<Project, Future<Data>> getDataHandler = project ->
+                vertx.executeBlocking(promise -> getData(promise, project, projectName, annotationTypeIdx, uuid));
+
+        Function<Data, Future<DataVersion>> mergeDataVersionHandler = data ->
+                vertx.executeBlocking(promise -> mergeDataVersion(promise, data, request));
+
+        Function<DataVersion, Future<Void>> persistDataVersion = dataVersion ->
+                vertx.executeBlocking(promise -> persistDataVersion(promise, dataVersion, dataVersionRepository));
+
+        // getProject
+        // getData
+        // mergeDataVersion
+        // persist
+        vertx.executeBlocking(getProjectHandler)
+                .compose(getDataHandler)
+                .compose(mergeDataVersionHandler)
+                .compose(persistDataVersion)
+                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+                .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
+                .onComplete(unused -> Repository.closeRepositories(projectRepository, dataVersionRepository));
+    }
+
+
     private void addLabel(Message<JsonObject> message) {
         ProjectRepository projectRepository = getProjectRepository();
         LabelRepository labelRepository = getLabelRepository();
@@ -125,10 +160,10 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 getProject(promise, projectName, annotationTypeIdx, projectRepository);
 
         Function<Project, Future<List<Label>>> mergeLabelListHandler = project ->
-                vertx.executeBlocking((promise -> mergeLabelList(promise, project, strLabelList)));
+                vertx.executeBlocking(promise -> mergeLabelList(promise, project, strLabelList));
 
         Function<List<Label>, Future<Void>> persistLabelListHandler = labelList ->
-                vertx.executeBlocking((promise -> persistLabelList(promise, labelList, labelRepository)));
+                vertx.executeBlocking(promise -> persistLabelList(promise, labelList, labelRepository));
 
         // get project
         // merge label list
@@ -206,7 +241,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     }
 
 
-    private void getImageSource(Message<JsonObject> message) {
+    private void getDataSource(Message<JsonObject> message) {
         ProjectRepository repository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
@@ -216,11 +251,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         Handler<Promise<Project>> getProjectHandler = promise -> getProject(promise, projectName, annotationTypeIdx, repository);
 
-        Function<Project, Future<Image>> getDataHandler = project ->
+        Function<Project, Future<Data>> getDataHandler = project ->
                 vertx.executeBlocking(promise -> getData(promise, project, projectName, annotationTypeIdx, uuid));
 
-        Function<Image, Future<String>> getImgSourceHandler = image ->
-                vertx.executeBlocking(promise -> getImageSource(promise, image));
+        Function<Data, Future<String>> getImgSourceHandler = image ->
+                vertx.executeBlocking(promise -> getDataSource(promise, image));
 
         Handler<String> successHandler = imgSource ->
         {
@@ -253,7 +288,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         Handler<Promise<Project>> getProjectHandler = promise ->
                 getProject(promise, projectName, annotationTypeIdx, repository);
 
-        Function<Project, Future<Image>> getDataHandler = project ->
+        Function<Project, Future<Data>> getDataHandler = project ->
                 vertx.executeBlocking(promise -> getData(promise, project, projectName, annotationTypeIdx, uuid));
 
         Function<Void, Future<String>> getThumbnailHandler = unused ->
@@ -292,7 +327,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         {
             JsonObject jsonObj = ReplyHandler.getOkReply();
 
-            jsonObj.put("label_list", project.getCurrentVersion().getLabelList());
+            jsonObj.put("label_list", Label.getStringListFromLabelList(project.getCurrentVersion().getLabelList()));
 
             List<String> uuidList = project.getDataList().stream()
                     .map(data -> data.getDataId().toString())
@@ -428,6 +463,31 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
+    private void mergeDataVersion(Promise<DataVersion> promise, Data data, JsonObject request)
+    {
+        DataVersion dataVersion = data.getCurrentDataVersion();
+
+        try
+        {
+            dataVersion.updateDataFromJson(request);
+        }
+        catch (Exception e)
+        {
+            log.error(String.format("Fail to read parameter from json request body:%n%s", e.getMessage()));
+            promise.fail(e.getMessage());
+            return;
+        }
+
+        promise.complete(dataVersion);
+    }
+
+    private void persistDataVersion(Promise<Void> promise, DataVersion dataVersion, DataVersionRepository repository)
+    {
+        repository.saveDataVersion(dataVersion);
+
+        promise.complete();
+    }
+
     private void mergeLabelList(Promise<List<Label>> promise, Project project, List<String> strLabelList)
     {
         LabelHandler labelHandler = new LabelHandler();
@@ -473,21 +533,28 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.complete(dataList);
     }
 
-    private void getImageSource(Promise<String> promise, Image image)
+    private void getDataSource(Promise<String> promise, Data data)
     {
-        String imgSource = new ImageHandler().generateImageSource(image);
-
-        if (imgSource.length() == 0)
+        DataHandler dataHandler = DataHandler.getDataHandler(data.getProject().getAnnoType());
+        if (dataHandler == null)
         {
-            Project project = image.getProject();
+            promise.fail(String.format("Unable to identify annotation type for project %s", data.getProject().getProjectName()));
+            return;
+        }
+
+        String dataSource = dataHandler.generateDataSource(data);
+
+        if (dataSource.length() == 0)
+        {
+            Project project = data.getProject();
 
             promise.fail(String.format("Failed to generate image source for data %s in project: [%s] %s",
-                    image.getFullPath(), AnnotationType.fromInt(project.getAnnoType()).name(),
+                    data.getFullPath(), AnnotationType.fromInt(project.getAnnoType()).name(),
                     project.getProjectName()));
             return;
         }
 
-        promise.complete(imgSource);
+        promise.complete(dataSource);
     }
 
 
@@ -516,9 +583,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     }
 
-    // TODO: required further thought on API writing
-    //  think on how to refactor with other data type
-    private void getData(Promise<Image> promise, Project project, String projectName, Integer annotationTypeIdx, String uuid)
+    private void getData(Promise<Data> promise, Project project, String projectName, Integer annotationTypeIdx, String uuid)
     {
         Optional<Data> data = project.getDataList().stream()
                 .filter(d -> d.withId(uuid))
@@ -531,7 +596,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             return;
         }
 
-        promise.complete((Image) data.get());
+        promise.complete(data.get());
     }
 
     private void starProject(Promise<Void> promise, Project project, boolean isStarred, ProjectRepository repository) {
@@ -604,6 +669,12 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         return new ProjectRepository(entityManager);
     }
 
+    private DataVersionRepository getDataVersionRepository()
+    {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        return new DataVersionRepository(entityManager);
+    }
+
     @Override
     public void start(Promise<Void> startPromise) throws Exception
     {
@@ -620,7 +691,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void failureHandler(Promise<Void> promise, Throwable e)
     {
-        log.error("Database preparation error", e.getCause());
+        log.error(String.format("Database preparation error%n%s", e.getMessage()));
         promise.fail(e.getCause());
     }
 
