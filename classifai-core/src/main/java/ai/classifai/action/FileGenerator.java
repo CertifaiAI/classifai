@@ -16,8 +16,6 @@
 package ai.classifai.action;
 
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.message.ReplyHandler;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +31,7 @@ import java.io.IOException;
 @Slf4j
 public class FileGenerator {
 
-    public void run(Message<JsonObject> message, @NonNull ProjectLoader loader, @NonNull JsonObject configContent, @NonNull int exportType) {
+    public void run(@NonNull ProjectLoader loader, @NonNull JsonObject configContent, @NonNull int exportType) {
         EventQueue.invokeLater(() -> {
             String exportPath = null;
             if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
@@ -56,12 +54,12 @@ public class FileGenerator {
 
             if(exportPath != null)
             {
-                message.reply(ReplyHandler.getOkReply().put(
-                        ActionConfig.getProjectConfigPathParam(), exportPath));
+                ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS);
+                ProjectExport.setExportPath(exportPath);
 
                 return;
             }
-            message.reply(ReplyHandler.getFailedReply());
+            ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
         });
     }
 }

@@ -13,19 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.filesystem;
+package ai.classifai.selector.status;
 
 /**
- * State of windows to select file/folder
+ * State of file system
  *
  * @author codenamewei
  */
 public enum FileSystemStatus
 {
-    WINDOW_OPEN,
-    WINDOW_CLOSE_DATABASE_NOT_UPDATED,
-    WINDOW_CLOSE_LOADING_FILES,
-    WINDOW_CLOSE_DATABASE_UPDATING,
-    WINDOW_CLOSE_DATABASE_UPDATED,
-    DID_NOT_INITIATE
+    DID_NOT_INITIATED,
+    ITERATING_FOLDER,
+    DATABASE_UPDATING,
+    DATABASE_UPDATED,
+    DATABASE_NOT_UPDATED,
+    ABORTED
 }
+

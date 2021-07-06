@@ -1,4 +1,3 @@
-package ai.classifai.selector.project;
 /*
  * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
@@ -14,12 +13,11 @@ package ai.classifai.selector.project;
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+package ai.classifai.selector.project;
 
-import ai.classifai.action.LabelListImport;
-import ai.classifai.selector.filesystem.FileSystemStatus;
+import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.ui.SelectionWindow;
 import ai.classifai.ui.launcher.WelcomeLauncher;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,29 +25,21 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.util.List;
 
 /**
- * Open browser to choose label list to import
+ * Open browser to choose label file to import
  *
  * @author codenamewei
  */
 @Slf4j
-public class LabelListSelector extends SelectionWindow
+public class LabelFileSelector extends SelectionWindow
 {
-    @Getter @Setter
-    private static FileSystemStatus importLabelFileSystemStatus = FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED;
-
-    @Getter @Setter
-    private static File labelFile = null;
-
-    @Getter @Setter
-    private static List<String> labelList = null;
+    @Setter private File labelFile = null;
 
     private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
             "Text Files", "txt");
 
-    public static String getLabelFilePath()
+    public String getLabelFilePath()
     {
         return (labelFile != null) ? labelFile.getAbsolutePath() : "";
     }
@@ -60,13 +50,14 @@ public class LabelListSelector extends SelectionWindow
         {
             EventQueue.invokeLater(() -> {
 
-                if(windowStatus.equals(ImportSelectionWindowStatus.WINDOW_CLOSE))
+                if(windowStatus.equals(SelectionWindowStatus.WINDOW_CLOSE))
                 {
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_OPEN;
-                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_OPEN);
+                    windowStatus = SelectionWindowStatus.WINDOW_OPEN;
+
+                    labelFile = null;
 
                     JFrame frame = initFrame();
-                    String title = "Select File";
+                    String title = "Select Label File (*.txt)";
                     JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
                     chooser.setFileFilter(imgFilter);
 
@@ -78,43 +69,25 @@ public class LabelListSelector extends SelectionWindow
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        setLabelFile(chooser.getSelectedFile().getAbsoluteFile());
-
-                        log.info("Proceed with importing label list file with " + getLabelFile().getName());
-
-                        setLabelList(new LabelListImport(labelFile).getValidLabelList());
-
-                        if(labelList == null)
-                        {
-                            log.debug("Import label list failed");
-                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
-                        }
-                        else
-                        {
-                            log.debug("Import label list success");
-
-                            setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATED);
-                        }
+                        labelFile = chooser.getSelectedFile();
                     }
                     else
                     {
-                        setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                         log.debug("Operation of import project aborted");
                     }
 
-                    windowStatus = ImportSelectionWindowStatus.WINDOW_CLOSE;
-
+                    windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
                 }
                 else
                 {
                     showAbortImportPopup();
-                    setImportLabelFileSystemStatus(FileSystemStatus.WINDOW_CLOSE_DATABASE_NOT_UPDATED);
                 }
             });
         }
         catch (Exception e)
         {
-            log.info("LabelListSelector failed to open", e);
+            log.info("LabelFileSelector failed to open", e);
         }
     }
+
 }

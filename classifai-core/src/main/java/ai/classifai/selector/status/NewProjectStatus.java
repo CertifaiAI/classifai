@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,20 +13,22 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.loader;
+package ai.classifai.selector.status;
 
-import lombok.extern.slf4j.Slf4j;
-
-/***
- * Loader status for project loading
+/**
+ * State of create new project
+ *
+ * - raw
+ * - config file
  *
  * @author codenamewei
  */
-@Slf4j
-public enum LoaderStatus
+public enum NewProjectStatus
 {
-    ERROR,
-    LOADING,
-    LOADED, //projectloader will have this status once create new project
-    DID_NOT_INITIATED, //default value when ProjectLoader created from database
+    RAW,
+    CONFIG;
+
+    public static String getParamList() {
+        return RAW.name() + ", " + CONFIG.name();
+    }
 }

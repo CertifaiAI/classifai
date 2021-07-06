@@ -62,28 +62,41 @@
         "header": "Keyboard Shortcut Information",
         "shortcut": {
             "1": {
-                "key": "Ctrl + z",
+                "key": "Ctrl/Command + z",
                 "functionality": "Undo the last action"
             },
             "2": {
-                "key": "Ctrl + c",
-                "functionality": "Copy the selected bounding box"
+                "key": "Ctrl/Command + Shift + z",
+                "functionality": "Redo the last undone action"
             },
             "3": {
-                "key": "Ctrl + v",
-                "functionality": "Paste the selected bounding box"
+                "key": "Ctrl/Command + c",
+                "functionality": "Copy the selected bounding box/ polygon"
             },
             "4": {
-                "key": "Delete/Backspace",
-                "functionality": "Delete a selected bounding box"
+                "key": "Ctrl/Command + v",
+                "functionality": "Paste the selected bounding box/ polygon"
             },
             "5": {
-                "key": "Double click on a selected bounding box",
+                "key": "Delete/Backspace (With selected bounding box/polygon)",
+                "functionality": "Delete a selected bounding box/ polygon"
+            },
+            "6": {
+                "key": "Delete",
+                "functionality": "Delete the current image"
+            },
+            "7": {
+                "key": "F2",
+                "functionality": "Rename the current image"
+            },
+            "8": {
+                "key": "Double click on a selected bounding box/ polygon",
                 "functionality": "Choose label for the selected bounding box"
             }
         }
     },
     "footer": {
+        "projectName": "Project Name",
         "size": "Size",
         "image": "Image",
         "dimension": "Dimension",
@@ -103,5 +116,39 @@
         "noLabel": "No Label",
         "btnSave": "Save",
         "instructionText": "Toggle left to disable the label"
+    },
+    "renameModal": {
+        "renameImg": "Rename Image",
+        "imageName": "Image Name",
+        "typeNewName": "Enter new name",
+        "fail": "Rename failed!",
+        "illegal": "Image name contains illegal characters!",
+        "nameExist": "Image name already exist!",
+        "nameEmpty": "Image name is required!",
+        "submit": "Proceed"
+    },
+    "deleteModal": {
+        "deleteImg": "Delete Image",
+        "confirmation": "Are you sure you want to delete",
+        "dontask": "Don't ask me again",
+        "confirm": "Confirm"
+    },
+    "configFileInfoTitle": "Choosing the Right Export",
+    "configFileInfoDest1": "Config File is the configuration file contains of metadata of a project. It is suitable when the data is readily available in the system to be imported to.",
+    "configFileInfoDest2": "Zip File contains the Config File with dataset used in a project. It compiles all the components of a project to be reproduced in a different system.",
+    "unsupportedImage": "Unsupported Image Found!",
+    "containsUnsupportedImage1": "There are ",
+    "containsUnsupportedImage2": " unsupported images included in the project!",
+    "unsupportedImageList1": "The list of images is in the downloaded TXT file.",
+    "unsupportedImageList2": "Kindly convert them to jpg/png type and reimport them again.",
+    "warningNoLabel": "No label is selected! Please select at least one label to export.",
+    "warning": {
+        "noMetadata": "There are no metadata.",
+        "noBoundingBox": "There are no bounding box.",
+        "noLabelList": "There are no label list.",
+        "noImageList": "There are no image list.",
+        "noProgress": " There are no labelling progress.",
+        "noLabelSelected": "There are no label selected.",
+        "noPolygon": "There are no polygon."
     }
 }

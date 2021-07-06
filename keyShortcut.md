@@ -10,24 +10,25 @@ these are few common and useful shortcut keys have been created.
 
 | No | Shortcut Key | Functionality | 
 |----| -------------|-------------|
-| 1  | Ctrl + alt   | Toggle green light on/off <ul><li> **Green Light on**: move a selected boundingbox by using arrow keys (right, left, up, down)</li> <li>**Green light off:** Go to next/previous images by using left/right key</li></ui> |
-| 2  | Ctrl + shift | Toggle between drawing bounding box & moving image| 
-| 3  | Ctrl + z     | Undo the last action |
-| 4  | Ctrl + c     | Copy a selected bounding box|
-| 5  | Ctrl + v     | Paste a selected bounding box |
-| 6  | Delete/Backspace | Delete a selected bounding box |
-| 7  | Double click on a selected bounding box in the UI | Choose label for the selected bounding box |
+| 1  | Ctrl/Command + z   | Undo the last action |
+| 2  | Ctrl/Command + Shift + z | Redo the last undone action | 
+| 3  | Ctrl/Command + c  | Copy the selected bounding box |
+| 4  | Ctrl/Command + v  | Paste the selected bounding box |
+| 5  | Delete/Backspace (**With selected bounding box**) | Delete a selected bounding box |
+| 6  | Delete | Delete the current image |
+| 7  | F2 | Rename the current image |
+| 8  | Double click on a selected bounding box | Choose label for the selected bounding box |
 
 ## 2.0 Segmentation
 ![Segmentation-keyboard](/metadata/segmentation-keyboard.png)
 
 | No | Shortcut Key | Functionality |
 |----| -------------|-------------|
-| 1  | Ctrl + alt   | Toggle green light on/off <ul><li>**Green light on:** move a selected polygon by using arrow key</li> <li>**Green light off:** left/right key to change to next/previous images</li></ul> |
-| 2  | Ctrl + shift | Toggle between drawing Polygon & moving image | 
-| 3  | Ctrl + z     | Undo the last action |
-| 4  | Ctrl + c     | Copy a selected polygon |
-| 5  | Ctrl + v     | Paste a selected polygon |
-| 6  | Delete/Backspace | <ul><li>Delete a selected polygon</li> <li>Delete the last drawing dot (during drawing new polygon)</li></ul> |
-| 7  | Double click on a selected polygon in the UI | Choose label for the selected polygon |
-| 8  | Esc          | Delete the polygon currently in the midst of drawing |
+| 1  | Ctrl/Command + z   | Undo the last action |
+| 2  | Ctrl/Command + Shift + z | Redo the last undone action | 
+| 3  | Ctrl/Command + c  | Copy the selected polygon |
+| 4  | Ctrl/Command + v  | Paste the selected polygon |
+| 5  | Delete/Backspace (**With selected polygon**) | Delete a selected polygon |
+| 6  | Delete | Delete the current image |
+| 7  | F2 | Rename the current image |
+| 8  | Double click on a selected polygon | Choose label for the selected polygon |

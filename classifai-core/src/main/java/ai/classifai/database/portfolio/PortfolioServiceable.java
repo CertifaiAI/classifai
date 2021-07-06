@@ -25,8 +25,6 @@ import io.vertx.core.json.JsonObject;
  */
 public interface PortfolioServiceable
 {
-    void createV1NewProject(Message<JsonObject> message);
-
     void updateLabelList(Message<JsonObject> message);
 
     void getAllProjectsForAnnotationType(Message<JsonObject> message);

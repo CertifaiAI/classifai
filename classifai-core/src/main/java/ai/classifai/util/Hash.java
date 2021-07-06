@@ -59,7 +59,7 @@ public class Hash
         }
         catch(Exception e)
         {
-            log.info("Error in generating SHA-256 Hashing");
+            log.info("Error in generating SHA-256 Hashing: ", e);
         }
 
         return null;

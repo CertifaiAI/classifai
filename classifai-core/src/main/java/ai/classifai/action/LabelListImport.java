@@ -16,7 +16,6 @@
 package ai.classifai.action;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
@@ -37,8 +36,14 @@ public class LabelListImport
     @Getter
     private List<String> validLabelList = null;
 
-    public LabelListImport(@NonNull File labelFile)
+    public LabelListImport(File labelFile)
     {
+        if(!labelFile.exists())
+        {
+            validLabelList = new ArrayList<>();
+            return;
+        }
+
         try
         {
             String labels = IOUtils.toString(new FileReader(labelFile));
@@ -62,11 +67,11 @@ public class LabelListImport
 
         for(String label : inputLabelList)
         {
-            String buffer = label.replace(" ", "");
+            String buffer = label.replaceAll("\\s", "");
 
             if(buffer.length() > 0)
             {
-                validLabelList.add(label);
+                validLabelList.add(buffer);
             }
         }
 

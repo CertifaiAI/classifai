@@ -15,6 +15,8 @@
  */
 package ai.classifai.database.annotation;
 
+
+import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -22,7 +24,6 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -118,9 +119,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
     {
-        String projBasePath = ProjectHandler.getProjectLoader(projectId).getProjectPath();
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
 
-        return Paths.get(projBasePath, dataSubPath).toFile();
+        return Paths.get(loader.getProjectPath().getAbsolutePath(), dataSubPath).toFile();
+
     }
 
     public static void loadValidProjectUuid(@NonNull String projectId)
@@ -175,76 +177,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         loadValidProjectUuid(projectId);
     }
 
-
-    @Deprecated
-    public static void writeUuidToTable(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
-    {
-        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
-
-        String uuid = UuidGenerator.generateUuid();
-
-        Annotation annotation = Annotation.builder()
-                .projectId(loader.getProjectId())
-                .imgPath(dataSubPath)
-                .uuid(uuid)
-                .annotationDict(ProjectParser.buildAnnotationDict(loader))
-                .build();
-
-        loader.getUuidAnnotationDict().put(uuid, annotation);
-
-        JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);
-
-        clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
-                .execute(annotation.getTuple())
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        loader.pushFileSysNewUUIDList(uuid);
-                    }
-                    else
-                    {
-                        log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-                    }
-                    loader.updateLoadingProgress(currentLength);
-                });
-    }
-
-    @Deprecated
-    public static void writeUuidToDb(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentLength)
-    {
-        String dataSubPath = FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath());
-
-        String uuid = UuidGenerator.generateUuid();
-
-        Annotation annotation = Annotation.builder()
-                .projectId(loader.getProjectId())
-                .imgPath(dataSubPath)
-                .uuid(uuid)
-                .annotationDict(ProjectParser.buildAnnotationDict(loader))
-                .build();
-
-        loader.getUuidAnnotationDict().put(uuid, annotation);
-
-        JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);
-
-        clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
-                .execute(annotation.getTuple())
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        loader.pushFileSysNewUUIDList(uuid);
-                    }
-                    else
-                    {
-                        log.error("Push data point with path " + dataFullPath.getAbsolutePath() + " failed: " + fetch.cause().getMessage());
-                    }
-
-                    loader.updateFileSysLoadingProgress(currentLength);
-                });
-    }
-
     public static void saveDataPoint(@NonNull ProjectLoader loader, @NonNull String dataPath, @NonNull Integer currentLength)
     {
         String uuid = UuidGenerator.generateUuid();
@@ -255,6 +187,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .imgPath(dataPath)
                 .annotationDict(ProjectParser.buildAnnotationDict(loader))
                 .build();
+
         loader.getUuidAnnotationDict().put(uuid, annotation);
 
         JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);
@@ -303,7 +236,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             {
                                 Row row = rowIterator.next();
 
-                                String fullPath = Paths.get(loader.getProjectPath(), row.getString(1)).toString();
+                                String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
                                 if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
                                 {
@@ -381,7 +314,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     {
                         String childPath = param.getString(2);
 
-                        File currentImagePath = Paths.get(loader.getProjectPath(), childPath).toFile();
+                        File currentImagePath = Paths.get(loader.getProjectPath().getAbsolutePath(), childPath).toFile();
 
                         if(ImageHandler.isImageReadable(currentImagePath))
                         {
@@ -401,7 +334,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String projectId = loader.getProjectId();
 
-        String dataChildPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(loader.getProjectPath(), dataFullPath.getAbsolutePath()));
+        String dataChildPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(loader.getProjectPath().getAbsolutePath(), dataFullPath.getAbsolutePath()));
 
         Tuple params = Tuple.of(dataChildPath, projectId);
 
@@ -416,7 +349,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                     //not exist , create data point
                     if (rowSet.size() == 0)
                     {
-                        if(ImageHandler.isImageReadable(dataFullPath))
+                        if(ImageHandler.isImageFileValid(dataFullPath))
                         {
                             writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
                         }
@@ -462,59 +395,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteSelectionUuidList(Message<JsonObject> message)
+    public void deleteProjectData(Message<JsonObject> message)
     {
-        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
+        DeleteProjectData.deleteProjectData(jdbcPool, message);
+    }
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-        List<String> dbUUIDList = loader.getUuidListFromDb();
-
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
-        String uuidQueryParam = String.join(",", deleteUUIDList);
-
-        Tuple params = Tuple.of(projectId, uuidQueryParam);
-
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteSelectionUuidList())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded())
-                    {
-                        if (dbUUIDList.removeAll(deleteUUIDList))
-                        {
-                            loader.setUuidListFromDb(dbUUIDList);
-
-                            List<String> sanityUUIDList = loader.getSanityUuidList();
-
-                            if (sanityUUIDList.removeAll(deleteUUIDList))
-                            {
-                                loader.setSanityUuidList(sanityUUIDList);
-                            }
-                            else
-                            {
-                                log.info("Error in removing uuid list");
-                            }
-
-                            //update Portfolio Verticle
-                            PortfolioVerticle.updateFileSystemUuidList(projectId);
-
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
-   }
-
-
-   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-   {
+    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
+    {
         JsonObject requestBody = message.body();
 
         try
@@ -598,7 +485,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
         else
         {
-            dataPath = Paths.get(loader.getProjectPath(), annotation.getImgPath()).toString();
+            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
 
             try
             {

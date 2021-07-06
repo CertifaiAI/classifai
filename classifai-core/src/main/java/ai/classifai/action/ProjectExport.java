@@ -25,9 +25,7 @@ import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -47,6 +45,18 @@ import java.util.zip.ZipOutputStream;
 @NoArgsConstructor
 public class ProjectExport
 {
+    public enum ProjectExportStatus {
+        EXPORT_NOT_INITIATED,
+        EXPORT_STARTING,
+        EXPORT_SUCCESS,
+        EXPORT_FAIL
+    }
+
+    @Getter @Setter
+    private static ProjectExportStatus exportStatus = ProjectExportStatus.EXPORT_NOT_INITIATED;
+    @Getter @Setter
+    private static String exportPath = "";
+
     public static JsonObject getConfigSkeletonStructure()
     {
         return new JsonObject()
@@ -83,20 +93,25 @@ public class ProjectExport
     public static String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
-        File zipFile = Paths.get(loader.getProjectPath(), loader.getProjectName() + ".zip").toFile();
-        List<File> validImagePaths = ImageHandler.getValidImagesFromFolder(new File(loader.getProjectPath()));
+        File zipFile = Paths.get(loader.getProjectPath().getAbsolutePath(), loader.getProjectName() + ".zip").toFile();
+        List<String> validImagePaths = ImageHandler.getValidImagesFromFolder(loader.getProjectPath());
 
         FileOutputStream fos = new FileOutputStream(zipFile);
         ZipOutputStream out = new ZipOutputStream(fos);
 
         // Add config file
-        addToEntry(new File(configPath), out, new File(loader.getProjectPath()));
+        addToEntry(new File(configPath), out, loader.getProjectPath());
 
-        // Add all image data
-        for(File filePath: validImagePaths)
-        {
-            addToEntry(filePath, out, new File(loader.getProjectPath()));
-        }
+        // Add all data
+        validImagePaths.forEach(
+                s -> {
+                    try {
+                        addToEntry(new File(s), out, loader.getProjectPath());
+                    } catch (IOException e) {
+                        log.info("Fail to add data into zip file");
+                    }
+                }
+        );
         out.close();
         fos.close();
 

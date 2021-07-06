@@ -40,7 +40,7 @@ public class AnnotationQuery
 
     @Getter private static final String deleteProject = "DELETE FROM Project WHERE project_id = ?";
 
-    @Getter private static final String deleteSelectionUuidList = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
+    @Getter private static final String deleteProjectData = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
 
     @Getter private static final String retrieveAllProjects = "SELECT * FROM Project";
 
@@ -48,5 +48,7 @@ public class AnnotationQuery
     @Getter private static final String queryUuid = "SELECT uuid FROM Project WHERE img_path = ? AND project_id = ?";
 
     @Getter private static final String extractProject = "SELECT uuid, img_path, version_list, img_depth, img_ori_w, img_ori_h, file_size FROM Project WHERE project_id = ?";
+
+    @Getter private static final String renameProjectData = "UPDATE Project SET img_path = ? WHERE uuid = ? AND project_id = ?";
 
 }

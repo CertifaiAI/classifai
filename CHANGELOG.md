@@ -9,15 +9,31 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 *Note: This changelog is implemented since `2.0.0-alpha` version. All records before it are drafted based on [release notes](https://github.com/CertifaiAI/classifai/releases) might not be as detailed.*
 ## [Unreleased]
 ### Added
+- Project versioning [WIP]
+- Project import image from cloud storage [WIP]
+- Database migration [WIP]
+- Sorting of project card with options of created date, last modified date or project name.
+- Renaming data from workspace - UI and F2 shortcut key
+- Updated keyShortcut.md [#455](https://github.com/CertifaiAI/classifai/pull/455)
+- Deleting data from workspace
+
+### Fixed
+- Fixed the display of full image path instead of intentional image name in Ubuntu and Mac OS [#446](https://github.com/CertifaiAI/classifai/issues/446)
+- Bug fix for removing "\r" and spaces " " in imported labels [#437](https://github.com/CertifaiAI/classifai/issues/437)
+
+## [2.0.0-alpha1] - 2021-02-26
+### Added
+- Label filtering feature
+- Added CodeofConduct.md and Contributing.md 
+- Changed create project workflow  
+  to insert project name, project folder, and label file in the same window
+- Frontend auto pr
 - CHANGELOG.md
 - Project renaming 
 - Project reloading
-- Project versioning [WIP]
 - Project import export
-- Project import image from cloud storage [WIP]
 - Project starring
 - Project is_new label
-- Database migration [WIP]
 
 ### Changed
 - Image validation method from reading files -> reading metadata
@@ -78,6 +94,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Distribution for Windows(7, 8, 10), Mac, Ubuntu(18 LTS, 20 LTS) and Centos(7, 8)  
 
 [Unreleased]: https://github.com/CertifaiAI/classifai/compare/main...v2_alpha?expand=1
+[2.0.0-alpha1]: https://github.com/CertifaiAI/classifai/releases/tag/v2.0.0-alpha1
 [1.0.0]: https://github.com/CertifaiAI/classifai/releases/tag/v1.0
 [1.1.0]: https://github.com/CertifaiAI/classifai/releases/tag/v1.1.0
 [1.1.1]: https://github.com/CertifaiAI/classifai/releases/tag/v1.1.1

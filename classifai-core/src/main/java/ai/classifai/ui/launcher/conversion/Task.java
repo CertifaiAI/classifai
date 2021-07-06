@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.List;
 
 /**
  * Task running in background to do the conversion
@@ -59,7 +60,7 @@ public class Task extends SwingWorker<Void, Void> {
 
         File inputPath = new File(ConverterLauncher.getInputFolderPath());
 
-        java.util.List<File> inputFiles = FileHandler.processFolder(inputPath, inputExtension);
+        List<String> inputFiles = FileHandler.processFolder(inputPath, inputExtension);
 
         ConverterLauncher.appendTaskOutput("Total number of files to convert: " + inputFiles.size());
 
@@ -86,8 +87,10 @@ public class Task extends SwingWorker<Void, Void> {
             {
                 PdfHandler pdfHandler = new PdfHandler();
 
-                for (File file: inputFiles)
+                for (String input: inputFiles)
                 {
+                    File file = new File(input);
+
                     if(isStop) break;
 
                     ConverterLauncher.appendTaskOutput(file.getName());
@@ -105,8 +108,10 @@ public class Task extends SwingWorker<Void, Void> {
             {
                 TifHandler tifHandler = new TifHandler();
 
-                for (File file: inputFiles)
+                for (String input: inputFiles)
                 {
+                    File file = new File(input);
+
                     if(isStop) break;
 
                     ConverterLauncher.appendTaskOutput(file.getName());
