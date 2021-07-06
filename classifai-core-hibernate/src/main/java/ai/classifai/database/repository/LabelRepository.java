@@ -14,4 +14,9 @@ public class LabelRepository extends Repository{
     {
         saveItem(labelList.toArray());
     }
+
+    public void removeLabelList(List<Label> labelList)
+    {
+        removeItem(labelList.toArray());
+    }
 }

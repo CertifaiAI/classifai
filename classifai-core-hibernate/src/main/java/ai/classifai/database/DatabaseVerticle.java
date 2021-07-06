@@ -34,6 +34,8 @@ import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -77,11 +79,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             case DbActionConfig.GET_THUMBNAIL -> this.getThumbnail(message);
             case DbActionConfig.GET_IMAGE_SOURCE -> this.getDataSource(message);
             case DbActionConfig.STAR_PROJECT -> this.starProject(message);
-            case DbActionConfig.ADD_LABEL -> this.addLabel(message);
+            case DbActionConfig.ADD_LABEL -> this.updateLabel(message);
             case DbActionConfig.DELETE_PROJECT -> this.deleteProject(message);
             case DbActionConfig.UPDATE_DATA -> this.updateData(message);
 
-//        //*******************************V2*******************************
+        //*******************************V2*******************************
             case DbActionConfig.RELOAD_PROJECT -> this.reloadProject(message);
 //
 //        else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
@@ -147,8 +149,37 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .onComplete(unused -> Repository.closeRepositories(projectRepository, dataVersionRepository));
     }
 
+    // FIXME: need extra api for delete label
+//    private void updateLabel(Message<JsonObject> message) {
+//        ProjectRepository projectRepository = getProjectRepository();
+//        LabelRepository labelRepository = getLabelRepository();
+//
+//        int annotationTypeIdx = getAnnotationTypeIdx(message);
+//        String projectName = getProjectName(message);
+//        List<String> strLabelList = getStrLabelList(message);
+//
+//        Handler<Promise<Project>> getProjectHandler = promise ->
+//                getProject(promise, projectName, annotationTypeIdx, projectRepository);
+//
+//        Function<Project, Future<List<Label>>> mergeLabelListHandler = project ->
+//                vertx.executeBlocking(promise -> mergeLabelList(promise, project, strLabelList));
+//
+//        Function<List<Label>, Future<Void>> persistLabelListHandler = labelList ->
+//                vertx.executeBlocking(promise -> persistLabelList(promise, labelList, labelRepository));
+//
+//        // get project
+//        // merge label list
+//        // persist
+//        vertx.executeBlocking(getProjectHandler)
+//                .compose(mergeLabelListHandler)
+//                .compose(persistLabelListHandler)
+//                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+//                .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
+//                .onComplete(unused -> Repository.closeRepositories(projectRepository, labelRepository));
+//    }
 
-    private void addLabel(Message<JsonObject> message) {
+    // temporary solution
+    private void updateLabel(Message<JsonObject> message) {
         ProjectRepository projectRepository = getProjectRepository();
         LabelRepository labelRepository = getLabelRepository();
 
@@ -159,11 +190,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         Handler<Promise<Project>> getProjectHandler = promise ->
                 getProject(promise, projectName, annotationTypeIdx, projectRepository);
 
-        Function<Project, Future<List<Label>>> mergeLabelListHandler = project ->
+        Function<Project, Future<Pair<List<Label>, List<Label>>>> mergeLabelListHandler = project ->
                 vertx.executeBlocking(promise -> mergeLabelList(promise, project, strLabelList));
 
-        Function<List<Label>, Future<Void>> persistLabelListHandler = labelList ->
-                vertx.executeBlocking(promise -> persistLabelList(promise, labelList, labelRepository));
+        Function<Pair<List<Label>, List<Label>>, Future<Void>> persistLabelListHandler = pair ->
+                vertx.executeBlocking(promise -> persistLabelListPair(promise, pair, labelRepository));
 
         // get project
         // merge label list
@@ -488,15 +519,34 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.complete();
     }
 
-    private void mergeLabelList(Promise<List<Label>> promise, Project project, List<String> strLabelList)
+//    private void mergeLabelList(Promise<List<Label>> promise, Project project, List<String> strLabelList)
+//    {
+//        LabelHandler labelHandler = new LabelHandler();
+//
+//        List<Label> labelList = labelHandler.getLabelList(project, strLabelList);
+//
+//        promise.complete(labelList);
+//    }
+
+    // left: to delete, right: to udpate
+    private void mergeLabelList(Promise<Pair<List<Label>, List<Label>>> promise, Project project, List<String> strLabelList)
     {
         LabelHandler labelHandler = new LabelHandler();
 
+        List<Label> deleteList = labelHandler.getDeleteList(project, strLabelList);
         List<Label> labelList = labelHandler.getLabelList(project, strLabelList);
 
-        promise.complete(labelList);
+        promise.complete(new ImmutablePair<>(deleteList, labelList));
     }
 
+    private void persistLabelListPair(Promise<Void> promise, Pair<List<Label>, List<Label>> pair, LabelRepository repository)
+    {
+        repository.removeLabelList(pair.getLeft());
+
+        repository.saveLabelList(pair.getRight());
+
+        promise.complete();
+    }
 
     private void persistLabelList(Promise<Void> promise, List<Label> labelList, LabelRepository repository)
     {

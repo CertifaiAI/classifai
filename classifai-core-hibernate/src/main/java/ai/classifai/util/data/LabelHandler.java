@@ -24,4 +24,15 @@ public class LabelHandler {
 
         return idx == -1 ? label : currentLabelList.get(idx);
     }
+
+    public List<Label> getDeleteList(Project project, List<String> strLabelList)
+    {
+        List<Label> currentLabelList = project.getCurrentVersion().getLabelList();
+
+        List<Label> newLabelList = Label.labelListFromStringList(strLabelList, project.getCurrentVersion());
+
+        return currentLabelList.stream()
+                .filter(label -> !newLabelList.contains(label))
+                .collect(Collectors.toList());
+    }
 }
