@@ -18,7 +18,6 @@ package ai.classifai.database.annotation;
 
 import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.parser.ProjectParser;
-import ai.classifai.data.type.image.ImageData;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
@@ -48,10 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
