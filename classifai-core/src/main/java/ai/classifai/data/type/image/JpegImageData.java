@@ -17,7 +17,6 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 
 /**
@@ -28,10 +27,11 @@ import com.drew.metadata.jpeg.JpegDirectory;
 public class JpegImageData extends ImageData
 {
     protected JpegImageData(Metadata metadata) {
-        super(metadata, JpegDirectory.class);
+        super(metadata, JpegDirectory.class, "image/jpg");
     }
 
-    private int getRawWidth() {
+    @Override
+    protected int getRawWidth() {
         try {
             return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
@@ -40,7 +40,8 @@ public class JpegImageData extends ImageData
         }
     }
 
-    private int getRawHeight() {
+    @Override
+    protected int getRawHeight() {
         try {
             return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {
@@ -67,38 +68,6 @@ public class JpegImageData extends ImageData
      */
 
     @Override
-    public int getOrientation() {
-        try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
-            return 1;
-        }
-    }
-
-    @Override
-    public int getWidth() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawHeight();
-        }
-
-        return getRawWidth();
-    }
-
-    @Override
-    public int getHeight() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawWidth();
-        }
-
-        return getRawHeight();
-    }
-
-    @Override
     public int getDepth() {
         try {
             return directory.getInt(JpegDirectory.TAG_NUMBER_OF_COMPONENTS);
@@ -108,9 +77,9 @@ public class JpegImageData extends ImageData
     }
 
     @Override
-    public String getMimeType() {
-        return "image/jpg";
+    public boolean isAnimation() {
+        // Jpeg is always static image
+        return false;
     }
-
 
 }

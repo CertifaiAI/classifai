@@ -6,15 +6,17 @@ import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.webp.WebpDirectory;
 
-public class WebpImageData extends ImageData
-{
+import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
+
+public class WebpImageData extends ImageData{
 
     protected WebpImageData(Metadata metadata)
     {
-        super(metadata, WebpDirectory.class);
+        super(metadata, WebpDirectory.class, "image/webp");
     }
 
-    private int getRawWidth()
+    @Override
+    protected int getRawWidth()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_WIDTH);
@@ -24,7 +26,8 @@ public class WebpImageData extends ImageData
         }
     }
 
-    private int getRawHeight()
+    @Override
+    protected int getRawHeight()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_HEIGHT);
@@ -41,16 +44,6 @@ public class WebpImageData extends ImageData
         if (!colorSpaceType.isEmpty()) {
             return 3;
         } else {
-            return 1;
-        }
-    }
-
-    @Override
-    public int getOrientation() {
-        try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
             return 1;
         }
     }
@@ -78,8 +71,11 @@ public class WebpImageData extends ImageData
     }
 
     @Override
-    public String getMimeType() {
-        return "image/webp";
+    public boolean isAnimation() {
+        try {
+            return metadata.getFirstDirectoryOfType(WebpDirectory.class).getBoolean(TAG_IS_ANIMATION);
+        } catch (Exception e) {
+            return false;
+        }
     }
-
 }

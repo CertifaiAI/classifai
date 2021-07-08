@@ -126,6 +126,10 @@
             <groupId>org.openpnp</groupId>
             <artifactId>opencv</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+        </dependency>
     </dependencies>
 
 

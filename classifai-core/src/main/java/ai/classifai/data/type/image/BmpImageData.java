@@ -18,7 +18,6 @@ package ai.classifai.data.type.image;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
 import com.drew.metadata.bmp.BmpHeaderDirectory;
-import com.drew.metadata.exif.ExifIFD0Directory;
 
 /**
  * Provides metadata of bmp images
@@ -27,24 +26,14 @@ import com.drew.metadata.exif.ExifIFD0Directory;
  */
 public class BmpImageData extends ImageData
 {
-    private final int S_RGB_COLOR_SPACE = 1934772034;
+    private static final int SRGB_COLOR_SPACE = 1934772034;
 
     protected BmpImageData(Metadata metadata) {
-        super(metadata, BmpHeaderDirectory.class);
+        super(metadata, BmpHeaderDirectory.class, "image/bmp");
     }
 
     @Override
-    public int getOrientation() {
-        try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
-            return 1;
-        }
-    }
-
-    @Override
-    public int getWidth()
+    protected int getRawWidth()
     {
         try
         {
@@ -58,7 +47,7 @@ public class BmpImageData extends ImageData
     }
 
     @Override
-    public int getHeight()
+    protected int getRawHeight()
     {
         try {
             return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
@@ -78,20 +67,21 @@ public class BmpImageData extends ImageData
     public int getDepth() {
         try {
             int colorSpaceType = directory.getInt(BmpHeaderDirectory.TAG_COLOR_SPACE_TYPE);
-            if (colorSpaceType == S_RGB_COLOR_SPACE)
+            if (colorSpaceType == SRGB_COLOR_SPACE)
             {
                 return 3;
             }
         }
-        catch (MetadataException ignored){}
-
+        catch (Exception e){
+            logMetadataError();
+        }
         return 1;
     }
 
     @Override
-    public String getMimeType() {
-        return "image/bmp";
+    public boolean isAnimation() {
+        // Bmp image is always static
+        return false;
     }
-
 
 }

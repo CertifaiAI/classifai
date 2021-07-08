@@ -478,10 +478,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         if(loader.isCloud())
         {
-            BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
+            try
+            {
+                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
-            //not checking orientation for on cloud version
-//            imgData = ImageHandler.getThumbNail(img);
+                //not checking orientation for on cloud version
+                imgData = ImageHandler.getThumbNail(img);
+            }
+            catch(Exception e)
+            {
+                log.debug("Unable to write Buffered Image.");
+            }
+
         }
         else
         {
@@ -489,13 +497,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
-                File file = new File(dataPath);
-
                 Mat imageMat  = Imgcodecs.imread(dataPath);
 
                 BufferedImage img = ImageHandler.toBufferedImage(imageMat);
 
-                imgData = ImageHandler.getThumbNail(img, file);
+                imgData = ImageHandler.getThumbNail(img);
             }
             catch(Exception e)
             {
