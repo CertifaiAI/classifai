@@ -37,7 +37,7 @@ public class ImageFileType {
 
     private static final Map BASE_64_HEADER;
 
-    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "bmp", "JPG", "PNG", "JPEG"}; //{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
+    private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "bmp", "JPG", "PNG", "JPEG", "webp"}; //{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
 
     static
     {
@@ -49,6 +49,7 @@ public class ImageFileType {
         BASE_64_HEADER.put("png", "data:image/jpeg;base64,");
         BASE_64_HEADER.put("PNG", "data:image/png;base64,");
         BASE_64_HEADER.put("bmp", "data:image/bmp;base64,");
+        BASE_64_HEADER.put("webp", "data:image/bmp;base64,");
     }
 
     public static String[] getImageFileTypes()
