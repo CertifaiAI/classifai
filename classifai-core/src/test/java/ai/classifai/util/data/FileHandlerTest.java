@@ -18,7 +18,7 @@ public class FileHandlerTest {
     @MethodSource("testProcessFolderSuccessSource")
     @DisplayName("Iterate folder success case")
     void testProcessFolderSuccess(File rootPath, String[] extensionFormat, int testCorrectValue) {
-        List<File> outputList =  FileHandler.processFolder(rootPath, extensionFormat);
+        List<String> outputList =  FileHandler.processFolder(rootPath, extensionFormat);
         Assertions.assertEquals(outputList.size(), testCorrectValue);
     }
 
@@ -35,7 +35,7 @@ public class FileHandlerTest {
     @MethodSource("testProcessFolderFailSource")
     @DisplayName("Iterate folder fail case")
     void testProcessFolderFail(File rootPath, String[] extensionFormat, int testCorrectValue) {
-        List<File> outputList =  FileHandler.processFolder(rootPath, extensionFormat);
+        List<String> outputList =  FileHandler.processFolder(rootPath, extensionFormat);
         // Value should not be equal to number of files in the input rootPath
         Assertions.assertNotEquals(outputList.size(), testCorrectValue);
     }
