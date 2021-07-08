@@ -21,6 +21,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.bmp.BmpHeaderDirectory;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 import com.drew.metadata.webp.WebpDirectory;
@@ -31,6 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
+import static com.drew.metadata.exif.ExifIFD0Directory.TAG_ORIENTATION;
 /**
  * ImageData provides metadata of images
  *
@@ -48,8 +50,6 @@ public abstract class ImageData
         this.directory = metadata.getFirstDirectoryOfType(directoryClass);
     }
 
-    public abstract int getOrientation();
-
     public abstract int getWidth();
 
     public abstract int getHeight();
@@ -58,8 +58,19 @@ public abstract class ImageData
 
     public abstract String getMimeType();
 
+    public abstract boolean isAnimation();
+
     protected void logMetadataError() {
         log.error("Unhandled metadata error, this should be protected by ImageFactory");
+    }
+
+    public int getOrientation() {
+        try {
+            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(TAG_ORIENTATION);
+        } catch (Exception ignored) {
+            // if can't find orientation set as 0 deg
+            return 1;
+        }
     }
 
     public static ImageData getImageData(File filePath)
@@ -77,7 +88,7 @@ public abstract class ImageData
         }
         catch (NotSupportedImageTypeException e)
         {
-            log.debug(String.format("%s is not supported \n %s", filePath, e.getMessage()));
+            log.debug(String.format("%s is not supported %n %s", filePath, e.getMessage()));
             return null;
         }
     }
@@ -121,4 +132,26 @@ public abstract class ImageData
         }
     }
 
+    public double getAngle() {
+        double angle;
+
+        if (getOrientation() == 8)
+        {
+            angle = -0.5*Math.PI; // the image turn 270 degree
+        }
+        else if (getOrientation() == 3)
+        {
+            angle = Math.PI; // the image turn 180 degree
+        }
+        else if (getOrientation() == 6)
+        {
+            angle = 0.5*Math.PI; // the image turn 90 degree
+        }
+        else
+        {
+            angle = 0;
+        }
+
+        return angle;
+    }
 }

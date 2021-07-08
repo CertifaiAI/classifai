@@ -119,20 +119,7 @@ public class ImageHandler {
         ImageIO.write(image, "png", out);
         ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-        double angle = 0;
-
-        // the image turn 270 degree
-        if (imgData.getOrientation() == 8) {
-            angle = -Math.PI/2;
-        }
-        // the image turn 180 degree
-        else if (imgData.getOrientation() == 3) {
-            angle = Math.PI;
-        }
-        // the image turn 90 degree
-        else if (imgData.getOrientation() == 6) {
-            angle = Math.PI/2;
-        }
+        double angle = imgData.getAngle();
 
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
@@ -229,6 +216,10 @@ public class ImageHandler {
             if (imgData.getWidth() > ImageFileType.getMaxWidth() || imgData.getHeight() > ImageFileType.getMaxHeight())
             {
                 log.info("Image size bigger than maximum allowed input size. Skipped " + file);
+                return false;
+            }
+            else if (imgData.isAnimation()) {
+                log.info("The image is animated and not supported ");
                 return false;
             }
         }

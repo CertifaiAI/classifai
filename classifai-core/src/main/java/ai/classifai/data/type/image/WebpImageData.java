@@ -6,6 +6,8 @@ import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.webp.WebpDirectory;
 
+import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
+
 public class WebpImageData extends ImageData{
 
     protected WebpImageData(Metadata metadata)
@@ -45,16 +47,6 @@ public class WebpImageData extends ImageData{
     }
 
     @Override
-    public int getOrientation() {
-        try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
-            return 1;
-        }
-    }
-
-    @Override
     public int getWidth() {
         int orientation = getOrientation();
 
@@ -79,5 +71,14 @@ public class WebpImageData extends ImageData{
     @Override
     public String getMimeType() {
         return "image/webp";
+    }
+
+    @Override
+    public boolean isAnimation() {
+        try {
+            return metadata.getFirstDirectoryOfType(WebpDirectory.class).getBoolean(TAG_IS_ANIMATION);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

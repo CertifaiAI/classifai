@@ -17,7 +17,6 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 
 /**
@@ -67,16 +66,6 @@ public class JpegImageData extends ImageData
      */
 
     @Override
-    public int getOrientation() {
-        try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
-            return 1;
-        }
-    }
-
-    @Override
     public int getWidth() {
         int orientation = getOrientation();
 
@@ -110,6 +99,12 @@ public class JpegImageData extends ImageData
     @Override
     public String getMimeType() {
         return "image/jpg";
+    }
+
+    @Override
+    public boolean isAnimation() {
+        // Jpeg is always static image
+        return false;
     }
 
 }

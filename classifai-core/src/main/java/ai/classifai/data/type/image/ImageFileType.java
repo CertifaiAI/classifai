@@ -49,7 +49,7 @@ public class ImageFileType {
         BASE_64_HEADER.put("png", "data:image/jpeg;base64,");
         BASE_64_HEADER.put("PNG", "data:image/png;base64,");
         BASE_64_HEADER.put("bmp", "data:image/bmp;base64,");
-        BASE_64_HEADER.put("webp", "data:image/bmp;base64,");
+        BASE_64_HEADER.put("webp", "data:image/webp;base64,");
     }
 
     public static String[] getImageFileTypes()

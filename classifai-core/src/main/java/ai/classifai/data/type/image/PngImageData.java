@@ -31,12 +31,6 @@ public class PngImageData extends ImageData
     }
 
     @Override
-    public int getOrientation() {
-        // same as original image
-        return 1;
-    }
-
-    @Override
     public int getWidth() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
@@ -67,7 +61,8 @@ public class PngImageData extends ImageData
             int colorType = directory.getInt(PngDirectory.TAG_COLOR_TYPE);
 
             if (colorType == 0) return 1;
-        } catch (Exception ignored) {
+        } catch (MetadataException e) {
+            logMetadataError();
         }
         return 3;
     }
@@ -75,5 +70,11 @@ public class PngImageData extends ImageData
     @Override
     public String getMimeType() {
         return "image/png";
+    }
+
+    @Override
+    public boolean isAnimation() {
+        // Png image is always static
+        return false;
     }
 }
