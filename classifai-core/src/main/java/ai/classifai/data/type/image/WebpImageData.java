@@ -6,6 +6,7 @@ import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.webp.WebpDirectory;
 
 import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
 
 public class WebpImageData extends ImageData{
 
@@ -40,7 +41,7 @@ public class WebpImageData extends ImageData{
     public int getDepth()
     {
         try {
-            int colorSpace = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class).getInt(ExifSubIFDDirectory.TAG_COLOR_SPACE);
+            int colorSpace = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class).getInt(TAG_COLOR_SPACE);
             if (colorSpace == 0) return 1;
         } catch (MetadataException e) {
             logMetadataError();
