@@ -93,4 +93,14 @@ public abstract class Annotation implements Model
                 .map(Annotation::outputJson)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Annotation)
+        {
+            Annotation annotation = (Annotation) obj;
+            return annotationKey.equals(((Annotation) obj).getAnnotationKey());
+        }
+        return false;
+    }
 }

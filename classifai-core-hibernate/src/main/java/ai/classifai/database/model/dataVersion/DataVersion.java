@@ -74,12 +74,8 @@ public abstract class DataVersion implements Model
                 .collect(Collectors.toList());
     }
 
-    public void updateDataFromJson(JsonObject request) throws Exception {
+    public void updateDataFromJson(JsonObject request){
         updateDataFromJsonImplementation(request);
-
-        AnnotationListFactory factory = new AnnotationListFactory();
-
-        annotations = factory.getAnnotationListFromJson(request, this);
     }
 
     protected abstract void updateDataFromJsonImplementation(JsonObject request);

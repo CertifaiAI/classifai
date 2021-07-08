@@ -17,15 +17,14 @@ package ai.classifai.database;
 
 import ai.classifai.database.model.Label;
 import ai.classifai.database.model.Project;
+import ai.classifai.database.model.annotation.Annotation;
+import ai.classifai.database.model.annotation.AnnotationListFactory;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.data.Image;
 import ai.classifai.database.model.dataVersion.DataVersion;
 import ai.classifai.database.repository.*;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.data.DataHandler;
-import ai.classifai.util.data.ImageHandler;
-import ai.classifai.util.data.LabelHandler;
-import ai.classifai.util.data.StringHandler;
+import ai.classifai.util.data.*;
 import ai.classifai.util.exception.projectExistedException;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -115,8 +114,12 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     }
 
     private void updateData(Message<JsonObject> message) {
+        // store object due to reference passing throughout multiple composes
+        final JsonObject STORE = new JsonObject();
+
         ProjectRepository projectRepository = getProjectRepository();
         DataVersionRepository dataVersionRepository = getDataVersionRepository();
+        AnnotationRepository annotationRepository = getAnnotationRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -130,11 +133,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         Function<Project, Future<Data>> getDataHandler = project ->
                 vertx.executeBlocking(promise -> getData(promise, project, projectName, annotationTypeIdx, uuid));
 
-        Function<Data, Future<DataVersion>> mergeDataVersionHandler = data ->
-                vertx.executeBlocking(promise -> mergeDataVersion(promise, data, request));
+        Function<Data, Future<Pair<List<Annotation>, DataVersion>>> mergeDataVersionHandler = data ->
+                vertx.executeBlocking(promise -> mergeAnnotationListPair(promise, data, request));
 
-        Function<DataVersion, Future<Void>> persistDataVersion = dataVersion ->
-                vertx.executeBlocking(promise -> persistDataVersion(promise, dataVersion, dataVersionRepository));
+        Function<Pair<List<Annotation>, DataVersion>, Future<Void>> persistDataVersion = pair ->
+                vertx.executeBlocking(promise -> persistDataVersion(promise, pair, dataVersionRepository, annotationRepository));
 
         // getProject
         // getData
@@ -146,8 +149,10 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .compose(persistDataVersion)
                 .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
-                .onComplete(unused -> Repository.closeRepositories(projectRepository, dataVersionRepository));
+                .onComplete(unused -> Repository.closeRepositories(projectRepository, dataVersionRepository, annotationRepository));
     }
+
+
 
     // FIXME: need extra api for delete label
 //    private void updateLabel(Message<JsonObject> message) {
@@ -494,30 +499,51 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
-    private void mergeDataVersion(Promise<DataVersion> promise, Data data, JsonObject request)
+    private void mergeAnnotationListPair(Promise<Pair<List<Annotation>, DataVersion>> promise, Data data, JsonObject request)
     {
         DataVersion dataVersion = data.getCurrentDataVersion();
 
-        try
-        {
-            dataVersion.updateDataFromJson(request);
-        }
-        catch (Exception e)
-        {
-            log.error(String.format("Fail to read parameter from json request body:%n%s", e.getMessage()));
-            promise.fail(e.getMessage());
-            return;
-        }
+        dataVersion.updateDataFromJson(request);
 
-        promise.complete(dataVersion);
+        AnnotationListFactory annotationListFactory = new AnnotationListFactory();
+
+        List<Annotation> annotationList = annotationListFactory.getAnnotationListFromJson(request, dataVersion);
+
+        AnnotationHandler annotationHandler = new AnnotationHandler();
+        List<Annotation> deleteList = annotationHandler.getDeleteList(annotationList, dataVersion.getAnnotations());
+
+        dataVersion.setAnnotations(annotationList);
+
+        promise.complete(new ImmutablePair<>(deleteList, dataVersion));
     }
 
-    private void persistDataVersion(Promise<Void> promise, DataVersion dataVersion, DataVersionRepository repository)
+    private void persistDataVersion(Promise<Void> promise, Pair<List<Annotation>, DataVersion> annotationListPair,
+                                    DataVersionRepository repository, AnnotationRepository annotationRepository)
     {
+        DataVersion dataVersion = annotationListPair.getRight();
+
+        annotationRepository.removeAnnotationList(annotationListPair.getLeft());
+
         repository.saveDataVersion(dataVersion);
 
         promise.complete();
     }
+
+//    private void mergeDataVersion(Promise<DataVersion> promise, Data data, JsonObject request)
+//    {
+//        DataVersion dataVersion = data.getCurrentDataVersion();
+//
+//        dataVersion.updateDataFromJson(request);
+//
+//        promise.complete(dataVersion);
+//    }
+//
+//    private void persistDataVersion(Promise<Void> promise, DataVersion dataVersion, DataVersionRepository repository)
+//    {
+//        repository.saveDataVersion(dataVersion);
+//
+//        promise.complete();
+//    }
 
 //    private void mergeLabelList(Promise<List<Label>> promise, Project project, List<String> strLabelList)
 //    {
@@ -705,6 +731,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     private LabelRepository getLabelRepository() {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         return new LabelRepository(entityManager);
+    }
+
+    private AnnotationRepository getAnnotationRepository() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        return new AnnotationRepository(entityManager);
     }
 
     private DataRepository getDataRepository()
