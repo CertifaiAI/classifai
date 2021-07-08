@@ -41,27 +41,47 @@ import static com.drew.metadata.exif.ExifIFD0Directory.TAG_ORIENTATION;
 @Slf4j
 public abstract class ImageData
 {
-    @Getter
+
     protected Metadata metadata;
     protected Directory directory;
+    @Getter protected String mimeType;
 
-    protected <T extends Directory> ImageData(Metadata metadata, Class<T> directoryClass) {
+    protected <T extends Directory> ImageData(Metadata metadata, Class<T> directoryClass, String mimeType) {
         this.metadata = metadata;
         this.directory = metadata.getFirstDirectoryOfType(directoryClass);
+        this.mimeType = mimeType;
     }
 
-    public abstract int getWidth();
+    protected abstract int getRawWidth();
 
-    public abstract int getHeight();
+    protected abstract int getRawHeight();
 
     public abstract int getDepth();
-
-    public abstract String getMimeType();
 
     public abstract boolean isAnimation();
 
     protected void logMetadataError() {
         log.error("Unhandled metadata error, this should be protected by ImageFactory");
+    }
+
+    public int getWidth() {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6) {
+            return getRawHeight();
+        }
+
+        return getRawWidth();
+    }
+
+    public int getHeight() {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6) {
+            return getRawWidth();
+        }
+
+        return getRawHeight();
     }
 
     public int getOrientation() {

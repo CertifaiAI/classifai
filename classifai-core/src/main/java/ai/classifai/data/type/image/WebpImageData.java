@@ -12,10 +12,11 @@ public class WebpImageData extends ImageData{
 
     protected WebpImageData(Metadata metadata)
     {
-        super(metadata, WebpDirectory.class);
+        super(metadata, WebpDirectory.class, "image/webp");
     }
 
-    private int getRawWidth()
+    @Override
+    protected int getRawWidth()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_WIDTH);
@@ -25,7 +26,8 @@ public class WebpImageData extends ImageData{
         }
     }
 
-    private int getRawHeight()
+    @Override
+    protected int getRawHeight()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_HEIGHT);
@@ -66,11 +68,6 @@ public class WebpImageData extends ImageData{
         }
 
         return getRawHeight();
-    }
-
-    @Override
-    public String getMimeType() {
-        return "image/webp";
     }
 
     @Override

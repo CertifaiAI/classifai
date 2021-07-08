@@ -27,10 +27,11 @@ import com.drew.metadata.jpeg.JpegDirectory;
 public class JpegImageData extends ImageData
 {
     protected JpegImageData(Metadata metadata) {
-        super(metadata, JpegDirectory.class);
+        super(metadata, JpegDirectory.class, "image/jpg");
     }
 
-    private int getRawWidth() {
+    @Override
+    protected int getRawWidth() {
         try {
             return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
@@ -39,7 +40,8 @@ public class JpegImageData extends ImageData
         }
     }
 
-    private int getRawHeight() {
+    @Override
+    protected int getRawHeight() {
         try {
             return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {
@@ -66,39 +68,12 @@ public class JpegImageData extends ImageData
      */
 
     @Override
-    public int getWidth() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawHeight();
-        }
-
-        return getRawWidth();
-    }
-
-    @Override
-    public int getHeight() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawWidth();
-        }
-
-        return getRawHeight();
-    }
-
-    @Override
     public int getDepth() {
         try {
             return directory.getInt(JpegDirectory.TAG_NUMBER_OF_COMPONENTS);
         } catch (Exception ignored) {
             return 3;
         }
-    }
-
-    @Override
-    public String getMimeType() {
-        return "image/jpg";
     }
 
     @Override

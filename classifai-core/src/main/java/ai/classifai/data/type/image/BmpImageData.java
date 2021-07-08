@@ -29,11 +29,11 @@ public class BmpImageData extends ImageData
     private final static int SRGB_COLOR_SPACE = 1934772034;
 
     protected BmpImageData(Metadata metadata) {
-        super(metadata, BmpHeaderDirectory.class);
+        super(metadata, BmpHeaderDirectory.class, "image/bmp");
     }
 
     @Override
-    public int getWidth()
+    protected int getRawWidth()
     {
         try
         {
@@ -47,7 +47,7 @@ public class BmpImageData extends ImageData
     }
 
     @Override
-    public int getHeight()
+    protected int getRawHeight()
     {
         try {
             return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
@@ -76,11 +76,6 @@ public class BmpImageData extends ImageData
             logMetadataError();
         }
         return 1;
-    }
-
-    @Override
-    public String getMimeType() {
-        return "image/bmp";
     }
 
     @Override

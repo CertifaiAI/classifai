@@ -27,11 +27,11 @@ import com.drew.metadata.png.PngDirectory;
 public class PngImageData extends ImageData
 {
     protected PngImageData(Metadata metadata) {
-        super(metadata, PngDirectory.class);
+        super(metadata, PngDirectory.class,"image/png" );
     }
 
     @Override
-    public int getWidth() {
+    protected int getRawWidth() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
@@ -41,7 +41,7 @@ public class PngImageData extends ImageData
     }
 
     @Override
-    public int getHeight() {
+    protected int getRawHeight() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {
@@ -67,10 +67,6 @@ public class PngImageData extends ImageData
         return 3;
     }
 
-    @Override
-    public String getMimeType() {
-        return "image/png";
-    }
 
     @Override
     public boolean isAnimation() {
