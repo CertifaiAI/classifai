@@ -18,6 +18,7 @@ package ai.classifai.data.type.image;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
 import com.drew.metadata.bmp.BmpHeaderDirectory;
+import com.drew.metadata.exif.ExifIFD0Directory;
 
 /**
  * Provides metadata of bmp images
@@ -26,20 +27,71 @@ import com.drew.metadata.bmp.BmpHeaderDirectory;
  */
 public class BmpImageData extends ImageData
 {
-    public BmpImageData(Metadata metadata)
-    {
-        super(metadata);
+    private final int S_RGB_COLOR_SPACE = 1934772034;
+
+    protected BmpImageData(Metadata metadata) {
+        super(metadata, BmpHeaderDirectory.class);
     }
 
     @Override
-    public int getWidth() throws MetadataException
-    {
-        return metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+    public int getOrientation() {
+        try {
+            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
+        } catch (Exception ignored) {
+            // if can't find orientation set as 0 deg
+            return 1;
+        }
     }
 
     @Override
-    public int getHeight() throws MetadataException
+    public int getWidth()
     {
-        return metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        try
+        {
+            return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
     }
+
+    @Override
+    public int getHeight()
+    {
+        try {
+            return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
+    }
+
+    /**
+     * color space type: [1934772034: sRGB, null: BnW]
+     * @return number of channels 1 or 3
+     */
+    @Override
+    public int getDepth() {
+        try {
+            int colorSpaceType = directory.getInt(BmpHeaderDirectory.TAG_COLOR_SPACE_TYPE);
+            if (colorSpaceType == S_RGB_COLOR_SPACE)
+            {
+                return 3;
+            }
+        }
+        catch (MetadataException ignored){}
+
+        return 1;
+    }
+
+    @Override
+    public String getMimeType() {
+        return "image/bmp";
+    }
+
+
 }

@@ -122,6 +122,10 @@
             <version>2.0.0-alpha</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+        </dependency>
     </dependencies>
 
 
