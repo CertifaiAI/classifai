@@ -72,7 +72,7 @@ public class BmpImageData extends ImageData
                 return 3;
             }
         }
-        catch (Exception e){
+        catch (MetadataException e){
             logMetadataError();
         }
         return 1;
