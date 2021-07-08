@@ -26,7 +26,7 @@ import com.drew.metadata.bmp.BmpHeaderDirectory;
  */
 public class BmpImageData extends ImageData
 {
-    private final static int SRGB_COLOR_SPACE = 1934772034;
+    private static final int SRGB_COLOR_SPACE = 1934772034;
 
     protected BmpImageData(Metadata metadata) {
         super(metadata, BmpHeaderDirectory.class, "image/bmp");
