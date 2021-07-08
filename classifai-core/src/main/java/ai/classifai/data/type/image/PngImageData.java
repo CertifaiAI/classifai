@@ -17,6 +17,7 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.png.PngDirectory;
 
 
@@ -33,8 +34,12 @@ public class PngImageData extends ImageData
 
     @Override
     public int getOrientation() {
-        // image same as original
-        return 1;
+        try {
+            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
+        } catch (Exception ignored) {
+            // if can't find orientation set as 0 deg
+            return 1;
+        }
     }
 
     @Override

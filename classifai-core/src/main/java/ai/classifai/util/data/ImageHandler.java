@@ -112,25 +112,28 @@ public class ImageHandler
         return true;
     }
 
-    private static BufferedImage rotateWithOrientation(BufferedImage image) throws IOException
+    private static BufferedImage rotateWithOrientation(BufferedImage image, File file) throws IOException
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
+        ImageIO.write(image, "jpg", out);
         ImageData imgData = ImageData.getImageData(out.toByteArray());
+
+        // ByteArray causes loss of Exif information, hence read image data from file
+        ImageData data = ImageData.getImageData(file);
 
         double angle = 0;
 
         // the image turn 270 degree
-        if (imgData.getOrientation() == 8) {
-            angle = -Math.PI/2;
+        if (data.getOrientation() == 8) {
+            angle = -0.5*Math.PI;
         }
         // the image turn 180 degree
-        else if (imgData.getOrientation() == 3) {
+        else if (data.getOrientation() == 3) {
             angle = Math.PI;
         }
         // the image turn 90 degree
-        else if (imgData.getOrientation() == 6) {
-            angle = Math.PI/2;
+        else if (data.getOrientation() == 6) {
+            angle = 0.5*Math.PI;
         }
 
         double sin = Math.abs(Math.sin(angle));
@@ -141,35 +144,35 @@ public class ImageHandler
 
         int newW = (int) Math.floor(w * cos + h * sin);
         int newH = (int) Math.floor(h * cos + w * sin);
-
         int type = image.getType();
+
         BufferedImage result = new BufferedImage(newW, newH, type);
 
         Graphics2D g = result.createGraphics();
 
         g.translate((newW - w) / 2, (newH - h) / 2);
-        g.rotate(angle,((double)w) / 2, ((double)h) / 2);
+        g.rotate(angle,(double) w / 2, (double) h / 2);
         g.drawRenderedImage(image, null );
 
         return result;
     }
 
-    public static Map<String, String> getThumbNail(BufferedImage image) throws IOException
+    public static Map<String, String> getThumbNail(BufferedImage image, File file) throws IOException
     {
 
         Map<String, String> imageData = new HashMap<>();
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
+        ImageIO.write(image, "jpg", out);
         ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-        int oriWidth = imgData.getWidth();
-
-        int oriHeight = imgData.getHeight();
+        BufferedImage image_new = rotateWithOrientation(image, file);
 
         int depth = imgData.getDepth();
 
-        image = rotateWithOrientation(image);
+        int oriWidth = image_new.getWidth();
+
+        int oriHeight = image_new.getHeight();
 
         Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
         Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -183,15 +186,15 @@ public class ImageHandler
             thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
         }
 
-        Image tmp = image.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
+        Image tmp = image_new.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
         BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
 
         imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
-        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
-        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
+        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(imgData.getHeight()));
+        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(imgData.getWidth()));
         imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
         return imageData;

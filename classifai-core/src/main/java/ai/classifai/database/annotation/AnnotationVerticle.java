@@ -489,11 +489,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
+                File file = new File(dataPath);
+
                 Mat imageMat  = Imgcodecs.imread(dataPath);
 
                 BufferedImage img = ImageHandler.toBufferedImage(imageMat);
 
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNail(img, file);
             }
             catch(Exception e)
             {

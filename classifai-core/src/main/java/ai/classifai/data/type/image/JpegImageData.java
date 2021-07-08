@@ -65,6 +65,8 @@ public class JpegImageData extends ImageData
      *
      * @return orientation
      */
+
+    @Override
     public int getOrientation() {
         try {
             return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
