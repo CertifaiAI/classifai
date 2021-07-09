@@ -44,11 +44,11 @@ import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -478,10 +478,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         if(loader.isCloud())
         {
-            BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
+            try
+            {
+                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
-            //not checking orientation for on cloud version
-            imgData = ImageHandler.getThumbNail(img, false, null);
+                //not checking orientation for on cloud version
+                imgData = ImageHandler.getThumbNail(img);
+            }
+            catch(Exception e)
+            {
+                log.debug("Unable to write Buffered Image.");
+            }
+
         }
         else
         {
@@ -489,13 +497,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
-                File fileDataPath = new File(dataPath);
+                Mat imageMat  = Imgcodecs.imread(dataPath);
 
-                BufferedImage img  = ImageIO.read(fileDataPath);
+                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
 
-                imgData = ImageHandler.getThumbNail(img, true, fileDataPath);
+                imgData = ImageHandler.getThumbNail(img);
             }
-            catch(IOException e)
+            catch(Exception e)
             {
                 log.debug("Failure in reading image of path " + dataPath, e);
             }

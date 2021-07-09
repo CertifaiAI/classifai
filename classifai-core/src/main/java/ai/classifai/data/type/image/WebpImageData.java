@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,27 +13,35 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.png.PngDirectory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.webp.WebpDirectory;
+
+import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
 
 /**
- * Provides metadata of png images
+ * Provides metadata of webp images
  *
- * @author YCCertifai
+ * @author ken479
  */
-public class PngImageData extends ImageData
-{
-    protected PngImageData(Metadata metadata) {
-        super(metadata, PngDirectory.class,"image/png" );
+
+public class WebpImageData extends ImageData{
+
+    protected WebpImageData(Metadata metadata)
+    {
+        super(metadata, WebpDirectory.class, "image/webp");
     }
 
     @Override
-    protected int getRawWidth() {
+    protected int getRawWidth()
+    {
         try {
-            return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
+            return directory.getInt(WebpDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
             logMetadataError();
             return 0;
@@ -41,36 +49,34 @@ public class PngImageData extends ImageData
     }
 
     @Override
-    protected int getRawHeight() {
+    protected int getRawHeight()
+    {
         try {
-            return directory.getInt(PngDirectory.TAG_IMAGE_HEIGHT);
+            return directory.getInt(WebpDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {
             logMetadataError();
             return 0;
         }
     }
 
-    /**
-     * get color type: [0: grayscale, 2: trueColor(RGB)]
-     *
-     * @return number of channel 1 or 3
-     */
     @Override
-    public int getDepth() {
+    public int getDepth()
+    {
         try {
-            int colorType = directory.getInt(PngDirectory.TAG_COLOR_TYPE);
-
-            if (colorType == 0) return 1;
+            int colorSpace = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class).getInt(TAG_COLOR_SPACE);
+            if (colorSpace == 0) return 1;
         } catch (MetadataException e) {
             logMetadataError();
         }
         return 3;
     }
 
-
     @Override
     public boolean isAnimation() {
-        // Png image is always static
-        return false;
+        try {
+            return metadata.getFirstDirectoryOfType(WebpDirectory.class).getBoolean(TAG_IS_ANIMATION);
+        } catch (MetadataException e) {
+            return false;
+        }
     }
 }
