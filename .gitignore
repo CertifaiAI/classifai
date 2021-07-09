@@ -34,3 +34,6 @@ target/
 
 #log file
 classifai.log
+
+classifai-test/src/main/resources/originalDbBackup
+classifai-test/src/main/resources/testDb
