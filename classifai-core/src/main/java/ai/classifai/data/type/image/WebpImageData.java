@@ -27,7 +27,7 @@ import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
 /**
  * Provides metadata of webp images
  *
- * @author YCCertifai
+ * @author ken479
  */
 
 public class WebpImageData extends ImageData{
