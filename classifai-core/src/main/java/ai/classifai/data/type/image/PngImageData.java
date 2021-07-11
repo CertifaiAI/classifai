@@ -17,7 +17,6 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.png.PngDirectory;
 
 
@@ -29,21 +28,11 @@ import com.drew.metadata.png.PngDirectory;
 public class PngImageData extends ImageData
 {
     protected PngImageData(Metadata metadata) {
-        super(metadata, PngDirectory.class);
+        super(metadata, PngDirectory.class, "image/png");
     }
 
     @Override
-    public int getOrientation() {
-        try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
-            return 1;
-        }
-    }
-
-    @Override
-    public int getWidth() {
+    protected int getRawWidth() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
         } catch (MetadataException e) {
@@ -53,7 +42,7 @@ public class PngImageData extends ImageData
     }
 
     @Override
-    public int getHeight() {
+    protected int getRawHeight() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_HEIGHT);
         } catch (MetadataException e) {
@@ -73,14 +62,16 @@ public class PngImageData extends ImageData
             int colorType = directory.getInt(PngDirectory.TAG_COLOR_TYPE);
 
             if (colorType == 0) return 1;
-        } catch (Exception ignored) {
+        } catch (MetadataException e) {
+            logMetadataError();
         }
         return 3;
     }
 
     @Override
-    public String getMimeType() {
-        return "image/png";
+    public boolean isAnimation() {
+        // Png is always static image
+        return false;
     }
 
 }

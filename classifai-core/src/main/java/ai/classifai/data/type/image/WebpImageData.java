@@ -2,19 +2,21 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifDirectoryBase;
-import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.webp.WebpDirectory;
+
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
+import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
 
 public class WebpImageData extends ImageData
 {
-
     protected WebpImageData(Metadata metadata)
     {
-        super(metadata, WebpDirectory.class);
+        super(metadata, WebpDirectory.class, "image/webp");
     }
 
-    private int getRawWidth()
+    @Override
+    protected int getRawWidth()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_WIDTH);
@@ -24,7 +26,8 @@ public class WebpImageData extends ImageData
         }
     }
 
-    private int getRawHeight()
+    @Override
+    protected int getRawHeight()
     {
         try {
             return directory.getInt(WebpDirectory.TAG_IMAGE_HEIGHT);
@@ -37,49 +40,22 @@ public class WebpImageData extends ImageData
     @Override
     public int getDepth()
     {
-        String colorSpaceType = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getTagName(ExifDirectoryBase.TAG_COLOR_SPACE);
-        if (!colorSpaceType.isEmpty()) {
-            return 3;
-        } else {
-            return 1;
-        }
-    }
-
-    @Override
-    public int getOrientation() {
         try {
-            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(ExifIFD0Directory.TAG_ORIENTATION);
+            int colorSpace = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class).getInt(TAG_COLOR_SPACE);
+            if (colorSpace == 0) {
+                return 1; }
+        } catch (MetadataException e) {
+            e.printStackTrace();
+        }
+        return 3;
+    }
+
+    @Override
+    public boolean isAnimation() {
+        try {
+            return metadata.getFirstDirectoryOfType(WebpDirectory.class).getBoolean(TAG_IS_ANIMATION);
         } catch (Exception ignored) {
-            // if can't find orientation set as 0 deg
-            return 1;
+            return false;
         }
     }
-
-    @Override
-    public int getWidth() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawHeight();
-        }
-
-        return getRawWidth();
-    }
-
-    @Override
-    public int getHeight() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawWidth();
-        }
-
-        return getRawHeight();
-    }
-
-    @Override
-    public String getMimeType() {
-        return "image/webp";
-    }
-
 }

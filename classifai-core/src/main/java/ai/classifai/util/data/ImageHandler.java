@@ -24,15 +24,13 @@ import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -114,37 +112,26 @@ public class ImageHandler
 
     private static BufferedImage rotateWithOrientation(BufferedImage image, File file) throws IOException
     {
+        // Important to get image metadata of webp and other image format
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", out);
+        ImageIO.write(image, "png", out);
         ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-        // ByteArray causes loss of Exif information, hence read image data from file
+        // byte array causes loss of exif tag, so here choose file as input to recover it
         ImageData data = ImageData.getImageData(file);
 
-        double angle = 0;
-
-        // the image turn 270 degree
-        if (data.getOrientation() == 8) {
-            angle = -0.5*Math.PI;
-        }
-        // the image turn 180 degree
-        else if (data.getOrientation() == 3) {
-            angle = Math.PI;
-        }
-        // the image turn 90 degree
-        else if (data.getOrientation() == 6) {
-            angle = 0.5*Math.PI;
-        }
+        double angle = data.getAngle();
 
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
 
+        // Get image data of images
         int w = imgData.getWidth();
         int h = imgData.getHeight();
 
         int newW = (int) Math.floor(w * cos + h * sin);
         int newH = (int) Math.floor(h * cos + w * sin);
-        int type = image.getType();
+        int type = imgData.getDepth();
 
         BufferedImage result = new BufferedImage(newW, newH, type);
 
@@ -162,37 +149,36 @@ public class ImageHandler
 
         Map<String, String> imageData = new HashMap<>();
 
+        // To get the image data
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", out);
+        ImageIO.write(image, "png", out);
         ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-        BufferedImage image_new = rotateWithOrientation(image, file);
+        BufferedImage adjustedImg = rotateWithOrientation(image, file);
 
-        int depth = imgData.getDepth();
+        int adjustedImgWidth = adjustedImg.getWidth();
 
-        int oriWidth = image_new.getWidth();
-
-        int oriHeight = image_new.getHeight();
+        int adjustedImgHeight = adjustedImg.getHeight();
 
         Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
         Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
 
-        if (oriHeight > oriWidth)
+        if (adjustedImgHeight > adjustedImgWidth)
         {
-            thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
+            thumbnailWidth =  thumbnailHeight * adjustedImgWidth/ adjustedImgHeight;
         }
         else
         {
-            thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
+            thumbnailHeight = thumbnailWidth * adjustedImgHeight / adjustedImgWidth;
         }
 
-        Image tmp = image_new.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
+        Image tmp = adjustedImg.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
         BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
 
-        imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
+        imageData.put(ParamConfig.getImgDepth(), Integer.toString(imgData.getDepth()));
         imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(imgData.getHeight()));
         imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(imgData.getWidth()));
         imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
@@ -200,21 +186,35 @@ public class ImageHandler
         return imageData;
     }
 
+    // this is where backend send image file to front end
     public static String encodeFileToBase64Binary(File file)
     {
         try {
-            FileInputStream fileInputStreamReader = new FileInputStream(file);
+            ImageData imgData = ImageData.getImageData(file);
 
-            byte[] bytes = new byte[(int) file.length()];
+            if (imgData.getOrientation() != 1) {
 
-            fileInputStreamReader.read(bytes);
+                Mat imageMat  = Imgcodecs.imread(String.valueOf(file));
+                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
+                img = rotateWithOrientation(img, file);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ImageIO.write(img, "png", out);
+                byte [] bytes = out.toByteArray();
+                String encodedfile = new String(Base64.getEncoder().encode(bytes));
+                return getImageHeader(file.getAbsolutePath()) + encodedfile;
 
-            String encodedfile = new String(Base64.getEncoder().encode(bytes));
+            } else {
+                FileInputStream fileInputStreamReader = new FileInputStream(file);
+                byte[] bytes = new byte[(int) file.length()];
+                fileInputStreamReader.read(bytes);
+                String encodedfile = new String(Base64.getEncoder().encode(bytes));
+                fileInputStreamReader.close();
+                return getImageHeader(file.getAbsolutePath()) + encodedfile;
+            }
+        }
 
-            fileInputStreamReader.close();
-
-            return getImageHeader(file.getAbsolutePath()) + encodedfile;
-        } catch (Exception e) {
+        catch (IOException e)
+        {
             log.error("Failed while converting File to base64", e);
         }
 

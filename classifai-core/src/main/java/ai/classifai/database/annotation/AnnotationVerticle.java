@@ -481,7 +481,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
             //not checking orientation for on cloud version
-//            imgData = ImageHandler.getThumbNail(img);
+//            imgData = ImageHandler.getThumbNail(img, null);
         }
         else
         {
