@@ -41,7 +41,7 @@ public abstract class Data implements Model
     private long fileSize;
 
     @ManyToOne
-    @JoinColumn(name=Project.PROJECT_ID_KEY, nullable = false)
+    @JoinColumn(name=Project.PROJECT_ID_KEY)
     private Project project;
 
     @OneToMany(mappedBy = "data")
@@ -62,6 +62,8 @@ public abstract class Data implements Model
 
     public abstract void addNewDataVersion();
 
+    public abstract JsonObject loadData();
+
     public DataVersion getCurrentDataVersion()
     {
         Optional<DataVersion> dataVersion = dataVersions.stream()
@@ -70,8 +72,9 @@ public abstract class Data implements Model
 
         if (dataVersion.isEmpty())
         {
-            log.error("No data_version found! This should be created when every version & data is created");
-            return null;
+            String msg = "No data_version found! This should be created when every version & data is created!";
+            log.error(msg);
+            throw new NullPointerException(msg);
         }
 
         return dataVersion.get();
@@ -90,14 +93,6 @@ public abstract class Data implements Model
     public boolean validateData()
     {
         return true;
-    }
-
-    public static List<DataVersion> getDataVersionListFromDataList(List<Data> dataList)
-    {
-        return dataList.stream()
-                .map(Data::getDataVersions)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
     }
 
     @Override

@@ -59,7 +59,7 @@ public class ImageDataVersion extends DataVersion
         jsonObj.put(IMG_Y_KEY, imgY);
         jsonObj.put(IMG_W_KEY, imgW);
         jsonObj.put(IMG_H_KEY, imgH);
-        jsonObj.put(AnnotationHandler.getMetaKey(getData().getProject().getAnnoType()),
+        jsonObj.put(AnnotationHandler.getMetaKey(getData().getProject().getAnnotationType()),
                 Annotation.getAnnotationJsonList(getAnnotations()));
 
         return jsonObj;

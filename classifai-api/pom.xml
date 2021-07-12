@@ -79,6 +79,10 @@
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

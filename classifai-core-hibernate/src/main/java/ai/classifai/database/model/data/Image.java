@@ -43,9 +43,15 @@ public class Image extends Data
         dataVersions.add(dataVersion);
     }
 
+    public JsonObject loadData()
+    {
+        JsonObject jsonObj = getJson();
+        jsonObj.mergeIn(getCurrentDataVersion().outputJson());
 
-    // FIXME: hardcoded value
-    public JsonObject loadImage(String thumbnail)
+        return jsonObj;
+    }
+
+    private JsonObject getJson()
     {
         JsonObject jsonObj = new JsonObject();
 
@@ -56,8 +62,6 @@ public class Image extends Data
         jsonObj.put("file_size", getFileSize());
         jsonObj.put("img_ori_w", width);
         jsonObj.put("img_ori_h", height);
-        jsonObj.put("img_thumbnail", thumbnail);
-        jsonObj.mergeIn(getCurrentDataVersion().outputJson());
 
         return jsonObj;
     }

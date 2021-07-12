@@ -28,16 +28,16 @@ public abstract class DataVersion implements Model
 {
     public static final String DATA_VERSION_ID_KEY = "data_version_id";
 
-    @Id
-    @GeneratedValue
-    @Column(name = DATA_VERSION_ID_KEY)
-    private UUID dataVersionId;
+    @EmbeddedId
+    private DataVersionKey dataVersionKey;
 
     @ManyToOne
+    @MapsId(value = "dataId")
     @JoinColumn(name = Data.DATA_ID_KEY)
     private Data data;
 
     @ManyToOne
+    @MapsId(value = "versionId")
     @JoinColumn(name = Version.VERSION_ID_KEY)
     private Version version;
 
@@ -51,14 +51,17 @@ public abstract class DataVersion implements Model
 
         this.data = data;
         this.version = version;
+
+        this.dataVersionKey = new DataVersionKey(data.getDataId(), version.getVersionId());
     }
 
     public DataVersion()
     {}
 
+    // always true as no way to indicate it is not persisted or not
     @Override
     public boolean isPersisted() {
-        return dataVersionId != null;
+        return true;
     }
 
     public Boolean isVersion(Version version)

@@ -1,11 +1,6 @@
 package ai.classifai.database.model;
 
-import ai.classifai.action.LabelListImport;
 import ai.classifai.database.model.data.Data;
-import ai.classifai.util.data.DataHandler;
-import ai.classifai.util.data.LabelHandler;
-import ai.classifai.util.exception.NotSupportedDataTypeException;
-import ai.classifai.util.project.ProjectInfra;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,12 +19,16 @@ public class Project implements Model
 {
     public static final String PROJECT_ID_KEY = "project_id";
     public static final String PROJECT_NAME_KEY = "project_name";
-    public static final String ANNO_TYPE_KEY = "anno_type";
+    public static final String ANNOTATION_TYPE_KEY = "annotation_type";
     public static final String PROJECT_PATH_KEY = "project_path";
     public static final String IS_NEW_KEY = "is_new";
     public static final String IS_STARRED_KEY = "is_starred";
     public static final String PROJECT_INFRA_KEY = "project_infra";
     public static final String CURRENT_VERSION_KEY = "current_version";
+    public static final String IS_CLOUD_KEY = "is_cloud";
+    public static final String IS_LOADED_KEY = "is_loaded";
+    public static final String TOTAL_UUID_KEY = "total_uuid";
+    public static final String ROOT_PATH_VALID_KEY = "root_path_valid";
 
     @Id
     @GeneratedValue
@@ -39,8 +38,8 @@ public class Project implements Model
     @Column(name = PROJECT_NAME_KEY)
     private String projectName;
 
-    @Column(name = ANNO_TYPE_KEY)
-    private int annoType;
+    @Column(name = ANNOTATION_TYPE_KEY)
+    private int annotationType;
 
     @Column(name = PROJECT_PATH_KEY)
     private String projectPath;
@@ -58,7 +57,6 @@ public class Project implements Model
     @JoinColumn(name = CURRENT_VERSION_KEY)
     private Version currentVersion;
 
-    // TODO: refer using reflection? -> will get compilation error instead of runtime error
     // field name in Data class
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Data> dataList;
@@ -70,21 +68,19 @@ public class Project implements Model
     public Project()
     {}
 
-    public Project(String projectName, int annoType, String projectPath,
+    public Project(String projectName, int annotationType, String projectPath,
                    boolean isNew, boolean isStarred,int projectInfra)
     {
         this.dataList = new ArrayList<>();
         this.versionList = new ArrayList<>();
         this.currentVersion = addNewVersion();
         this.projectName = projectName;
-        this.annoType = annoType;
+        this.annotationType = annotationType;
         this.projectPath = projectPath;
         this.isNew = isNew;
         this.isStarred = isStarred;
         this.projectInfra = projectInfra;
     }
-
-
 
     private Boolean isRootPathValid()
     {
@@ -112,39 +108,16 @@ public class Project implements Model
         jsonObj.put(PROJECT_PATH_KEY, projectPath);
         jsonObj.put(IS_NEW_KEY, isNew);
         jsonObj.put(IS_STARRED_KEY, isStarred);
-        jsonObj.put("is_loaded", false); //TODO: hardcoded implement method
-        jsonObj.put("is_cloud", false); //TODO: hardcoded implement method
+        jsonObj.put(IS_LOADED_KEY, false); //FIXME: hardcoded value
+        jsonObj.put(IS_CLOUD_KEY, false); //FIXME: hardcoded value
         jsonObj.put(PROJECT_INFRA_KEY, projectInfra);
         jsonObj.put(Version.CREATED_DATE_KEY, currentVersion.getCreatedDate().toString());
         jsonObj.put(Version.LAST_MODIFIED_DATE_KEY, currentVersion.getLastModifiedDate().toString());
         jsonObj.put(CURRENT_VERSION_KEY, currentVersion.getVersionId().toString());
-        jsonObj.put("total_uuid", dataList.size());
-        jsonObj.put("root_path_valid", isRootPathValid());
+        jsonObj.put(TOTAL_UUID_KEY, dataList.size());
+        jsonObj.put(ROOT_PATH_VALID_KEY, isRootPathValid());
 
         return jsonObj;
-    }
-
-    // create new project
-    public static Project buildNewProject(String projectName, int annoType, String projectPath, String labelPath)
-            throws NotSupportedDataTypeException
-    {
-        Project project = new Project(projectName, annoType, projectPath, true,
-                false, ProjectInfra.ON_PREMISE.ordinal());
-
-        // create new Data
-        DataHandler dataHandler = DataHandler.getDataHandler(annoType);
-        List<Data> dataList = dataHandler.getDataList(project);
-
-        dataList.forEach(project::addData);
-
-        // process label path get label list
-        LabelHandler labelHandler = new LabelHandler();
-        List<String> strLabelList = new LabelListImport(new File(labelPath)).getValidLabelList();
-        List<Label> labelList = labelHandler.getLabelList(project, strLabelList);
-
-        labelList.forEach(project.currentVersion::addLabel);
-
-        return project;
     }
 
     @Override

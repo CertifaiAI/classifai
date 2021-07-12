@@ -276,11 +276,6 @@
                 <artifactId>opencv</artifactId>
                 <version>${opencv.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.openpnp</groupId>
-                <artifactId>opencv</artifactId>
-                <version>${opencv.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

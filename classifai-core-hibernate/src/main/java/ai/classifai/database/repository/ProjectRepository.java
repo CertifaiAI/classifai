@@ -1,5 +1,7 @@
 package ai.classifai.database.repository;
 
+import ai.classifai.database.handler.DataVersionHandler;
+import ai.classifai.database.handler.LabelHandler;
 import ai.classifai.database.model.Label;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.Version;
@@ -21,8 +23,9 @@ public class ProjectRepository extends Repository
 
     public Project getProjectByNameAndAnnotation(String projectName, Integer annotationTypeIndex)
     {
-        TypedQuery<Project> query = entityManager.createQuery("select p from Project p where p.annoType = :annoType and p.projectName = :projectName", Project.class);
-        query.setParameter("annoType", annotationTypeIndex);
+        TypedQuery<Project> query = entityManager.createQuery("select p from Project p where p.annotationType = " +
+                ":annotationType and p.projectName = :projectName", Project.class);
+        query.setParameter("annotationType", annotationTypeIndex);
         query.setParameter("projectName", projectName);
 
         Project result = null;
@@ -39,8 +42,8 @@ public class ProjectRepository extends Repository
     @SuppressWarnings("unchecked")
     public List<Project> getProjectListByAnnotation(Integer annotationTypeIndex)
     {
-        Query query = entityManager.createQuery("select p from Project p where p.annoType = :annoType");
-        query.setParameter("annoType", annotationTypeIndex);
+        Query query = entityManager.createQuery("select p from Project p where p.annotationType = :annotationType");
+        query.setParameter("annotationType", annotationTypeIndex);
 
         return (List<Project>) query.getResultList();
     }
@@ -48,35 +51,20 @@ public class ProjectRepository extends Repository
     public void saveProject(Project project)
     {
         List<Version> versionList = project.getVersionList();
-        List<Label> labelList = Label.getLabelListFromVersionList(versionList);
+        List<Label> labelList = LabelHandler.getLabelListFromVersionList(versionList);
         List<Data> dataList = project.getDataList();
-        List<DataVersion> dataVersionList = Data.getDataVersionListFromDataList(dataList);
-        List<Annotation> annotationList = DataVersion.getAnnotationListFromDataVersionList(dataVersionList);
+        List<DataVersion> dataVersionList = DataVersionHandler.getDataVersionListFromDataList(dataList);
 
-        // save project
         saveItem(project);
-
-        // save version
-        saveItem(versionList.toArray());
-
-        // save label
         saveItem(labelList.toArray());
-
-        // save data
-        saveItem(dataList.toArray());
-
-        // save dataversion
         saveItem(dataVersionList.toArray());
-
-        // save annotation
-        saveItem(annotationList.toArray());
     }
 
     public void deleteProject(Project project) {
         List<Version> versionList = project.getVersionList();
-        List<Label> labelList = Label.getLabelListFromVersionList(versionList);
+        List<Label> labelList = LabelHandler.getLabelListFromVersionList(versionList);
         List<Data> dataList = project.getDataList();
-        List<DataVersion> dataVersionList = Data.getDataVersionListFromDataList(dataList);
+        List<DataVersion> dataVersionList = DataVersionHandler.getDataVersionListFromDataList(dataList);
         List<Annotation> annotationList = DataVersion.getAnnotationListFromDataVersionList(dataVersionList);
 
         // remove annotation

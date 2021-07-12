@@ -15,6 +15,8 @@
  */
 package ai.classifai.database;
 
+import ai.classifai.database.handler.LabelHandler;
+import ai.classifai.database.handler.ProjectHandler;
 import ai.classifai.database.model.Label;
 import ai.classifai.database.model.Project;
 import ai.classifai.database.model.annotation.Annotation;
@@ -56,15 +58,13 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     @Override
     public void onMessage(Message<JsonObject> message)
     {
-        // FIXME:
-        //  Too many duplicate code
-        if (!message.headers().contains(ParamConfig.getActionKeyword()))
+        boolean isMessageValid = message.headers().contains(ParamConfig.getActionKeyword());
+
+        if (!isMessageValid)
         {
-            log.error("No action header specified for message with headers {} and body {}",
-                    message.headers(), message.body().encodePrettily());
-
-            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
-
+            String errorMsg = "No action header specified for message";
+            log.error(errorMsg);
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), errorMsg);
             return;
         }
 
@@ -101,10 +101,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 //        {
 //            this.exportProject(message);
 //        }
-//        else if(action.equals(PortfolioDbQuery.getRenameProject()))
-//        {
-//            renameProject(message);
-//        }
+            case DbActionConfig.RENAME_PROJECT -> this.renameProject(message);
             default -> {
                 String msg = "Database query error. Action did not have an assigned function for handling.";
                 log.error(msg);
@@ -113,9 +110,45 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         }
     }
 
+    private void renameProject(Message<JsonObject> message)
+    {
+        ProjectRepository repository = getProjectRepository();
+
+        int annotationTypeIdx = getAnnotationTypeIdx(message);
+        String projectName = getProjectName(message);
+        String newProjectName = getNewProjectName(message);
+
+        Handler<Promise<Project>> getProjectHandler = promise ->
+                getProject(promise, projectName, annotationTypeIdx, repository);
+
+        Function<Project, Future<Project>> renameProjectHandler = project ->
+                vertx.executeBlocking(promise -> renameProject(promise, project, newProjectName));
+
+        Function<Project, Future<Void>> persistProjectHandler = project ->
+                vertx.executeBlocking(promise -> persistProject(promise, project, repository));
+
+        vertx.executeBlocking(getProjectHandler)
+                .compose(renameProjectHandler)
+                .compose(persistProjectHandler)
+                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+                .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
+                .onComplete(unused -> Repository.closeRepositories(repository));
+    }
+
+    private void persistProject(Promise<Void> promise, Project project, ProjectRepository repository)
+    {
+        repository.saveProject(project);
+
+        promise.complete();
+    }
+
+    private void renameProject(Promise<Project> promise, Project project, String newProjectName)
+    {
+        project.setProjectName(newProjectName);
+        promise.complete(project);
+    }
+
     private void updateData(Message<JsonObject> message) {
-        // store object due to reference passing throughout multiple composes
-        final JsonObject STORE = new JsonObject();
 
         ProjectRepository projectRepository = getProjectRepository();
         DataVersionRepository dataVersionRepository = getDataVersionRepository();
@@ -334,7 +367,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         {
             JsonObject jsonObj = ReplyHandler.getOkReply();
 
-            jsonObj.mergeIn(((Image) STORE.getValue("image")).loadImage(thumbnail));
+            Data data = (Data) STORE.getValue("image");
+
+            jsonObj.mergeIn(data.loadData());
+
+            jsonObj.put("img_thumbnail", thumbnail);
 
             message.replyAndRequest(jsonObj);
 
@@ -363,7 +400,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         {
             JsonObject jsonObj = ReplyHandler.getOkReply();
 
-            jsonObj.put("label_list", Label.getStringListFromLabelList(project.getCurrentVersion().getLabelList()));
+            jsonObj.put("label_list", LabelHandler.getStringListFromLabelList(project.getCurrentVersion().getLabelList()));
 
             List<String> uuidList = project.getDataList().stream()
                     .map(data -> data.getDataId().toString())
@@ -436,7 +473,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 }
 
                 // create new project
-                Project project = Project.buildNewProject(projectName, annotationTypeIdx, projectPath, labelPath);
+                Project project = ProjectHandler.buildNewProject(projectName, annotationTypeIdx, projectPath, labelPath);
 
                 projectRepository.saveProject(project);
 
@@ -590,7 +627,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void mergeDataList(Promise<List<Data>> promise, Project project)
     {
-        DataHandler dataHandler = DataHandler.getDataHandler(project.getAnnoType());
+        DataHandler dataHandler = DataHandler.getDataHandler(project.getAnnotationType());
         if (dataHandler == null)
         {
             promise.fail(String.format("Unable to identify annotation type for project %s", project.getProjectName()));
@@ -602,7 +639,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         if (dataList == null)
         {
             promise.fail(String.format("Failed to get data list for project [%s] %s",
-                    AnnotationType.fromInt(project.getAnnoType()).name(), project.getProjectName()));
+                    AnnotationType.fromInt(project.getAnnotationType()).name(), project.getProjectName()));
             return;
         }
 
@@ -611,7 +648,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void getDataSource(Promise<String> promise, Data data)
     {
-        DataHandler dataHandler = DataHandler.getDataHandler(data.getProject().getAnnoType());
+        DataHandler dataHandler = DataHandler.getDataHandler(data.getProject().getAnnotationType());
         if (dataHandler == null)
         {
             promise.fail(String.format("Unable to identify annotation type for project %s", data.getProject().getProjectName()));
@@ -625,7 +662,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             Project project = data.getProject();
 
             promise.fail(String.format("Failed to generate image source for data %s in project: [%s] %s",
-                    data.getFullPath(), AnnotationType.fromInt(project.getAnnoType()).name(),
+                    data.getFullPath(), AnnotationType.fromInt(project.getAnnotationType()).name(),
                     project.getProjectName()));
             return;
         }
@@ -644,7 +681,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
             Project project = image.getProject();
 
             promise.fail(String.format("Failed to generate thumbnail for data %s in project: [%s] %s",
-                    image.getFullPath(), AnnotationType.fromInt(project.getAnnoType()).name(),
+                    image.getFullPath(), AnnotationType.fromInt(project.getAnnotationType()).name(),
                     project.getProjectName()));
             return;
         }
@@ -718,6 +755,11 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         return message.body().getString(ParamConfig.getUuidParam());
     }
 
+    private String getNewProjectName(Message<JsonObject> message)
+    {
+        return message.body().getString(ParamConfig.getNewProjectNameParam());
+    }
+
     private String getProjectName(Message<JsonObject> message)
     {
         return message.body().getString(ParamConfig.getProjectNameParam());
@@ -772,6 +814,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void failureHandler(Promise<Void> promise, Throwable e)
     {
+        e.printStackTrace();
         log.error(String.format("Database preparation error%n%s", e.getMessage()));
         promise.fail(e.getCause());
     }

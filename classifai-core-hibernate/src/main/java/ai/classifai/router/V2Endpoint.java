@@ -18,6 +18,7 @@ package ai.classifai.router;
 import ai.classifai.database.DbActionConfig;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
+import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -30,6 +31,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
 
 /**
  * Classifai v2 endpoints
@@ -101,8 +104,6 @@ public class V2Endpoint extends EndpointBase {
 
             DeliveryOptions options = getDeliveryOptions(DbActionConfig.STAR_PROJECT);
 
-
-
             vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
                     .onSuccess(msg -> sendResponseBody(msg, context));
         };
@@ -143,43 +144,44 @@ public class V2Endpoint extends EndpointBase {
         context.request().bodyHandler(requestHandler);
     }
 
-//    /**
-//     * Create new project status
-//     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/v2/bndbox/projects/helloworld
-//     */
-//    public void createProjectStatus(RoutingContext context)
-//    {
-//        String annotationName = context.request().getParam(ParamConfig.getAnnotationTypeParam());
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationName);
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        FileSystemStatus status = loader.getFileSystemStatus();
-//
-//        JsonObject response = compileFileSysStatusResponse(status);
-//
-//        if (status.equals(FileSystemStatus.DATABASE_UPDATED))
-//        {
-//            response.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
-//        }
-//
-//        HTTPResponseHandler.configureOK(context, response);
-//    }
+    // TODO: to be deleted
+    /**
+     * Create new project status
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld
+     */
+    public void createProjectStatus(RoutingContext context)
+    {
+        JsonObject response = compileFileSysStatusResponse(FileSystemStatus.DATABASE_UPDATED);
 
-//    /**
-//     * Rename project
-//     * PUT http://localhost:{port}/v2/:annotation_type/rename/:project_name/:new_project_name
-//     *
-//     * Example:
-//     * PUT http://localhost:{port}/v2/bndbox/rename/helloworld/helloworldnewname
-//     *
-//     */
-//    public void renameProject(RoutingContext context)
+        response.put(ParamConfig.getUnsupportedImageListParam(), new ArrayList<String>());
+
+        HTTPResponseHandler.configureOK(context, response);
+    }
+
+
+    // TODO: suggestion => put new project name in body instead of param
+    /**
+     * Rename project
+     * PUT http://localhost:{port}/v2/:annotation_type/:project_name/rename/:new_project_name
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/:project_name/rename/:new_project_name
+     *
+     */
+    public void renameProject(RoutingContext context)
+    {
+        JsonObject request = paramHandler.renameParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.RENAME_PROJECT);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> sendResponseBody(msg, context))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Unable to rename project")));
+    }
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
@@ -242,73 +244,27 @@ public class V2Endpoint extends EndpointBase {
                 .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
                         ReplyHandler.reportUserDefinedError("Unable to reload project")));
     }
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
-//
-//        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-//
-//        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
-//
-//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
-//        {
-//            JsonObject response = (JsonObject) fetch.result().body();
-//
-//            if (ReplyHandler.isReplyOk(response))
-//            {
-//                HTTPResponseHandler.configureOK(context);
-//
-//            } else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
-//            }
-//        });
-//    }
 
-//    /**
-//     * Get load status of project
-//     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/reloadstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
-//     *
-//     */
-//    public void reloadProjectStatus(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-//
-//        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
-//
-//        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
-//        {
-//            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-//        }
-//        else if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
-//        {
-//            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
-//            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
-//            res.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
-//        }
-//
-//        HTTPResponseHandler.configureOK(context, res);
-//    }
+
+    // TODO: to be deleted
+    /**
+     * Get load status of project
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/reloadstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
+     *
+     */
+    public void reloadProjectStatus(RoutingContext context)
+    {
+        JsonObject res = compileFileSysStatusResponse(FileSystemStatus.DATABASE_UPDATED);
+
+        res.put(ParamConfig.getUuidAdditionListParam(), new ArrayList<String>());
+        res.put(ParamConfig.getUuidDeletionListParam(), new ArrayList<String>());
+        res.put(ParamConfig.getUnsupportedImageListParam(), new ArrayList<String>());
+
+        HTTPResponseHandler.configureOK(context, res);
+    }
 //
 //    /***
 //     * export a project to configuration file

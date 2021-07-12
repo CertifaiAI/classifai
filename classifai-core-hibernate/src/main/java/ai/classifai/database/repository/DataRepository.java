@@ -1,5 +1,6 @@
 package ai.classifai.database.repository;
 
+import ai.classifai.database.handler.DataVersionHandler;
 import ai.classifai.database.model.annotation.Annotation;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.database.model.dataVersion.DataVersion;
@@ -15,7 +16,7 @@ public class DataRepository extends Repository
 
     public void saveDataList(List<Data> dataList)
     {
-        List<DataVersion> dataVersionList = Data.getDataVersionListFromDataList(dataList);
+        List<DataVersion> dataVersionList = DataVersionHandler.getDataVersionListFromDataList(dataList);
         List<Annotation> annotationList = DataVersion.getAnnotationListFromDataVersionList(dataVersionList);
 
         // save data

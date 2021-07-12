@@ -10,6 +10,11 @@ public class ParamHandler extends EndpointVariableHandler
 {
     public ParamHandler() {}
 
+    public String getNewProjectName(RoutingContext context)
+    {
+        return context.request().getParam(ParamConfig.getNewProjectNameParam());
+    }
+
     public String getUuid(RoutingContext context)
     {
         return context.request().getParam(ParamConfig.getUuidParam());
@@ -52,4 +57,12 @@ public class ParamHandler extends EndpointVariableHandler
                 .mergeIn(projectParamToJson(context));
     }
 
+    public JsonObject renameParamToJson(RoutingContext context)
+    {
+        String newProjectName = getNewProjectName(context);
+
+        return new JsonObject()
+                .put(ParamConfig.getNewProjectNameParam(), newProjectName)
+                .mergeIn(projectParamToJson(context));
+    }
 }

@@ -29,7 +29,7 @@ public class Version implements Model
     private Date lastModifiedDate;
 
     @ManyToOne
-    @JoinColumn(name=Project.PROJECT_ID_KEY, nullable = false)
+    @JoinColumn(name=Project.PROJECT_ID_KEY)
     private Project project;
 
     @OneToMany(mappedBy = "version")

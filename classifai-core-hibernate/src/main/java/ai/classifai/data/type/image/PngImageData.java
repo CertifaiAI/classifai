@@ -15,17 +15,9 @@
  */
 package ai.classifai.data.type.image;
 
-import ai.classifai.util.exception.NotSupportedImageTypeException;
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.Tag;
 import com.drew.metadata.png.PngDirectory;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Provides metadata of png images
@@ -34,37 +26,25 @@ import java.io.IOException;
  */
 public class PngImageData extends ImageData
 {
-    protected PngImageData(Metadata metadata)
-    {
-        super(metadata, PngDirectory.class);
+    protected PngImageData(Metadata metadata) {
+        super(metadata, PngDirectory.class,"image/png" );
     }
 
     @Override
-    public String getMimeType() {
-        return "image/png";
-    }
-
-    @Override
-    public int getWidth()
-    {
+    protected int getRawWidth() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_WIDTH);
-        }
-        catch (MetadataException e)
-        {
+        } catch (MetadataException e) {
             logMetadataError();
             return 0;
         }
     }
 
     @Override
-    public int getHeight()
-    {
+    protected int getRawHeight() {
         try {
             return directory.getInt(PngDirectory.TAG_IMAGE_HEIGHT);
-        }
-        catch (MetadataException e)
-        {
+        } catch (MetadataException e) {
             logMetadataError();
             return 0;
         }
@@ -76,33 +56,21 @@ public class PngImageData extends ImageData
      * @return number of channel 1 or 3
      */
     @Override
-    public int getDepth()
-    {
+    public int getDepth() {
         try {
             int colorType = directory.getInt(PngDirectory.TAG_COLOR_TYPE);
 
             if (colorType == 0) return 1;
+        } catch (MetadataException e) {
+            logMetadataError();
         }
-        catch (Exception ignored) {}
-
         return 3;
     }
 
-    // TODO: delete this when testing is done
-    public static void main(String[] args) throws ImageProcessingException, IOException, NotSupportedImageTypeException
-    {
-        String path = "C:\\Users\\yinch\\Pictures\\colorImage\\color.jpg";
 
-        ImageData img = ImageData.getImageData(path);
-
-        assert img != null;
-        for (Directory dir : img.metadata.getDirectories())
-        {
-            for (Tag tag : dir.getTags())
-            {
-                System.out.println(tag);
-            }
-        }
-        System.out.println(img.getDepth());
+    @Override
+    public boolean isAnimation() {
+        // Png image is always static
+        return false;
     }
 }

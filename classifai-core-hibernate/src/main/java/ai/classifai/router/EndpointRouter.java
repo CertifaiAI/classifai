@@ -111,7 +111,7 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
 
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(v1::getImageSource);
-//
+
         router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(v1::updateData);
 
         router.put("/:annotation_type/projects/:project_name/newlabels").handler(v1::updateLabels);
@@ -125,8 +125,8 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 
         router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
-//
-//        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
+
+        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 //
 //        router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
 //
@@ -134,7 +134,7 @@ public class EndpointRouter extends AbstractVerticle
 //
 //        router.get("/v2/:annotation_type/projects/exportstatus").handler(v2::getExportStatus);
 //
-//        router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
+        router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
 
         router.put("/v2/labelfiles").handler(v2::selectLabelFile);
 
@@ -146,7 +146,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/projects").handler(v2::createProject);
 
-//        router.get(projectV2Endpoint).handler(v2::createProjectStatus);
+        router.get(projectV2Endpoint).handler(v2::createProjectStatus);
 
         //*******************************Cloud*******************************
 

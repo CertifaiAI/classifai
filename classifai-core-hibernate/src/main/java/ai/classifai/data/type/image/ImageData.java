@@ -21,14 +21,18 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.bmp.BmpHeaderDirectory;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
-import lombok.Getter;
+import com.drew.metadata.webp.WebpDirectory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+
+import static com.drew.metadata.exif.ExifIFD0Directory.TAG_ORIENTATION;
+import static java.lang.Math.PI;
 
 /**
  * ImageData provides metadata of images
@@ -41,28 +45,90 @@ public abstract class ImageData
     private static final ImageDataFactory FACTORY = new ImageDataFactory();
     protected Metadata metadata;
     protected Directory directory;
+    private final String MIME_TYPE;
 
-    protected <T extends Directory> ImageData(Metadata metadata, Class<T> directoryClass)
-    {
+    protected <T extends Directory> ImageData(Metadata metadata, Class<T> directoryClass, String mimeType) {
         this.metadata = metadata;
         this.directory = metadata.getFirstDirectoryOfType(directoryClass);
+        this.MIME_TYPE = mimeType;
     }
 
-    public abstract int getWidth();
-    public abstract int getHeight();
+    protected abstract int getRawWidth();
+
+    protected abstract int getRawHeight();
+
     public abstract int getDepth();
-    public abstract String getMimeType();
+
+    public abstract boolean isAnimation();
 
     public String getBase64Header()
     {
-        return String.format("data:%s;base64,", getMimeType());
+        return String.format("data:%s;base64,", MIME_TYPE);
     }
 
-    public static ImageData getImageData(String filePath)
+    protected void logMetadataError() {
+        log.error("Unhandled metadata error, this should be protected by ImageFactory");
+    }
+
+    public int getWidth() {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6) {
+            return getRawHeight();
+        }
+
+        return getRawWidth();
+    }
+
+    public int getHeight() {
+        int orientation = getOrientation();
+
+        if (orientation == 8 || orientation == 6) {
+            return getRawWidth();
+        }
+
+        return getRawHeight();
+    }
+
+    /**
+     * get Exif orientation from metatdata
+     * orientation value: [1: 0 deg, 8: 270 deg, 3: 180 deg, 6: 90 deg]
+     * ref: https://www.impulseadventure.com/photo/exif-orientation.html
+     *
+     * 1 = 0 degree                  (Horizontal, normal)
+     * 2 = 0 degree,mirrored         (Mirror horizontally)
+     * 3 = 180 degree                (Rotate 180 degree)
+     * 4 = 180 degree,mirrored       (Mirror vertically)
+     * 5 = 90 degree, mirrored       (Mirror horizontal and rotate 270 degree clockwise)
+     * 6 = 90 degree  CW             (Rotate 90 degree clockwise)
+     * 7 = 270 degree, mirrored      (Mirror horizontal and rotate 90 degree clockwise)
+     * 8 = 270 degree CW             (Rotate 270 degree clockwise)
+     *
+     * @return orientation
+     */
+    public int getOrientation() {
+        try {
+            return metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getInt(TAG_ORIENTATION);
+        } catch (Exception ignored) {
+            // if can't find orientation set as 0 deg
+            return 1;
+        }
+    }
+
+    public double getAngle() {
+        return switch (getOrientation()) {
+            case 8 -> -0.5 * PI;
+            case 3 -> PI;
+            case 1 -> 0.5 * PI;
+            default -> 0;
+        };
+    }
+
+    public static ImageData getImageData(File filePath)
     {
         try
         {
-            Metadata metadata = ImageMetadataReader.readMetadata(new File(filePath));
+            Metadata metadata = ImageMetadataReader.readMetadata(filePath);
 
             return FACTORY.getImageData(metadata);
         }
@@ -73,13 +139,12 @@ public abstract class ImageData
         }
         catch (NotSupportedImageTypeException e)
         {
-            log.debug(String.format("%s is not supported \n %s", filePath, e.getMessage()));
+            log.debug(String.format("%s is not supported %n %s", filePath, e.getMessage()));
             return null;
         }
     }
 
-    public static ImageData getImageData(byte[] bytes)
-    {
+    public static ImageData getImageData(byte [] bytes){
         try
         {
             Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(bytes));
@@ -96,33 +161,22 @@ public abstract class ImageData
             log.debug("byte array received is not supported");
             return null;
         }
+
     }
 
-    protected void logMetadataError()
-    {
-        log.error("Unhandled metadata error, this should be protected by ImageFactory");
-    }
-
-    public static class ImageDataFactory
-    {
+    public static class ImageDataFactory {
         private ImageDataFactory() {}
 
-        public ImageData getImageData(Metadata metadata) throws NotSupportedImageTypeException
-        {
-            if (metadata.containsDirectoryOfType(JpegDirectory.class))
-            {
+        public ImageData getImageData(Metadata metadata) throws NotSupportedImageTypeException {
+            if (metadata.containsDirectoryOfType(JpegDirectory.class)) {
                 return new JpegImageData(metadata);
-            }
-            else if (metadata.containsDirectoryOfType(PngDirectory.class))
-            {
+            } else if (metadata.containsDirectoryOfType(PngDirectory.class)) {
                 return new PngImageData(metadata);
-            }
-            else if (metadata.containsDirectoryOfType(BmpHeaderDirectory.class))
-            {
+            } else if (metadata.containsDirectoryOfType(BmpHeaderDirectory.class)) {
                 return new BmpImageData(metadata);
-            }
-            else
-            {
+            } else if (metadata.containsDirectoryOfType(WebpDirectory.class)) {
+                return new WebpImageData(metadata);
+            } else {
                 throw new NotSupportedImageTypeException(String.format("%s type not supported", metadata.getDirectories()));
             }
         }
