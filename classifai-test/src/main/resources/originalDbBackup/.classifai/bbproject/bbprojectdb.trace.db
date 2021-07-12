@@ -1,0 +1,6 @@
+2021-07-01 11:15:07 jdbc[6]: exception
+org.h2.jdbc.JdbcSQLDataException: Data conversion error converting "undefined"; SQL statement:
+SELECT img_path FROM Project WHERE uuid = ? AND project_id = ? [22018-200]
+2021-07-01 11:15:23 jdbc[7]: exception
+org.h2.jdbc.JdbcSQLDataException: Data conversion error converting "undefined"; SQL statement:
+SELECT img_path FROM Project WHERE uuid = ? AND project_id = ? [22018-200]
