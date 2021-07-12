@@ -44,7 +44,7 @@ public class ActionConfig
     @Getter private static final String exportStatusParam = "export_status";
     @Getter private static final String exportStatusMessageParam = "export_status_message";
 
-    @Getter private static final String toolName = "classifai";
+    @Getter private static final String toolName = "CS.DataLabel";
 
     @Getter private static final String toolVersion = ActionConfig.class.getPackage().getImplementationVersion();
 

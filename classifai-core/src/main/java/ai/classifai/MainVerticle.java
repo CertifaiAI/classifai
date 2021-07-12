@@ -100,7 +100,7 @@ public class MainVerticle extends AbstractVerticle
 
                 LogoLauncher.print();
 
-                log.info("Classifai started successfully");
+                log.info("CS.DataLabel started successfully");
                 log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
 
                 //docker environment not enabling welcome launcher
@@ -145,7 +145,7 @@ public class MainVerticle extends AbstractVerticle
     public void stop(Promise<Void> promise) throws Exception
     {
         vertx.close( r -> {if(r.succeeded()){
-            log.info("Classifai close successfully");
+            log.info("CS.DataLabel close successfully");
         }});
     }
 }

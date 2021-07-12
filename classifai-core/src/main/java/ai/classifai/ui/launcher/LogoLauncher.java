@@ -45,7 +45,7 @@ public class LogoLauncher {
     {
         try
         {
-            final Image image = ImageIO.read(WelcomeLauncher.class.getResource( "/console/" + "Classifai_Favicon_Light_BG.jpg"));
+            final Image image = ImageIO.read(WelcomeLauncher.class.getResource( "/console/" + "cs-icon.jpg"));
 
             return image;
         }

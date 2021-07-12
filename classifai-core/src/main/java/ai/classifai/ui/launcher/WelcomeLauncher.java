@@ -123,7 +123,7 @@ public class WelcomeLauncher extends JFrame
 
     private static void setUpFrame()
     {
-        mainFrame = new JFrame("Welcome to Classifai");
+        mainFrame = new JFrame("Welcome to CS.DataLabel");
 
         //to have verticles calling stop() before program exit
         mainFrame.addWindowListener(new WindowAdapter() {
