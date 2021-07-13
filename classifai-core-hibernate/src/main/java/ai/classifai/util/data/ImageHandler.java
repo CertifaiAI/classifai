@@ -53,11 +53,19 @@ public class ImageHandler extends DataHandler
     @Override
     public List<Data> getDataList(Project project)
     {
-        String projectPath = project.getProjectPath();
-        List<String> imageFiles = getValidImagesFromFolder(new File(projectPath));
+        File projectPathFile = project.getProjectPathFile();
+        List<String> imageFiles = getValidImagesFromFolder(projectPathFile);
 
         return imageFiles.stream()
                 .map(path -> fileToData(path, project))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Data> getNewlyAddedDataList(Project project)
+    {
+        return getDataList(project).stream()
+                .filter(data -> ! project.getDataList().contains(data))
                 .collect(Collectors.toList());
     }
 

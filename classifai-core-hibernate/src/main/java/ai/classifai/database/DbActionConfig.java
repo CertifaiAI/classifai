@@ -15,4 +15,5 @@ public class DbActionConfig
     public static final String ADD_LABEL = "add_label";
     public static final String UPDATE_DATA = "update_data";
     public static final String RENAME_PROJECT = "rename_project";
+    public static final String CLOSE_PROJECT_STATE = "close_project_state";
 }

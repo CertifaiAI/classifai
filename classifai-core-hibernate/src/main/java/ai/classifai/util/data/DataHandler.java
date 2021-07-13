@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class DataHandler
@@ -33,6 +35,8 @@ public abstract class DataHandler
 
     public abstract List<Data> getDataList(Project project);
 
+    public abstract List<Data> getNewlyAddedDataList(Project project);
+
     protected DataHandler(){}
 
     public static DataHandler getDataHandler(int annoType)
@@ -48,4 +52,12 @@ public abstract class DataHandler
     }
 
     public abstract String generateDataSource(Data data);
+
+    public static List<String> getDataIdList(List<Data> dataList)
+    {
+        return dataList.stream()
+                .map(Data::getDataId)
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+    }
 }

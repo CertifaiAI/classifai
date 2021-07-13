@@ -17,6 +17,7 @@ import java.util.UUID;
 @Table(name = "PROJECT")
 public class Project implements Model
 {
+    public static final List<Project> LOADED_PROJECT_LIST = new ArrayList<>();
     public static final String PROJECT_ID_KEY = "project_id";
     public static final String PROJECT_NAME_KEY = "project_name";
     public static final String ANNOTATION_TYPE_KEY = "annotation_type";
@@ -69,7 +70,7 @@ public class Project implements Model
     {}
 
     public Project(String projectName, int annotationType, String projectPath,
-                   boolean isNew, boolean isStarred,int projectInfra)
+                   boolean isNew, boolean isStarred, int projectInfra)
     {
         this.dataList = new ArrayList<>();
         this.versionList = new ArrayList<>();
@@ -100,6 +101,11 @@ public class Project implements Model
         dataList.add(data);
     }
 
+    public File getProjectPathFile()
+    {
+        return new File(projectPath);
+    }
+
     public JsonObject getProjectMeta()
     {
         JsonObject jsonObj = new JsonObject();
@@ -108,7 +114,7 @@ public class Project implements Model
         jsonObj.put(PROJECT_PATH_KEY, projectPath);
         jsonObj.put(IS_NEW_KEY, isNew);
         jsonObj.put(IS_STARRED_KEY, isStarred);
-        jsonObj.put(IS_LOADED_KEY, false); //FIXME: hardcoded value
+        jsonObj.put(IS_LOADED_KEY, LOADED_PROJECT_LIST.contains(this));
         jsonObj.put(IS_CLOUD_KEY, false); //FIXME: hardcoded value
         jsonObj.put(PROJECT_INFRA_KEY, projectInfra);
         jsonObj.put(Version.CREATED_DATE_KEY, currentVersion.getCreatedDate().toString());
@@ -123,5 +129,16 @@ public class Project implements Model
     @Override
     public boolean isPersisted() {
         return projectId != null;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Project)
+        {
+            Project project = (Project) obj;
+            return project.getProjectId().equals(projectId);
+        }
+        return false;
     }
 }

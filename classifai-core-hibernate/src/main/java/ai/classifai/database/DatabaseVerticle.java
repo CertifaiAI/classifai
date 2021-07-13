@@ -84,19 +84,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         //*******************************V2*******************************
             case DbActionConfig.RELOAD_PROJECT -> this.reloadProject(message);
-//
-//        else if (action.equals(PortfolioDbQuery.getRetrieveProjectMetadata()))
-//        {
-//            this.getProjectMetadata(message);
-//        }
-//        else if (action.equals(DbActionConfig.getGetAllProjectMeta()))
-//        {
-//            this.getAllProjectsMetadata(message);
-//        }
-//        else if (action.equals(PortfolioDbQuery.getStarProject()))
-//        {
-//            this.starProject(message);
-//        }
+            case DbActionConfig.CLOSE_PROJECT_STATE -> this.closeProjectState(message);
 //        else if(action.equals(PortfolioDbQuery.getExportProject()))
 //        {
 //            this.exportProject(message);
@@ -108,6 +96,36 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), msg);
             }
         }
+    }
+
+    private void closeProjectState(Message<JsonObject> message)
+    {
+        ProjectRepository repository = getProjectRepository();
+
+        int annotationTypeIdx = getAnnotationTypeIdx(message);
+        String projectName = getProjectName(message);
+
+        Handler<Promise<Project>> getProjectHandler = promise ->
+                getProject(promise, projectName, annotationTypeIdx, repository);
+
+        Function<Project, Future<Project>> closeProjectStateHandler = this::setProjectCloseState;
+
+        Function<Project, Future<Void>> persistProjectHandler = project ->
+                vertx.executeBlocking(promise -> persistProject(promise, project, repository));
+
+        vertx.executeBlocking(getProjectHandler)
+                .compose(closeProjectStateHandler)
+                .compose(persistProjectHandler)
+                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+                .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
+                .onComplete(unused -> Repository.closeRepositories(repository));
+    }
+
+    private Future<Project> setProjectCloseState(Project project) {
+        Promise<Project> promise = Promise.promise();
+        Project.LOADED_PROJECT_LIST.remove(project);
+        promise.complete(project);
+        return promise.future();
     }
 
     private void renameProject(Message<JsonObject> message)
@@ -245,6 +263,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .onComplete(unused -> Repository.closeRepositories(projectRepository, labelRepository));
     }
 
+    // call load project
     private void reloadProject(Message<JsonObject> message) {
         ProjectRepository projectRepository = getProjectRepository();
         DataRepository dataRepository = getDataRepository();
@@ -256,10 +275,17 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 getProject(promise, projectName, annotationTypeIdx, projectRepository);
 
         Function<Project, Future<List<Data>>> mergeDataListHandler = project ->
-                vertx.executeBlocking(promise -> mergeDataList(promise, project));
+                vertx.executeBlocking(promise -> getNewlyAddedDataList(promise, project));
 
-        Function<List<Data>, Future<Void>> persistDataListHandler = dataList ->
+        Function<List<Data>, Future<List<Data>>> persistDataListHandler = dataList ->
                 vertx.executeBlocking(promise -> persistDataList(promise, dataList, dataRepository));
+
+        Handler<List<Data>> successHandler = dataList ->
+        {
+            JsonObject jsonObj = new JsonObject();
+            jsonObj.put("uuid_add_list", DataHandler.getDataIdList(dataList));
+            message.replyAndRequest(jsonObj);
+        };
 
         // get project
         // merge dataList
@@ -267,7 +293,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         vertx.executeBlocking(getProjectHandler)
                 .compose(mergeDataListHandler)
                 .compose(persistDataListHandler)
-                .onSuccess(unused -> message.replyAndRequest(ReplyHandler.getOkReply()))
+                .onSuccess(successHandler)
                 .onFailure(throwable -> message.replyAndRequest(ReplyHandler.reportUserDefinedError(throwable.getMessage())))
                 .onComplete(unused -> Repository.closeRepositories(projectRepository, dataRepository));
     }
@@ -407,6 +433,8 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                     .collect(Collectors.toList());
 
             jsonObj.put("uuid_list", uuidList);
+
+            Project.LOADED_PROJECT_LIST.add(project);
 
             message.replyAndRequest(jsonObj);
         };
@@ -618,30 +646,24 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.complete();
     }
 
-    private void persistDataList(Promise<Void> promise, List<Data> dataList, DataRepository repository)
+    private void persistDataList(Promise<List<Data>> promise, List<Data> dataList, DataRepository repository)
     {
         repository.saveDataList(dataList);
 
-        promise.complete();
+        promise.complete(dataList);
     }
 
-    private void mergeDataList(Promise<List<Data>> promise, Project project)
+    private void getNewlyAddedDataList(Promise<List<Data>> promise, Project project)
     {
         DataHandler dataHandler = DataHandler.getDataHandler(project.getAnnotationType());
+
         if (dataHandler == null)
         {
             promise.fail(String.format("Unable to identify annotation type for project %s", project.getProjectName()));
             return;
         }
 
-        List<Data> dataList = dataHandler.getDataList(project);
-
-        if (dataList == null)
-        {
-            promise.fail(String.format("Failed to get data list for project [%s] %s",
-                    AnnotationType.fromInt(project.getAnnotationType()).name(), project.getProjectName()));
-            return;
-        }
+        List<Data> dataList = dataHandler.getNewlyAddedDataList(project);
 
         promise.complete(dataList);
     }

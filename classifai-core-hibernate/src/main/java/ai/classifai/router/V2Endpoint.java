@@ -47,46 +47,25 @@ public class V2Endpoint extends EndpointBase {
 
     @Setter private LabelFileSelector labelFileSelector = null;
 
-//    /***
-//     * change is_load state of a project to false
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name
-//     */
-//    public void closeProjectState(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(h ->
-//        {
-//            try
-//            {
-//                JsonObject jsonObject = h.toJsonObject();
-//
-//                if(jsonObject.getString(ParamConfig.getStatusParam()).equals("closed"))
-//                {
-//                    ProjectHandler.getProjectLoader(projectID).setIsLoadedFrontEndToggle(Boolean.FALSE);
-//                }
-//                else
-//                {
-//                    throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
-//                }
-//
-//                HTTPResponseHandler.configureOK(context);
-//
-//            }
-//            catch (Exception e)
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(e.getMessage()));
-//
-//            }
-//        });
-//    }
-//
+    // FIXME: when to set is_load is true??
+    //  Need to have body handler for open and close state
+    /***
+     * change is_load state of a project to false
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name
+     */
+    public void closeProjectState(RoutingContext context)
+    {
+        JsonObject request = paramHandler.projectParamToJson(context);
+
+        DeliveryOptions options = getDeliveryOptions(DbActionConfig.CLOSE_PROJECT_STATE);
+
+        vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
+                .onSuccess(msg -> HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()))
+                .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Unable to close project state")));
+    }
+
     /***
      * Star a project
      *
@@ -105,7 +84,9 @@ public class V2Endpoint extends EndpointBase {
             DeliveryOptions options = getDeliveryOptions(DbActionConfig.STAR_PROJECT);
 
             vertx.eventBus().request(DbActionConfig.QUEUE, request, options)
-                    .onSuccess(msg -> sendResponseBody(msg, context));
+                    .onSuccess(msg -> sendResponseBody(msg, context))
+                    .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Unable to star project")));
         };
 
         context.request().bodyHandler(requestHandler);
@@ -182,49 +163,7 @@ public class V2Endpoint extends EndpointBase {
                 .onFailure(throwable -> HTTPResponseHandler.configureOK(context,
                         ReplyHandler.reportUserDefinedError("Unable to rename project")));
     }
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String newProjectName = context.request().getParam(ParamConfig.getNewProjectNameParam());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
-//        {
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-//            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
-//
-//            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
-//
-//            loader.setProjectName(newProjectName);
-//
-//            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
-//            {
-//                JsonObject response = (JsonObject) fetch.result().body();
-//
-//                if (ReplyHandler.isReplyOk(response))
-//                {
-//                    // Update loader in cache after success db update
-//                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-//                    log.debug("Rename to " + newProjectName + " success.");
-//                    HTTPResponseHandler.configureOK(context);
-//                }
-//                else
-//                {
-//                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
-//                }
-//            });
-//        }
-//        else
-//        {
-//            HTTPResponseHandler.configureOK(context);
-//        }
-//    }
-//
+
     /**
      * Reload v2 project
      * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/reload

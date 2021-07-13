@@ -106,6 +106,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete(projectV1Endpoint).handler(v1::deleteProject);
 
+        // FIXME: to be deleted
         router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
 
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
@@ -120,12 +121,13 @@ public class EndpointRouter extends AbstractVerticle
 
 //        router.put("/v2/newproject").handler(v2::importProject);
 //
-//        router.put(projectV1Endpoint).handler(v2::closeProjectState);
-//
+        router.put(projectV1Endpoint).handler(v2::closeProjectState);
+
         router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
 
         router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
 
+        // FIXME: to be deleted
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
 //
 //        router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
@@ -146,6 +148,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/projects").handler(v2::createProject);
 
+        // FIXME: to be deleted
         router.get(projectV2Endpoint).handler(v2::createProjectStatus);
 
         //*******************************Cloud*******************************
