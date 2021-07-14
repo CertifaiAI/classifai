@@ -17,12 +17,10 @@ import java.util.UUID;
 @Embeddable
 public class AnnotationKey implements Serializable
 {
-    public static final String ANNOTATION_ID_KEY = "annotation_id";
-
     @Serial
     private static final long serialVersionUID = -4361684840738331803L;
 
-    @Column(name = ANNOTATION_ID_KEY)
+    @Column(name = Annotation.ANNOTATION_ID_KEY)
     private long annotationId;
 
     private DataVersionKey dataVersionKey;

@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Annotation implements Model
 {
+    public static final String ANNOTATION_ID_KEY = "annotation_id";
     public static final String COLOR_KEY = "color";
     public static final String LABEL_KEY = "label";
     public static final String LINE_WIDTH_KEY = "lineWidth";

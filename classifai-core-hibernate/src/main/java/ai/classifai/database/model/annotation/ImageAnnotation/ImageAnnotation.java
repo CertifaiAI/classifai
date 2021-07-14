@@ -10,7 +10,8 @@ import javax.persistence.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class ImageAnnotation extends Annotation
 {
-    public static final String DIST_2_IMG_KEY = "dist2Img";
+    // FIXME: inappropriate wording
+    public static final String DIST_2_IMG_KEY = "distancetoImg";
 
     public ImageAnnotation(long annotationId, DataVersion dataVersion, int position, String color, String label, int lineWidth)
     {

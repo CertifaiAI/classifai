@@ -1,13 +1,18 @@
 package ai.classifai.database.model;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.UUID;
 
+@NoArgsConstructor
 @Entity
 public class Label implements Model
 {
     public static final String LABEL_ID_KEY = "label_id";
     public static final String VALUE_KEY = "value";
+    public static final String COLOR_KEY = "color";
+
 
     @Id
     @GeneratedValue
@@ -17,6 +22,9 @@ public class Label implements Model
     @Column(name = VALUE_KEY)
     private String value;
 
+    @Column(name = COLOR_KEY)
+    private String color;
+
     @ManyToOne
     @JoinColumn(name = Version.VERSION_ID_KEY, nullable = false)
     private Version version;
@@ -25,9 +33,9 @@ public class Label implements Model
     {
         this.value = value;
         this.version = version;
+        // FIXME: hardcoded
+        color = "rgba(255,255,0,0.8)";
     }
-
-    public Label() {}
 
     @Override
     public boolean equals(Object obj) {

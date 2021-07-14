@@ -6,6 +6,7 @@ import ai.classifai.database.model.Project;
 import ai.classifai.database.model.data.Data;
 import ai.classifai.util.data.DataHandler;
 import ai.classifai.util.project.ProjectInfra;
+import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.util.List;
