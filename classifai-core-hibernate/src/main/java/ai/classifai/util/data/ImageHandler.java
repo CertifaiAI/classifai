@@ -18,10 +18,9 @@ package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageData;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.data.type.image.JpegImageData;
-import ai.classifai.database.model.Project;
-import ai.classifai.database.model.data.Data;
-import ai.classifai.database.model.data.Image;
+import ai.classifai.db.entities.ProjectEntity;
+import ai.classifai.db.entities.data.DataEntity;
+import ai.classifai.db.entities.data.ImageEntity;
 import ai.classifai.util.Hash;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -51,7 +50,7 @@ public class ImageHandler extends DataHandler
     public static final int MAX_SIZE = 15000;
 
     @Override
-    public List<Data> getDataList(Project project)
+    public List<DataEntity> getDataList(ProjectEntity project)
     {
         File projectPathFile = project.getProjectPathFile();
         List<String> imageFiles = getValidImagesFromFolder(projectPathFile);
@@ -62,7 +61,7 @@ public class ImageHandler extends DataHandler
     }
 
     @Override
-    public List<Data> getNewlyAddedDataList(Project project)
+    public List<DataEntity> getNewlyAddedDataList(ProjectEntity project)
     {
         return getDataList(project).stream()
                 .filter(data -> ! project.getDataList().contains(data))
@@ -70,9 +69,9 @@ public class ImageHandler extends DataHandler
     }
 
     @Override
-    public String generateDataSource(Data data)
+    public String generateDataSource(DataEntity dataEntity)
     {
-        String fullPath = data.getFullPath();
+        String fullPath = dataEntity.getFullPath();
 
         try
         {
@@ -85,16 +84,16 @@ public class ImageHandler extends DataHandler
     }
 
     // FIXME: rotateImage must fix
-    public String generateThumbnail(Image image)
+    public String generateThumbnail(ImageEntity imageEntity)
     {
-        String fullPath = image.getFullPath();
+        String fullPath = imageEntity.getFullPath();
 
         try
         {
             BufferedImage bufferedImage = ImageIO.read(new File(fullPath));
 
-            int width = image.getWidth();
-            int height = image.getHeight();
+            int width = imageEntity.getWidth();
+            int height = imageEntity.getHeight();
 
             // width, height
             Pair<Integer, Integer> thumbnailSize = getThumbnailSize(width, height);
@@ -123,11 +122,11 @@ public class ImageHandler extends DataHandler
         return resized;
     }
 
-    private Image fileToData(String filePath, Project project)
+    private ImageEntity fileToData(String filePath, ProjectEntity project)
     {
-        List<Data> existingData = project.getDataList();
+        List<DataEntity> existingData = project.getDataList();
 
-        String projectPath = project.getProjectPath();
+        String projectPath = project.getPath();
         File file = new File(filePath);
         ImageData imageData = Objects.requireNonNull(ImageData.getImageData(file));
 
@@ -147,11 +146,11 @@ public class ImageHandler extends DataHandler
         // image_height
         int height = imageData.getHeight();
 
-        Image image = new Image(project, relativePath, checksum, fileSize, depth, width, height);
+//        ImageEntity imageEntity = new ImageEntity(project, relativePath, checksum, fileSize, depth, width, height);
 
-        int idx = existingData.indexOf(image);
+//        int idx = existingData.indexOf(imageEntity);
 
-        return idx == -1 ? image : (Image) existingData.get(idx);
+//        return idx == -1 ? imageEntity : (ImageEntity) existingData.get(idx);
     }
 
     private String getBase64String(BufferedImage img)

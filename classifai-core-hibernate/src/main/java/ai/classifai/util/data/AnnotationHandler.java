@@ -1,12 +1,12 @@
 package ai.classifai.util.data;
 
-import ai.classifai.database.model.annotation.Annotation;
+import ai.classifai.db.entities.annotation.AnnotationEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AnnotationHandler {
-    public List<Annotation> getDeleteList(List<Annotation> newList, List<Annotation> currentList)
+    public List<AnnotationEntity> getDeleteList(List<AnnotationEntity> newList, List<AnnotationEntity> currentList)
     {
         return currentList.stream()
                 .filter(annotation -> !newList.contains(annotation))

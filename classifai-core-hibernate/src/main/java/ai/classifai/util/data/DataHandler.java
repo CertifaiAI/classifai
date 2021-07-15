@@ -1,10 +1,9 @@
 package ai.classifai.util.data;
 
-import ai.classifai.database.model.Project;
-import ai.classifai.database.model.data.Data;
+import ai.classifai.db.entities.ProjectEntity;
+import ai.classifai.db.entities.data.DataEntity;
 import ai.classifai.util.exception.NotSupportedDataTypeException;
 import ai.classifai.util.type.AnnotationType;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -33,9 +32,9 @@ public abstract class DataHandler
     private static final DataHandlerFactory FACTORY = new DataHandlerFactory();
     protected FileHandler fileHandler = new FileHandler();
 
-    public abstract List<Data> getDataList(Project project);
+    public abstract List<DataEntity> getDataList(ProjectEntity project);
 
-    public abstract List<Data> getNewlyAddedDataList(Project project);
+    public abstract List<DataEntity> getNewlyAddedDataList(ProjectEntity project);
 
     protected DataHandler(){}
 
@@ -51,12 +50,12 @@ public abstract class DataHandler
         }
     }
 
-    public abstract String generateDataSource(Data data);
+    public abstract String generateDataSource(DataEntity dataEntity);
 
-    public static List<String> getDataIdList(List<Data> dataList)
+    public static List<String> getDataIdList(List<DataEntity> dataEntityList)
     {
-        return dataList.stream()
-                .map(Data::getDataId)
+        return dataEntityList.stream()
+                .map(DataEntity::getDataId)
                 .map(UUID::toString)
                 .collect(Collectors.toList());
     }
