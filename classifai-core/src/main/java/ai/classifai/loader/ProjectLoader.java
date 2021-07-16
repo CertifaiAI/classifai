@@ -27,8 +27,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -264,30 +265,29 @@ public class ProjectLoader
         return wasabiProject != null;
     }
 
-    public void initFolderIteration()
-    {
-        try
+    public void initFolderIteration() throws IOException {
+        if(!ImageHandler.loadProjectRootPath(this))
         {
+            getExampleImage();
+
+            // Run loadProjectRootPath again
             if(!ImageHandler.loadProjectRootPath(this))
             {
-                // Get example image from metadata
-                File srcImgFile = Paths.get(".", "metadata", "classifai_overview.png").toFile();
-                File destImageFile = Paths.get(projectPath.getAbsolutePath(), "example_img.png").toFile();
-                FileUtils.copyFile(srcImgFile, destImageFile);
-                log.info("Empty folder. Example image added.");
-
-                // Run loadProjectRootPath again
-                if(!ImageHandler.loadProjectRootPath(this))
-                {
-                    log.debug("Loading files in project folder failed");
-                }
+                log.debug("Loading files in project folder failed");
             }
-        }
-        catch(IOException e)
-        {
-            log.info("Error while copying file: ", e);
         }
     }
 
+    private void getExampleImage() throws IOException {
+        // Get example image from metadata
+        String exampleSrcFileName = "/classifai_overview.png";
+        String exampleImgFileName = "example_img.png";
+
+        BufferedImage srcImg = ImageIO.read(
+                Objects.requireNonNull(ProjectLoader.class.getResource(exampleSrcFileName)));
+        String destImgFileStr = Paths.get(projectPath.getAbsolutePath(), exampleImgFileName).toString();
+        ImageIO.write(srcImg, "png", new File(destImgFileStr));
+        log.info("Empty folder. Example image added.");
+    }
 
 }

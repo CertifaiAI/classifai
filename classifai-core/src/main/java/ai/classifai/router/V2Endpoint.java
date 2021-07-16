@@ -45,6 +45,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -209,8 +210,7 @@ public class V2Endpoint extends EndpointBase {
         projectImporter.run();
     }
 
-    protected void createRawProject(JsonObject requestBody, RoutingContext context)
-    {
+    protected void createRawProject(JsonObject requestBody, RoutingContext context) throws IOException {
         String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
 
         String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
