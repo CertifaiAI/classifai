@@ -19,7 +19,6 @@ import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.selector.status.FileSystemStatus;
-import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.wasabis3.WasabiProject;
@@ -28,16 +27,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 
