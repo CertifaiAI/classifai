@@ -100,7 +100,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void closeProjectState(Message<JsonObject> message)
     {
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -123,14 +123,14 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private Future<ProjectEntity> setProjectCloseState(ProjectEntity project) {
         Promise<ProjectEntity> promise = Promise.promise();
-        ProjectEntity.LOADED_PROJECT_LIST.remove(project);
+//        ProjectEntity.LOADED_PROJECT_LIST.remove(project);
         promise.complete(project);
         return promise.future();
     }
 
     private void renameProject(Message<JsonObject> message)
     {
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -153,7 +153,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
                 .onComplete(unused -> Repository.closeRepositories(repository));
     }
 
-    private void persistProject(Promise<Void> promise, ProjectEntity project, ProjectRepository repository)
+    private void persistProject(Promise<Void> promise, ProjectEntity project, JPAProjectRepository repository)
     {
         repository.saveProject(project);
 
@@ -168,7 +168,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void updateData(Message<JsonObject> message) {
 
-        ProjectRepository projectRepository = getProjectRepository();
+        JPAProjectRepository projectRepository = getProjectRepository();
         DataVersionRepository dataVersionRepository = getDataVersionRepository();
         AnnotationRepository annotationRepository = getAnnotationRepository();
 
@@ -193,7 +193,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         // getProject
         // getData
         // mergeDataVersion
-        // persist
+        // commit
         vertx.executeBlocking(getProjectHandler)
                 .compose(getDataHandler)
                 .compose(mergeDataVersionHandler)
@@ -225,7 +225,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 //
 //        // get project
 //        // merge label list
-//        // persist
+//        // commit
 //        vertx.executeBlocking(getProjectHandler)
 //                .compose(mergeLabelListHandler)
 //                .compose(persistLabelListHandler)
@@ -236,7 +236,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     // temporary solution
     private void updateLabel(Message<JsonObject> message) {
-        ProjectRepository projectRepository = getProjectRepository();
+        JPAProjectRepository projectRepository = getProjectRepository();
         LabelRepository labelRepository = getLabelRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
@@ -254,7 +254,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         // get project
         // merge label list
-        // persist
+        // commit
         vertx.executeBlocking(getProjectHandler)
                 .compose(mergeLabelListHandler)
                 .compose(persistLabelListHandler)
@@ -265,7 +265,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     // call load project
     private void reloadProject(Message<JsonObject> message) {
-        ProjectRepository projectRepository = getProjectRepository();
+        JPAProjectRepository projectRepository = getProjectRepository();
         DataRepository dataRepository = getDataRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
@@ -289,7 +289,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
         // get project
         // merge dataList
-        // persist
+        // commit
         vertx.executeBlocking(getProjectHandler)
                 .compose(mergeDataListHandler)
                 .compose(persistDataListHandler)
@@ -299,7 +299,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     }
 
     private void deleteProject(Message<JsonObject> message) {
-        ProjectRepository projectRepository = getProjectRepository();
+        JPAProjectRepository projectRepository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -317,7 +317,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     }
 
     private void starProject(Message<JsonObject> message) {
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         boolean isStarred = getStarStatus(message);
         int annotationTypeIdx = getAnnotationTypeIdx(message);
@@ -337,7 +337,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
 
     private void getDataSource(Message<JsonObject> message) {
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -374,7 +374,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         // store object due to reference passing throughout multiple composes
         final JsonObject STORE = new JsonObject();
 
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -414,7 +414,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     // FIXME: perform image validation here!!!!!
     private void loadProject(Message<JsonObject> message) {
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         int annotationTypeIdx = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -447,7 +447,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void getProjectMetadata(Message<JsonObject> message)
     {
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         int annotationTypeIndex = getAnnotationTypeIdx(message);
         String projectName = getProjectName(message);
@@ -475,7 +475,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
 
     private void createProject(Message<JsonObject> message)
     {
-        ProjectRepository projectRepository = getProjectRepository();
+        JPAProjectRepository projectRepository = getProjectRepository();
 
         JsonObject msgBody = message.body();
 
@@ -536,7 +536,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
     private void getAllProjectsMetadata(Message<JsonObject> message)
     {
         int annotationTypeIdx = getAnnotationTypeIdx(message);
-        ProjectRepository repository = getProjectRepository();
+        JPAProjectRepository repository = getProjectRepository();
 
         Handler<Promise<List<ProjectEntity>>> getAllProjectMeta = promise ->
         {
@@ -711,7 +711,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.complete(thumbnail);
     }
 
-    private void deleteProject(Promise<Void> promise, ProjectEntity project, ProjectRepository projectRepository)
+    private void deleteProject(Promise<Void> promise, ProjectEntity project, JPAProjectRepository projectRepository)
     {
         projectRepository.deleteProject(project);
         promise.complete();
@@ -734,7 +734,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.complete(data.get());
     }
 
-    private void starProject(Promise<Void> promise, ProjectEntity project, boolean isStarred, ProjectRepository repository) {
+    private void starProject(Promise<Void> promise, ProjectEntity project, boolean isStarred, JPAProjectRepository repository) {
         project.setStarred(isStarred);
 
         repository.saveProject(project);
@@ -742,7 +742,7 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         promise.complete();
     }
 
-    private void getProject(Promise<ProjectEntity> promise, String projectName, int annotationTypeIdx, ProjectRepository repository)
+    private void getProject(Promise<ProjectEntity> promise, String projectName, int annotationTypeIdx, JPAProjectRepository repository)
     {
         ProjectEntity project = repository.getProjectByNameAndAnnotation(projectName, annotationTypeIdx);
 
@@ -808,10 +808,10 @@ public class DatabaseVerticle extends AbstractVerticle implements VerticleServic
         return new DataRepository(entityManager);
     }
 
-    private ProjectRepository getProjectRepository()
+    private JPAProjectRepository getProjectRepository()
     {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        return new ProjectRepository(entityManager);
+//        EntityManager entityManager = entityManagerFactory.createEntityManager();
+//        return new JPAProjectRepository(entityManager);
     }
 
     private DataVersionRepository getDataVersionRepository()

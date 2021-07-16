@@ -7,7 +7,4 @@ import java.util.UUID;
 
 public interface DataRepository extends Repository<Data, DataDTO, UUID>
 {
-    String getThumbnail(Data data);
-
-    String getSource(Data data);
 }

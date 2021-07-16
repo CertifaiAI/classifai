@@ -10,14 +10,11 @@ import java.util.UUID;
 
 public interface ProjectRepository extends Repository<Project, ProjectDTO, UUID>
 {
-    List<Project> listByAnnotationType(@NonNull Integer annotationType);
+    List<? extends Project> listByAnnotationType(@NonNull Integer annotationType);
 
-    Optional<Project> find(@NonNull String name, @NonNull Integer annotationType);
+    Optional<? extends Project> find(@NonNull String name, @NonNull Integer annotationType);
 
     Project rename(Project project, @NonNull String newName);
 
-    Project star(Project project);
-    Project unstar(Project project);
-
-    Project reload(Project project);
+    Project setStarred(Project project, @NonNull Boolean starred);
 }

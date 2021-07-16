@@ -11,9 +11,9 @@ public interface Repository<T extends HasId<R>, S, R>
 
     T get(@NonNull R id);
 
-    T update(@NonNull T entity, @NonNull S dto);
+    T update(@NonNull S dto);
 
     void remove(@NonNull T entity);
 
-    List<T> list();
+    List<? extends T> list();
 }

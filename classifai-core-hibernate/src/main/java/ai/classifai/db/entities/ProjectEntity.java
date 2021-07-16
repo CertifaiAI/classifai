@@ -8,16 +8,25 @@ import ai.classifai.db.entities.data.DataEntity;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Getter
+@lombok.Data
 @NoArgsConstructor
 @Entity
 @Table(name = "PROJECT")
+@NamedQueries({
+    @NamedQuery(name = "ProjectEntity.listAll",
+                query = "From ProjectEntity"),
+    @NamedQuery(name = "ProjectEntity.listByAnnotationType",
+                query = "SELECT p FROM ProjectEntity p WHERE p.annotationType = :annotationType"),
+    @NamedQuery(name = "ProjectEntity.findByNameAndAnnotationType",
+                query = "SELECT p FROM ProjectEntity p WHERE p.annotationType = :annotationType AND p.name = :name")
+})
 public class ProjectEntity implements Project
 {
     public static final String PROJECT_ID_KEY = "project_id";
@@ -60,6 +69,10 @@ public class ProjectEntity implements Project
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<VersionEntity> versionList;
 
+    public static Project fromDTO(ProjectDTO dto)
+    {
+        return null;
+    }
 
     @Override
     public ProjectDTO toDTO()

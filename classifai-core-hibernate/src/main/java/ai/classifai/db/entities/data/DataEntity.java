@@ -41,7 +41,7 @@ public abstract class DataEntity implements Data
     private ProjectEntity project;
 
     @OneToMany(mappedBy = "data")
-    private List<DataVersionEntity> dataVersionEntities;
+    private List<DataVersionEntity> dataVersions;
 
     @Override
     public DataDTO toDTO()

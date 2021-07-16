@@ -31,7 +31,7 @@ public class LabelEntity implements Label
 
     @ManyToOne
     @JoinColumn(name = VersionEntity.VERSION_ID_KEY)
-    private VersionEntity versionEntity;
+    private VersionEntity version;
 
     @Override
     public LabelDTO toDTO()

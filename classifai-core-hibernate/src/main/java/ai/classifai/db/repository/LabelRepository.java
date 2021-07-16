@@ -1,11 +1,12 @@
 package ai.classifai.db.repository;
 
+import ai.classifai.core.entities.traits.HasId;
 import ai.classifai.db.entities.LabelEntity;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
-public class LabelRepository extends Repository{
+public class LabelRepository extends Repository<HasId<R>, S, R> {
     public LabelRepository(EntityManager entityManager) {
         super(entityManager);
     }

@@ -54,4 +54,7 @@ public class VersionEntity implements Version
                 .labelIds(labelIds)
                 .build();
     }
+
+    public static Version fromDTO(VersionDTO dto) {
+    }
 }

@@ -18,4 +18,11 @@ public interface Project extends HasId<UUID>, HasDTO<ProjectDTO>
 
     List<Version> getVersionList();
     List<Data> getDataList();
+
+    void setName(String name);
+    void setAnnotationType(Integer annotationType);
+    void setPath(String path);
+    void setIsStarred(Boolean starred);
+    void setInfra(Integer infra);
+    void setCurrentVersion(Version currentVersion);
 }

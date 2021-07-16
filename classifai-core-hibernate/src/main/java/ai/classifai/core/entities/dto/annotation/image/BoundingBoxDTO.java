@@ -2,8 +2,7 @@ package ai.classifai.core.entities.dto.annotation.image;
 
 import ai.classifai.db.entities.VersionEntity;
 import ai.classifai.db.entities.annotation.AnnotationEntity;
-import ai.classifai.db.entities.annotation.ImageAnnotation.BoundingBoxAnnotationEntity;
-import ai.classifai.db.entities.annotation.ImageAnnotation.Point;
+import ai.classifai.db.entities.PointEntity;
 import ai.classifai.db.entities.data.DataEntity;
 import io.vertx.core.json.JsonObject;
 import lombok.*;
@@ -54,8 +53,8 @@ public class BoundingBoxDTO extends ImageAnnotationDTO
                 .x2(json.getFloat(BoundingBoxAnnotationEntity.X2_KEY))
                 .y1(json.getFloat(BoundingBoxAnnotationEntity.Y1_KEY))
                 .y2(json.getFloat(BoundingBoxAnnotationEntity.Y2_KEY))
-                .dist2ImgX(dist2Img.getFloat(Point.X))
-                .dist2ImgY(dist2Img.getFloat(Point.Y))
+                .dist2ImgX(dist2Img.getFloat(PointEntity.X))
+                .dist2ImgY(dist2Img.getFloat(PointEntity.Y))
                 .build();
     }
 
@@ -63,8 +62,8 @@ public class BoundingBoxDTO extends ImageAnnotationDTO
     public String toJson()
     {
         JsonObject dist2Img = new JsonObject()
-                .put(Point.X, dist2ImgX)
-                .put(Point.Y, dist2ImgY);
+                .put(PointEntity.X, dist2ImgX)
+                .put(PointEntity.Y, dist2ImgY);
 
         return new JsonObject()
                 .put(AnnotationEntity.ANNOTATION_ID_KEY, annotationId)

@@ -1,12 +1,7 @@
 package ai.classifai.db.entities.dataVersion;
 
-import ai.classifai.core.entities.Annotation;
-import ai.classifai.core.entities.dto.dataversion.DataVersionDTO;
-import ai.classifai.db.entities.VersionEntity;
+import ai.classifai.core.entities.ImageDataVersion;
 import ai.classifai.db.entities.annotation.AnnotationEntity;
-import ai.classifai.db.entities.data.DataEntity;
-import ai.classifai.util.type.AnnotationHandler;
-import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "IMAGE_DATA_VERSION")
-public class ImageDataVersionEntity extends DataVersionEntity
+public class ImageDataVersionEntity extends DataVersionEntity implements ImageDataVersion
 {
     public static final String IMG_X_KEY = "img_x";
     public static final String IMG_Y_KEY = "img_y";
@@ -37,7 +32,7 @@ public class ImageDataVersionEntity extends DataVersionEntity
     private float imgH;
 
     @Override
-    public DataVersionDTO toDTO() {
-        return null;
+    public List<AnnotationEntity> getAnnotationList() {
+        return super.getAnnotationList();
     }
 }

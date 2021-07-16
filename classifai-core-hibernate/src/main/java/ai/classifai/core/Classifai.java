@@ -1,10 +1,7 @@
 package ai.classifai.core;
 
 import ai.classifai.core.entities.*;
-import ai.classifai.core.entities.dto.DataDTO;
-import ai.classifai.core.entities.dto.LabelDTO;
-import ai.classifai.core.entities.dto.ProjectDTO;
-import ai.classifai.core.entities.dto.VersionDTO;
+import ai.classifai.core.entities.dto.*;
 import ai.classifai.core.entities.dto.annotation.AnnotationDTO;
 import ai.classifai.core.entities.dto.dataversion.DataVersionDTO;
 import ai.classifai.core.services.repository.*;
@@ -23,6 +20,7 @@ public class Classifai
     private final DataRepository dataRepository;
     private final AnnotationRepository annotationRepository;
     private final DataVersionRepository dataVersionRepository;
+    private final PointRepository pointRepository;
 
     //***************************************PROJECT**********************************************
     public Project createProject(@NonNull ProjectDTO dto)
@@ -30,7 +28,7 @@ public class Classifai
         return projectRepository.create(dto);
     }
 
-    public List<Project> listProjectByAnnotationType(@NonNull Integer annotationType)
+    public List<? extends Project> listProjectByAnnotationType(@NonNull Integer annotationType)
     {
         return projectRepository.listByAnnotationType(annotationType);
     }
@@ -40,20 +38,22 @@ public class Classifai
         return projectRepository.get(id);
     }
 
-    // project must exist in order to call this method!
+    /**
+     * project must exist in order to call this method!
+     * isPresent() is not called to get method, might introduce NullPointerException
+     *
+     * @param name project name
+     * @param annotationType project annotation type
+     * @return project entity
+     */
     public Project findProject(@NonNull String name, @NonNull Integer annotationType)
     {
         return projectRepository.find(name, annotationType).get();
     }
 
-    public void starProject(@NonNull Project project)
+    public void setStarProject(@NonNull Project project, @NonNull Boolean starred)
     {
-        projectRepository.star(project);
-    }
-
-    public void unstarProject(@NonNull Project project)
-    {
-        projectRepository.unstar(project);
+        projectRepository.setStarred(project, starred);
     }
 
     public void renameProject(@NonNull Project project, @NonNull String name)
@@ -104,9 +104,9 @@ public class Classifai
         return dataVersionRepository.get(id);
     }
 
-    public DataVersion updateDataVersion(@NonNull DataVersion dataVersion, @NonNull DataVersionDTO dto)
+    public DataVersion updateDataVersion(@NonNull DataVersionDTO dto)
     {
-        return dataVersionRepository.update(dataVersion, dto);
+        return dataVersionRepository.update(dto);
     }
 
     public void deleteDataVersion(@NonNull DataVersion dataVersion)
@@ -125,14 +125,35 @@ public class Classifai
         return annotationRepository.get(id);
     }
 
-    public Annotation updateAnnotation(@NonNull Annotation annotation, @NonNull AnnotationDTO dto)
+    public Annotation updateAnnotation(@NonNull AnnotationDTO dto)
     {
-        return annotationRepository.update(annotation, dto);
+        return annotationRepository.update(dto);
     }
 
     public void deleteAnnotation(@NonNull Annotation annotation)
     {
         annotationRepository.remove(annotation);
+    }
+
+    //***************************************POINT**********************************************
+    public Point createPoint(@NonNull PointDTO dto)
+    {
+        return pointRepository.create(dto);
+    }
+
+    public Point getPoint(@NonNull UUID id)
+    {
+        return pointRepository.get(id);
+    }
+
+    public Point updatePoint(@NonNull PointDTO dto)
+    {
+        return pointRepository.update(dto);
+    }
+
+    public void deletePoint(@NonNull Point point)
+    {
+        pointRepository.remove(point);
     }
 
     //***************************************LABEL**********************************************
@@ -146,19 +167,13 @@ public class Classifai
         return labelRepository.get(id);
     }
 
-    public Label updateLabel(@NonNull Label label, @NonNull LabelDTO dto)
+    public Label updateLabel(@NonNull LabelDTO dto)
     {
-        return labelRepository.update(label, dto);
+        return labelRepository.update(dto);
     }
 
     public void deleteLabel(@NonNull Label label)
     {
         labelRepository.remove(label);
     }
-
-
-
-
-
-
 }

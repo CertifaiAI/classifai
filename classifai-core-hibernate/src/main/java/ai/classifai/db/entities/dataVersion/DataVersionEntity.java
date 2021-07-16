@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "DATA_VERSION")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class DataVersionEntity implements DataVersion
+public class DataVersionEntity implements DataVersion
 {
     public static final String DATA_VERSION_ID_KEY = "data_version_id";
 
@@ -35,7 +35,7 @@ public abstract class DataVersionEntity implements DataVersion
     @ManyToOne
     @MapsId(value = "versionId")
     @JoinColumn(name = VersionEntity.VERSION_ID_KEY)
-    private VersionEntity versionEntity;
+    private VersionEntity version;
 
     @Getter
     @OneToMany(mappedBy = "dataVersion")
