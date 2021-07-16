@@ -58,9 +58,6 @@ public class ProjectLoader
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private ProjectLoaderStatus projectLoaderStatus;
 
-    private static final String exampleSrcFileName = "/classifai_overview.png";
-    private static final String exampleImgFileName = "example_img.png";
-
     @Builder.Default private ProjectVersion projectVersion = new ProjectVersion();
 
     @Builder.Default private Boolean isProjectNew = Boolean.TRUE;
@@ -282,6 +279,10 @@ public class ProjectLoader
     }
 
     private void getExampleImage() throws IOException {
+        // Get example image from metadata
+        String exampleSrcFileName = "/classifai_overview.png";
+        String exampleImgFileName = "example_img.png";
+
         BufferedImage srcImg = ImageIO.read(
                 Objects.requireNonNull(ProjectLoader.class.getResource(exampleSrcFileName)));
         String destImgFileStr = Paths.get(projectPath.getAbsolutePath(), exampleImgFileName).toString();
