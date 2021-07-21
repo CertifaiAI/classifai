@@ -31,6 +31,7 @@ import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -39,8 +40,10 @@ import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
+import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import io.vertx.core.AbstractVerticle;
@@ -58,6 +61,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -467,6 +471,54 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     public void buildProjectFromCLI()
     {
         // To build project from cli
+        String projectName = ProjectHandler.getCliProjectInitiator().getProjectName();
+        AnnotationType annotationType = ProjectHandler.getCliProjectInitiator().getProjectType();
+        File dataPath = ProjectHandler.getCliProjectInitiator().getRootDataPath();
+        boolean valid = ProjectHandler.isProjectNameUnique(projectName, annotationType.ordinal());
+
+        int annotationIndex = annotationType.ordinal();
+        Tuple params = Tuple.of(annotationIndex);
+        ArrayList<String> nameList = new ArrayList<>();
+
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
+                .execute(params)
+                .onComplete(fetch -> {
+                    if (fetch.succeeded()) {
+                        RowSet<Row> rowSet = fetch.result();
+
+                        for (Row row : rowSet) {
+                            nameList.add(row.getString(0));
+                        }
+
+                        if (!nameList.contains(projectName)) {
+
+                            ProjectLoader loader = ProjectLoader.builder()
+                                    .projectId(UuidGenerator.generateUuid())
+                                    .projectName(projectName)
+                                    .annotationType(annotationType.ordinal())
+                                    .projectPath(dataPath)
+                                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                    .projectInfra(ProjectInfra.ON_PREMISE)
+                                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                    .build();
+
+                            ProjectHandler.loadProjectLoader(loader);
+                            try {
+                                loader.initFolderIteration();
+                            } catch (IOException e) {
+                                log.info("No project is loaded");
+                            }
+
+                            log.info("Project " + loader.getProjectName() + " of " + annotationType.toString().toLowerCase(Locale.ROOT) + " created ");
+
+                        } else {
+                            log.info("Project name exist in database, please use another name");
+                        }
+                    }
+                    else {
+                        log.info("Project failed to create");
+                    }
+                });
     }
 
     public void getProjectMetadata(Message<JsonObject> message)

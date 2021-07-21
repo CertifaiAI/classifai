@@ -50,14 +50,17 @@ public class EndpointRouter extends AbstractVerticle
 
     public EndpointRouter()
     {
-        Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
-        projectFolder.start();
+        if(!ParamConfig.isDockerEnv())
+        {
+            Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
+            projectFolder.start();
 
-        Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
-        projectImport.start();
+            Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
+            projectImport.start();
 
-        Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
-        labelFileImport.start();
+            Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
+            labelFileImport.start();
+        }
 
         Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
         threadZipFileGenerator.start();

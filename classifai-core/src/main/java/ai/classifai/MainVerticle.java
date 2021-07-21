@@ -26,6 +26,7 @@ import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -96,7 +97,11 @@ public class MainVerticle extends AbstractVerticle
             if (ar.succeeded())
             {
                 portfolioVerticle.configProjectLoaderFromDb();
+
+                if (ProjectHandler.getCliProjectInitiator() != null)
+                {
                 portfolioVerticle.buildProjectFromCLI();
+                }
 
                 LogoLauncher.print();
 
