@@ -22,6 +22,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Bug fix for removing "\r" and spaces " " in imported labels [#437](https://github.com/CertifaiAI/classifai/issues/437)
 - Support WebP image format [#394](https://github.com/CertifaiAI/classifai/issues/394)
 - Fix create empty project [#466](https://github.com/CertifaiAI/classifai/issues/466)
+- Frontend code refactoring [#198](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/198)
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added
