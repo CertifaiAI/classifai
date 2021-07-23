@@ -47,6 +47,8 @@
         "totalPhoto": "Total Photo:",
         "noProject": "Wait a minute... there's no project",
         "createNew": "Gear up and start creating new project!",
+        "noStarred": "No starred projects",
+        "starIt": "Working on a high priority project? Star it so you can access it quickly!",
         "projectPath": "Project Path"
     },
     "deleteMsg": "deleted ",
