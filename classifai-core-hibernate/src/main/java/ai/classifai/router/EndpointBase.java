@@ -37,7 +37,7 @@ import lombok.Setter;
 public abstract class EndpointBase
 {
     protected ParamHandler paramHandler = new ParamHandler();
-    protected BodyHandler bodyHandler = new BodyHandler();
+//    protected BodyHandler bodyHandler = new BodyHandler();
 
     @Setter protected Vertx vertx = null;
 

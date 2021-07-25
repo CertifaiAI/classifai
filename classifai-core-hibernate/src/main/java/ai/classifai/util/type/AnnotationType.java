@@ -15,6 +15,8 @@
  */
 package ai.classifai.util.type;
 
+import java.util.Locale;
+
 /**
  * Types of Annotation
  *
@@ -36,6 +38,11 @@ public enum AnnotationType
     public static AnnotationType fromInt(int idx)
     {
         return AnnotationType.values()[idx];
+    }
+
+    public static AnnotationType fromString(String str)
+    {
+        return AnnotationType.valueOf(str.toUpperCase(Locale.ROOT));
     }
 }
 

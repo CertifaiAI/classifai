@@ -178,15 +178,4 @@ public class FileHandler
             return false;
         }
     }
-
-    public boolean createFolderIfNotExist(File file)
-    {
-        if(!file.exists() && !file.mkdir())
-        {
-            log.debug("Failed to create " + file.getAbsolutePath());
-            return false;
-        }
-        return true;
-    }
-
 }

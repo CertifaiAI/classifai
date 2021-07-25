@@ -15,7 +15,6 @@
  */
 package ai.classifai;
 
-import ai.classifai.database.DatabaseVerticle;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
@@ -43,14 +42,10 @@ public class MainVerticle extends AbstractVerticle
 
     private Future<Void> deployOtherVerticles()
     {
-        Future<String> deployDbVerticle = Future.future(promise -> vertx.deployVerticle(new DatabaseVerticle(), promise));
         Future<String> deployServerVerticle = Future.future(promise -> vertx.deployVerticle(serverVerticle, promise));
-
-
-        System.out.println("\n\n\n\n\n\n\n\n\n\n");
         // TODO: deploy other verticles here
 
-        return CompositeFuture.all(deployDbVerticle, deployServerVerticle).mapEmpty();
+        return deployServerVerticle.mapEmpty();
     }
 
     private void logAppStart()
@@ -79,10 +74,6 @@ public class MainVerticle extends AbstractVerticle
     {
         if(!ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode(); //to align dark mode for windows
 
-        //TODO:
-        // configue database
-//        DbOps.configureDatabase();
-
         if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
 
         Handler<Void> successHandler = unused ->
@@ -101,7 +92,6 @@ public class MainVerticle extends AbstractVerticle
         try
         {
             serverVerticle.stop(Promise.promise());
-//            wasabiVerticle.stop(Promise.promise());
         }
         catch (Exception e)
         {

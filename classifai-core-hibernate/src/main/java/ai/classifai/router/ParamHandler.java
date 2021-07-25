@@ -6,8 +6,9 @@ import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-public class ParamHandler extends EndpointVariableHandler
-{
+import java.util.UUID;
+
+public class ParamHandler {
     public ParamHandler() {}
 
     public String getNewProjectName(RoutingContext context)
@@ -15,9 +16,9 @@ public class ParamHandler extends EndpointVariableHandler
         return context.request().getParam(ParamConfig.getNewProjectNameParam());
     }
 
-    public String getUuid(RoutingContext context)
+    public UUID getDataId(RoutingContext context)
     {
-        return context.request().getParam(ParamConfig.getUuidParam());
+        return UUID.fromString(context.request().getParam(ParamConfig.getUuidParam()));
     }
 
     public AnnotationType getAnnotationType(RoutingContext context)
@@ -50,10 +51,10 @@ public class ParamHandler extends EndpointVariableHandler
 
     public JsonObject dataParamToJson(RoutingContext context)
     {
-        String uuid = getUuid(context);
+        UUID uuid = getDataId(context);
 
         return new JsonObject()
-                .put(ParamConfig.getUuidParam(), uuid)
+                .put(ParamConfig.getUuidParam(), uuid.toString())
                 .mergeIn(projectParamToJson(context));
     }
 

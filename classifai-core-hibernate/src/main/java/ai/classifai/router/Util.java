@@ -30,18 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Util {
 
-    public boolean checkIfProjectNull(RoutingContext context, Object project, @NonNull String projectName)
-    {
-        if(project == null)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project not found: " + projectName));
-
-            return true;
-        }
-
-        return false;
-    }
-
     public void checkIfDockerEnv(RoutingContext context)
     {
         if(ParamConfig.isDockerEnv())
@@ -49,21 +37,5 @@ public class Util {
             HTTPResponseHandler.configureOK(context);
         }
     }
-
-//    public String getDbQuery(AnnotationType type)
-//    {
-//        if(type.equals(AnnotationType.BOUNDINGBOX))
-//        {
-//            return BoundingBoxDbQuery.getQueue();
-//        }
-//        else if(type.equals(AnnotationType.SEGMENTATION))
-//        {
-//            return SegDbQuery.getQueue();
-//        }
-//
-//        log.info("DB Query Queue not found: " + type);
-//        return null;
-//    }
-
 
 }

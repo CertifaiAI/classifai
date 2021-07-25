@@ -15,7 +15,7 @@
  */
 package ai.classifai.util.data;
 
-import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.data.image.ImageFileType;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
 import lombok.NoArgsConstructor;

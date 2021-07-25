@@ -35,7 +35,7 @@ public class CloudEndpoint
 //    {
 //        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 //
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+//        String name = context.request().getParam(ParamConfig.getProjectNameParam());
 //
 //        context.request().bodyHandler(requestBody ->
 //        {
@@ -44,7 +44,7 @@ public class CloudEndpoint
 //                JsonObject requestJsonObject = requestBody.toJsonObject();
 //
 //                requestJsonObject
-//                        .put(ParamConfig.getProjectNameParam(), projectName)
+//                        .put(ParamConfig.getProjectNameParam(), name)
 //                        .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
 //
 //                DeliveryOptions createS3Ops = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), WasabiQuery.getWriteCredential());
@@ -60,7 +60,7 @@ public class CloudEndpoint
 //                    }
 //                    else
 //                    {
-//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName));
+//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + name));
 //                    }
 //                });
 //

@@ -15,11 +15,22 @@
  */
 package ai.classifai.router;
 
+import ai.classifai.action.FileGenerator;
+import ai.classifai.database.DbService;
+import ai.classifai.router.controller.*;
+import ai.classifai.router.controller.annotation.image.BoundingBoxAnnotationController;
+import ai.classifai.router.controller.annotation.image.PolygonAnnotationController;
+import ai.classifai.router.controller.data.ImageDataController;
+import ai.classifai.router.controller.dataversion.ImageDataVersionController;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
+import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.service.*;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -33,52 +44,82 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
+    //***********Services***************
+    private DbService dbService;
+    private ProjectService projectService;
+    private DataService dataService;
+    private ImageService imageService;
+    private LabelService labelService;
+    private ImageAnnotationService imageAnnotationService;
+    private ImageDataVersionService imageDataVersionService;
+    private ProjectLoadingService projectLoadingService;
+
     private ProjectFolderSelector projectFolderSelector;
-//    private ProjectImportSelector projectImporter;
-//
+    private ProjectImportSelector projectImporter;
     private LabelFileSelector labelFileSelector;
-//    private FileGenerator fileGenerator;
+    private FileGenerator fileGenerator;
 
-    V1Endpoint v1 = new V1Endpoint();
-    V2Endpoint v2 = new V2Endpoint();
+    //***********Controller*************
+    private ProjectController projectController;
+    private VersionController versionController;
+    private ImageDataController imageDataController;
+    private ImageDataVersionController imageDataVersionController;
+    private BoundingBoxAnnotationController boundingBoxAnnotationController;
+    private PolygonAnnotationController polygonAnnotationController;
+    private LabelController labelController;
+    private PointController pointController;
+    private SystemController systemController;
 
-    CloudEndpoint cloud = new CloudEndpoint();
-
-    public EndpointRouter()
-    {
-        Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
-        projectFolder.start();
-
-//        Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
-//        projectImport.start();
-//
-        Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
-        labelFileImport.start();
-//
-//        Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
-//        threadZipFileGenerator.start();
-    }
 
     @Override
-    public void stop(Promise<Void> promise) {
+    public void stop(Promise<Void> promise)
+    {
         log.debug("Endpoint Router Verticle stopping...");
 
         //add action before stopped if necessary
     }
 
-    private void configureVersionVertx()
+    private Future<Void> configureServices()
     {
-        v1.setVertx(vertx);
-        v2.setVertx(vertx);
+        return vertx.executeBlocking(promise ->
+        {
+            Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
+            projectFolder.start();
 
-        v2.setProjectFolderSelector(projectFolderSelector);
-//        v2.setProjectImporter(projectImporter);
+            Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
+            projectImport.start();
 
-        v2.setLabelFileSelector(labelFileSelector);
+            Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
+            labelFileImport.start();
 
-//        cloud.setVertx(vertx);
+            Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
+            threadZipFileGenerator.start();
 
-//        PortfolioVerticle.setFileGenerator(fileGenerator);
+            dbService = new DbService(vertx);
+
+            projectService = new ProjectService(vertx);
+            dataService = new DataService(vertx);
+            imageService = new ImageService(vertx);
+            labelService = new LabelService(vertx);
+            imageAnnotationService = new ImageAnnotationService(vertx);
+            imageService = new ImageService(vertx);
+            imageDataVersionService = new ImageDataVersionService(vertx);
+            projectLoadingService = new ProjectLoadingService(vertx);
+
+            promise.complete();
+        });
+    }
+
+    private Future<Void> configureControllers()
+    {
+        projectController = new ProjectController(vertx, dbService, projectService, dataService, imageService,
+                labelService, imageDataVersionService, projectLoadingService);
+        imageDataController = new ImageDataController(vertx, dbService, imageService);
+        systemController = new SystemController(vertx, projectFolderSelector, projectImporter, labelFileSelector);
+        labelController = new LabelController(vertx, labelService);
+        imageDataVersionController = new ImageDataVersionController(vertx, imageAnnotationService);
+
+        return Future.succeededFuture();
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
@@ -87,94 +128,121 @@ public class EndpointRouter extends AbstractVerticle
         ctx.next();
     }
 
-    @Override
-    public void start(Promise<Void> promise)
+    private Future<HttpServer> createHttpServer(Router router)
     {
-        Router router = Router.router(vertx);
+        return vertx.createHttpServer()
+                .requestHandler(router)
+                .exceptionHandler(Throwable::printStackTrace)
+                .listen(ParamConfig.getHostingPort());
+    }
 
+    private void addStaticResourceWithCacheBusting(Router router)
+    {
+        router.route().handler(this::addNoCacheHeader);
+        router.route().handler(StaticHandler.create());
+    }
+
+    private void assignAPIToController(Router router)
+    {
         final String projectV1Endpoint = "/:annotation_type/projects/:project_name";
 
         final String projectV2Endpoint = "/v2/:annotation_type/projects/:project_name";
 
         //*******************************V1 Endpoints*******************************
 
-        router.get("/:annotation_type/projects/meta").handler(v1::getAllProjectsMeta);
+        router.get("/:annotation_type/projects/meta").handler(projectController::getAllProjectsMeta);
 
-        router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
+        router.get("/:annotation_type/projects/:project_name/meta").handler(projectController::getProjectMetadata);
 
-        router.get(projectV1Endpoint).handler(v1::loadProject);
-
-        router.delete(projectV1Endpoint).handler(v1::deleteProject);
+        router.get(projectV1Endpoint).handler(projectController::loadProject);
 
         // FIXME: to be deleted
-        router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
+        router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(projectController::loadProjectStatus);
 
-        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
+        router.delete(projectV1Endpoint).handler(projectController::deleteProject);
 
-        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(v1::getImageSource);
+//        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(imageDataController::getThumbnail);
 
-        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(v1::updateData);
+//        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(imageDataController::getImageSource);
 
-        router.put("/:annotation_type/projects/:project_name/newlabels").handler(v1::updateLabels);
+
+//        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(imageDataVersionController::updateData);
+//
+//        router.put("/:annotation_type/projects/:project_name/newlabels").handler(labelController::updateLabels);
 
         //*******************************V2 Endpoints*******************************
 
 //        router.put("/v2/newproject").handler(v2::importProject);
+
+//        // FIXME: Endpoint can be improved to "/project/:project_id"
+//        router.put(projectV1Endpoint).handler(projectController::closeProjectState);
 //
-        router.put(projectV1Endpoint).handler(v2::closeProjectState);
-
-        router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
-
-        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
+        router.put("/:annotation_type/projects/:project_name/star").handler(projectController::starProject);
+//
+//        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(projectController::reloadProject);
 
         // FIXME: to be deleted
-        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
+        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(projectController::reloadProjectStatus);
 //
 //        router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
 //
 //        router.get("/v2/:annotation_type/projects/importstatus").handler(v2::getImportStatus);
 //
 //        router.get("/v2/:annotation_type/projects/exportstatus").handler(v2::getExportStatus);
-//
-        router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
 
-        router.put("/v2/labelfiles").handler(v2::selectLabelFile);
+        router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(projectController::renameProject);
 
-        router.get("/v2/labelfiles").handler(v2::selectLabelFileStatus);
+        router.put("/v2/labelfiles").handler(systemController::selectLabelFile);
 
-        router.put("/v2/folders").handler(v2::selectProjectFolder);
+        router.get("/v2/labelfiles").handler(systemController::selectLabelFileStatus);
 
-        router.get("/v2/folders").handler(v2::selectProjectFolderStatus);
+        router.put("/v2/folders").handler(systemController::selectProjectFolder);
 
-        router.put("/v2/projects").handler(v2::createProject);
+        router.get("/v2/folders").handler(systemController::selectProjectFolderStatus);
+
+        router.put("/v2/projects").handler(projectController::createImageProject);
 
         // FIXME: to be deleted
-        router.get(projectV2Endpoint).handler(v2::createProjectStatus);
+        router.get(projectV2Endpoint).handler(projectController::createProjectStatus);
 
         //*******************************Cloud*******************************
 
 //        router.put("/v2/:annotation_type/wasabi/projects/:project_name").handler(cloud::createWasabiCloudProject);
+    }
+
+    private Future<Router> configureRouter()
+    {
+        Promise<Router> promise = Promise.promise();
+
+        Router router = Router.router(vertx);
+
+        assignAPIToController(router);
 
         //display for content in webroot
         //uses no-cache header for cache busting, perform revalidation when fetching static assets
-        router.route().handler(this::addNoCacheHeader);
-        router.route().handler(StaticHandler.create());
+        addStaticResourceWithCacheBusting(router);
+
+        promise.complete(router);
+
+        return promise.future();
+    }
 
 
-        vertx.createHttpServer()
-                .requestHandler(router)
-                .exceptionHandler(Throwable::printStackTrace)
-                .listen(ParamConfig.getHostingPort(), r -> {
 
-                    if (r.succeeded())
-                    {
-                        configureVersionVertx();
-                        promise.complete();
-                    }
-                    else {
-                        log.debug("Failure in creating HTTPServer in ServerVerticle. " + r.cause().getMessage());
-                        promise.fail(r.cause());
-                    }
+    @Override
+    public void start(Promise<Void> promise)
+    {
+        configureServices()
+                .compose(unused -> configureControllers())
+                .compose(unused -> configureRouter())
+                .compose(this::createHttpServer)
+                .onSuccess(unused -> promise.complete())
+                .onFailure(throwable ->
+                {
+                    log.debug("Failure in creating HTTPServer in ServerVerticle. " + throwable.getMessage());
+                    promise.fail(throwable.getMessage());
                 });
     }
+
+
 }
