@@ -15,10 +15,7 @@
  */
 package ai.classifai.database.portfolio;
 
-import ai.classifai.action.ActionConfig;
-import ai.classifai.action.ActionOps;
-import ai.classifai.action.FileGenerator;
-import ai.classifai.action.ProjectExport;
+import ai.classifai.action.*;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.DbConfig;
@@ -59,9 +56,13 @@ import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -474,7 +475,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         String projectName = ProjectHandler.getCliProjectInitiator().getProjectName();
         AnnotationType annotationType = ProjectHandler.getCliProjectInitiator().getProjectType();
         File dataPath = ProjectHandler.getCliProjectInitiator().getRootDataPath();
-        boolean valid = ProjectHandler.isProjectNameUnique(projectName, annotationType.ordinal());
+
+        // load label list file into project
+        File labelPath = ProjectHandler.getCliProjectInitiator().getLabelFilePath();
 
         int annotationIndex = annotationType.ordinal();
         Tuple params = Tuple.of(annotationIndex);
@@ -492,31 +495,120 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                         if (!nameList.contains(projectName)) {
 
-                            ProjectLoader loader = ProjectLoader.builder()
-                                    .projectId(UuidGenerator.generateUuid())
-                                    .projectName(projectName)
-                                    .annotationType(annotationType.ordinal())
-                                    .projectPath(dataPath)
-                                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                                    .projectInfra(ProjectInfra.ON_PREMISE)
-                                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                                    .build();
+                            if (labelPath == null) {
 
-                            ProjectHandler.loadProjectLoader(loader);
-                            try {
-                                loader.initFolderIteration();
-                            } catch (IOException e) {
-                                log.info("No project is loaded");
+                                ProjectLoader loader_withoutLabelList = ProjectLoader.builder()
+                                        .projectId(UuidGenerator.generateUuid())
+                                        .projectName(projectName)
+                                        .annotationType(annotationType.ordinal())
+                                        .projectPath(dataPath)
+                                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                        .projectInfra(ProjectInfra.ON_PREMISE)
+                                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                        .build();
+
+                                try {
+                                    loader_withoutLabelList.initFolderIteration();
+                                    ProjectHandler.loadProjectLoader(loader_withoutLabelList);
+
+                                } catch (IOException e) {
+                                    log.info("No project is loaded");
+                                }
                             }
 
-                            log.info("Project " + loader.getProjectName() + " of " + annotationType.toString().toLowerCase(Locale.ROOT) + " created ");
+                            else {
 
-                        } else {
+                                List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
+
+                                ProjectLoader loader_withLabelList = ProjectLoader.builder()
+                                        .projectId(UuidGenerator.generateUuid())
+                                        .projectName(projectName)
+                                        .annotationType(annotationType.ordinal())
+                                        .projectPath(dataPath)
+                                        .labelList(labelList)
+                                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                        .projectInfra(ProjectInfra.ON_PREMISE)
+                                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                        .build();
+
+                                try {
+                                    loader_withLabelList.initFolderIteration();
+                                    ProjectHandler.loadProjectLoader(loader_withLabelList);
+
+                                } catch (IOException e) {
+                                    log.info("No project is loaded");
+                                }
+                            }
+
+                        }
+                        else
+                        {
                             log.info("Project name exist in database, please use another name");
                         }
                     }
-                    else {
+                    else
+                    {
                         log.info("Project failed to create");
+                    }
+                });
+    }
+
+    public void importProjectFromCLI() throws IOException {
+
+        // Load configuration file using CLI
+        File projectConfigFile = ProjectHandler.getCliProjectImporter().getConfigFilePath();
+        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(projectConfigFile.toString())).toString());
+        String jsonStr = IOUtils.toString(new FileReader(projectConfigFile));
+        JsonObject inputJsonObject = new JsonObject(jsonStr);
+
+        ProjectLoader loader = PortfolioParser.parseIn(inputJsonObject);
+        String projectName = loader.getProjectName();
+        String projectPath = loader.getProjectPath().getAbsolutePath();
+        Map <String, String> project = new HashMap<>();
+
+        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjects())
+                .execute()
+                .onComplete(fetch -> {
+                    if (fetch.succeeded()) {
+                        RowSet<Row> rowSet = fetch.result();
+
+                        for (Row row : rowSet) {
+                            project.put(row.getString(1), row.getString(3));
+                        }
+
+                        if (project.containsKey(projectName))
+                        {
+                            if (project.get(projectName).equals(projectPath))
+                            {
+                                try {
+                                    loader.initFolderIteration();
+                                    ProjectHandler.loadProjectLoader(loader);
+                                } catch (IOException e) {
+                                    log.info("Project not loaded");
+                                }
+                                log.info("Project reloaded");
+                            }
+
+                            else
+                            {
+                                inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
+                                inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
+                                loadProjectFromImportingConfigFile(inputJsonObject);
+                                log.info("Project loaded with new generated name");
+                            }
+
+                        }
+
+                        if (!project.containsKey(projectName))
+                        {
+                            loadProjectFromImportingConfigFile(inputJsonObject);
+                            log.info("Project loaded from configuration file");
+                        }
+
+                    }
+                    else
+                    {
+                        log.info("Project failed to load from configuration file");
                     }
                 });
     }

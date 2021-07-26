@@ -15,6 +15,7 @@
  */
 package ai.classifai.config;
 
+import ai.classifai.loader.CLIProjectImporter;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectHandler;
@@ -30,7 +31,11 @@ import java.io.File;
  *
  * @author codenamewei
  *
- * Sample: java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
+ * Build project using CLI
+ * Sample: java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image --labelpath=/Users/john/Desktop/sample-image/sample-label.txt
+ *
+ * Import project using CLI
+ * Sample : java -jar classifai-uberjar-dev.jar --port=8888 --docker --projecttype=boundingbox --datapath=/Users/chia wei/Desktop/sample-image --configpath=/Users/chia wei/Desktop/sample-image/sample-config.json
  *
  * Argument:
  * 1. --port=1234
@@ -56,6 +61,19 @@ import java.io.File;
  *
  *    --datapath=/image-folder
  *    --datapath="/Users/john/Desktop/sample-image"
+ *
+ *  6. --labelpath=<labelpath>
+ *
+ *     Source of label file
+ *
+ *     --labelpath=/Users/john/Desktop/sample-image/sample-label.txt
+ *
+ *  7. --configpath=<configpath>
+ *
+ *     Source of project configuration file
+ *
+ *     --configpath=/Users/john/Desktop/sample-image/sample-config.json
+ *
  */
 @Slf4j
 public class CLIArgument
@@ -66,6 +84,8 @@ public class CLIArgument
     private String projectType = null;
 
     private String dataPath = null;
+    private String configpath = null;
+    private String labelpath = null;
 
     public CLIArgument(String[] args)
     {
@@ -101,11 +121,20 @@ public class CLIArgument
             {
                 dataPath = getArg(arg);
             }
+            else if (arg.contains("--configpath="))
+            {
+                configpath = getArg(arg);
+            }
+            else if (arg.contains("--labelpath="))
+            {
+                labelpath = getArg(arg);
+            }
         }
 
         if (!isDockerEnv) FlatLightLaf.install();
 
         checkToInitiateCLIProject();
+        checkToImportProject();
     }
 
     private String getArg(String arg)
@@ -155,12 +184,23 @@ public class CLIArgument
 
         boolean isDataPathValid = dataPath != null && !dataPath.equals("") && new File(dataPath).exists();
         boolean isProjectNameValid = (projectName != null) && (!projectName.equals(""));
+        boolean isLabelPathValid = (labelpath != null) && (!labelpath.equals("")) && (new File(labelpath).exists());
 
         if (isDataPathValid)
         {
             log.info("Data path imported through cli: " + dataPath);
 
-            if (isProjectNameValid)
+            if (isProjectNameValid && isLabelPathValid)
+            {
+                log.info("Label file path imported through cli: " + labelpath);
+                initiator = CLIProjectInitiator.builder()
+                        .projectName(projectName)
+                        .rootDataPath(new File(dataPath))
+                        .labelFilePath((new File(labelpath)))
+                        .projectType(type)
+                        .build();
+            }
+            else if (isProjectNameValid)
             {
                 initiator = CLIProjectInitiator.builder()
                         .projectName(projectName)
@@ -197,17 +237,36 @@ public class CLIArgument
         ProjectHandler.setCliProjectInitiator(initiator);
     }
 
+    private void checkToImportProject(){
+
+        boolean isConfigPathValid = (configpath != null) && (!configpath.equals("")) && (new File(configpath).exists());
+        CLIProjectImporter importer;
+
+        if (isConfigPathValid)
+        {
+            log.info("Project configuration file path imported through cli: " + configpath);
+            importer = CLIProjectImporter.builder()
+                    .configFilePath(new File(configpath))
+                    .build();
+
+            ProjectHandler.setCliProjectImporter(importer);
+
+        }
+    }
+
     private void printMessageForCLIProjectFailed()
     {
         log.info("\n" +
                 "Usage:  java -jar classifai-uberjar-dev.jar [OPTIONS]\n" +
                 "\n" +
                 "Options\n" +
-                "      --unlockdb              Unlock database to start if lck file exist\n" +
-                "      --port=integer          Run in a designated port. Example: --port=1234\n\n" +
-                "      --docker                Run in docker mode. Not showing Welcome Launcher and File/Folder Selector.\n" +
-                "      --projectname=string    Assign a project name when starting classifai. Project created when not exist. Example: --projectname=demo\n" +
-                "      --projecttype=string    Assign the type of project. Only accepts [boundingbox/segmentation] argument. Example: --projecttype=segmentation\n" +
-                "      --datapath=string       Folder path to import data points to a project. Example: --datapath=/image-folder\n");
+                "      --unlockdb                Unlock database to start if lck file exist\n" +
+                "      --port=integer            Run in a designated port. Example: --port=1234\n\n" +
+                "      --docker                  Run in docker mode. Not showing Welcome Launcher and File/Folder Selector.\n" +
+                "      --projectname=string      Assign a project name when starting classifai. Project created when not exist. Example: --projectname=demo\n" +
+                "      --projecttype=string      Assign the type of project. Only accepts [boundingbox/segmentation] argument. Example: --projecttype=segmentation\n" +
+                "      --datapath=string         Folder path to import data points to a project. Example: --datapath=/image-folder\n" +
+                "      --labelpath=string    Folder path to import label text file to a project. Example: --labelpath=/image-folder/sample-label.txt\n" +
+                "      --configpath=string   Folder path to import configuration file to a project. Example: --configpath=/image-folder/sample-config.json\n");
     }
 }

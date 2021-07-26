@@ -31,6 +31,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+
 /**
  * Main verticle to create multiple verticles
  *
@@ -94,16 +96,30 @@ public class MainVerticle extends AbstractVerticle
 
         }).onComplete(ar -> {
 
-            if (ar.succeeded())
-            {
+            if (ar.succeeded()) {
+
                 portfolioVerticle.configProjectLoaderFromDb();
 
                 if (ProjectHandler.getCliProjectInitiator() != null)
                 {
-                portfolioVerticle.buildProjectFromCLI();
+
+                    portfolioVerticle.buildProjectFromCLI();
+
                 }
 
-                LogoLauncher.print();
+                if (ProjectHandler.getCliProjectImporter() != null)
+                {
+
+                    try
+                    {
+                        portfolioVerticle.importProjectFromCLI();
+                    }
+                    catch (IOException e)
+                    {
+                        log.info("No project is imported ");
+                    }
+
+                }
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());

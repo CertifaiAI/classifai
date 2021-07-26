@@ -1,11 +1,17 @@
-FROM openjdk:14-oracle
+FROM adoptopenjdk:14.0.2_12-jdk-hotspot
 
-ENV DISPLAY :11
-ARG JAR=classifai-uberjar-dev.jar
-ARG PORT=9999
+ARG jar=classifai-uberjar-dev.jar
 
-WORKDIR /
-ADD $JAR $JAR
+WORKDIR /classifai
+COPY $jar /classifai/$jar
+
+ENV JAVA_HOME=/mnt/c/'Program Files'/AdoptOpenJDK/jdk
+ENV port=9999
+ENV projectname=project5
+ENV projecttype=boundingbox
+ENV datapath=/usr/PNG
+ENV labelpath=/usr/PNG/label.txt
 
 EXPOSE $PORT
-CMD ["java","-jar","classifai-uberjar-dev.jar","--unlockdb", "--port=$PORT"]
+
+CMD ["sh", "-c", "java -jar classifai-uberjar-dev.jar --unlockdb --docker --port=$port --projectname=$projectname --projecttype=$projecttype --datapath=$datapath --labelpath=$labelpath"]

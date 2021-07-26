@@ -16,6 +16,7 @@
 package ai.classifai.util.project;
 
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.loader.CLIProjectImporter;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.SelectionWindow;
@@ -53,6 +54,8 @@ public class ProjectHandler {
     private static Map<String, Pair<String, Integer>> projectNameSearch;
 
     @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
+
+    @Getter @Setter private static CLIProjectImporter cliProjectImporter = null;
 
     static
     {

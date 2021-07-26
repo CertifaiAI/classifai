@@ -50,8 +50,7 @@ public class EndpointRouter extends AbstractVerticle
 
     public EndpointRouter()
     {
-        if(!ParamConfig.isDockerEnv())
-        {
+        if (!ParamConfig.isDockerEnv()) {
             Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
             projectFolder.start();
 
