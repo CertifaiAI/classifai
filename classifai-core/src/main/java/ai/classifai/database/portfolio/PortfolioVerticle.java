@@ -594,7 +594,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
                                 inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
                                 loadProjectFromImportingConfigFile(inputJsonObject);
-                                log.info("Project loaded with new generated name");
+                                log.info("Project loaded with new generated name " + inputJsonObject.getString(ParamConfig.getProjectNameParam()));
                             }
 
                         }
@@ -602,7 +602,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         if (!project.containsKey(projectName))
                         {
                             loadProjectFromImportingConfigFile(inputJsonObject);
-                            log.info("Project loaded from configuration file");
+                            log.info("Project " + projectName + " loaded from configuration file");
                         }
 
                     }
