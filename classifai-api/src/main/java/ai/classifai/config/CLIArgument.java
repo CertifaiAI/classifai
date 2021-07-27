@@ -32,7 +32,8 @@ import java.io.File;
  * @author codenamewei
  *
  * Build project using CLI
- * Sample: java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image --labelpath=/Users/john/Desktop/sample-image/sample-label.txt
+ * Sample: 1) java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image
+ *         2) java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image --labelpath=/Users/john/Desktop/sample-image/sample-label.txt  (Use if label list text file is available)
  *
  * Import project using CLI
  * Sample : java -jar classifai-uberjar-dev.jar --port=8888 --docker --projecttype=boundingbox --configpath=/Users/chia wei/Desktop/sample-image/sample-config.json
