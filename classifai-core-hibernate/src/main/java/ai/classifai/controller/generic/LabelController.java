@@ -44,11 +44,7 @@ public class LabelController extends AbstractVertxController
                     .toJsonObject()
                     .getString("label_list");
 
-            List<String> newLabelList = Arrays.stream(newLabelListStr.substring(1, newLabelListStr.length() - 1)
-                    .replaceAll("\\s", "")
-                    .split(","))
-                    .filter(string -> string.length() > 0)
-                    .collect(Collectors.toList());
+            List<String> newLabelList = labelService.getLabelStringListFromString(newLabelListStr);
 
             Future<Version> getCurrentVersionFuture = dbService.getProjectByNameAndAnnotation(projectName, annotationType)
                     .compose(project -> Future.succeededFuture(project.getCurrentVersion()));

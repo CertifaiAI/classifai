@@ -21,6 +21,15 @@ public class LabelService extends FileService
         super(vertx);
     }
 
+    public List<String> getLabelStringListFromString(String newLabelListStr)
+    {
+        return Arrays.stream(newLabelListStr.substring(1, newLabelListStr.length() - 1)
+                .replaceAll("\\s", "")
+                .split(","))
+                .filter(string -> string.length() > 0)
+                .collect(Collectors.toList());
+    }
+
     public Future<List<Label>> getToDeleteLabelListFuture(List<Label> currentLabelList, List<String> newLabelList)
     {
         return Future.succeededFuture(currentLabelList.stream()
@@ -83,4 +92,6 @@ public class LabelService extends FileService
                 .filter(labelString -> labelString.length() > 0)
                 .collect(Collectors.toList());
     }
+
+
 }
