@@ -90,7 +90,7 @@ public class ProjectController extends AbstractVertxController
 
                     List<Boolean> projectLoadedList = projectLoadedListFuture.result();
 
-                    JsonObject projectMetaView = ProjectMetaView.generateMetaList(projectDTOList, versionDTOList,
+                    JsonObject projectMetaView = new ProjectMetaView().generateMetaList(projectDTOList, versionDTOList,
                             pathValidList, projectLoadedList);
 
                     sendResponseBody(projectMetaView, context);
@@ -125,7 +125,7 @@ public class ProjectController extends AbstractVertxController
                     Boolean isPathValid = pathValidFuture.result();
                     Boolean isProjectLoaded = projectLoadedFuture.result();
 
-                    JsonObject projectMetaView = ProjectMetaView.generateMeta(projectDTO, versionDTO, isPathValid, isProjectLoaded);
+                    JsonObject projectMetaView = new ProjectMetaView().generateMeta(projectDTO, versionDTO, isPathValid, isProjectLoaded);
 
                     sendResponseBody(projectMetaView, context);
                 })
@@ -175,7 +175,7 @@ public class ProjectController extends AbstractVertxController
                                     .map(Data::toDTO)
                                     .collect(Collectors.toList());
 
-                            JsonObject projectLoadingView = ProjectLoadingView.generateLoadProjectView(labelDTOList, dataDTOList);
+                            JsonObject projectLoadingView = new ProjectLoadingView().generateLoadProjectView(labelDTOList, dataDTOList);
 
                             sendResponseBody(projectLoadingView, context);
                         })
@@ -224,7 +224,7 @@ public class ProjectController extends AbstractVertxController
                             .map(Data::toDTO)
                             .collect(Collectors.toList());
 
-                    JsonObject projectLoadingView = ProjectLoadingView.generateLoadProjectViewStatus(labelDTOList, dataDTOList);
+                    JsonObject projectLoadingView = new ProjectLoadingView().generateLoadProjectViewStatus(labelDTOList, dataDTOList);
 
                     sendResponseBody(projectLoadingView, context);
                 })
@@ -389,7 +389,7 @@ public class ProjectController extends AbstractVertxController
                             .map(HasDTO::toDTO)
                             .collect(Collectors.toList());
 
-                    sendResponseBody(ProjectReloadView.generateStatus(addedDataDTOList), context);
+                    sendResponseBody(new ProjectReloadView().generateStatus(addedDataDTOList), context);
                 })
                 .onFailure(failedRequestHandler(context));
     }

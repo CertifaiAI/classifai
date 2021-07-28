@@ -10,8 +10,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @lombok.Data
 @Entity(name = "label")
-@NamedQuery(name = "Label.listByVersion",
-        query = "select l from label l where l.version = :version")
 public class LabelEntity implements Label
 {
     @Id

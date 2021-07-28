@@ -33,4 +33,12 @@ public abstract class AnnotationEntity implements Annotation
             @JoinColumn(name = "version_id", referencedColumnName = "version_id")
     })
     private DataVersionEntity dataVersion;
+
+    public DataVersionEntity getDataVersion() {
+        return dataVersion;
+    }
+
+    public void setDataVersion(DataVersionEntity dataVersion) {
+        this.dataVersion = dataVersion;
+    }
 }

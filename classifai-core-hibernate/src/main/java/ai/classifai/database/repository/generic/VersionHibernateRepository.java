@@ -58,9 +58,4 @@ public class VersionHibernateRepository extends AbstractHibernateRepository<Vers
     {
         return new ArrayList<>(project.getVersionList());
     }
-    
-    public void deleteList(List<Version> versionList)
-    {
-        versionList.forEach(this::delete);
-    }
 }

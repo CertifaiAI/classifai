@@ -13,10 +13,6 @@ import java.util.*;
 @lombok.Data
 @Entity(name = "DATA")
 @Inheritance(strategy = InheritanceType.JOINED)
-@NamedQueries({
-        @NamedQuery(name = "Data.listByProject",
-        query = "select d from DATA d where d.project = :project")
-})
 public abstract class DataEntity implements Data
 {
     public static final String listByProjectQuery = "select d from DATA d where d.project = :project";

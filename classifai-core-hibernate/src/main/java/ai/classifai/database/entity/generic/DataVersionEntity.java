@@ -5,6 +5,7 @@ import ai.classifai.core.entity.model.generic.DataVersion;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @lombok.Data
@@ -25,8 +26,7 @@ public abstract class DataVersionEntity implements DataVersion
     @JoinColumn(name = "version_id")
     private VersionEntity version;
 
-    @OneToMany(mappedBy = "dataVersion",
-            cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataVersion")
     private List<AnnotationEntity> annotationList;
 
     public DataVersionEntity()

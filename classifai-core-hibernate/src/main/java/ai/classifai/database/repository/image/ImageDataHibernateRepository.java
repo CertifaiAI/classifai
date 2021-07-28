@@ -5,6 +5,7 @@ import ai.classifai.core.entity.dto.image.ImageDataDTO;
 import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.service.image.ImageDataRepository;
+import ai.classifai.database.entity.generic.DataEntity;
 import ai.classifai.database.entity.generic.ProjectEntity;
 import ai.classifai.database.entity.image.ImageDataEntity;
 import ai.classifai.database.repository.generic.DataHibernateRepository;
