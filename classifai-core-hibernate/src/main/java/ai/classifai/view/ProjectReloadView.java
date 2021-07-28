@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 
 public class ProjectReloadView
 {
-    public static JsonObject generate(List<DataDTO> addedDataDTOList)
+    public JsonObject generate(List<DataDTO> addedDataDTOList)
     {
         return new JsonObject()
                 .put("uuid_add_list", getUuidStringList(addedDataDTOList));
     }
 
-    public static JsonObject generateStatus(List<DataDTO> addedDataDTOList)
+    public JsonObject generateStatus(List<DataDTO> addedDataDTOList)
     {
         JsonObject response = ReplyHandler.getOkReply();
 
@@ -28,7 +28,7 @@ public class ProjectReloadView
                 .put("uuid_add_list", getUuidStringList(addedDataDTOList));
     }
 
-    private static List<String> getUuidStringList(List<DataDTO> addedDataDTOList) {
+    private List<String> getUuidStringList(List<DataDTO> addedDataDTOList) {
         return addedDataDTOList.stream()
                 .map(dataDTO -> dataDTO.getId().toString())
                 .collect(Collectors.toList());

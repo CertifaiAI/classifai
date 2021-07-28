@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class ProjectLoadingView
 {
-    public static JsonObject generateLoadProjectView(List<LabelDTO> labelDTOList, List<DataDTO> dataDTOList)
+    public JsonObject generateLoadProjectView(List<LabelDTO> labelDTOList, List<DataDTO> dataDTOList)
     {
         List<String> labelNameList = labelDTOList.stream()
                 .map(LabelDTO::getName)
@@ -28,7 +28,7 @@ public class ProjectLoadingView
     }
 
     // FIXME: to be deleted
-    public static JsonObject generateLoadProjectViewStatus(List<LabelDTO> labelDTOList, List<DataDTO> dataDTOList)
+    public JsonObject generateLoadProjectViewStatus(List<LabelDTO> labelDTOList, List<DataDTO> dataDTOList)
     {
         return generateLoadProjectView(labelDTOList, dataDTOList)
                 .put("message", 2);

@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class ProjectMetaView
 {
-    public static JsonObject generateMetaList(@NonNull List<ProjectDTO> projectDTOList, @NonNull List<VersionDTO> versionDTOList,
+    public JsonObject generateMetaList(@NonNull List<ProjectDTO> projectDTOList, @NonNull List<VersionDTO> versionDTOList,
                                               List<Boolean> pathValidList, List<Boolean> projectLoadedList)
     {
         JsonArray content = new JsonArray();
@@ -25,7 +25,7 @@ public class ProjectMetaView
                 .put("content", content);
     }
 
-    private static JsonObject generateSingleMeta(ProjectDTO projectDTO, VersionDTO versionDTO, Boolean isPathValid, Boolean isProjectLoaded)
+    private JsonObject generateSingleMeta(ProjectDTO projectDTO, VersionDTO versionDTO, Boolean isPathValid, Boolean isProjectLoaded)
     {
         return new JsonObject()
                 .put("project_name", projectDTO.getName())
@@ -43,7 +43,7 @@ public class ProjectMetaView
     }
 
 
-    public static JsonObject generateMeta(ProjectDTO projectDTO, VersionDTO versionDTO,
+    public JsonObject generateMeta(ProjectDTO projectDTO, VersionDTO versionDTO,
                                           Boolean isPathValid, Boolean isProjectLoaded)
     {
         List<ProjectDTO> projectDTOList = Collections.singletonList(projectDTO);
