@@ -1,6 +1,4 @@
-<p align="center">
-<img src="metadata/AIFDP_Banner.png" width="600" height="110" style="float:left"/>
-</p> 
+
 
 <p align="center">
 <img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="450" height="110" style="float:left"/>
@@ -28,6 +26,10 @@
 <h3 align="center">
 Data Annotation Platform for AI Training
 </h3>
+
+<p align="center">
+<a href="https://certifai.ai/ai-from-the-data-perspective-aifdp/"><img src="metadata/AIFDP_Banner.png" width="600" height="110" style="float:left"/></a>
+</p> 
 
 **Classifai** is one of the most comprehensive open-source data annotation platform.  
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
@@ -167,7 +169,7 @@ java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 | [Documentation](https://docs.classifai.ai/) | Full API documentation and tutorials |
 | [Blogs](https://medium.com/classifai-ai) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
-| [AIFDP](https://certifai.ai/ai-from-the-data-perspective-aifdp/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
+| [AI from the Data Perspective](https://certifai.ai/ai-from-the-data-perspective-aifdp/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
 ## Contact us
 
