@@ -1,6 +1,10 @@
 <p align="center">
+<img src="metadata/AIFDP_Banner.png" width="600" height="110" style="float:left"/>
+</p> 
+
+<p align="center">
 <img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="450" height="110" style="float:left"/>
-</p>                                                                                   
+</p> 
 
 <p>
   <p align="center">
@@ -163,7 +167,7 @@ java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 | [Documentation](https://docs.classifai.ai/) | Full API documentation and tutorials |
 | [Blogs](https://medium.com/classifai-ai) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
-| Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
+| [AIFDP](https://certifai.ai/ai-from-the-data-perspective-aifdp/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
 ## Contact us
 
