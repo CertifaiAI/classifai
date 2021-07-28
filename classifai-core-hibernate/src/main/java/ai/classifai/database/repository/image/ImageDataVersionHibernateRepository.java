@@ -1,7 +1,9 @@
 package ai.classifai.database.repository.image;
 
+import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import ai.classifai.core.entity.dto.image.ImageDataDTO;
 import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
+import ai.classifai.core.entity.model.generic.DataVersion;
 import ai.classifai.core.entity.model.generic.Version;
 import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.entity.model.image.ImageDataVersion;
@@ -16,7 +18,7 @@ import lombok.NonNull;
 import javax.persistence.EntityManager;
 import java.util.List;
 
-public class ImageDataVersionHibernateRepository extends DataVersionHibernateRepository<ImageDataVersion, ImageDataVersionDTO, ImageDataVersionEntity, ImageData, ImageDataDTO> implements ImageDataVersionRepository
+public class ImageDataVersionHibernateRepository extends DataVersionHibernateRepository implements ImageDataVersionRepository
 {
     public ImageDataVersionHibernateRepository(EntityManager em)
     {
@@ -24,8 +26,9 @@ public class ImageDataVersionHibernateRepository extends DataVersionHibernateRep
     }
 
     @Override
-    public ImageDataVersion create(@NonNull ImageDataVersionDTO dto)
+    public ImageDataVersion create(@NonNull DataVersionDTO dataVersionDTO)
     {
+        ImageDataVersionDTO dto = ImageDataVersionDTO.toDTOImpl(dataVersionDTO);
         ImageDataVersionEntity entity = new ImageDataVersionEntity();
         entity.fromDTO(dto);
 
@@ -38,29 +41,5 @@ public class ImageDataVersionHibernateRepository extends DataVersionHibernateRep
 
         em.persist(entity);
         return entity;
-    }
-
-    public ImageDataVersion update(@NonNull ImageDataVersion imageDataVersion, @NonNull ImageDataVersionDTO imageDataVersionDTO) {
-        return null;
-    }
-
-    @Override
-    public List<ImageDataVersion> updateList(List<ImageDataVersion> dataVersionList, List<ImageDataVersionDTO> imageDataVersionDTOS) {
-        return null;
-    }
-
-    @Override
-    public List<ImageDataVersion> listByVersion(Version version) {
-        return null;
-    }
-
-    @Override
-    public List<ImageDataVersion> listByData(ImageData data) {
-        return null;
-    }
-
-    @Override
-    public ImageDataVersion getByDataAndVersion(ImageData data, Version version) {
-        return null;
     }
 }

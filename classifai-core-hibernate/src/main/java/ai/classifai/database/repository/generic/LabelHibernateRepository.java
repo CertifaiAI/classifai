@@ -21,28 +21,29 @@ public class LabelHibernateRepository extends AbstractHibernateRepository<Label,
     }
 
     @Override
-    public Label create(@NonNull LabelDTO labelDTO)
+    public Label create(@NonNull LabelDTO dto)
     {
         LabelEntity entity = new LabelEntity();
-        entity.fromDTO(labelDTO);
+        entity.fromDTO(dto);
 
-        VersionEntity versionEntity = em.getReference(VersionEntity.class, labelDTO.getVersionId());
+        VersionEntity versionEntity = em.getReference(VersionEntity.class, dto.getVersionId());
         versionEntity.addLabel(entity);
 
         em.persist(entity);
         return entity;
     }
 
-    public Label update(@NonNull Label label, @NonNull LabelDTO labelDTO)
+    public Label update(@NonNull Label label, @NonNull LabelDTO dto)
     {
-        return null;
+        label.update(dto);
+        return em.merge(label);
     }
+
 
     @Override
     public List<Label> listByVersion(Version version)
     {
-        return new ArrayList<>(em.createNamedQuery("Label.listByVersion", LabelEntity.class)
-                .setParameter("version", version)
-                .getResultList());
+        VersionEntity versionEntity = em.getReference(VersionEntity.class, version.getId());
+        return versionEntity.getLabelList();
     }
 }

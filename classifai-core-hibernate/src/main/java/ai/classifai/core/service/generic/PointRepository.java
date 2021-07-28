@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface PointRepository extends Repository<Point, PointDTO, UUID>
 {
+    Point update(Point point, PointDTO dto);
 }

@@ -36,8 +36,16 @@ public class ImageDataVersionEntity extends DataVersionEntity implements ImageDa
     }
 
     @Override
-    public ImageDataVersionDTO toDTO() {
-        return null;
+    public ImageDataVersionDTO toDTO()
+    {
+        return ImageDataVersionDTO.builder()
+                .dataId(getId().getDataId())
+                .versionId(getId().getVersionId())
+                .imgX(imgX)
+                .imgY(imgY)
+                .imgH(imgH)
+                .imgW(imgW)
+                .build();
     }
 
     @Override

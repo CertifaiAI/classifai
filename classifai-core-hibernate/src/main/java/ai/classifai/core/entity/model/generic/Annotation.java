@@ -9,4 +9,6 @@ public interface Annotation extends HasDTO<AnnotationDTO>, HasId<Long>
     Integer getPosition();
 
     Label getLabel();
+
+    DataVersion getDataVersion();
 }

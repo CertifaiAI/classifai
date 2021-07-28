@@ -1,6 +1,7 @@
 package ai.classifai.database.repository.generic;
 
 import ai.classifai.core.entity.trait.HasId;
+import ai.classifai.core.service.generic.AbstractRepository;
 import ai.classifai.core.service.generic.Repository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public abstract class AbstractHibernateRepository<Entity extends HasId<Id>, DTO, Id, EntityImpl extends Entity> implements Repository<Entity, DTO, Id>
+public abstract class AbstractHibernateRepository<Entity extends HasId<Id>, DTO, Id, EntityImpl extends Entity> implements AbstractRepository<Entity, DTO, Id>
 {
     protected EntityManager em;
     protected final Class<? extends EntityImpl> entityClass;
@@ -45,11 +46,5 @@ public abstract class AbstractHibernateRepository<Entity extends HasId<Id>, DTO,
         {
             throw new IllegalArgumentException(CLASS_CAST_ERROR_MESSAGE);
         }
-    }
-
-    @Override
-    public void deleteList(@NonNull List<Entity> entityList)
-    {
-        entityList.forEach(this::delete);
     }
 }

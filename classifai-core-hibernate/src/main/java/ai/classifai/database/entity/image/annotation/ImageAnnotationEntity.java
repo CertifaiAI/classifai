@@ -14,6 +14,11 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class ImageAnnotationEntity extends AnnotationEntity implements ImageAnnotation
 {
+    public ImageAnnotationEntity()
+    {
+        pointList = new ArrayList<>();
+    }
+
     @OneToMany(mappedBy = "annotation",
             cascade = CascadeType.ALL)
     List<PointEntity> pointList;

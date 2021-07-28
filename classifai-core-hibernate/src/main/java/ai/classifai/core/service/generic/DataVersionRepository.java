@@ -11,15 +11,7 @@ import ai.classifai.core.service.generic.Repository;
 
 import java.util.List;
 
-public interface DataVersionRepository<Entity extends DataVersion,
-        DataType extends Data, DataTypeDTO extends DataDTO, DTO extends DataVersionDTO>
-        extends Repository<Entity, DTO, DataVersion.DataVersionId>
+public interface DataVersionRepository extends AbstractRepository<DataVersion, DataVersionDTO, DataVersion.DataVersionId>
 {
-    List<Entity> updateList(List<Entity> dataVersionList, List<DTO> dtoList);
-
-    List<Entity> listByVersion(Version version);
-
-    List<Entity> listByData(DataType data);
-
-    Entity getByDataAndVersion(DataType data, Version version);
+    DataVersion update(DataVersion dataVersion, DataVersionDTO dto);
 }

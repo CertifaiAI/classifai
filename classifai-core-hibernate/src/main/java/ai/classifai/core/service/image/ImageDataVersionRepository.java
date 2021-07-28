@@ -1,12 +1,15 @@
 package ai.classifai.core.service.image;
 
+import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import ai.classifai.core.entity.dto.image.ImageDataDTO;
 import ai.classifai.core.entity.dto.image.annotation.ImageAnnotationDTO;
+import ai.classifai.core.entity.model.generic.DataVersion;
 import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.entity.model.image.annotation.ImageAnnotation;
 import ai.classifai.core.entity.model.image.ImageDataVersion;
 import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
 import ai.classifai.core.service.generic.DataVersionRepository;
+import ai.classifai.core.service.generic.Repository;
 
-public interface ImageDataVersionRepository extends DataVersionRepository<ImageDataVersion, ImageData, ImageDataDTO, ImageDataVersionDTO>
+public interface ImageDataVersionRepository extends DataVersionRepository, Repository<DataVersion, DataVersionDTO, DataVersion.DataVersionId>
 {}

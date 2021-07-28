@@ -48,22 +48,4 @@ public class ParamHandler {
                 .put(ParamConfig.getProjectNameParam(), projectName)
                 .mergeIn(annoParamToJson(context));
     }
-
-    public JsonObject dataParamToJson(RoutingContext context)
-    {
-        UUID uuid = getDataId(context);
-
-        return new JsonObject()
-                .put(ParamConfig.getUuidParam(), uuid.toString())
-                .mergeIn(projectParamToJson(context));
-    }
-
-    public JsonObject renameParamToJson(RoutingContext context)
-    {
-        String newProjectName = getNewProjectName(context);
-
-        return new JsonObject()
-                .put(ParamConfig.getNewProjectNameParam(), newProjectName)
-                .mergeIn(projectParamToJson(context));
-    }
 }

@@ -25,7 +25,7 @@ public class LabelEntity implements Label
     @Column(name = "color")
     private String color;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "version_id")
     private VersionEntity version;
 

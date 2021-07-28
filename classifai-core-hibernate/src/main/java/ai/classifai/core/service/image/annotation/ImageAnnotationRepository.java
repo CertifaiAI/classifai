@@ -4,6 +4,6 @@ import ai.classifai.core.entity.model.image.annotation.ImageAnnotation;
 import ai.classifai.core.entity.dto.image.annotation.ImageAnnotationDTO;
 import ai.classifai.core.service.generic.AnnotationRepository;
 
-public interface ImageAnnotationRepository<Entity extends ImageAnnotation, DTO extends ImageAnnotationDTO> extends AnnotationRepository<Entity, DTO>
+public interface ImageAnnotationRepository extends AnnotationRepository
 {
 }

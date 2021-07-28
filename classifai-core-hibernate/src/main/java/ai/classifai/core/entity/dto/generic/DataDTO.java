@@ -1,6 +1,5 @@
 package ai.classifai.core.entity.dto.generic;
 
-import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,4 +23,22 @@ public abstract class DataDTO
 
     @Builder.Default
     UUID projectId = null;
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof DataDTO)
+        {
+            DataDTO dto = (DataDTO) obj;
+            return path.equals(dto.getPath()) && checksum.equals(dto.getChecksum());
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return checksum.hashCode() + path.hashCode();
+    }
 }

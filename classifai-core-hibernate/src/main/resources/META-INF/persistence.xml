@@ -19,7 +19,7 @@
                       value=""/>
 
             <property name="javax.persistence.schema-generation.database.action"
-                      value="drop-and-create"/>
+                      value="create"/>
 
             <!--Logging-->
             <property name="hibernate.show_sql"

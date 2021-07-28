@@ -8,6 +8,6 @@ import ai.classifai.core.service.generic.Repository;
 import java.util.List;
 import java.util.UUID;
 
-public interface DataRepository<DataType extends Data, DTO extends DataDTO> extends Repository<DataType, DTO, UUID>
+public interface DataRepository extends AbstractRepository<Data, DataDTO, UUID>
 {
 }

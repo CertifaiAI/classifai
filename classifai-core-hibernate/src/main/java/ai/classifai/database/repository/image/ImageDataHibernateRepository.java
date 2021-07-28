@@ -1,6 +1,8 @@
 package ai.classifai.database.repository.image;
 
+import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.core.entity.dto.image.ImageDataDTO;
+import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.service.image.ImageDataRepository;
 import ai.classifai.database.entity.generic.ProjectEntity;
@@ -10,15 +12,17 @@ import lombok.NonNull;
 
 import javax.persistence.EntityManager;
 
-public class ImageDataHibernateRepository extends DataHibernateRepository<ImageData, ImageDataDTO, ImageDataEntity> implements ImageDataRepository
+public class ImageDataHibernateRepository extends DataHibernateRepository implements ImageDataRepository
 {
-    public ImageDataHibernateRepository(EntityManager em) {
+    public ImageDataHibernateRepository(EntityManager em)
+    {
         super(em, ImageDataEntity.class);
     }
 
     @Override
-    public ImageData create(@NonNull ImageDataDTO dto)
+    public Data create(@NonNull DataDTO dataDTO)
     {
+        ImageDataDTO dto = ImageDataDTO.toDTOImpl(dataDTO);
         ImageDataEntity entity = new ImageDataEntity();
         entity.fromDTO(dto);
 
@@ -27,9 +31,5 @@ public class ImageDataHibernateRepository extends DataHibernateRepository<ImageD
 
         em.persist(entity);
         return entity;
-    }
-
-    public ImageData update(@NonNull ImageData imageData, @NonNull ImageDataDTO imageDataDTO) {
-        return null;
     }
 }

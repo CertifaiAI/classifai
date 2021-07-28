@@ -35,7 +35,7 @@ public abstract class DataEntity implements Data
     @Column(name = "file_size")
     private Long fileSize;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="project_id")
     private ProjectEntity project;
 

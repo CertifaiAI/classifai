@@ -26,10 +26,11 @@ public class VersionEntity implements Version
     private LocalDateTime modifiedAt;
 
     @OneToMany(mappedBy = "version",
-            cascade = CascadeType.ALL)
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<LabelEntity> labelList;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="project_id")
     private ProjectEntity project;
 

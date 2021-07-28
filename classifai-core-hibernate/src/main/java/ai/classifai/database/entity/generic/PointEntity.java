@@ -33,7 +33,7 @@ public class PointEntity implements Point
     @Column(name = "position")
     private Integer position;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "annotation_id")
     private ImageAnnotationEntity annotation;
 
@@ -64,6 +64,19 @@ public class PointEntity implements Point
         setDist2ImgX(dto.getDist2ImgX());
         setDist2ImgY(dto.getDist2ImgY());
         setPosition(dto.getPosition());
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Point)
+        {
+            Point point = (Point) obj;
+            return x.equals(point.getX()) && y.equals(point.getY())
+            && dist2ImgX.equals(point.getDist2ImgX()) && dist2ImgY.equals(point.getDist2ImgY());
+        }
+
+        return false;
     }
 
 }

@@ -18,7 +18,7 @@ public class PolygonAnnotationEntity extends ImageAnnotationEntity implements Po
 {
     public PolygonAnnotationEntity()
     {
-        pointList = new ArrayList<>();
+        super();
     }
 
     @Override

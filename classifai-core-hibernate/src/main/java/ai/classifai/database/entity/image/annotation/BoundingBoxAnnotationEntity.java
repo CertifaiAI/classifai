@@ -10,11 +10,15 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.stream.Collectors;
 
-@NoArgsConstructor
 @Getter
 @Entity(name = "boundingbox_annotation")
 public class BoundingBoxAnnotationEntity extends ImageAnnotationEntity implements BoundingBoxAnnotation
 {
+    public BoundingBoxAnnotationEntity()
+    {
+        super();
+    }
+
     @Override
     public BoundingBoxAnnotationDTO toDTO()
     {
@@ -35,11 +39,13 @@ public class BoundingBoxAnnotationEntity extends ImageAnnotationEntity implement
     {
         BoundingBoxAnnotationDTO dto = BoundingBoxAnnotationDTO.toDTOImpl(annotationDTO);
         setId(dto.getId());
-        setPosition(dto.getPosition());
         update(dto);
     }
 
     @Override
     public void update(AnnotationDTO annotationDTO)
-    {}
+    {
+        BoundingBoxAnnotationDTO dto = BoundingBoxAnnotationDTO.toDTOImpl(annotationDTO);
+        setPosition(dto.getPosition());
+    }
 }

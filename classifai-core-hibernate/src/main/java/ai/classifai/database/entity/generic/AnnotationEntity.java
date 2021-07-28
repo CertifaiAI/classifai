@@ -23,11 +23,11 @@ public abstract class AnnotationEntity implements Annotation
     @Column(name = "position")
     private Integer position;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "label_id")
     private LabelEntity label;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumns({
             @JoinColumn(name = "data_id", referencedColumnName = "data_id"),
             @JoinColumn(name = "version_id", referencedColumnName = "version_id")

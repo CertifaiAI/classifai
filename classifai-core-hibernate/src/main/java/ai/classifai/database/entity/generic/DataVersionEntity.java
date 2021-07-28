@@ -1,10 +1,6 @@
 package ai.classifai.database.entity.generic;
 
-import ai.classifai.core.entity.dto.generic.AnnotationDTO;
-import ai.classifai.core.entity.dto.generic.DataDTO;
-import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import ai.classifai.core.entity.model.generic.Annotation;
-import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.model.generic.DataVersion;
 
 import javax.persistence.*;
@@ -19,12 +15,12 @@ public abstract class DataVersionEntity implements DataVersion
     @EmbeddedId
     private DataVersionKey id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @MapsId(value = "dataId")
     @JoinColumn(name = "data_id")
     private DataEntity data;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @MapsId(value = "versionId")
     @JoinColumn(name = "version_id")
     private VersionEntity version;
@@ -42,6 +38,11 @@ public abstract class DataVersionEntity implements DataVersion
     {
         annotation.setDataVersion(this);
         annotationList.add(annotation);
+    }
+
+    public void removeAnnotation(AnnotationEntity annotation)
+    {
+        annotationList.remove(annotation);
     }
 
     @Override

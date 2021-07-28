@@ -11,4 +11,6 @@ public interface Label extends HasDTO<LabelDTO>, HasId<UUID>
     String getName();
 
     String getColor();
+
+    Version getVersion();
 }

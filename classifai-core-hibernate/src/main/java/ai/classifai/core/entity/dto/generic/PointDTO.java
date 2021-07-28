@@ -17,7 +17,13 @@ public class PointDTO {
 
     Float x;
     Float y;
-    Float dist2ImgX;
-    Float dist2ImgY;
+
+    @Builder.Default
+    Float dist2ImgX = 0f;
+
+    @Builder.Default
+    Float dist2ImgY = 0f;
     Integer position;
+
+    Long annotationId;
 }

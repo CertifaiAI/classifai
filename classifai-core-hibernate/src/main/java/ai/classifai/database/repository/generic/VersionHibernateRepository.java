@@ -1,5 +1,6 @@
 package ai.classifai.database.repository.generic;
 
+import ai.classifai.core.entity.model.generic.Label;
 import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.core.entity.model.generic.Version;
 import ai.classifai.core.entity.dto.generic.VersionDTO;
@@ -57,8 +58,7 @@ public class VersionHibernateRepository extends AbstractHibernateRepository<Vers
     {
         return new ArrayList<>(project.getVersionList());
     }
-
-    @Override
+    
     public void deleteList(List<Version> versionList)
     {
         versionList.forEach(this::delete);

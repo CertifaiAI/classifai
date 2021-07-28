@@ -15,7 +15,7 @@ public interface DataVersion extends HasDTO<DataVersionDTO>, HasId<DataVersion.D
 
     Version getVersion();
 
-    List<? extends Annotation> getAnnotations();
+    List<Annotation> getAnnotations();
 
     interface DataVersionId
     {

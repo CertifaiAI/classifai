@@ -16,16 +16,21 @@
 package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
+import ai.classifai.controller.generic.*;
 import ai.classifai.database.DbService;
-import ai.classifai.router.controller.*;
-import ai.classifai.router.controller.annotation.image.BoundingBoxAnnotationController;
-import ai.classifai.router.controller.annotation.image.PolygonAnnotationController;
-import ai.classifai.router.controller.data.ImageDataController;
-import ai.classifai.router.controller.dataversion.ImageDataVersionController;
+import ai.classifai.controller.image.BoundingBoxAnnotationController;
+import ai.classifai.controller.image.PolygonAnnotationController;
+import ai.classifai.controller.image.ImageDataController;
+import ai.classifai.controller.image.ImageDataVersionController;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
-import ai.classifai.service.*;
+import ai.classifai.service.generic.LabelService;
+import ai.classifai.service.generic.PointService;
+import ai.classifai.service.generic.ProjectLoadingService;
+import ai.classifai.service.generic.ProjectService;
+import ai.classifai.service.image.ImageAnnotationService;
+import ai.classifai.service.image.ImageService;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -47,12 +52,11 @@ public class EndpointRouter extends AbstractVerticle
     //***********Services***************
     private DbService dbService;
     private ProjectService projectService;
-    private DataService dataService;
     private ImageService imageService;
     private LabelService labelService;
     private ImageAnnotationService imageAnnotationService;
-    private ImageDataVersionService imageDataVersionService;
     private ProjectLoadingService projectLoadingService;
+    private PointService pointService;
 
     private ProjectFolderSelector projectFolderSelector;
     private ProjectImportSelector projectImporter;
@@ -96,15 +100,12 @@ public class EndpointRouter extends AbstractVerticle
             threadZipFileGenerator.start();
 
             dbService = new DbService(vertx);
-
             projectService = new ProjectService(vertx);
-            dataService = new DataService(vertx);
-            imageService = new ImageService(vertx);
             labelService = new LabelService(vertx);
             imageAnnotationService = new ImageAnnotationService(vertx);
             imageService = new ImageService(vertx);
-            imageDataVersionService = new ImageDataVersionService(vertx);
             projectLoadingService = new ProjectLoadingService(vertx);
+            pointService = new PointService(vertx);
 
             promise.complete();
         });
@@ -112,12 +113,11 @@ public class EndpointRouter extends AbstractVerticle
 
     private Future<Void> configureControllers()
     {
-        projectController = new ProjectController(vertx, dbService, projectService, dataService, imageService,
-                labelService, imageDataVersionService, projectLoadingService);
+        projectController = new ProjectController(vertx, dbService, projectService, labelService, projectLoadingService);
         imageDataController = new ImageDataController(vertx, dbService, imageService);
         systemController = new SystemController(vertx, projectFolderSelector, projectImporter, labelFileSelector);
-        labelController = new LabelController(vertx, labelService);
-        imageDataVersionController = new ImageDataVersionController(vertx, imageAnnotationService);
+        labelController = new LabelController(vertx, dbService, labelService);
+        imageDataVersionController = new ImageDataVersionController(vertx, dbService, imageAnnotationService, pointService);
 
         return Future.succeededFuture();
     }
@@ -161,25 +161,27 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete(projectV1Endpoint).handler(projectController::deleteProject);
 
-//        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(imageDataController::getThumbnail);
+        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(imageDataController::getThumbnail);
 
-//        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(imageDataController::getImageSource);
+        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(imageDataController::getImageSource);
 
+        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(imageDataVersionController::updateData);
 
-//        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(imageDataVersionController::updateData);
-//
-//        router.put("/:annotation_type/projects/:project_name/newlabels").handler(labelController::updateLabels);
+        router.put("/:annotation_type/projects/:project_name/newlabels").handler(labelController::updateLabels);
+
+//        router.put("/version/:version_id/label/new").handler(labelController::addLabel);
+
+//        router.delete("/label/:label_id").handler(labelController::deleteLabel);
 
         //*******************************V2 Endpoints*******************************
 
 //        router.put("/v2/newproject").handler(v2::importProject);
 
-//        // FIXME: Endpoint can be improved to "/project/:project_id"
-//        router.put(projectV1Endpoint).handler(projectController::closeProjectState);
-//
+        router.put(projectV1Endpoint).handler(projectController::closeProjectState);
+
         router.put("/:annotation_type/projects/:project_name/star").handler(projectController::starProject);
-//
-//        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(projectController::reloadProject);
+
+        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(projectController::reloadProject);
 
         // FIXME: to be deleted
         router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(projectController::reloadProjectStatus);
@@ -200,7 +202,7 @@ public class EndpointRouter extends AbstractVerticle
 
         router.get("/v2/folders").handler(systemController::selectProjectFolderStatus);
 
-        router.put("/v2/projects").handler(projectController::createImageProject);
+        router.put("/v2/projects").handler(projectController::createProject);
 
         // FIXME: to be deleted
         router.get(projectV2Endpoint).handler(projectController::createProjectStatus);

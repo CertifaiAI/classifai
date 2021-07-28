@@ -1,7 +1,6 @@
 package ai.classifai.core.entity.dto.image;
 
 import ai.classifai.core.entity.dto.generic.DataDTO;
-import io.vertx.core.json.JsonObject;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
