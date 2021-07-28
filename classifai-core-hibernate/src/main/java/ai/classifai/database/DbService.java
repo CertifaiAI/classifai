@@ -31,22 +31,16 @@ import java.util.stream.Collectors;
 
 public class DbService
 {
-    private Vertx vertx;
+    private final Vertx vertx;
     private EntityManager em;
 
-    private VersionRepository versionRepository;
-    private PointRepository pointRepository;
-    private LabelRepository labelRepository;
-    private ProjectRepository projectRepository;
-    private DataVersionRepository dataVersionRepository;
-    private DataRepository dataRepository;
-    private AnnotationRepository annotationRepository;
-
-
-    private ImageDataRepository imageDataRepository;
-    private ImageDataVersionRepository imageDataVersionRepository;
-    private BoundingBoxAnnotationRepository boundingBoxAnnotationRepository;
-    private PolygonAnnotationRepository polygonAnnotationRepository;
+    private final VersionRepository versionRepository;
+    private final PointRepository pointRepository;
+    private final LabelRepository labelRepository;
+    private final ProjectRepository projectRepository;
+    private final DataVersionRepository dataVersionRepository;
+    private final DataRepository dataRepository;
+    private final AnnotationRepository annotationRepository;
 
     public DbService(Vertx vertx)
     {
@@ -60,12 +54,6 @@ public class DbService
         dataRepository = new DataHibernateRepository(em);
         dataVersionRepository = new DataVersionHibernateRepository(em);
         annotationRepository = new AnnotationHibernateRepository(em);
-
-
-        imageDataRepository = new ImageDataHibernateRepository(em);
-        imageDataVersionRepository = new ImageDataVersionHibernateRepository(em);
-        boundingBoxAnnotationRepository = new BoundingBoxHibernateRepository(em);
-        polygonAnnotationRepository = new PolygonHibernateRepository(em);
     }
 
     private void connectDatabase()
@@ -343,9 +331,9 @@ public class DbService
 
         return switch (imageAnnotationDTOEnum)
         {
-            case BoundingBoxAnnotationDTO -> boundingBoxAnnotationRepository.create(annotationDTO);
+            case BoundingBoxAnnotationDTO -> new BoundingBoxHibernateRepository(em).create(annotationDTO);
 
-            case PolygonAnnotationDTO -> polygonAnnotationRepository.create(annotationDTO);
+            case PolygonAnnotationDTO -> new PolygonHibernateRepository(em).create(annotationDTO);
         };
     }
 
@@ -360,7 +348,7 @@ public class DbService
                         .dataId(data.getId())
                         .versionId(version.getId())
                         .build();
-                imageDataVersionRepository.create(dto);
+                new ImageDataVersionHibernateRepository(em).create(dto);
             }
         }
     }
@@ -371,7 +359,7 @@ public class DbService
 
         return switch(dtoEnum)
         {
-            case ImageDataDTO -> imageDataRepository.create(dataDTO);
+            case ImageDataDTO -> new ImageDataHibernateRepository(em).create(dataDTO);
         };
     }
 }
