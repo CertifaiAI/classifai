@@ -114,7 +114,7 @@
             </dependency>
             <dependency>
                 <groupId>ai.classifai</groupId>
-                <artifactId>classifai-core</artifactId>
+                <artifactId>classifai-core-hibernate</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
