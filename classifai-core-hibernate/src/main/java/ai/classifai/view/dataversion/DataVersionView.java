@@ -6,6 +6,11 @@ import io.vertx.core.json.JsonObject;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * abstract class for handling data version request and response
+ *
+ * @author YinChuangSum
+ */
 @Data
 @NoArgsConstructor
 public abstract class DataVersionView

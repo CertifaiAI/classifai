@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * class for handling project loading response
+ *
+ * @author YinChuangSum
+ */
 public class ProjectLoadingView
 {
     public JsonObject generateLoadProjectView(List<LabelDTO> labelDTOList, List<DataDTO> dataDTOList)

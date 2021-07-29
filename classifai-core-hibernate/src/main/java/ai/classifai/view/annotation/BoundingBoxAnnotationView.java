@@ -10,6 +10,11 @@ import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * class for handling bounding box annotation request and response
+ *
+ * @author YinChuangSum
+ */
 public class BoundingBoxAnnotationView extends AnnotationView
 {
 

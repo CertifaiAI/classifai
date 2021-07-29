@@ -12,6 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * abstract class for handling annotation request and response
+ *
+ * @author YinChuangSum
+ */
 @Getter
 public abstract class AnnotationView
 {

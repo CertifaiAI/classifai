@@ -4,6 +4,11 @@ import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * class for handling image data version request and response
+ *
+ * @author YinChuangSum
+ */
 public class ImageDataVersionView extends DataVersionView
 {
     @Override

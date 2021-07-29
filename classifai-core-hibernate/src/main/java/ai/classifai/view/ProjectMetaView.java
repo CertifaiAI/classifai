@@ -11,6 +11,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * class for handling project meta response
+ *
+ * @author YinChuangSum
+ */
 public class ProjectMetaView
 {
     public JsonObject generateMetaList(@NonNull List<ProjectDTO> projectDTOList, @NonNull List<VersionDTO> versionDTOList,

@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * class for handling project reload response
+ *
+ * @author YinChuangSum
+ */
 public class ProjectReloadView
 {
     public JsonObject generate(List<DataDTO> addedDataDTOList)

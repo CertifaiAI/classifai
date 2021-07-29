@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+/**
+ * class for handling polygon annotation request and response
+ *
+ * @author YinChuangSum
+ */
 public class PolygonAnnotationView extends AnnotationView
 {
 

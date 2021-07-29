@@ -2,6 +2,11 @@ package ai.classifai.view.data;
 
 import ai.classifai.util.type.AnnotationType;
 
+/**
+ * abstract class for handling data response
+ *
+ * @author YinChuangSum
+ */
 public abstract class DataView
 {
     public static DataView getDataView(AnnotationType annotationType)

@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * class for handling image data response
+ *
+ * @author YinChuangSum
+ */
 @NoArgsConstructor
 public class ImageDataView extends DataView
 {
