@@ -363,7 +363,7 @@ public class ProjectController extends AbstractVertxController
 //                .onSuccess(addedDataList ->
 //                {
 //                    List<DataDTO> addedDataDTOList = addedDataList.stream()
-//                            .map(HasDTO::toDTO)
+//                            .map(HasDto::toDTO)
 //                            .collect(Collectors.toList());
 //
 //                    sendResponseBody(ProjectReloadView.generateStatus(addedDataDTOList), context);

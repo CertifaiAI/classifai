@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class OSManager
 {
-    private OS currentOS;
+    private final OS currentOS;
 
     public OSManager()
     {
@@ -37,23 +37,23 @@ public class OSManager
 
     private OS getOS(String osPropertyName)
     {
-        if (osPropertyName.indexOf("mac") >= 0)
+        if (osPropertyName.contains("mac"))
         {
             return OS.MAC;
         }
-        else if (osPropertyName.indexOf("win") >= 0)
+        else if (osPropertyName.contains("win"))
         {
             return OS.WINDOWS;
         }
-        else if (osPropertyName.indexOf("linux") >= 0) //centos, ubuntu
+        else if (osPropertyName.contains("linux")) //centos, ubuntu
         {
             return OS.LINUX;
         }
-        else if (osPropertyName.indexOf("nix") >= 0 || osPropertyName.indexOf("nux") >= 0 || osPropertyName.indexOf("aix") > 0)
+        else if (osPropertyName.contains("nix") || osPropertyName.contains("nux") || osPropertyName.contains("aix"))
         {
             return OS.UNIX;
         }
-        else if (osPropertyName.indexOf("sunos") >= 0)
+        else if (osPropertyName.contains("sunos"))
         {
             return OS.SOLARIS;
         }

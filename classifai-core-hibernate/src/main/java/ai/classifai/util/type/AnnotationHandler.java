@@ -110,7 +110,7 @@ public class AnnotationHandler
 
     public static String getMetaKey(int type)
     {
-        return Objects.requireNonNull(getType(type)).META_KEY;
+        return Objects.requireNonNull(getType(type)).metaKey;
     }
 
 

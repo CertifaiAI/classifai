@@ -17,9 +17,12 @@ package ai.classifai.util.collection;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.FileReader;
@@ -33,29 +36,25 @@ import java.util.stream.Collectors;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ConversionHandler
 {
     public static <T> List<T> set2List(Set<T> setList)
     {
-        List<T> list = new ArrayList<T>();
-
-        for (T t : setList) list.add(t);
-
-        return list;
+        return new ArrayList<>(setList);
     }
 
     public static String arrayString2String(String[] input)
     {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < input.length; i++)
-        {
-            sb.append(input[i]);
-        }
+        StringBuilder sb = new StringBuilder();
+
+        Arrays.stream(input)
+                .forEach(sb::append);
+
         return sb.toString();
     }
 
-    public static boolean String2boolean(String input) throws Exception
-    {
+    public static boolean string2Boolean(String input) {
         boolean value = false;
 
         if (input.equals("true") || input.equals("false"))
@@ -64,7 +63,7 @@ public class ConversionHandler
         }
         else
         {
-            throw new Exception("String to boolean failed as input: " + input + ". Only allowed string input of true / false.");
+            throw new IllegalArgumentException("String to boolean failed as input: " + input + ". Only allowed string input of true / false.");
         }
 
         return value;
@@ -99,18 +98,15 @@ public class ConversionHandler
 
             JsonObject vertxJson = new JsonObject();
 
-            Iterator keyIterator = json.keySet().iterator();
-
-            while (keyIterator.hasNext())
-            {
-                String key = (String) keyIterator.next();
+            for (Object o : json.keySet()) {
+                String key = (String) o;
                 vertxJson.put(key, json.get(key));
             }
 
             return vertxJson;
 
         }
-        catch (Exception e)
+        catch (IllegalArgumentException | ParseException e)
         {
             log.error("Error in parsing Object to io.vertx.core.json.JsonObject", e);
         }
@@ -153,23 +149,12 @@ public class ConversionHandler
 
         String content;
 
-        if (input.substring(0, 2).equals("[["))
+        if (input.startsWith("[[") || input.startsWith("[{") || input.startsWith("[ "))
         {
             content = input.substring(2);
             content = content.substring(0, content.length() - 2);
         }
-        else if (input.substring(0, 2).equals("[{"))
-        {
-            content = input.substring(2);
-            content = content.substring(0, content.length() - 2);
-        }
-        else if (input.substring(0, 2).equals("[ "))
-        {
-            content = input.substring(2);
-            content = content.substring(0, content.length() - 2);
-        }
-
-        else if (input.substring(0, 1).equals("["))
+        else if (input.charAt(0) == '[')
         {
             content = input.substring(1);
             content = content.substring(0, content.length() - 1);
@@ -202,18 +187,16 @@ public class ConversionHandler
 
             if (content.length() == 1)
             {
-                return new ArrayList<>(Arrays.asList(Integer.parseInt(content)));
+                return new ArrayList<>(Collections.singletonList(Integer.parseInt(content)));
             }
 
             String delimiter = content.contains(", ") ? ", " : ",";
 
             List<String> subString = Arrays.asList(content.split(delimiter));
 
-            List<Integer> arrayList = subString.stream()
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList());
-
-            return arrayList;
+        return subString.stream()
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 
     public static List<Integer> jsonArray2IntegerList(JsonArray json)

@@ -60,10 +60,13 @@ public class PolygonAnnotationEntity extends ImageAnnotationEntity implements Po
     {
         PolygonAnnotationDTO dto = PolygonAnnotationDTO.toDTOImpl(annotationDTO);
         setId(dto.getId());
-        setPosition(dto.getPosition());
         update(dto);
     }
 
     @Override
-    public void update(AnnotationDTO annotationDTO) {}
+    public void update(AnnotationDTO annotationDTO)
+    {
+        PolygonAnnotationDTO dto = PolygonAnnotationDTO.toDTOImpl(annotationDTO);
+        setPosition(dto.getPosition());
+    }
 }

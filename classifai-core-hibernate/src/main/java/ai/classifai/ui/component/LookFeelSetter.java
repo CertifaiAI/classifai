@@ -16,6 +16,8 @@
 package ai.classifai.ui.component;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -26,6 +28,7 @@ import javax.swing.*;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LookFeelSetter
 {
     public static void setLightMode()

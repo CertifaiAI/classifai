@@ -15,6 +15,11 @@
  */
 package ai.classifai.util.type;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * OS Types
  *
@@ -22,11 +27,38 @@ package ai.classifai.util.type;
  */
 public enum OS
 {
-    WINDOWS,
-    MAC,
-    UBUNTU,
-    LINUX,
-    UNIX,
-    SOLARIS,
-    NULL
+    WINDOWS(Arrays.asList("C:\\Program Files\\classifai\\app\\chrome-win\\chrome.exe",
+                    System.getProperty("user.home") + "\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe",
+                    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+                    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"),
+            Arrays.asList("C:\\Windows\\System32\\notepad.exe",
+                    "C:\\Windows\\notepad.exe")),
+    MAC(Arrays.asList("/Applications/classifai.app/Contents/app/chrome-mac/Chromium.app",
+            "/Applications/Google Chrome.app"),
+            Collections.singletonList("default")),
+    UBUNTU(new ArrayList<>(), new ArrayList<>()),
+    LINUX(Collections.singletonList("default"),
+            Collections.singletonList("default")),
+    UNIX(new ArrayList<>(), new ArrayList<>()),
+    SOLARIS(new ArrayList<>(), new ArrayList<>()),
+    NULL(new ArrayList<>(), new ArrayList<>());
+
+    private final List<String> browserPathList;
+    private final List<String> textEditorPathList;
+
+    OS(List<String> browserPathList, List<String> textEditorPath)
+    {
+        this.browserPathList = browserPathList;
+        this.textEditorPathList = textEditorPath;
+    }
+
+    public List<String> getBrowserPathList()
+    {
+        return browserPathList;
+    }
+
+    public List<String> getTextEditorPathList()
+    {
+        return textEditorPathList;
+    }
 }

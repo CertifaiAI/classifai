@@ -24,11 +24,11 @@ import lombok.NonNull;
  *
  * @author YinChuangSum
  */
-public interface AbstractRepository <Entity extends HasId<Id>, DTO, Id>
+public interface AbstractRepository <entity extends HasId<id>, dto, id>
 {
-    Entity get(@NonNull Id id);
+    entity get(@NonNull id id);
 
-//    Entity update(@NonNull Entity entity, @NonNull DTO dto);
+//    entity update(@NonNull entity entity, @NonNull DTO dto);
 
-    void delete(@NonNull Entity entity);
+    void delete(@NonNull entity entity);
 }

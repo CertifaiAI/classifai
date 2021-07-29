@@ -24,7 +24,7 @@ import lombok.NonNull;
  *
  * @author YinChuangSum
  */
-public interface Repository<Entity extends HasId<Id>, DTO, Id> extends AbstractRepository<Entity, DTO, Id>
+public interface Repository<entity extends HasId<id>, dto, id> extends AbstractRepository<entity, dto, id>
 {
-    Entity create(@NonNull DTO dto);
+    entity create(@NonNull dto dto);
 }

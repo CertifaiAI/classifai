@@ -50,7 +50,7 @@ public class ConverterLauncher extends JPanel
 
     private static final int MAX_PAGE = 20;
 
-    private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
+    private static final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
 
     private static final int ELEMENT_HEIGHT = 40;
     private static final int TEXT_FIELD_LENGTH = 23;
@@ -67,8 +67,8 @@ public class ConverterLauncher extends JPanel
     private static JButton inputBrowserButton;
     private static JButton outputBrowserButton;
 
-    private static JComboBox inputFormatCombo;
-    private static JComboBox outputFormatCombo;
+    private static JComboBox<String> inputFormatCombo;
+    private static JComboBox<String> outputFormatCombo;
 
     private static InputFolderListener inputFolderListener;
     private static OutputFolderListener outputFolderListener;
@@ -84,7 +84,7 @@ public class ConverterLauncher extends JPanel
 
     private static boolean isConvertButtonClicked = false;
 
-    private Task task;
+    private transient Task task;
     private JFrame frame;
 
     static
@@ -100,8 +100,8 @@ public class ConverterLauncher extends JPanel
                 gap + FileFormat.PNG.getUpperCase()
         };
 
-        inputFormatCombo = new JComboBox(inputFormat);
-        outputFormatCombo = new JComboBox(outputFormat);
+        inputFormatCombo = new JComboBox<>(inputFormat);
+        outputFormatCombo = new JComboBox<>(outputFormat);
 
         inputBrowserButton = new JButton("Browse");
         outputBrowserButton = new JButton("Browse");
@@ -329,7 +329,7 @@ public class ConverterLauncher extends JPanel
         {
             Font font = new Font(FONT_TYPE, Font.BOLD, 14);
 
-            JComboBox comboBox = (JComboBox) obj;
+            JComboBox<String> comboBox = (JComboBox<String>) obj;
             comboBox.setFont(font);
 
             Dimension dimension = new Dimension(80, ELEMENT_HEIGHT);
@@ -342,22 +342,24 @@ public class ConverterLauncher extends JPanel
 
             Font font = new Font(FONT_TYPE, Font.PLAIN, 14);
 
-            JProgressBar progressBar = (JProgressBar) obj;
-            progressBar.setFont(font);
+            JProgressBar jProgressBar = (JProgressBar) obj;
+            jProgressBar.setFont(font);
 
-            progressBar.setForeground(Color.YELLOW);
-            progressBar.setPreferredSize(dimension);
+            jProgressBar.setForeground(Color.YELLOW);
+            jProgressBar.setPreferredSize(dimension);
 
-            progressBar.setBorderPainted(true);
+            jProgressBar.setBorderPainted(true);
 
-            progressBar.setValue(0);
-            progressBar.setUI(new BasicProgressBarUI() {
+            jProgressBar.setValue(0);
+            jProgressBar.setUI(new BasicProgressBarUI() {
+                @Override
                 protected Color getSelectionBackground() { return Color.LIGHT_GRAY; }
+                @Override
                 protected Color getSelectionForeground() { return Color.BLACK; }
             });
 
             Border border = BorderFactory.createEtchedBorder(0);
-            progressBar.setBorder(border);
+            jProgressBar.setBorder(border);
 
         }
         else if (obj instanceof JTextArea)
@@ -389,15 +391,12 @@ public class ConverterLauncher extends JPanel
 
     public void launch()
     {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
+        SwingUtilities.invokeLater(() -> {
 
-                configure();
-                start();
+            configure();
+            start();
 
-                frame.setVisible(true);
-            }
+            frame.setVisible(true);
         });
     }
 
@@ -436,7 +435,7 @@ public class ConverterLauncher extends JPanel
                 progressBar.setIndeterminate(false);
                 progressBar.setValue(progress);
 
-                //taskOutput.append(String.format("Completed %d%% of task.\n", progress));
+                taskOutput.append(String.format("Completed %d%% of task.\n", progress));
             }
         }
     }
@@ -472,7 +471,7 @@ public class ConverterLauncher extends JPanel
             return new String[]{"tif", "tiff"};
         }
 
-        return null;
+        return new String[0];
     }
 
     public static String getInputFolderPath()

@@ -22,9 +22,9 @@ import ai.classifai.util.type.AnnotationType;
  *
  * @author YinChuangSum
  */
-public abstract class DataView
+public interface DataView
 {
-    public static DataView getDataView(AnnotationType annotationType)
+    static DataView getDataView(AnnotationType annotationType)
     {
         return switch (annotationType)
         {

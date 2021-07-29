@@ -51,7 +51,7 @@ public class ProjectHibernateRepository extends AbstractHibernateRepository<Proj
                 .setParameter("name", name)
                 .getResultList()
                 .stream()
-                .map(projectEntity -> (Project) projectEntity)
+                .map(Project.class::cast)
                 .findFirst();
     }
 

@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
  * @author YinChuangSum
  */
 @NoArgsConstructor
-public class ImageDataView extends DataView
+public class ImageDataView implements DataView
 {
     // FIXME: mixed data, dataversion
     public JsonObject generateImageDataView(ProjectDTO projectDTO, ImageDataDTO imageDataDTO, String thumbnail, JsonObject dataVersionView, JsonObject annotationView)

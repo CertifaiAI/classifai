@@ -42,7 +42,7 @@ public abstract class AbstractVertxController
     protected ParamHandler paramHandler;
     protected Util helper;
 
-    public AbstractVertxController(Vertx vertx)
+    protected AbstractVertxController(Vertx vertx)
     {
         this.vertx = vertx;
         this.paramHandler = new ParamHandler();

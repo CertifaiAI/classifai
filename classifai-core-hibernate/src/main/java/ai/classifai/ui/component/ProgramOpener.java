@@ -17,6 +17,7 @@ package ai.classifai.ui.component;
 
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.type.OS;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +31,7 @@ import java.awt.*;
  * @author codenamewei
  */
 @Slf4j
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProgramOpener
 {
     private static ImageIcon browserNotFoundIcon;
@@ -39,7 +40,7 @@ public class ProgramOpener
     {
         try
         {
-            Image iconImage = ImageIO.read(BrowserHandler.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
+            Image iconImage = ImageIO.read(ProgramOpener.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
 
             browserNotFoundIcon = new ImageIcon(iconImage);
         }

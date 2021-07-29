@@ -28,15 +28,15 @@ import javax.persistence.EntityManager;
  * @author YinChuangSum
  */
 @AllArgsConstructor
-public abstract class AbstractHibernateRepository<Entity extends HasId<Id>, DTO, Id, EntityImpl extends Entity> implements AbstractRepository<Entity, DTO, Id>
+public abstract class AbstractHibernateRepository<entity extends HasId<id>, dto, id, entityImpl extends entity> implements AbstractRepository<entity, dto, id>
 {
     protected EntityManager em;
-    protected final Class<? extends EntityImpl> entityClass;
+    protected final Class<? extends entityImpl> entityClass;
 
     public static final String CLASS_CAST_ERROR_MESSAGE = "Entity given is not hibernate entity, wrong pair of repository and entity is used!";
 
     @Override
-    public void delete(@NonNull Entity entity)
+    public void delete(@NonNull entity entity)
     {
         if (! em.contains(entity))
         {
@@ -47,17 +47,17 @@ public abstract class AbstractHibernateRepository<Entity extends HasId<Id>, DTO,
     }
 
     @Override
-    public Entity get(@NonNull Id id)
+    public entity get(@NonNull id id)
     {
         return em.find(entityClass, id);
     }
 
     @SuppressWarnings("unchecked")
-    protected EntityImpl toEntityImpl(Entity entity)
+    protected entityImpl toEntityImpl(entity entity)
     {
         try
         {
-            return (EntityImpl) entity;
+            return (entityImpl) entity;
         }
         catch (ClassCastException e)
         {

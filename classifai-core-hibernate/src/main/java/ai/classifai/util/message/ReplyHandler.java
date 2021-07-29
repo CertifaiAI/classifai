@@ -16,6 +16,8 @@
 package ai.classifai.util.message;
 
 import io.vertx.core.json.JsonObject;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReplyHandler {
 
     private static final String ERROR_CODE = "error_code";
@@ -49,7 +52,6 @@ public class ReplyHandler {
     {
         log.error("Database query error", cause);
 
-        //message.fail(ErrorCodes.DB_ERROR.ordinal(), cause.getMessage());
         return new JsonObject().put(MESSAGE_KEY, FAILED)
                                .put(ERROR_CODE, ErrorCodes.DB_ERROR.ordinal())
                                .put(ERROR_MESSAGE, cause.getMessage());

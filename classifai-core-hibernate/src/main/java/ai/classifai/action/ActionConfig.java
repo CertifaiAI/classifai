@@ -36,20 +36,20 @@ public class ActionConfig
         CONFIG_WITH_DATA
     }
 
-    @Getter private static final String toolParam = "tool";
-    @Getter private static final String toolVersionParam = "tool_version";
-    @Getter private static final String updatedDateParam = "updated_date";
+    public static final String TOOL_PARAM = "tool";
+    public static final String TOOL_VERSION_PARAM = "tool_version";
+    public static final String UPDATE_DATE_PARAM = "updated_date";
 
-    @Getter private static final String exportTypeParam = "export_type";
-    @Getter private static final String exportStatusParam = "export_status";
-    @Getter private static final String exportStatusMessageParam = "export_status_message";
+    public static final String EXPORT_TYPE_PARAM = "export_type";
+    public static final String EXPORT_STATUS_PARAM = "export_status";
+    public static final String EXPORT_STATUS_MESSAGE_PARAM = "export_status_message";
 
-    @Getter private static final String toolName = "classifai";
+    public static final String TOOL_NAME = "classifai";
 
-    @Getter private static final String toolVersion = ActionConfig.class.getPackage().getImplementationVersion();
+    public static final String TOOL_VERSION = ActionConfig.class.getPackage().getImplementationVersion();
 
     //output file path
-    @Getter private static final String projectConfigPathParam = "project_config_path";
+    public static final String PROJECT_CONFIG_PATH_PARAM = "project_config_path";
 
     // User json file absolute path
     @Getter @Setter private static String jsonFilePath;

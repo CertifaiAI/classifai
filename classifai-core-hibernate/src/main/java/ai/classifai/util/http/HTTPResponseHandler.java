@@ -18,6 +18,8 @@ package ai.classifai.util.http;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /**
@@ -25,6 +27,7 @@ import lombok.NonNull;
  *
  * @author codenamewei
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HTTPResponseHandler
 {
     public static void configureOK(@NonNull RoutingContext context, JsonObject jsonObject)

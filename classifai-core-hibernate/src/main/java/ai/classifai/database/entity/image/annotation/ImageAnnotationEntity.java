@@ -33,7 +33,7 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class ImageAnnotationEntity extends AnnotationEntity implements ImageAnnotation
 {
-    public ImageAnnotationEntity()
+    protected ImageAnnotationEntity()
     {
         pointList = new ArrayList<>();
     }

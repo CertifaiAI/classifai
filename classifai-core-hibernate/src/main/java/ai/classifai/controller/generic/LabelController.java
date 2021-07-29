@@ -79,9 +79,13 @@ public class LabelController extends AbstractVertxController
             Future<Void> addLabelListFuture = getCurrentVersionLabelListFuture
                     .compose(labelList ->
                             labelService.getToAddLabelDTOListFuture(labelList, newLabelList))
-                    .compose(labelDTOList -> Future.succeededFuture(labelDTOList.stream()
-                            .peek(labelDTO -> labelDTO.setVersionId(getCurrentVersionFuture.result().getId()))
-                            .collect(Collectors.toList())))
+                    .compose(labelDTOList ->
+                    {
+                        labelDTOList.forEach(labelDTO ->
+                                labelDTO.setVersionId(getCurrentVersionFuture.result().getId()));
+
+                        return Future.succeededFuture(labelDTOList);
+                    })
                     .compose(dbService::addLabelList);
 
             addLabelListFuture

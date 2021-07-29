@@ -15,7 +15,6 @@
  */
 package ai.classifai.util.data;
 
-import ai.classifai.data.image.ImageFileType;
 import ai.classifai.service.image.ImageDataService;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
@@ -89,13 +88,13 @@ public class TifHandler
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
-                if (fImageSavedFullPath.exists() == false)
+                if (!fImageSavedFullPath.exists())
                 {
                     BufferedImage bim = reader.read(page);
 
-                    if ((bim.getWidth() > ImageDataService.MAX_SIZE) || (bim.getHeight() > ImageFileType.getMaxHeight()))
+                    if ((bim.getWidth() > ImageDataService.MAX_SIZE) || (bim.getHeight() > ImageDataService.MAX_SIZE))
                     {
-                        log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
+                        log.debug("Image width and/or height bigger than " + ImageDataService.MAX_SIZE);
                     }
 
                     // suffix in filename will be used as the file format

@@ -15,6 +15,8 @@
  */
 package ai.classifai.ui.launcher;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
@@ -26,6 +28,7 @@ import java.awt.*;
  * @author Kenge
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LogoLauncher {
 
     public static void print()
@@ -45,9 +48,7 @@ public class LogoLauncher {
     {
         try
         {
-            final Image image = ImageIO.read(WelcomeLauncher.class.getResource( "/console/" + "Classifai_Favicon_Light_BG.jpg"));
-
-            return image;
+            return ImageIO.read(WelcomeLauncher.class.getResource( "/console/" + "Classifai_Favicon_Light_BG.jpg"));
         }
         catch (Exception e)
         {

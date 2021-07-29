@@ -36,10 +36,7 @@ import io.vertx.core.Vertx;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -129,8 +126,9 @@ public class DbService
 
         projectRepository.setCurrentVersion(project, version);
 
+        dataDTOList.forEach(dataDTO -> dataDTO.setProjectId(projectId));
+
         List<Data> dataList = dataDTOList.stream()
-                .peek(dataDTO -> dataDTO.setProjectId(projectId))
                 .map(this::persistData)
                 .collect(Collectors.toList());
 
@@ -181,8 +179,9 @@ public class DbService
 
     private List<Data> addDataListRunnable(List<DataDTO> dataDTOList, Project project)
     {
+        dataDTOList.forEach(dataDTO -> dataDTO.setProjectId(project.getId()));
+
         List<Data> dataList = dataDTOList.stream()
-                .peek(dataDTO -> dataDTO.setProjectId(project.getId()))
                 .map(this::persistData)
                 .collect(Collectors.toList());
 
@@ -233,11 +232,11 @@ public class DbService
                         .forEach(this::deleteLabelById));
     }
 
-    public Future<Void> deleteLabelById(UUID label_id)
+    public Future<Void> deleteLabelById(UUID labelId)
     {
         return runTransaction(() ->
         {
-            Label label = labelRepository.get(label_id);
+            Label label = labelRepository.get(labelId);
             labelRepository.delete(label);
         });
     }
@@ -253,12 +252,16 @@ public class DbService
     public Annotation addImageAnnotationRunnable(AnnotationDTO annotationDTO, List<PointDTO> pointDTOList)
     {
         Annotation annotation = persistImageAnnotation(annotationDTO);
-        pointDTOList.stream()
-                .peek(pointDTO -> pointDTO.setAnnotationId(annotation.getId()))
-                .forEach(pointRepository::create);
+
+        pointDTOList.forEach(pointDTO ->
+        {
+            pointDTO.setAnnotationId(annotation.getId());
+            pointRepository.create(pointDTO);
+        });
 
         return annotation;
     }
+
 
     public Future<Annotation> addImageAnnotation(AnnotationDTO annotationDTO, List<PointDTO> pointDTOList)
     {
@@ -346,23 +349,23 @@ public class DbService
 
     private Annotation persistImageAnnotation(AnnotationDTO annotationDTO)
     {
-        ImageAnnotationDTOEnum imageAnnotationDTOEnum = ImageAnnotationDTOEnum.valueOf(annotationDTO.getClass().getSimpleName());
+        ImageAnnotationDTOEnum imageAnnotationDTOEnum = ImageAnnotationDTOEnum.valueOf(annotationDTO.getClass().getSimpleName().toUpperCase(Locale.ROOT));
 
         return switch (imageAnnotationDTOEnum)
         {
-            case BoundingBoxAnnotationDTO -> new BoundingBoxAnnotationHibernateRepository(em).create(annotationDTO);
+            case BOUNDINGBOXANNOTATIONDTO -> new BoundingBoxAnnotationHibernateRepository(em).create(annotationDTO);
 
-            case PolygonAnnotationDTO -> new PolygonAnnotationHibernateRepository(em).create(annotationDTO);
+            case POLYGONANNOTATIONDTO -> new PolygonAnnotationHibernateRepository(em).create(annotationDTO);
         };
     }
 
     private void persistDataVersion(Data data, Version version)
     {
-        DataEntityEnum dataEntityEnum = DataEntityEnum.valueOf(data.getClass().getSimpleName());
+        DataEntityEnum dataEntityEnum = DataEntityEnum.valueOf(data.getClass().getSimpleName().toUpperCase(Locale.ROOT));
 
         switch (dataEntityEnum)
         {
-            case ImageDataEntity -> {
+            case IMAGEDATAENTITY -> {
                 ImageDataVersionDTO dto = ImageDataVersionDTO.builder()
                         .dataId(data.getId())
                         .versionId(version.getId())
@@ -374,11 +377,11 @@ public class DbService
 
     private Data persistData(DataDTO dataDTO)
     {
-        DataDTOEnum dtoEnum = DataDTOEnum.valueOf(dataDTO.getClass().getSimpleName());
+        DataDTOEnum dtoEnum = DataDTOEnum.valueOf(dataDTO.getClass().getSimpleName().toUpperCase(Locale.ROOT));
 
         return switch(dtoEnum)
         {
-            case ImageDataDTO -> new ImageDataHibernateRepository(em).create(dataDTO);
+            case IMAGEDATADTO -> new ImageDataHibernateRepository(em).create(dataDTO);
         };
     }
 }

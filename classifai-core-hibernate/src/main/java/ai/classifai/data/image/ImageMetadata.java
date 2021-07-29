@@ -45,13 +45,13 @@ public abstract class ImageMetadata
     private static final ImageDataFactory FACTORY = new ImageDataFactory();
     protected Metadata metadata;
     protected Directory directory;
-    private final String MIME_TYPE;
+    private final String mimeType;
 
     protected <T extends Directory> ImageMetadata(Metadata metadata, Class<T> directoryClass, String mimeType)
     {
         this.metadata = metadata;
         this.directory = metadata.getFirstDirectoryOfType(directoryClass);
-        this.MIME_TYPE = mimeType;
+        this.mimeType = mimeType;
     }
 
     protected abstract int getRawWidth();
@@ -64,7 +64,7 @@ public abstract class ImageMetadata
 
     public String getBase64Header()
     {
-        return String.format("data:%s;base64,", MIME_TYPE);
+        return String.format("data:%s;base64,", mimeType);
     }
 
     protected void logMetadataError()

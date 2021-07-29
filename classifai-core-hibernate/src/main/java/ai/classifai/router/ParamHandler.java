@@ -19,6 +19,7 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.ext.web.RoutingContext;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
@@ -27,9 +28,9 @@ import java.util.UUID;
  *
  * @author YinChuangSum
  */
-public class ParamHandler {
-    public ParamHandler() {}
-
+@NoArgsConstructor
+public class ParamHandler
+{
     public String getNewProjectName(RoutingContext context)
     {
         return context.request().getParam(ParamConfig.getNewProjectNameParam());

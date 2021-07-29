@@ -20,7 +20,7 @@ package ai.classifai.core.entity.trait;
  *
  * @author YinChuangSum
  */
-public interface HasId<Id>
+public interface HasId<id>
 {
-    public Id getId();
+    public id getId();
 }

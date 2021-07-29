@@ -15,6 +15,9 @@
  */
 package ai.classifai.util.http;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,9 +27,10 @@ import java.util.Map;
  * @author codenamewei
  * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">httpStatusCode</a>
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HTTPResponseCode{
 
-    private static Map<String, Integer> STATUS_CODE;
+    private static final Map<String, Integer> STATUS_CODE;
 
     static
     {

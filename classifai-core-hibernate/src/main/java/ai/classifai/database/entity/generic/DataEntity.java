@@ -34,8 +34,6 @@ import java.util.UUID;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class DataEntity implements Data
 {
-    public static final String listByProjectQuery = "select d from DATA d where d.project = :project";
-
     @Id
     @GeneratedValue
     @Column(name = "id")
@@ -58,7 +56,7 @@ public abstract class DataEntity implements Data
             cascade = CascadeType.ALL)
     private List<DataVersionEntity> dataVersionList;
 
-    public DataEntity()
+    protected DataEntity()
     {
         dataVersionList = new ArrayList<>();
     }

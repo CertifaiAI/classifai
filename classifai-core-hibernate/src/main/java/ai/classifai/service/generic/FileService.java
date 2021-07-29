@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  */
 public abstract class FileService extends AbstractVertxService
 {
-    public FileService(Vertx vertx)
+    protected FileService(Vertx vertx)
     {
         super(vertx);
     }

@@ -97,8 +97,8 @@ public class ImageDataController extends AbstractVertxController
         Future<List<ImageAnnotation>> getImageAnnotationListFuture = getDataVersionFuture
                 .compose(imageDataVersion -> Future.succeededFuture(imageDataVersion.getAnnotations()))
                 .compose(annotationList -> Future.succeededFuture(annotationList.stream()
-                        .filter(annotation -> annotation instanceof ImageAnnotation)
-                        .map(annotation -> (ImageAnnotation) annotation)
+                        .filter(ImageAnnotation.class::isInstance)
+                        .map(ImageAnnotation.class::cast)
                         .collect(Collectors.toList())));
 
         Future<List<List<Point>>> getPointListsFuture = getImageAnnotationListFuture

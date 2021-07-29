@@ -16,6 +16,8 @@
 package ai.classifai.util.data;
 
 import io.vertx.core.json.JsonArray;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
  *
  * @author codenamewei
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StringHandler
 {
     public static String removeSlashes(@NonNull String input)
@@ -47,7 +50,7 @@ public class StringHandler
     {
         return new JsonArray(string)
                 .stream()
-                .map(obj -> (String) obj)
+                .map(String.class::cast)
                 .collect(Collectors.toList());
     }
 }

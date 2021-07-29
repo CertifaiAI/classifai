@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  */
 public abstract class DataService extends FileService
 {
-    public DataService(Vertx vertx) {
+    protected DataService(Vertx vertx) {
         super(vertx);
     }
 

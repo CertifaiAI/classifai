@@ -15,7 +15,7 @@
  */
 package ai.classifai.util.data;
 
-import ai.classifai.data.image.ImageFileType;
+import ai.classifai.service.image.ImageDataService;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
 import lombok.NoArgsConstructor;
@@ -38,7 +38,7 @@ import java.io.File;
 @NoArgsConstructor
 public class PdfHandler
 {
-    private final Integer DOTS_PER_INCH = 300;
+    private static final Integer DOTS_PER_INCH = 300;
 
     public String savePdf2Image(@NonNull File pdfFullPath, String outputPath, @NonNull String extensionFormat)
     {
@@ -76,14 +76,14 @@ public class PdfHandler
 
                 File fImageSavedFullPath = new File(imageSavedFullPath);
 
-                if (fImageSavedFullPath.exists() == false)
+                if (!fImageSavedFullPath.exists())
                 {
                     BufferedImage bim = pdfRenderer.renderImageWithDPI(page, DOTS_PER_INCH, ImageType.RGB); //do it needs to be ImageType.COLOR or GRAY?
 
-                    if ((bim.getWidth() > ImageFileType.getMaxWidth()) || (bim.getHeight() > ImageFileType.getMaxHeight()))
+                    if (bim.getWidth() > ImageDataService.MAX_SIZE || bim.getHeight() > ImageDataService.MAX_SIZE)
                     {
                         document.close();
-                        log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
+                        log.debug("Image width and/or height bigger than " + ImageDataService.MAX_SIZE);
                     }
 
                     // suffix in filename will be used as the file format

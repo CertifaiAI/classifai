@@ -28,11 +28,11 @@ public enum AnnotationType
     SEGMENTATION("polygon");
     //ADD WHEN HAVE NEW ANNOTATION TYPE
 
-    public final String META_KEY;
+    public final String metaKey;
 
     AnnotationType(String metaKey)
     {
-        META_KEY = metaKey;
+        this.metaKey = metaKey;
     }
 
     public static AnnotationType fromInt(int idx)

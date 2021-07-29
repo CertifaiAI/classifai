@@ -17,8 +17,6 @@ package ai.classifai.ui.launcher;
 
 
 import ai.classifai.MainVerticle;
-import ai.classifai.ui.component.BrowserHandler;
-import ai.classifai.ui.component.LogHandler;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.component.ProgramOpener;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
@@ -78,6 +76,8 @@ public class WelcomeLauncher extends JFrame
 
     private static ConverterLauncher converterLauncher = null;
 
+    public static String browserUrl;
+
 
     static
     {
@@ -86,6 +86,8 @@ public class WelcomeLauncher extends JFrame
 
         LOG_FAILED_MESSAGE = "Log file failed to open in editor.\n" +
                 "Find the log file in " + ParamConfig.getLogFilePath();
+
+        browserUrl = "http://localhost:" + ParamConfig.getHostingPort();
 
         configure();
     }
@@ -110,7 +112,7 @@ public class WelcomeLauncher extends JFrame
 
         try
         {
-            Image iconImage = ImageIO.read(BrowserHandler.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
+            Image iconImage = ImageIO.read(WelcomeLauncher.class.getResource( "/icon/Classifai_Favicon_Dark_32px.png"));
 
             browserNotFoundIcon = new ImageIcon(iconImage);
         }
@@ -158,7 +160,7 @@ public class WelcomeLauncher extends JFrame
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
 
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         mainFrame.setResizable(false);
 
@@ -181,46 +183,35 @@ public class WelcomeLauncher extends JFrame
         openButton = getButton(OPEN_BUTTON_FILE_NAME, "Open");
         openButton.setBounds(BTN_X_COORD + X_GAP * 0, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e)
+        openButton.addActionListener(event -> {
+            boolean isOpen = false;
+
+            OS currentOS = ParamConfig.getOsManager().getCurrentOS();
+
+            java.util.List<String> programPath = currentOS.getBrowserPathList();
+
+            for (String browser : programPath)
             {
-                boolean isOpen = false;
-
-                OS currentOS = ParamConfig.getOsManager().getCurrentOS();
-
-                java.util.List<String> programPath = BrowserHandler.getOSBrowser(currentOS);
-
-                for (String browser : programPath)
+                if (isProgramPathExist(browser))
                 {
-                    if (isProgramPathExist(browser))
+                    String[] command = switch (currentOS)
                     {
-                        String[] command = null;
+                        case MAC -> new String[]{"/usr/bin/open", "-a", browser, browserUrl};
+                        case WINDOWS -> new String[]{browser + " " + browserUrl};
+                        case LINUX -> new String[]{"gio", "open", browserUrl};
+                        default -> new String[0];
+                    };
 
-                        if (currentOS.equals(OS.MAC))
-                        {
-                            command = new String[]{"/usr/bin/open", "-a", browser, BrowserHandler.getBrowserURL()};
-                        }
-                        else if (currentOS.equals(OS.WINDOWS))
-                        {
-                            command = new String[]{browser + " " + BrowserHandler.getBrowserURL()};
-                        }
-                        else if (currentOS.equals(OS.LINUX))
-                        {
-                            command = new String[]{"gio", "open", BrowserHandler.getBrowserURL()};
-                        }
-
-                        if (ProgramOpener.runProgramPath(currentOS, command)) {
-                            isOpen = true;
-                            break;
-                        }
+                    if (ProgramOpener.runProgramPath(currentOS, command)) {
+                        isOpen = true;
+                        break;
                     }
                 }
+            }
 
-                if (!isOpen)
-                {
-                    failToOpenProgramPathMessage(BROWSER_FAILED_MESSAGE);
-                }
+            if (!isOpen)
+            {
+                failToOpenProgramPathMessage(BROWSER_FAILED_MESSAGE);
             }
         });
     }
@@ -230,14 +221,11 @@ public class WelcomeLauncher extends JFrame
         converterButton = getButton(CONFIG_BUTTON_FILE_NAME, "Conversion");
         converterButton.setBounds(BTN_X_COORD + X_GAP * 1, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        converterButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!ConverterLauncher.isOpened())
-                {
-                    converterLauncher = new ConverterLauncher();//to prevent any lingering tasks
-                    converterLauncher.launch();
-                }
+        converterButton.addActionListener(event -> {
+            if (!ConverterLauncher.isOpened())
+            {
+                converterLauncher = new ConverterLauncher();//to prevent any lingering tasks
+                converterLauncher.launch();
             }
         });
     }
@@ -247,48 +235,38 @@ public class WelcomeLauncher extends JFrame
         logButton = getButton(LOG_BUTTON_FILE_NAME, "Logs");
         logButton.setBounds(BTN_X_COORD + (X_GAP * 2) - 2, BTN_Y_COORD, BTN_WIDTH, BTN_HEIGHT);
 
-        logButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean isOpen = false;
+        logButton.addActionListener(event -> {
+            boolean isOpen = false;
 
-                OS currentOS = ParamConfig.getOsManager().getCurrentOS();
+            OS currentOS = ParamConfig.getOsManager().getCurrentOS();
 
-                java.util.List<String> programPath = LogHandler.getOSEditor(currentOS);
+            java.util.List<String> programPath = currentOS.getTextEditorPathList();
 
-                for (String editor : programPath)
+            for (String editor : programPath)
+            {
+                if (isProgramPathExist(editor))
                 {
-                    if (isProgramPathExist(editor))
+                    String logPath = ParamConfig.getLogFilePath();
+
+                    String[] command = switch (currentOS)
+                            {
+                                case MAC -> new String[]{"/usr/bin/open", "-e", logPath};
+                                case WINDOWS -> new String[]{editor + " " + logPath};
+                                case LINUX -> new String[]{"gio", "open", logPath};
+                                default -> new String[0];
+                            };
+
+                    if (ProgramOpener.runProgramPath(currentOS, command))
                     {
-                        String[] command = null;
-
-                        String logPath = ParamConfig.getLogFilePath();
-
-                        if (currentOS.equals(OS.MAC))
-                        {
-                            command = new String[]{"/usr/bin/open", "-e", logPath};
-                        }
-                        else if (currentOS.equals(OS.WINDOWS))
-                        {
-                            command = new String[]{editor + " " + logPath};
-                        }
-                        else if (currentOS.equals(OS.LINUX))
-                        {
-                            command = new String[]{"gio", "open", logPath};
-                        }
-
-                        if (ProgramOpener.runProgramPath(currentOS, command))
-                        {
-                            isOpen = true;
-                            break;
-                        }
+                        isOpen = true;
+                        break;
                     }
                 }
+            }
 
-                if (!isOpen)
-                {
-                    failToOpenProgramPathMessage(LOG_FAILED_MESSAGE);
-                }
+            if (!isOpen)
+            {
+                failToOpenProgramPathMessage(LOG_FAILED_MESSAGE);
             }
         });
     }

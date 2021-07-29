@@ -72,7 +72,7 @@ public class ImageAnnotationService extends AbstractVertxService
     {
         return vertx.executeBlocking(promise ->
         {
-            if ((annotationList.size() == 0 && labelDTOList.size() == 0)|| annotationList.size() != labelDTOList.size())
+            if ((annotationList.isEmpty() && labelDTOList.isEmpty())|| annotationList.size() != labelDTOList.size())
             {
                 promise.complete();
                 return;

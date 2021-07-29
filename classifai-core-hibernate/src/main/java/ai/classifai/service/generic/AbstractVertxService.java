@@ -26,7 +26,7 @@ public abstract class AbstractVertxService
 {
     protected Vertx vertx;
 
-    public AbstractVertxService(Vertx vertx)
+    protected AbstractVertxService(Vertx vertx)
     {
         this.vertx = vertx;
     }

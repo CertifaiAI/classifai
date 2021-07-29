@@ -62,7 +62,7 @@ public abstract class AnnotationView
                 .forEach(i -> annotationList.add(getSingleAnnotationView(imageAnnotationDTOList.get(i), pointDTOLists.get(i), labelDTOList.get(i))));
 
         return new JsonObject()
-                .put(annotationType.META_KEY, annotationList);
+                .put(annotationType.metaKey, annotationList);
     }
 
     private JsonObject getSingleAnnotationView(AnnotationDTO annotationDTO, List<PointDTO> pointDTOList, LabelDTO labelDTO)
@@ -84,7 +84,7 @@ public abstract class AnnotationView
 
     public void decode(JsonObject view)
     {
-        JsonArray annotationArray = view.getJsonArray(annotationType.META_KEY);
+        JsonArray annotationArray = view.getJsonArray(annotationType.metaKey);
 
         annotationDTOList = new ArrayList<>();
         pointDTOLists = new ArrayList<>();

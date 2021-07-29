@@ -15,12 +15,13 @@
  */
 package ai.classifai.action;
 
-import ai.classifai.util.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 /**
  * Export of project to a configuration file
@@ -46,9 +47,9 @@ public class ProjectExport
     public static JsonObject getConfigSkeletonStructure()
     {
         return new JsonObject()
-                .put(ActionConfig.getToolParam(), ActionConfig.getToolName())
-                .put(ActionConfig.getToolVersionParam(), ActionConfig.getToolVersion())
-                .put(ActionConfig.getUpdatedDateParam(), DateTime.now());
+                .put(ActionConfig.TOOL_PARAM, ActionConfig.TOOL_NAME)
+                .put(ActionConfig.TOOL_VERSION_PARAM, ActionConfig.TOOL_VERSION)
+                .put(ActionConfig.UPDATE_DATE_PARAM, LocalDateTime.now());
     }
 
 //    public static String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)

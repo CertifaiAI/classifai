@@ -15,6 +15,7 @@
  */
 package ai.classifai.selector.conversion;
 
+import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.ui.launcher.conversion.ConversionSelection;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
@@ -36,9 +37,7 @@ public class ConverterFolderSelector {
     {
         try
         {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+            EventQueue.invokeLater(() -> {
 
                     Point pt = MouseInfo.getPointerInfo().getLocation();
                     JFrame frame = new JFrame();
@@ -66,7 +65,7 @@ public class ConverterFolderSelector {
                     frame.dispose();
 
                     //prevent Welcome Console from popping out
-                    //WelcomeLauncher.setToBackground();
+                    WelcomeLauncher.setToBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -85,7 +84,6 @@ public class ConverterFolderSelector {
                         }
 
                     }
-                }
             });
         }
         catch (Exception e)

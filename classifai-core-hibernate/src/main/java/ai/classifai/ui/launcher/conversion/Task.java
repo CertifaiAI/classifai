@@ -138,9 +138,10 @@ public class Task extends SwingWorker<Void, Void> {
     /*
      * Executed in event dispatch thread
      */
+    @Override
     public void done()
     {
         ConverterLauncher.enableConvertButton();
-        //ConverterLauncher.getTaskOutput().append("Completed!\n");
+        ConverterLauncher.getTaskOutput().append("Completed!\n");
     }
 }

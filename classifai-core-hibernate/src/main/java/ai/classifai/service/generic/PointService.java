@@ -44,7 +44,7 @@ public class PointService extends AbstractVertxService
     {
         return vertx.executeBlocking(promise ->
         {
-            if ((dtoLists.size() == 0 && pointLists.size() == 0) || pointLists.size() != dtoLists.size())
+            if ((dtoLists.isEmpty() && pointLists.isEmpty()) || pointLists.size() != dtoLists.size())
             {
                 promise.complete();
                 return;
@@ -63,7 +63,7 @@ public class PointService extends AbstractVertxService
     {
         List<PointDTO> pointDTOList = pointList.stream()
                 .map(Point::toDTO)
-                .collect(Collectors.toList());;
+                .collect(Collectors.toList());
 
         for (int i = 0; i < pointDTOList.size(); i++)
         {

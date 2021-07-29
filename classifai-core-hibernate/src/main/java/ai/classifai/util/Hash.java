@@ -15,6 +15,8 @@
  */
 package ai.classifai.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +32,7 @@ import java.util.Base64;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Hash
 {
     public static String getHash256String(@NonNull File filePath)
@@ -47,8 +50,6 @@ public class Hash
             {
                 digest.update(buffer, 0, count);
             }
-
-            bis.close();
 
             byte[] hash = digest.digest();
 

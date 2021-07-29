@@ -48,7 +48,7 @@ public abstract class DataVersionEntity implements DataVersion
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataVersion")
     private List<AnnotationEntity> annotationList;
 
-    public DataVersionEntity()
+    protected DataVersionEntity()
     {
         annotationList = new ArrayList<>();
     }

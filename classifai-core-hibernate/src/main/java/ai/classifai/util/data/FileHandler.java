@@ -130,9 +130,7 @@ public class FileHandler
         int fileEndIndex = filePath.length() -  separator[(separator.length - 1)].length() - 1;
         int fileStartIndex = filePath.length() - fileNameWithExtension.length();
 
-        String fileName = filePath.substring(fileStartIndex, fileEndIndex);
-
-        return fileName;
+        return filePath.substring(fileStartIndex, fileEndIndex);
     }
 
     private void delete(File file)
