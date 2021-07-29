@@ -9,6 +9,11 @@ import ai.classifai.core.service.generic.Repository;
 
 import java.util.UUID;
 
+/**
+ * Repository of ImageData entity
+ *
+ * @author YinChuangSum
+ */
 public interface ImageDataRepository extends DataRepository, Repository<Data, DataDTO, UUID>
 {
 }

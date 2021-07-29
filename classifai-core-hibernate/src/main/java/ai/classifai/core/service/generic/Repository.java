@@ -8,6 +8,12 @@ import lombok.NonNull;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repository interface with methods create, read, update and delete.
+ * Implemented by repository of non-abstract entity.
+ *
+ * @author YinChuangSum
+ */
 public interface Repository<Entity extends HasId<Id>, DTO, Id> extends AbstractRepository<Entity, DTO, Id>
 {
     Entity create(@NonNull DTO dto);

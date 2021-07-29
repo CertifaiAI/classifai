@@ -4,6 +4,11 @@ import ai.classifai.core.entity.dto.generic.AnnotationDTO;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * DTO class representing PolygonAnnotation entity
+ *
+ * @author YinChuangSum
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder

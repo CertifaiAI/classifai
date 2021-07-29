@@ -6,6 +6,11 @@ import ai.classifai.core.entity.trait.HasId;
 
 import java.util.UUID;
 
+/**
+ * Data entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface Data extends HasDTO<DataDTO>, HasId<UUID>
 {
     String getPath();

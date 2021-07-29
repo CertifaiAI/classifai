@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * DTO class representing Point entity
+ *
+ * @author YinChuangSum
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -8,6 +8,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * DTO class representing Data entity
+ *
+ * @author YinChuangSum
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

@@ -8,6 +8,11 @@ import com.drew.metadata.webp.WebpDirectory;
 
 import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
 
+/**
+ * Provides metadata of webp images
+ *
+ * @author ken479
+ */
 public class WebpImageMetadata extends ImageMetadata {
 
     protected WebpImageMetadata(Metadata metadata)

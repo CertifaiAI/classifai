@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DTO class representing Project entity
+ *
+ * @author YinChuangSum
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

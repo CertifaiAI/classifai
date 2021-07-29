@@ -7,6 +7,11 @@ import ai.classifai.core.entity.model.generic.Version;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repository of Label entity
+ *
+ * @author YinChuangSum
+ */
 public interface LabelRepository extends Repository<Label, LabelDTO, UUID>
 {
     List<Label> listByVersion(Version version);

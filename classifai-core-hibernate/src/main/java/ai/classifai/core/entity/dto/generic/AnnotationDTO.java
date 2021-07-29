@@ -7,6 +7,11 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
+/**
+ * DTO class representing Annotation entity
+ *
+ * @author YinChuangSum
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

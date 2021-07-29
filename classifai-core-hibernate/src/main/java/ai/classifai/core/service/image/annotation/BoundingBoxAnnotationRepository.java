@@ -8,6 +8,11 @@ import ai.classifai.core.service.generic.Repository;
 
 import java.util.UUID;
 
+/**
+ * Repository of BoundingBoxAnnotation entity
+ *
+ * @author YinChuangSum
+ */
 public interface BoundingBoxAnnotationRepository extends ImageAnnotationRepository, Repository<Annotation, AnnotationDTO, Long>
 {
 }

@@ -6,6 +6,11 @@ import ai.classifai.core.entity.model.generic.Annotation;
 
 import java.util.List;
 
+/**
+ * ImageAnnotation entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface ImageAnnotation extends Annotation
 {
     List<Point> getPointList();

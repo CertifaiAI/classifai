@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Repository of Project entity
+ *
+ * @author YinChuangSum
+ */
 public interface ProjectRepository extends Repository<Project, ProjectDTO, UUID>
 {
     Optional<Project> findByNameAndType(@NonNull String name, @NonNull Integer type);

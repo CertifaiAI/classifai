@@ -35,7 +35,7 @@ import static com.drew.metadata.exif.ExifIFD0Directory.TAG_ORIENTATION;
 import static java.lang.Math.PI;
 
 /**
- * ImageData provides metadata of images
+ * ImageMetadata provides metadata of images
  *
  * @author YCCertifai
  */

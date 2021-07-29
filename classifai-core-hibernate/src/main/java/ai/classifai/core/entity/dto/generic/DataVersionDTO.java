@@ -11,6 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DTO class representing DataVersion entity
+ *
+ * @author YinChuangSum
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

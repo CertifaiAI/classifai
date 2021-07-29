@@ -6,6 +6,11 @@ import ai.classifai.core.entity.trait.HasId;
 
 import java.util.UUID;
 
+/**
+ * Label entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface Label extends HasDTO<LabelDTO>, HasId<UUID>
 {
     String getName();

@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * DTO class representing Label entity
+ *
+ * @author YinChuangSum
+ */
 @Data
 @Builder
 @NoArgsConstructor

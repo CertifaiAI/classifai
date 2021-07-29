@@ -9,6 +9,11 @@ import ai.classifai.core.entity.trait.HasId;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * DataVersion entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface DataVersion extends HasDTO<DataVersionDTO>, HasId<DataVersion.DataVersionId>
 {
     Data getData();

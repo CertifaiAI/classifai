@@ -1,5 +1,10 @@
 package ai.classifai.core.entity.trait;
 
+/**
+ * Every entity interface must implement HasDTO with a DTO class
+ *
+ * @author YinChuangSum
+ */
 public interface HasDTO<DTO>
 {
     DTO toDTO();

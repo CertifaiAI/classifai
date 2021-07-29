@@ -8,6 +8,11 @@ import ai.classifai.core.entity.trait.HasId;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Project entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface Project extends HasDTO<ProjectDTO>, HasId<UUID>
 {
     String getName();

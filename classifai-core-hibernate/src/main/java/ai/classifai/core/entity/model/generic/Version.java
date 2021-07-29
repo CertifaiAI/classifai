@@ -8,6 +8,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Version entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface Version extends HasDTO<VersionDTO>, HasId<UUID>
 {
     LocalDateTime getCreatedAt();

@@ -11,6 +11,11 @@ import ai.classifai.core.service.generic.Repository;
 
 import java.util.List;
 
+/**
+ * Abstract repository of DataVersion entity
+ *
+ * @author YinChuangSum
+ */
 public interface DataVersionRepository extends AbstractRepository<DataVersion, DataVersionDTO, DataVersion.DataVersionId>
 {
     DataVersion update(DataVersion dataVersion, DataVersionDTO dto);

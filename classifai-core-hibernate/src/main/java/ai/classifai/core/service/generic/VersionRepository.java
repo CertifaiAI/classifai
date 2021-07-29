@@ -8,6 +8,11 @@ import ai.classifai.core.entity.dto.generic.VersionDTO;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Repository of Version entity
+ *
+ * @author YinChuangSum
+ */
 public interface VersionRepository extends Repository<Version, VersionDTO, UUID>
 {
     Version updateModifiedAt(Version version);

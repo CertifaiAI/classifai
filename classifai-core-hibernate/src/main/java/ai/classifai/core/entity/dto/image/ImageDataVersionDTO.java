@@ -4,6 +4,11 @@ import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * DTO class representing ImageDataVersion entity
+ *
+ * @author YinChuangSum
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder

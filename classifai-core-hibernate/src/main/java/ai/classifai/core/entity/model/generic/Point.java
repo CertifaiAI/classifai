@@ -6,6 +6,11 @@ import ai.classifai.core.entity.trait.HasId;
 
 import java.util.UUID;
 
+/**
+ * Point entity interface
+ *
+ * @author YinChuangSum
+ */
 public interface Point extends HasDTO<PointDTO>, HasId<UUID>
 {
     Float getX();
