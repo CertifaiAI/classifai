@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Class to handle ImageData APIs
+ *
+ * @author YinChuangSum
+ */
 @Slf4j
 public class ImageDataController extends AbstractVertxController
 {

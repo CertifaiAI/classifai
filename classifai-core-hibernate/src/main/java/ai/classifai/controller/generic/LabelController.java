@@ -14,6 +14,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Class to handle Label APIs
+ *
+ * @author YinChuangSum
+ */
 public class LabelController extends AbstractVertxController
 {
     private LabelService labelService;

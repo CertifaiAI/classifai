@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Class for application logic
- * logic implementation will be done by services
+ * Class to handle Project APIs
  *
  * @author YinChuangSum
  */

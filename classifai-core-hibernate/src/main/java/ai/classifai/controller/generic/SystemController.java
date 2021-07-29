@@ -10,6 +10,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Class to handle local system APIs
+ *
+ * @author YinChuangSum
+ */
 public class SystemController extends AbstractVertxController
 {
     private ProjectFolderSelector projectFolderSelector;

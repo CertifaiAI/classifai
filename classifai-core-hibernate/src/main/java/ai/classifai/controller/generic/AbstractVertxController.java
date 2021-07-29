@@ -15,6 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
+/**
+ * Abstract class for controllers that handles APIs
+ *
+ * @author YinChuangSum
+ */
 @Slf4j
 public abstract class AbstractVertxController
 {
