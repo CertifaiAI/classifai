@@ -97,6 +97,7 @@
         <metadata.extractor.version>2.15.0</metadata.extractor.version>
         <hibernate.core.version>5.5.0.Final</hibernate.core.version>
         <hibernate.validator.version>7.0.1.Final</hibernate.validator.version>
+        <javax.validation.version>2.0.1.Final</javax.validation.version>
         <maven.compiler.source>14</maven.compiler.source>
         <maven.compiler.target>14</maven.compiler.target>
         <classifai.release.version>2.0.0-alpha1</classifai.release.version>
@@ -270,6 +271,11 @@
                 <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${hibernate.validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${javax.validation.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.openpnp</groupId>

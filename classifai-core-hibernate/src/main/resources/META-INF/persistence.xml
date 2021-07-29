@@ -23,9 +23,9 @@
 
             <!--Logging-->
             <property name="hibernate.show_sql"
-                      value="true"/>
+                      value="false"/>
             <property name="hibernate.format_sql"
-                      value="true"/>
+                      value="false"/>
         </properties>
     </persistence-unit>
 </persistence>
