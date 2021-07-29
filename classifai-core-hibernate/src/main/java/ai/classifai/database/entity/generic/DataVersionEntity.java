@@ -20,7 +20,6 @@ import ai.classifai.core.entity.model.generic.DataVersion;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

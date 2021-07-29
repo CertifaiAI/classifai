@@ -16,7 +16,6 @@
 package ai.classifai.service.generic;
 
 import ai.classifai.core.entity.model.generic.Project;
-import ai.classifai.service.generic.FileService;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 

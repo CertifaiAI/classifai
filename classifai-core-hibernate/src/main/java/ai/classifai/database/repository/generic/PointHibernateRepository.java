@@ -15,11 +15,10 @@
  */
 package ai.classifai.database.repository.generic;
 
+import ai.classifai.core.entity.dto.generic.PointDTO;
+import ai.classifai.core.entity.model.generic.Point;
 import ai.classifai.core.service.generic.PointRepository;
 import ai.classifai.database.entity.generic.PointEntity;
-import ai.classifai.core.entity.model.generic.Point;
-import ai.classifai.core.entity.dto.generic.PointDTO;
-import ai.classifai.database.entity.generic.ProjectEntity;
 import ai.classifai.database.entity.image.annotation.ImageAnnotationEntity;
 import lombok.NonNull;
 

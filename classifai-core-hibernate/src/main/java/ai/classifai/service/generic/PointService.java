@@ -17,7 +17,6 @@ package ai.classifai.service.generic;
 
 import ai.classifai.core.entity.dto.generic.PointDTO;
 import ai.classifai.core.entity.model.generic.Point;
-import ai.classifai.service.generic.AbstractVertxService;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import lombok.AllArgsConstructor;

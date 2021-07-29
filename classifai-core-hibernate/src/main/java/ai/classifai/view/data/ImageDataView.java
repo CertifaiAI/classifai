@@ -16,17 +16,9 @@
 package ai.classifai.view.data;
 
 import ai.classifai.core.entity.dto.generic.ProjectDTO;
-import ai.classifai.core.entity.dto.generic.AnnotationDTO;
-import ai.classifai.core.entity.dto.generic.DataDTO;
-import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import ai.classifai.core.entity.dto.image.ImageDataDTO;
-import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
-import ai.classifai.view.data.DataView;
-import ai.classifai.view.dataversion.DataVersionView;
 import io.vertx.core.json.JsonObject;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 /**
  * class for handling image data response

@@ -15,10 +15,9 @@
  */
 package ai.classifai.database.repository.generic;
 
-import ai.classifai.core.entity.model.generic.Label;
+import ai.classifai.core.entity.dto.generic.VersionDTO;
 import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.core.entity.model.generic.Version;
-import ai.classifai.core.entity.dto.generic.VersionDTO;
 import ai.classifai.core.service.generic.VersionRepository;
 import ai.classifai.database.entity.generic.ProjectEntity;
 import ai.classifai.database.entity.generic.VersionEntity;

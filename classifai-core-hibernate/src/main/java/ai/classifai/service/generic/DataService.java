@@ -16,8 +16,8 @@
 package ai.classifai.service.generic;
 
 import ai.classifai.core.entity.dto.generic.DataDTO;
-import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.core.entity.model.generic.Data;
+import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.service.image.ImageDataService;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;

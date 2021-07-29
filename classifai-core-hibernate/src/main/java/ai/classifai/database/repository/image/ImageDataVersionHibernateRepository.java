@@ -16,22 +16,17 @@
 package ai.classifai.database.repository.image;
 
 import ai.classifai.core.entity.dto.generic.DataVersionDTO;
-import ai.classifai.core.entity.dto.image.ImageDataDTO;
 import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
-import ai.classifai.core.entity.model.generic.DataVersion;
-import ai.classifai.core.entity.model.generic.Version;
-import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.entity.model.image.ImageDataVersion;
 import ai.classifai.core.service.image.ImageDataVersionRepository;
-import ai.classifai.database.entity.generic.VersionEntity;
 import ai.classifai.database.entity.generic.DataVersionKey;
+import ai.classifai.database.entity.generic.VersionEntity;
 import ai.classifai.database.entity.image.ImageDataEntity;
 import ai.classifai.database.entity.image.ImageDataVersionEntity;
 import ai.classifai.database.repository.generic.DataVersionHibernateRepository;
 import lombok.NonNull;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 
 /**
  * Class for ImageDataVersion repository with hibernate implementation

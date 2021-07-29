@@ -15,8 +15,8 @@
  */
 package ai.classifai.core.service.generic;
 
-import ai.classifai.core.entity.model.generic.Point;
 import ai.classifai.core.entity.dto.generic.PointDTO;
+import ai.classifai.core.entity.model.generic.Point;
 
 import java.util.UUID;
 

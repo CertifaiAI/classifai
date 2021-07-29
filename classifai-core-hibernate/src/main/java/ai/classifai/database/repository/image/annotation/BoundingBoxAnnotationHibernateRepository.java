@@ -18,7 +18,6 @@ package ai.classifai.database.repository.image.annotation;
 import ai.classifai.core.entity.dto.generic.AnnotationDTO;
 import ai.classifai.core.entity.dto.image.annotation.BoundingBoxAnnotationDTO;
 import ai.classifai.core.entity.model.generic.Annotation;
-import ai.classifai.core.entity.model.image.annotation.BoundingBoxAnnotation;
 import ai.classifai.core.service.image.annotation.BoundingBoxAnnotationRepository;
 import ai.classifai.database.entity.generic.DataVersionEntity;
 import ai.classifai.database.entity.generic.DataVersionKey;

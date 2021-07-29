@@ -16,14 +16,12 @@
 package ai.classifai.database.repository.generic;
 
 import ai.classifai.core.entity.dto.generic.AnnotationDTO;
-import ai.classifai.core.entity.model.generic.Data;
+import ai.classifai.core.entity.model.generic.Annotation;
 import ai.classifai.core.entity.model.generic.Label;
 import ai.classifai.core.service.generic.AnnotationRepository;
-import ai.classifai.core.entity.model.generic.Annotation;
 import ai.classifai.database.entity.generic.AnnotationEntity;
 import ai.classifai.database.entity.generic.DataVersionEntity;
 import ai.classifai.database.entity.generic.LabelEntity;
-import ai.classifai.database.repository.generic.AbstractHibernateRepository;
 import lombok.NonNull;
 
 import javax.persistence.EntityManager;

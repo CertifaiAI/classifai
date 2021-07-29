@@ -17,9 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ReplyHandler;
 import io.vertx.ext.web.RoutingContext;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**

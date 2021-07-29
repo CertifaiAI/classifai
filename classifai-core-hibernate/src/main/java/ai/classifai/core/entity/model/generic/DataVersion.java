@@ -15,8 +15,6 @@
  */
 package ai.classifai.core.entity.model.generic;
 
-import ai.classifai.core.entity.dto.generic.AnnotationDTO;
-import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.core.entity.dto.generic.DataVersionDTO;
 import ai.classifai.core.entity.trait.HasDTO;
 import ai.classifai.core.entity.trait.HasId;

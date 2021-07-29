@@ -17,13 +17,10 @@ package ai.classifai.database.repository.generic;
 
 import ai.classifai.core.entity.trait.HasId;
 import ai.classifai.core.service.generic.AbstractRepository;
-import ai.classifai.core.service.generic.Repository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
 import javax.persistence.EntityManager;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Abstract class for abstract repository with hibernate implementation

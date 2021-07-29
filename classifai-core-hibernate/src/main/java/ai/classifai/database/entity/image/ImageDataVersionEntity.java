@@ -15,18 +15,14 @@
  */
 package ai.classifai.database.entity.image;
 
-import ai.classifai.core.entity.dto.generic.AnnotationDTO;
 import ai.classifai.core.entity.dto.generic.DataVersionDTO;
-import ai.classifai.core.entity.dto.image.ImageDataDTO;
 import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
-import ai.classifai.core.entity.model.generic.Annotation;
-import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.entity.model.image.ImageDataVersion;
 import ai.classifai.database.entity.generic.DataVersionEntity;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
 
 /**
  * Class for ImageDataVersion entity with hibernate implementation

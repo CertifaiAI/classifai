@@ -16,13 +16,14 @@
 package ai.classifai.database.entity.generic;
 
 import ai.classifai.core.entity.dto.generic.VersionDTO;
-import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.model.generic.Label;
 import ai.classifai.core.entity.model.generic.Version;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**

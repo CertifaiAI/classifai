@@ -18,11 +18,9 @@ package ai.classifai.view;
 import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

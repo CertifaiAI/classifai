@@ -15,13 +15,13 @@
  */
 package ai.classifai.controller.generic;
 
-import ai.classifai.core.entity.dto.generic.VersionDTO;
+import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.core.entity.dto.generic.LabelDTO;
 import ai.classifai.core.entity.dto.generic.ProjectDTO;
-import ai.classifai.core.entity.dto.generic.DataDTO;
+import ai.classifai.core.entity.dto.generic.VersionDTO;
+import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.model.generic.Label;
 import ai.classifai.core.entity.model.generic.Project;
-import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.trait.HasDTO;
 import ai.classifai.database.DbService;
 import ai.classifai.selector.status.FileSystemStatus;

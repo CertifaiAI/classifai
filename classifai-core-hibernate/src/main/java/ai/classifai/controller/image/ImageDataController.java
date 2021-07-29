@@ -15,7 +15,11 @@
  */
 package ai.classifai.controller.image;
 
-import ai.classifai.core.entity.dto.generic.*;
+import ai.classifai.controller.generic.AbstractVertxController;
+import ai.classifai.core.entity.dto.generic.AnnotationDTO;
+import ai.classifai.core.entity.dto.generic.LabelDTO;
+import ai.classifai.core.entity.dto.generic.PointDTO;
+import ai.classifai.core.entity.dto.generic.ProjectDTO;
 import ai.classifai.core.entity.dto.image.ImageDataDTO;
 import ai.classifai.core.entity.dto.image.ImageDataVersionDTO;
 import ai.classifai.core.entity.model.generic.*;
@@ -23,12 +27,11 @@ import ai.classifai.core.entity.model.image.ImageData;
 import ai.classifai.core.entity.model.image.annotation.ImageAnnotation;
 import ai.classifai.core.entity.trait.HasDTO;
 import ai.classifai.database.DbService;
-import ai.classifai.controller.generic.AbstractVertxController;
 import ai.classifai.service.image.ImageDataService;
 import ai.classifai.util.type.AnnotationType;
+import ai.classifai.view.annotation.AnnotationView;
 import ai.classifai.view.data.ImageDataView;
 import ai.classifai.view.data.ImageSourceView;
-import ai.classifai.view.annotation.AnnotationView;
 import ai.classifai.view.dataversion.DataVersionView;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;

@@ -15,8 +15,8 @@
  */
 package ai.classifai.core.service.generic;
 
-import ai.classifai.core.entity.model.generic.Label;
 import ai.classifai.core.entity.dto.generic.LabelDTO;
+import ai.classifai.core.entity.model.generic.Label;
 import ai.classifai.core.entity.model.generic.Version;
 
 import java.util.List;

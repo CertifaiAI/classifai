@@ -18,8 +18,6 @@ package ai.classifai.core.service.generic;
 import ai.classifai.core.entity.trait.HasId;
 import lombok.NonNull;
 
-import java.util.List;
-
 /**
  * Abstract repository interface with methods read, update and delete. Create method is not included.
  * Implemented by repository of abstract entity such as Data, DataVersion, Annotation and etc.

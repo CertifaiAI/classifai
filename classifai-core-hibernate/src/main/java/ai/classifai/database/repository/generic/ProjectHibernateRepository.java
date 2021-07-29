@@ -15,18 +15,14 @@
  */
 package ai.classifai.database.repository.generic;
 
-import ai.classifai.core.entity.dto.generic.DataDTO;
-import ai.classifai.core.entity.dto.image.ImageDataDTO;
-import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.core.entity.dto.generic.ProjectDTO;
-import ai.classifai.core.entity.model.generic.Version;
 import ai.classifai.core.entity.model.generic.Data;
-import ai.classifai.core.entity.model.image.ImageData;
+import ai.classifai.core.entity.model.generic.Project;
+import ai.classifai.core.entity.model.generic.Version;
 import ai.classifai.core.service.generic.ProjectRepository;
+import ai.classifai.database.entity.generic.DataEntity;
 import ai.classifai.database.entity.generic.ProjectEntity;
 import ai.classifai.database.entity.generic.VersionEntity;
-import ai.classifai.database.entity.generic.DataEntity;
-import ai.classifai.database.entity.image.ImageDataEntity;
 import lombok.NonNull;
 
 import javax.persistence.EntityManager;

@@ -17,11 +17,10 @@ package ai.classifai.action;
 
 import ai.classifai.util.DateTime;
 import io.vertx.core.json.JsonObject;
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Export of project to a configuration file

@@ -15,14 +15,13 @@
  */
 package ai.classifai.database.entity.generic;
 
-import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.core.entity.model.generic.Data;
-import ai.classifai.database.entity.generic.ProjectEntity;
-import ai.classifai.database.entity.generic.DataVersionEntity;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Abstract class for Data entity with hibernate implementation

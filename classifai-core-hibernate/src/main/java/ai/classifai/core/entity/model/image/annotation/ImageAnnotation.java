@@ -15,9 +15,8 @@
  */
 package ai.classifai.core.entity.model.image.annotation;
 
-import ai.classifai.core.entity.dto.image.annotation.ImageAnnotationDTO;
-import ai.classifai.core.entity.model.generic.Point;
 import ai.classifai.core.entity.model.generic.Annotation;
+import ai.classifai.core.entity.model.generic.Point;
 
 import java.util.List;
 

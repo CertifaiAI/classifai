@@ -15,7 +15,6 @@
  */
 package ai.classifai.util.data;
 
-import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonArray;
 import lombok.NonNull;
 

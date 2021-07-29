@@ -16,7 +16,10 @@
 package ai.classifai.core.entity.dto.image.annotation;
 
 import ai.classifai.core.entity.dto.generic.AnnotationDTO;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;

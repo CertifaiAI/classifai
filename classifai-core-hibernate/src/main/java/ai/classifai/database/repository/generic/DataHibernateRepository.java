@@ -16,17 +16,11 @@
 package ai.classifai.database.repository.generic;
 
 import ai.classifai.core.entity.dto.generic.DataDTO;
-import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.service.generic.DataRepository;
-import ai.classifai.database.entity.generic.ProjectEntity;
 import ai.classifai.database.entity.generic.DataEntity;
-import ai.classifai.database.repository.generic.AbstractHibernateRepository;
-import lombok.NonNull;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 /**

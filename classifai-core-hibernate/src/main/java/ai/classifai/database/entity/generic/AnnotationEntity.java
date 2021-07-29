@@ -15,10 +15,7 @@
  */
 package ai.classifai.database.entity.generic;
 
-import ai.classifai.core.entity.dto.generic.AnnotationDTO;
 import ai.classifai.core.entity.model.generic.Annotation;
-import ai.classifai.database.entity.generic.LabelEntity;
-import ai.classifai.database.entity.generic.DataVersionEntity;
 import lombok.Getter;
 import lombok.Setter;
 

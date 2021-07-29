@@ -16,7 +16,10 @@
 package ai.classifai.core.entity.dto.image;
 
 import ai.classifai.core.entity.dto.generic.DataDTO;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**

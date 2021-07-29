@@ -16,18 +16,13 @@
 package ai.classifai.database.repository.image.annotation;
 
 import ai.classifai.core.entity.dto.generic.AnnotationDTO;
-import ai.classifai.core.entity.dto.image.annotation.BoundingBoxAnnotationDTO;
 import ai.classifai.core.entity.dto.image.annotation.PolygonAnnotationDTO;
 import ai.classifai.core.entity.model.generic.Annotation;
-import ai.classifai.core.entity.model.image.annotation.PolygonAnnotation;
 import ai.classifai.core.service.image.annotation.PolygonAnnotationRepository;
-import ai.classifai.database.entity.image.annotation.BoundingBoxAnnotationEntity;
-import ai.classifai.database.entity.image.annotation.ImageAnnotationEntity;
 import ai.classifai.database.entity.image.annotation.PolygonAnnotationEntity;
 import lombok.NonNull;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 
 /**
  * Class for PolygonAnnotation repository with hibernate implementation

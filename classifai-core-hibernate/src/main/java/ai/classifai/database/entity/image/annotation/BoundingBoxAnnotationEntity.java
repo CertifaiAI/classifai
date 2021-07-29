@@ -20,9 +20,8 @@ import ai.classifai.core.entity.dto.image.annotation.BoundingBoxAnnotationDTO;
 import ai.classifai.core.entity.model.image.annotation.BoundingBoxAnnotation;
 import ai.classifai.core.entity.trait.HasId;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
 import java.util.stream.Collectors;
 
 /**

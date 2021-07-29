@@ -15,15 +15,10 @@
  */
 package ai.classifai.database.repository.generic;
 
-import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.core.entity.dto.generic.DataVersionDTO;
-import ai.classifai.core.entity.model.generic.Data;
 import ai.classifai.core.entity.model.generic.DataVersion;
 import ai.classifai.core.service.generic.DataVersionRepository;
-import ai.classifai.database.entity.generic.DataEntity;
 import ai.classifai.database.entity.generic.DataVersionEntity;
-import ai.classifai.database.repository.generic.AbstractHibernateRepository;
-import lombok.NonNull;
 
 import javax.persistence.EntityManager;
 

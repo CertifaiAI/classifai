@@ -17,7 +17,6 @@ package ai.classifai.service.generic;
 
 import ai.classifai.core.entity.dto.generic.LabelDTO;
 import ai.classifai.core.entity.model.generic.Label;
-import ai.classifai.service.generic.FileService;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.apache.commons.io.IOUtils;

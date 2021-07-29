@@ -1,7 +1,5 @@
 package ai.classifai.util.project;
 
-import ai.classifai.util.type.AnnotationType;
-
 /**
  * State where does the project sits
  *

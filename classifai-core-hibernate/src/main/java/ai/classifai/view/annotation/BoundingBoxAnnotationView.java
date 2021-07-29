@@ -18,7 +18,6 @@ package ai.classifai.view.annotation;
 import ai.classifai.core.entity.dto.generic.AnnotationDTO;
 import ai.classifai.core.entity.dto.generic.PointDTO;
 import ai.classifai.core.entity.dto.image.annotation.BoundingBoxAnnotationDTO;
-import ai.classifai.core.entity.dto.image.annotation.PolygonAnnotationDTO;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.json.JsonObject;
 

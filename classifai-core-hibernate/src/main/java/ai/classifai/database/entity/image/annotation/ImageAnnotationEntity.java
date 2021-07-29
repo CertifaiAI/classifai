@@ -15,11 +15,10 @@
  */
 package ai.classifai.database.entity.image.annotation;
 
-import ai.classifai.core.entity.dto.image.annotation.ImageAnnotationDTO;
 import ai.classifai.core.entity.model.generic.Point;
 import ai.classifai.core.entity.model.image.annotation.ImageAnnotation;
-import ai.classifai.database.entity.generic.PointEntity;
 import ai.classifai.database.entity.generic.AnnotationEntity;
+import ai.classifai.database.entity.generic.PointEntity;
 
 import javax.persistence.*;
 import java.util.ArrayList;
