@@ -19,6 +19,8 @@ import ai.classifai.core.entity.dto.generic.PointDTO;
 import ai.classifai.core.entity.model.generic.Point;
 import ai.classifai.database.entity.image.annotation.ImageAnnotationEntity;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -92,11 +94,25 @@ public class PointEntity implements Point
         if (obj instanceof Point)
         {
             Point point = (Point) obj;
-            return x.equals(point.getX()) && y.equals(point.getY())
-            && dist2ImgX.equals(point.getDist2ImgX()) && dist2ImgY.equals(point.getDist2ImgY());
+            EqualsBuilder builder = new EqualsBuilder();
+            builder.append(x, point.getX());
+            builder.append(y, point.getY());
+            builder.append(dist2ImgX, point.getDist2ImgX());
+            builder.append(dist2ImgY, point.getDist2ImgY());
+            return builder.isEquals();
         }
 
         return false;
     }
 
+    @Override
+    public int hashCode()
+    {
+        HashCodeBuilder builder = new HashCodeBuilder();
+        builder.append(x);
+        builder.append(y);
+        builder.append(dist2ImgX);
+        builder.append(dist2ImgY);
+        return builder.toHashCode();
+    }
 }

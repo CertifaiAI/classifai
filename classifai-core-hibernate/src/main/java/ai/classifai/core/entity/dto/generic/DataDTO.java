@@ -20,6 +20,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.UUID;
 
@@ -50,7 +52,10 @@ public abstract class DataDTO
         if (obj instanceof DataDTO)
         {
             DataDTO dto = (DataDTO) obj;
-            return path.equals(dto.getPath()) && checksum.equals(dto.getChecksum());
+            EqualsBuilder builder = new EqualsBuilder();
+            builder.append(path, dto.getPath());
+            builder.append(checksum, dto.getChecksum());
+            return builder.isEquals();
         }
 
         return false;
@@ -59,6 +64,9 @@ public abstract class DataDTO
     @Override
     public int hashCode()
     {
-        return checksum.hashCode() + path.hashCode();
+        HashCodeBuilder builder = new HashCodeBuilder();
+        builder.append(checksum);
+        builder.append(path);
+        return builder.hashCode();
     }
 }
