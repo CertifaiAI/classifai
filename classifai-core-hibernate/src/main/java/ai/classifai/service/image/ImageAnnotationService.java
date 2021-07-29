@@ -15,6 +15,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * class for image annotation handling
+ *
+ * @author YinChuangSum
+ */
 public class ImageAnnotationService extends AbstractVertxService
 {
     public ImageAnnotationService(Vertx vertx)

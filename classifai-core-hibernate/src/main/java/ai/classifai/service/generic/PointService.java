@@ -13,6 +13,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * class for point handling
+ *
+ * @author YinChuangSum
+ */
 public class PointService extends AbstractVertxService
 {
     public PointService(Vertx vertx)

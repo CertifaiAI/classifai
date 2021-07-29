@@ -16,7 +16,7 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.image.ImageFileType;
-import ai.classifai.service.image.ImageService;
+import ai.classifai.service.image.ImageDataService;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
 import lombok.NoArgsConstructor;
@@ -93,7 +93,7 @@ public class TifHandler
                 {
                     BufferedImage bim = reader.read(page);
 
-                    if ((bim.getWidth() > ImageService.MAX_SIZE) || (bim.getHeight() > ImageFileType.getMaxHeight()))
+                    if ((bim.getWidth() > ImageDataService.MAX_SIZE) || (bim.getHeight() > ImageFileType.getMaxHeight()))
                     {
                         log.debug("Image width and/or height bigger than " + ImageFileType.getMaxHeight());
                     }

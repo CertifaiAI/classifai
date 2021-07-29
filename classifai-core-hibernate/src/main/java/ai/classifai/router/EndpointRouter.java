@@ -30,7 +30,7 @@ import ai.classifai.service.generic.PointService;
 import ai.classifai.service.generic.ProjectLoadingService;
 import ai.classifai.service.generic.ProjectService;
 import ai.classifai.service.image.ImageAnnotationService;
-import ai.classifai.service.image.ImageService;
+import ai.classifai.service.image.ImageDataService;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -52,7 +52,7 @@ public class EndpointRouter extends AbstractVerticle
     //***********Services***************
     private DbService dbService;
     private ProjectService projectService;
-    private ImageService imageService;
+    private ImageDataService imageDataService;
     private LabelService labelService;
     private ImageAnnotationService imageAnnotationService;
     private ProjectLoadingService projectLoadingService;
@@ -103,7 +103,7 @@ public class EndpointRouter extends AbstractVerticle
             projectService = new ProjectService(vertx);
             labelService = new LabelService(vertx);
             imageAnnotationService = new ImageAnnotationService(vertx);
-            imageService = new ImageService(vertx);
+            imageDataService = new ImageDataService(vertx);
             projectLoadingService = new ProjectLoadingService(vertx);
             pointService = new PointService(vertx);
 
@@ -114,7 +114,7 @@ public class EndpointRouter extends AbstractVerticle
     private Future<Void> configureControllers()
     {
         projectController = new ProjectController(vertx, dbService, projectService, labelService, projectLoadingService);
-        imageDataController = new ImageDataController(vertx, dbService, imageService);
+        imageDataController = new ImageDataController(vertx, dbService, imageDataService);
         systemController = new SystemController(vertx, projectFolderSelector, projectImporter, labelFileSelector);
         labelController = new LabelController(vertx, dbService, labelService);
         imageDataVersionController = new ImageDataVersionController(vertx, dbService, imageAnnotationService, pointService);

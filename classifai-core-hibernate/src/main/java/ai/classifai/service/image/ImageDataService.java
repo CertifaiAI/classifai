@@ -26,13 +26,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * class for image data handling
+ *
+ * @author YinChuangSum
+ */
 @Slf4j
-public class ImageService extends DataService
+public class ImageDataService extends DataService
 {
     public static final int THUMBNAIL_SIZE = 100;
     public static final int MAX_SIZE = 15000;
 
-    public ImageService(Vertx vertx)
+    public ImageDataService(Vertx vertx)
     {
         super(vertx);
     }

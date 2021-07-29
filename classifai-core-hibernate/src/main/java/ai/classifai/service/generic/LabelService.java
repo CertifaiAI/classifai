@@ -14,6 +14,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * class for label handling
+ *
+ * @author YinChuangSum
+ */
 public class LabelService extends FileService
 {
     public LabelService(Vertx vertx)

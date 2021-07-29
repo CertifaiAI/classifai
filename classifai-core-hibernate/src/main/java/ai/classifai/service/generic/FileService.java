@@ -8,7 +8,11 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * Abstract class for local file handling
+ *
+ * @author YinChuangSum
+ */
 public abstract class FileService extends AbstractVertxService
 {
     public FileService(Vertx vertx)

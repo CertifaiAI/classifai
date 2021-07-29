@@ -9,7 +9,7 @@ import ai.classifai.core.entity.model.image.annotation.ImageAnnotation;
 import ai.classifai.core.entity.trait.HasDTO;
 import ai.classifai.database.DbService;
 import ai.classifai.controller.generic.AbstractVertxController;
-import ai.classifai.service.image.ImageService;
+import ai.classifai.service.image.ImageDataService;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.view.data.ImageDataView;
 import ai.classifai.view.data.ImageSourceView;
@@ -29,14 +29,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ImageDataController extends AbstractVertxController
 {
-    ImageService imageService;
+    ImageDataService imageDataService;
     DbService dbService;
     
-    public ImageDataController(Vertx vertx, DbService dbService, ImageService imageService)
+    public ImageDataController(Vertx vertx, DbService dbService, ImageDataService imageDataService)
     {
         super(vertx);
         this.dbService = dbService;
-        this.imageService = imageService;
+        this.imageDataService = imageDataService;
     }
 
     /**
@@ -54,7 +54,7 @@ public class ImageDataController extends AbstractVertxController
         Future<Data> getImageDataFuture = dbService.getDataById(dataId);
 
         Future<String> getThumbnailFuture = getImageDataFuture
-                .compose(imageData -> imageService.getThumbnail((ImageData) imageData));
+                .compose(imageData -> imageDataService.getThumbnail((ImageData) imageData));
 
         Future<Project> getProjectFuture = dbService.getProjectByNameAndAnnotation(projectName, annotationType);
 
@@ -145,7 +145,7 @@ public class ImageDataController extends AbstractVertxController
         UUID dataId = paramHandler.getDataId(context);
 
         dbService.getDataById(dataId)
-                .compose(data -> imageService.getImageSource((ImageData) data))
+                .compose(data -> imageDataService.getImageSource((ImageData) data))
                 .onSuccess(imageBase64 ->
                         sendResponseBody(ImageSourceView.generateImageSourceView(imageBase64), context))
                 .onFailure(failedRequestHandler(context));

@@ -7,6 +7,11 @@ import io.vertx.core.Vertx;
 
 import java.util.*;
 
+/**
+ * class for handling project loading feature
+ *
+ * @author YinChuangSum
+ */
 public class ProjectLoadingService extends AbstractVertxService
 {
     private final Set<UUID> loadedProjectId;

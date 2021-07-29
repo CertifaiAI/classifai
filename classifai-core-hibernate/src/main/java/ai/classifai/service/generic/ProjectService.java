@@ -8,6 +8,11 @@ import io.vertx.core.Vertx;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * class for project handling
+ *
+ * @author YinChuangSum
+ */
 public class ProjectService extends FileService
 {
     public ProjectService(Vertx vertx)
