@@ -22,8 +22,7 @@ public class ImageAnnotationService extends AbstractVertxService
         super(vertx);
     }
 
-    // TODO: to delete objects & method below after frontend logic changed
-
+    // FIXME: temporarily code for current frontend
     public Future<Annotation> getToDeleteAnnotationFuture(List<Annotation> annotationList, List<AnnotationDTO> dtoList)
     {
         if (dtoList.size() >= annotationList.size()) return Future.succeededFuture();
@@ -40,6 +39,7 @@ public class ImageAnnotationService extends AbstractVertxService
         return Future.succeededFuture(toDelete);
     }
 
+    // FIXME: temporarily code for current frontend
     public Future<AnnotationDTO> getToAddAnnotationFuture(List<Annotation> annotationList, List<AnnotationDTO> dtoList)
     {
         if (dtoList.size() <= annotationList.size()) return Future.succeededFuture();
@@ -47,6 +47,7 @@ public class ImageAnnotationService extends AbstractVertxService
         return Future.succeededFuture(dtoList.get(dtoList.size() - 1)); // get the last one
     }
 
+    // FIXME: temporarily code for current frontend
     public Future<UpdateAnnotationLabelObject> getToUpdateLabelAnnotationFuture(List<Annotation> annotationList, List<LabelDTO> labelDTOList, List<Label> labelList)
     {
         return vertx.executeBlocking(promise ->
@@ -80,7 +81,7 @@ public class ImageAnnotationService extends AbstractVertxService
 
     @Data
     @AllArgsConstructor
-    // to be deleted
+    // FIXME: temporarily code for current frontend
     public static class UpdateAnnotationLabelObject
     {
         Annotation annotation;

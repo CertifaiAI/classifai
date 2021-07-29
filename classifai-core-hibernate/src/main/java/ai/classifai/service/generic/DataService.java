@@ -39,17 +39,5 @@ public abstract class DataService extends FileService
                 .collect(Collectors.toList()));
     }
 
-    public Future<List<Data>> filterInvalidData(List<Data> dataList)
-    {
-        return vertx.executeBlocking(promise -> promise.complete(dataList.stream()
-                .filter(data -> !isDataValid(data))
-                .collect(Collectors.toList())));
-    }
-
-    public Future<List<DataDTO>> getDataDtoList(String projectPath, AnnotationType type)
-    {
-        return null;
-    }
-
     public abstract Future<List<DataDTO>> getToAddDataDtoList(List<Data> dataList, Project result);
 }
