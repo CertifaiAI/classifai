@@ -94,12 +94,12 @@ public class ReplyHandler {
 
     public static boolean isReplyOk(JsonObject jsonObject)
     {
-       return jsonObject.getInteger(MESSAGE_KEY) == SUCCESSFUL;
+       return jsonObject.getInteger(MESSAGE_KEY).equals(SUCCESSFUL);
     }
 
     public static boolean isReplyFailed(JsonObject jsonObject)
     {
-        return jsonObject.getInteger(MESSAGE_KEY) == FAILED;
+        return jsonObject.getInteger(MESSAGE_KEY).equals(FAILED);
     }
 
 }

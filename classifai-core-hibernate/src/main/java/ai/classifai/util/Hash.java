@@ -34,7 +34,7 @@ public class Hash
 {
     public static String getHash256String(@NonNull File filePath)
     {
-        try
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath)))
         {
             byte[] buffer= new byte[8192];
 
@@ -42,8 +42,6 @@ public class Hash
 
             //not thread safe, hence single instance per function
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
 
             while ((count = bis.read(buffer)) > 0)
             {

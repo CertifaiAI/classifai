@@ -48,11 +48,11 @@ public class TifHandler
         FileHandler fileHandler = new FileHandler();
         String fileName = fileHandler.getFileName(tifFullPath.getAbsolutePath());
 
-        try
+        try(ImageInputStream is = ImageIO.createImageInputStream(tifFullPath))
         {
             List<File> tif2Images = new ArrayList<>();
 
-            ImageInputStream is = ImageIO.createImageInputStream(tifFullPath);
+
             if (is == null || is.length() == 0)
             {
                 return message;
