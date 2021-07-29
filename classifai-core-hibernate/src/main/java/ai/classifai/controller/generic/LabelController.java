@@ -38,6 +38,7 @@ public class LabelController extends AbstractVertxController
      * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
      *
      */
+    // FIXME: temporarily code for current frontend
     public void updateLabels(RoutingContext context)
     {
         String projectName = paramHandler.getProjectName(context);
@@ -75,15 +76,5 @@ public class LabelController extends AbstractVertxController
                     .onSuccess(unused -> sendEmptyResponse(context))
                     .onFailure(failedRequestHandler(context));
         });
-    }
-
-
-    public void deleteLabel(RoutingContext context)
-    {
-        UUID label_id = UUID.fromString(context.request().getParam("label_id"));
-
-        dbService.deleteLabelById(label_id)
-                .onSuccess(unused -> sendEmptyResponse(context))
-                .onFailure(failedRequestHandler(context));
     }
 }

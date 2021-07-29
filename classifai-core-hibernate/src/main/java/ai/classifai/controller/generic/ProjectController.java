@@ -298,7 +298,6 @@ public class ProjectController extends AbstractVertxController
                 .onFailure(failedRequestHandler(context));
     }
 
-    // TODO: suggestion => put new project name in body instead of param
     /**
      * Rename project
      * PUT http://localhost:{port}/v2/:annotation_type/:project_name/rename/:new_project_name

@@ -25,7 +25,7 @@ public class PointService extends AbstractVertxService
         super(vertx);
     }
 
-    // FIXME: temporarily code for current frontend
+    // FIXME: temporary code for current frontend
     public Future<UpdatePointObject> getToUpdatePointFuture(List<List<Point>> pointLists, List<List<PointDTO>> dtoLists)
     {
         return vertx.executeBlocking(promise ->
@@ -44,7 +44,7 @@ public class PointService extends AbstractVertxService
         });
     }
 
-    // FIXME: temporarily code for current frontend
+    // FIXME: temporary code for current frontend
     private UpdatePointObject getDiffPoint(List<Point> pointList, List<PointDTO> dtoList)
     {
         List<PointDTO> pointDTOList = pointList.stream()
@@ -64,7 +64,7 @@ public class PointService extends AbstractVertxService
 
     @Data
     @AllArgsConstructor
-    // FIXME: temporarily code for current frontend
+    // FIXME: temporary code for current frontend
     public static class UpdatePointObject
     {
         Point point;

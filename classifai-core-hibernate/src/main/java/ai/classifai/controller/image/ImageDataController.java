@@ -50,6 +50,7 @@ public class ImageDataController extends AbstractVertxController
      * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
+    // FIXME: temporary code for current frontend
     public void getThumbnail(RoutingContext context)
     {
         UUID dataId = paramHandler.getDataId(context);

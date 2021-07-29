@@ -49,6 +49,7 @@ public class ImageDataVersionController extends DataVersionController
      * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
      *
      */
+    // FIXME: temporary code for current frontend
     public void updateData(RoutingContext context)
     {
         context.request().bodyHandler(buffer ->

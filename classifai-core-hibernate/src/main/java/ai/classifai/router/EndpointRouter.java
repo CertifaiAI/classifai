@@ -161,10 +161,12 @@ public class EndpointRouter extends AbstractVerticle
 
         router.delete(projectV1Endpoint).handler(projectController::deleteProject);
 
+        // FIXME: to be refactored
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(imageDataController::getThumbnail);
 
         router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(imageDataController::getImageSource);
 
+        // FIXME: to be refactored
         router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(imageDataVersionController::updateData);
 
         router.put("/:annotation_type/projects/:project_name/newlabels").handler(labelController::updateLabels);
