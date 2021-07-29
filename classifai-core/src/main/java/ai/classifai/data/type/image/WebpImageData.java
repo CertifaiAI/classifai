@@ -1,12 +1,34 @@
+/*
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License, Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifDirectoryBase;
-import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.webp.WebpDirectory;
 
 import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
+
+/**
+ * Provides metadata of webp images
+ *
+ * @author ken479
+ */
 
 public class WebpImageData extends ImageData{
 
@@ -40,41 +62,20 @@ public class WebpImageData extends ImageData{
     @Override
     public int getDepth()
     {
-        String colorSpaceType = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getTagName(ExifDirectoryBase.TAG_COLOR_SPACE);
-        if (!colorSpaceType.isEmpty()) {
-            return 3;
-        } else {
-            return 1;
+        try {
+            int colorSpace = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class).getInt(TAG_COLOR_SPACE);
+            if (colorSpace == 0) return 1;
+        } catch (MetadataException e) {
+            logMetadataError();
         }
-    }
-
-    @Override
-    public int getWidth() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawHeight();
-        }
-
-        return getRawWidth();
-    }
-
-    @Override
-    public int getHeight() {
-        int orientation = getOrientation();
-
-        if (orientation == 8 || orientation == 6) {
-            return getRawWidth();
-        }
-
-        return getRawHeight();
+        return 3;
     }
 
     @Override
     public boolean isAnimation() {
         try {
             return metadata.getFirstDirectoryOfType(WebpDirectory.class).getBoolean(TAG_IS_ANIMATION);
-        } catch (Exception e) {
+        } catch (MetadataException e) {
             return false;
         }
     }

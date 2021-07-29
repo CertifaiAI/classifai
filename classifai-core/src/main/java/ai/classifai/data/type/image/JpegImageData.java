@@ -71,9 +71,10 @@ public class JpegImageData extends ImageData
     public int getDepth() {
         try {
             return directory.getInt(JpegDirectory.TAG_NUMBER_OF_COMPONENTS);
-        } catch (Exception ignored) {
-            return 3;
+        } catch (MetadataException e) {
+            logMetadataError();
         }
+        return 3;
     }
 
     @Override

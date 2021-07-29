@@ -22,15 +22,8 @@ package ai.classifai.util.type;
  */
 public enum AnnotationType
 {
-    BOUNDINGBOX("bnd_box"),
-    SEGMENTATION("polygon");
+    BOUNDINGBOX,
+    SEGMENTATION
     //ADD WHEN HAVE NEW ANNOTATION TYPE
-
-    public final String META_KEY;
-
-    private AnnotationType(String metaKey)
-    {
-        META_KEY = metaKey;
-    }
 }
 

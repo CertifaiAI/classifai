@@ -45,6 +45,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -209,8 +210,7 @@ public class V2Endpoint extends EndpointBase {
         projectImporter.run();
     }
 
-    protected void createRawProject(JsonObject requestBody, RoutingContext context)
-    {
+    protected void createRawProject(JsonObject requestBody, RoutingContext context) throws IOException {
         String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
 
         String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
@@ -633,5 +633,45 @@ public class V2Endpoint extends EndpointBase {
                 }
             });
         });
+    }
+
+    /**
+     * Rename data filename
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/imgsrc/rename
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/imgsrc/rename
+     *
+     * json payload = {
+     *      "uuid" : "f592a6e2-53f8-4730-930c-8357d191de48"
+     *      "new_fname" : "new_7.jpg"
+     * }
+     *
+     */
+    public void renameData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        context.request().bodyHandler(h -> {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            request.put(ParamConfig.getProjectIdParam(), projectId);
+            request.put(ParamConfig.getUuidParam(), request.getString(ParamConfig.getUuidParam()));
+            request.put(ParamConfig.getNewFileNameParam(), request.getString(ParamConfig.getNewFileNameParam()));
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
+
+            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply -> {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+
     }
 }

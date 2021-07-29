@@ -45,8 +45,10 @@
         "created": "Dicipta pada:",
         "modified": "Diubah Suai:",
         "totalPhoto": "Jumlah foto:",
-        "noProject": "Tunggu sekejap... tidak ada projek pun",
+        "noProject": "Tunggu sekejap... tak ada projek pun",
         "createNew": "Bersedia dan jom mulakan projek baru!",
+        "noStarred": "Tiada projek dibintangkan",
+        "starIt": "Sedang mengusahakan projek penting? Bintangkannya supaya anda dapat mengakses dengan pantas!",
         "projectPath": "Lokasi Projek"
     },
     "deleteMsg": "dipadam ",
