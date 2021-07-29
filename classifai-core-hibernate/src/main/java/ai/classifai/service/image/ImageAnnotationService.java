@@ -54,7 +54,7 @@ public class ImageAnnotationService extends AbstractVertxService
         Annotation toDelete = annotationList.stream()
                 .filter(annotation -> !annotationIdList.contains(annotation.getId()))
                 .findFirst()
-                .get();
+                .orElse(null);
 
         return Future.succeededFuture(toDelete);
     }
