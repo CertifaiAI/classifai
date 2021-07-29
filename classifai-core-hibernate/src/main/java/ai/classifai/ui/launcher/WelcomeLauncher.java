@@ -391,7 +391,7 @@ public class WelcomeLauncher extends JFrame
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            log.error("Unable to set running status icon", e);
         }
     }
 
