@@ -65,13 +65,13 @@ public class EndpointRouter extends AbstractVerticle
 
     //***********Controller*************
     private ProjectController projectController;
-    private VersionController versionController;
+//    private VersionController versionController;
     private ImageDataController imageDataController;
     private ImageDataVersionController imageDataVersionController;
-    private BoundingBoxAnnotationController boundingBoxAnnotationController;
-    private PolygonAnnotationController polygonAnnotationController;
+//    private BoundingBoxAnnotationController boundingBoxAnnotationController;
+//    private PolygonAnnotationController polygonAnnotationController;
     private LabelController labelController;
-    private PointController pointController;
+//    private PointController pointController;
     private SystemController systemController;
 
 
@@ -169,10 +169,6 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/:annotation_type/projects/:project_name/newlabels").handler(labelController::updateLabels);
 
-//        router.put("/version/:version_id/label/new").handler(labelController::addLabel);
-
-//        router.delete("/label/:label_id").handler(labelController::deleteLabel);
-
         //*******************************V2 Endpoints*******************************
 
 //        router.put("/v2/newproject").handler(v2::importProject);
@@ -228,8 +224,6 @@ public class EndpointRouter extends AbstractVerticle
 
         return promise.future();
     }
-
-
 
     @Override
     public void start(Promise<Void> promise)

@@ -31,21 +31,4 @@ public class ParamHandler {
     {
         return context.request().getParam(ParamConfig.getProjectNameParam());
     }
-
-    public JsonObject annoParamToJson(RoutingContext context)
-    {
-        AnnotationType type = getAnnotationType(context);
-
-        return new JsonObject()
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-    }
-
-    public JsonObject projectParamToJson(RoutingContext context)
-    {
-        String projectName = getProjectName(context);
-
-        return new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), projectName)
-                .mergeIn(annoParamToJson(context));
-    }
 }
