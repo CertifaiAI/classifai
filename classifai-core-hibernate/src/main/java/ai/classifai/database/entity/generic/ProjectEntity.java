@@ -12,6 +12,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Class for Project entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @lombok.Data
 @Entity(name = "project")
 @NamedQueries({

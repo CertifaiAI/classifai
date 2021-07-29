@@ -11,6 +11,11 @@ import lombok.NonNull;
 import javax.persistence.EntityManager;
 import java.util.UUID;
 
+/**
+ * Class for Point repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class PointHibernateRepository extends AbstractHibernateRepository<Point, PointDTO, UUID, PointEntity> implements PointRepository
 {
     public PointHibernateRepository(EntityManager em) {

@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Class for Project repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class ProjectHibernateRepository extends AbstractHibernateRepository<Project, ProjectDTO, UUID, ProjectEntity> implements ProjectRepository
 {
     public ProjectHibernateRepository(EntityManager em)

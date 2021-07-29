@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Class for Data abstract repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class DataHibernateRepository extends AbstractHibernateRepository<Data, DataDTO, UUID, DataEntity>
         implements DataRepository
 {

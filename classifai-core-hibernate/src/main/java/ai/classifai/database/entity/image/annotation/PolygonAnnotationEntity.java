@@ -11,6 +11,11 @@ import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * Class for PolygonAnnotation entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Entity(name = "polygon_annotation")

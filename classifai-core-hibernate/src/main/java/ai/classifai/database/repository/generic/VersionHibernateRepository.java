@@ -15,7 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
+/**
+ * Class for Version repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class VersionHibernateRepository extends AbstractHibernateRepository<Version, VersionDTO, UUID, VersionEntity> implements VersionRepository
 {
     public VersionHibernateRepository(EntityManager em)

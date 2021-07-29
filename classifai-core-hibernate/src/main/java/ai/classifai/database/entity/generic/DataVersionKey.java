@@ -10,6 +10,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
+/**
+ * Composite key for DataVersion entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

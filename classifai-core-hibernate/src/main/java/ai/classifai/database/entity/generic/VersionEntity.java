@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class for Version entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @lombok.Data
 @Entity(name = "version")
 public class VersionEntity implements Version

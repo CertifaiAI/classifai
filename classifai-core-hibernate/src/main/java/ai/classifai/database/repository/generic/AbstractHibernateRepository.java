@@ -10,6 +10,11 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract class for abstract repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @AllArgsConstructor
 public abstract class AbstractHibernateRepository<Entity extends HasId<Id>, DTO, Id, EntityImpl extends Entity> implements AbstractRepository<Entity, DTO, Id>
 {

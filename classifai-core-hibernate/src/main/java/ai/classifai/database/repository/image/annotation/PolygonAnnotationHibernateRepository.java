@@ -14,10 +14,15 @@ import lombok.NonNull;
 import javax.persistence.EntityManager;
 import java.util.List;
 
-public class PolygonHibernateRepository extends ImageAnnotationHibernateRepository implements PolygonAnnotationRepository
+/**
+ * Class for PolygonAnnotation repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
+public class PolygonAnnotationHibernateRepository extends ImageAnnotationHibernateRepository implements PolygonAnnotationRepository
 {
 
-    public PolygonHibernateRepository(EntityManager em) {
+    public PolygonAnnotationHibernateRepository(EntityManager em) {
         super(em, PolygonAnnotationEntity.class);
     }
 

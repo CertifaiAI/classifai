@@ -9,9 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import javax.persistence.*;
 import java.util.*;
 
+/**
+ * Abstract class for Data entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @Slf4j
 @lombok.Data
-@Entity(name = "DATA")
+@Entity(name = "data")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class DataEntity implements Data
 {

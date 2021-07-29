@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.UUID;
 
+/**
+ * Class for Point entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @NoArgsConstructor
 @lombok.Data
 @Entity(name = "point")

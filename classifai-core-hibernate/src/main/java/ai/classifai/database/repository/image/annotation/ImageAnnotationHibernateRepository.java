@@ -9,6 +9,11 @@ import ai.classifai.database.repository.generic.AnnotationHibernateRepository;
 
 import javax.persistence.EntityManager;
 
+/**
+ * Class for ImageAnnotation abstract repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class ImageAnnotationHibernateRepository extends AnnotationHibernateRepository implements ImageAnnotationRepository
 {
     public ImageAnnotationHibernateRepository(EntityManager em, Class<? extends ImageAnnotationEntity> entityClass) {

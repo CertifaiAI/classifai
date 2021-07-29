@@ -10,6 +10,11 @@ import lombok.EqualsAndHashCode;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
+/**
+ * Class for ImageData entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity(name = "image_data")

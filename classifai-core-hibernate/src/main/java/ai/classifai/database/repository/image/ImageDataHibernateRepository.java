@@ -13,6 +13,11 @@ import lombok.NonNull;
 
 import javax.persistence.EntityManager;
 
+/**
+ * Class for ImageData repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class ImageDataHibernateRepository extends DataHibernateRepository implements ImageDataRepository
 {
     public ImageDataHibernateRepository(EntityManager em)

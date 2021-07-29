@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Abstract class for DataVersion entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @lombok.Data
 @Entity(name = "data_version")
 @Inheritance(strategy = InheritanceType.JOINED)

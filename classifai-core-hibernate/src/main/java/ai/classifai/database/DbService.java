@@ -8,15 +8,11 @@ import ai.classifai.util.strategy.ImageAnnotationDTOEnum;
 import ai.classifai.database.repository.generic.*;
 import ai.classifai.util.strategy.DataEntityEnum;
 import ai.classifai.core.service.generic.*;
-import ai.classifai.core.service.image.ImageDataRepository;
-import ai.classifai.core.service.image.annotation.BoundingBoxAnnotationRepository;
-import ai.classifai.core.service.image.annotation.PolygonAnnotationRepository;
-import ai.classifai.core.service.image.ImageDataVersionRepository;
 import ai.classifai.database.entity.generic.DataVersionKey;
 import ai.classifai.database.repository.image.ImageDataHibernateRepository;
 import ai.classifai.database.repository.image.ImageDataVersionHibernateRepository;
-import ai.classifai.database.repository.image.annotation.BoundingBoxHibernateRepository;
-import ai.classifai.database.repository.image.annotation.PolygonHibernateRepository;
+import ai.classifai.database.repository.image.annotation.BoundingBoxAnnotationHibernateRepository;
+import ai.classifai.database.repository.image.annotation.PolygonAnnotationHibernateRepository;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -29,6 +25,11 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/**
+ * Class for database service with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class DbService
 {
     private final Vertx vertx;
@@ -331,9 +332,9 @@ public class DbService
 
         return switch (imageAnnotationDTOEnum)
         {
-            case BoundingBoxAnnotationDTO -> new BoundingBoxHibernateRepository(em).create(annotationDTO);
+            case BoundingBoxAnnotationDTO -> new BoundingBoxAnnotationHibernateRepository(em).create(annotationDTO);
 
-            case PolygonAnnotationDTO -> new PolygonHibernateRepository(em).create(annotationDTO);
+            case PolygonAnnotationDTO -> new PolygonAnnotationHibernateRepository(em).create(annotationDTO);
         };
     }
 

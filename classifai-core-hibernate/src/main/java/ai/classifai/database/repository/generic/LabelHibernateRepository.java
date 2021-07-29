@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Class for Label repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class LabelHibernateRepository extends AbstractHibernateRepository<Label, LabelDTO, UUID, LabelEntity> implements LabelRepository
 {
     public LabelHibernateRepository(EntityManager entityManager)

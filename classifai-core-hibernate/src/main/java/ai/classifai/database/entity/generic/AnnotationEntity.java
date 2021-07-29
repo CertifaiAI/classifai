@@ -9,6 +9,11 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Abstract class for Annotation entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @Getter
 @Setter
 @Entity(name = "annotation")

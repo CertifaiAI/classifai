@@ -12,6 +12,11 @@ import lombok.NonNull;
 
 import javax.persistence.EntityManager;
 
+/**
+ * Class for Annotation abstract repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class DataVersionHibernateRepository extends AbstractHibernateRepository<DataVersion, DataVersionDTO, DataVersion.DataVersionId, DataVersionEntity> implements DataVersionRepository
 {
     public DataVersionHibernateRepository(EntityManager em, Class<? extends DataVersionEntity> entityClass) {

@@ -10,6 +10,11 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstract class for ImageAnnotation entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @Entity(name = "image_annotation")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class ImageAnnotationEntity extends AnnotationEntity implements ImageAnnotation

@@ -10,6 +10,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class for BoundingBoxAnnotation entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @Getter
 @Entity(name = "boundingbox_annotation")
 public class BoundingBoxAnnotationEntity extends ImageAnnotationEntity implements BoundingBoxAnnotation

@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.UUID;
 
+/**
+ * Class for Label entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @NoArgsConstructor
 @lombok.Data
 @Entity(name = "label")

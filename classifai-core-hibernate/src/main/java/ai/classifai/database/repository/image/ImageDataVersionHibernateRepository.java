@@ -18,6 +18,11 @@ import lombok.NonNull;
 import javax.persistence.EntityManager;
 import java.util.List;
 
+/**
+ * Class for ImageDataVersion repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class ImageDataVersionHibernateRepository extends DataVersionHibernateRepository implements ImageDataVersionRepository
 {
     public ImageDataVersionHibernateRepository(EntityManager em)

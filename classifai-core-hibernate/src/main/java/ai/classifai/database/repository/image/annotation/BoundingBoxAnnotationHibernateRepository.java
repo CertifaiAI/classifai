@@ -13,9 +13,14 @@ import lombok.NonNull;
 
 import javax.persistence.EntityManager;
 
-public class BoundingBoxHibernateRepository extends ImageAnnotationHibernateRepository implements BoundingBoxAnnotationRepository
+/**
+ * Class for BoundingBoxAnnotation repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
+public class BoundingBoxAnnotationHibernateRepository extends ImageAnnotationHibernateRepository implements BoundingBoxAnnotationRepository
 {
-    public BoundingBoxHibernateRepository(EntityManager em) {
+    public BoundingBoxAnnotationHibernateRepository(EntityManager em) {
         super(em, BoundingBoxAnnotationEntity.class);
     }
 

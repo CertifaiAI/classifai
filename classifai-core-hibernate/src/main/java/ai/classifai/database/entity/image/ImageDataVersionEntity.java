@@ -13,6 +13,11 @@ import lombok.EqualsAndHashCode;
 import javax.persistence.*;
 import java.util.List;
 
+/**
+ * Class for ImageDataVersion entity with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 @EqualsAndHashCode(callSuper = true)
 @lombok.Data
 @Entity(name = "image_data_version")

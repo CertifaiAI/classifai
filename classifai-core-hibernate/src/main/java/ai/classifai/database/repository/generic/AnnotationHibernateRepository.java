@@ -13,6 +13,11 @@ import lombok.NonNull;
 
 import javax.persistence.EntityManager;
 
+/**
+ * Class for Annotation abstract repository with hibernate implementation
+ *
+ * @author YinChuangSum
+ */
 public class AnnotationHibernateRepository extends AbstractHibernateRepository<Annotation, AnnotationDTO, Long, AnnotationEntity> implements AnnotationRepository
 {
     public AnnotationHibernateRepository(EntityManager em)
