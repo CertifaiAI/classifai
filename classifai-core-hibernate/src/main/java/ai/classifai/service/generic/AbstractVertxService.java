@@ -2,7 +2,12 @@ package ai.classifai.service.generic;
 
 import io.vertx.core.Vertx;
 
-public class AbstractVertxService
+/**
+ * Abstract class for services
+ *
+ * @author YinChuangSum
+ */
+public abstract class AbstractVertxService
 {
     protected Vertx vertx;
 

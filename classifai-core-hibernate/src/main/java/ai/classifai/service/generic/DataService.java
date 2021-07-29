@@ -3,7 +3,7 @@ package ai.classifai.service.generic;
 import ai.classifai.core.entity.dto.generic.DataDTO;
 import ai.classifai.core.entity.model.generic.Project;
 import ai.classifai.core.entity.model.generic.Data;
-import ai.classifai.service.image.ImageService;
+import ai.classifai.service.image.ImageDataService;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -11,6 +11,11 @@ import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract class for data handling
+ *
+ * @author YinChuangSum
+ */
 public abstract class DataService extends FileService
 {
     public DataService(Vertx vertx) {
@@ -21,7 +26,7 @@ public abstract class DataService extends FileService
     {
         return switch(annotationType)
         {
-            case BOUNDINGBOX, SEGMENTATION -> new ImageService(vertx);
+            case BOUNDINGBOX, SEGMENTATION -> new ImageDataService(vertx);
         };
     }
 
