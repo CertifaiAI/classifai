@@ -52,6 +52,8 @@
         "projectPath": "项目路径"
     },
     "deleteMsg": "删除 ",
+    "deleteConfirmation": "确定要删除吗",
+    "confirm": "确认",
     "success": "成功",
     "renameMsg": "名称更新 ",
     "renameSuccess": "名称更新成功!",
