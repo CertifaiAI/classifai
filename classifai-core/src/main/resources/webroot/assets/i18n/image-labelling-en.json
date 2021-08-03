@@ -16,6 +16,8 @@
         "pointer": "Pointer",
         "rectangularBB": "Rectangular Bounding Box",
         "polygon": "Polygon",
+        "offCrossLine": "Turn Off Cross Guiding Lines",
+        "onCrossLine": "Turn On Cross Guiding Lines",
         "eraser": "Eraser",
         "fitCenter": "Fit Center",
         "save": "Save",
