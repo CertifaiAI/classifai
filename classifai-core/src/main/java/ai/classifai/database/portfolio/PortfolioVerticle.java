@@ -21,6 +21,7 @@ import ai.classifai.action.FileGenerator;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
+import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationQuery;
@@ -145,7 +146,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                     if (fetch.succeeded())
                     {
-                        String annotation = AnnotationHandler.getType(loader.getAnnotationType()).name();
+                        String annotation = Objects.requireNonNull(
+                                AnnotationHandler.getType(loader.getAnnotationType())).name();
                         log.info("Project " + loader.getProjectName() + " of " + annotation.toLowerCase(Locale.ROOT) + " created");
                     }
                     else
@@ -164,17 +166,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateLastModifiedDate())
                 .execute(params)
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(message));
     }
 
     public void renameProject(@NonNull Message<JsonObject> message)
@@ -186,17 +178,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRenameProject())
                 .execute(params)
-                .onComplete(fetch ->{
-
-                    if (fetch.succeeded())
-                    {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(message));
 
     }
 
@@ -230,19 +212,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getCreateNewProject())
                 .execute(params)
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        //to reflect the project name to send back to front end
-                        ProjectImportSelector.setProjectName(loader.getProjectName());
-                        log.info("Import project " + loader.getProjectName() + " success!");
-                    }
-                    else
-                    {
-                        log.info("Failed to import project " + loader.getProjectName() + " from configuration file");
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(
+                        () -> {
+                            ProjectImportSelector.setProjectName(loader.getProjectName());
+                            log.info("Import project " + loader.getProjectName() + " success!");
+                            },
+                        (cause) -> log.info("Failed to import project " + loader.getProjectName() + " from configuration file")
+                        ));
 
     }
 
@@ -260,17 +236,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateLabelList())
                 .execute(updateUuidListBody)
-                .onComplete(reply -> {
-                    if (reply.succeeded())
-                    {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        log.info("Update list of uuids to Portfolio Database failed");
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(reply.cause()));
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(message));
     }
 
 
@@ -298,32 +264,28 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         //export portfolio table relevant
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getExportProject())
                 .execute(params)
-                .onComplete(fetch ->{
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            // export project table relevant
+                            ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+                            JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(loader));
 
-                    if (fetch.succeeded())
-                    {
-                        //export project table relevant
-                        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-                        JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(loader));
-
-                        client.preparedQuery(AnnotationQuery.getExtractProject())
-                                .execute(params)
-                                .onComplete(annotationFetch ->{
-                                    if (annotationFetch.succeeded())
-                                    {
-                                        int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
-                                        exportProjectOnSuccess(annotationFetch.result(), fetch.result(), loader, exportType);
-                                    }
-                                });
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
-                    }
-                });
-
+                            client.preparedQuery(AnnotationQuery.getExtractProject())
+                                    .execute(params)
+                                    .onComplete(annotationFetch -> {
+                                        if (annotationFetch.succeeded())
+                                        {
+                                            int exportType = message.body().getInteger(ActionConfig.getExportTypeParam());
+                                            exportProjectOnSuccess(annotationFetch.result(), result, loader, exportType);
+                                        }
+                                    });
+                            message.replyAndRequest(ReplyHandler.getOkReply());
+                        },
+                        (cause) -> {
+                            message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause));
+                            ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
+                        }
+                ));
     }
 
     private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, ProjectLoader loader, int exportType)
@@ -343,17 +305,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getDeleteProject())
                 .execute(params)
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(message));
     }
 
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
@@ -364,32 +316,26 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                 .execute(params)
-                .onComplete(fetch -> {
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            List<String> projectNameList = new ArrayList<>();
+                            for (Row row : result)
+                            {
+                                projectNameList.add(row.getString(0));
+                            }
 
-                    if (fetch.succeeded())
-                    {
-                        RowSet<Row> rowSet = fetch.result();
-                        List<String> projectNameList = new ArrayList<>();
-                        for (Row row : rowSet)
-                        {
-                            projectNameList.add(row.getString(0));
-                        }
+                            JsonObject response = ReplyHandler.getOkReply();
+                            response.put(ParamConfig.getContent(), projectNameList);
 
-                        JsonObject response = ReplyHandler.getOkReply();
-                        response.put(ParamConfig.getContent(), projectNameList);
-
-                        message.replyAndRequest(response);
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                            message.replyAndRequest(response);
+                        },
+                        (cause) -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
+                ));
     }
 
     public static void updateFileSystemUuidList(@NonNull String projectID)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         List<String> uuidList = loader.getUuidListFromDb();
 
@@ -413,55 +359,45 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         portfolioDbPool.query(PortfolioDbQuery.getRetrieveAllProjects())
                 .execute()
-                .onComplete(projectNameFetch -> {
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            if (result.size() == 0) {
+                                log.debug("No projects founds.");
+                            } else {
+                                for (Row row : result)
+                                {
+                                    Version currentVersion = new Version(row.getString(7));
 
-                    if (projectNameFetch.succeeded())
-                    {
-                        RowSet<Row> rowSet = projectNameFetch.result();
-                        
-                        if (rowSet.size() == 0)
-                        {
-                            log.debug("No projects founds.");
-                        }
-                        else
-                        {
-                            for (Row row : rowSet)
-                            {
-                                Version currentVersion = new Version(row.getString(7));
+                                    ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(8));     //project_version
 
-                                ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(8));     //project_version
+                                    project.setCurrentVersion(currentVersion.getVersionUuid());
 
-                                project.setCurrentVersion(currentVersion.getVersionUuid());
+                                    Map uuidDict = ActionOps.getKeyWithArray(row.getString(9));
+                                    project.setUuidListDict(uuidDict);                                                      //uuid_project_version
 
-                                Map uuidDict = ActionOps.getKeyWithArray(row.getString(9));
-                                project.setUuidListDict(uuidDict);                                                      //uuid_project_version
+                                    Map labelDict = ActionOps.getKeyWithArray(row.getString(10));
+                                    project.setLabelListDict(labelDict);                                                    //label_project_version
 
-                                Map labelDict = ActionOps.getKeyWithArray(row.getString(10));
-                                project.setLabelListDict(labelDict);                                                    //label_project_version
+                                    ProjectLoader loader = ProjectLoader.builder()
+                                            .projectId(row.getString(0))                                                   //project_id
+                                            .projectName(row.getString(1))                                                 //project_name
+                                            .annotationType(row.getInteger(2))                                             //annotation_type
+                                            .projectPath(new File(row.getString(3)))                                       //project_path
+                                            .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
+                                            .isProjectNew(row.getBoolean(4))                                               //is_new
+                                            .isProjectStarred(row.getBoolean(5))                                           //is_starred
+                                            .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
+                                            .projectVersion(project)                                                            //project_version
+                                            .build();
 
-                                ProjectLoader loader = ProjectLoader.builder()
-                                    .projectId(row.getString(0))                                                   //project_id
-                                    .projectName(row.getString(1))                                                 //project_name
-                                    .annotationType(row.getInteger(2))                                             //annotation_type
-                                    .projectPath(new File(row.getString(3)))                                       //project_path
-                                    .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
-                                    .isProjectNew(row.getBoolean(4))                                               //is_new
-                                    .isProjectStarred(row.getBoolean(5))                                           //is_starred
-                                    .projectInfra(ProjectInfraHandler.getInfra(row.getString(6)))                  //project_infra
-                                    .projectVersion(project)                                                            //project_version
-                                    .build();
-
-                                //load each data points
-                                AnnotationVerticle.configProjectLoaderFromDb(loader);
-                                ProjectHandler.loadProjectLoader(loader);
+                                    //load each data points
+                                    AnnotationVerticle.configProjectLoaderFromDb(loader);
+                                    ProjectHandler.loadProjectLoader(loader);
+                                }
                             }
-                        }
-                    }
-                    else
-                    {
-                        log.info("Retrieving from portfolio database to project loader failed");
-                    }
-                });
+                        },
+                        (cause) -> log.info("Retrieving from portfolio database to project loader failed")
+                ));
     }
 
     public void buildProjectFromCLI()
@@ -515,7 +451,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     /**
      * V2 get all available project metadata
-     * @param message
      */
     public void getAllProjectsMetadata(Message<JsonObject> message)
     {
@@ -525,31 +460,24 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                 .execute(params)
-                .onComplete(fetch -> {
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            List<JsonObject> projectData = new ArrayList<>();
 
-                    if (fetch.succeeded())
-                    {
-                        RowSet<Row> rowSet = fetch.result();
+                            for (Row row : result)
+                            {
+                                String projectName = row.getString(0);
 
-                        List<JsonObject> result = new ArrayList<>();
+                                getProjectMetadata(projectData, ProjectHandler.getProjectId(projectName, annotationTypeIndex));
+                            }
 
-                        for (Row row : rowSet)
-                        {
-                            String projectName = row.getString(0);
+                            JsonObject response = ReplyHandler.getOkReply();
+                            response.put(ParamConfig.getContent(), projectData);
 
-                            getProjectMetadata(result, ProjectHandler.getProjectId(projectName, annotationTypeIndex));
-                        }
-
-                        JsonObject response = ReplyHandler.getOkReply();
-                        response.put(ParamConfig.getContent(), result);
-
-                        message.replyAndRequest(response);
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                            message.replyAndRequest(response);
+                        },
+                        (cause) -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
+                ));
     }
 
     public static void updateIsNewParam(@NonNull String projectID)
@@ -558,34 +486,25 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getUpdateIsNewParam())
                 .execute(params)
-                .onComplete(fetch ->{
-
-                    if (fetch.succeeded())
-                    {
-                        ProjectHandler.getProjectLoader(projectID).setIsProjectNew(Boolean.FALSE);
-                    }
-                    else
-                    {
-                        log.info("Update is_new param for project of projectid: " + projectID + " failed");
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(
+                        () -> Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID)).setIsProjectNew(Boolean.FALSE),
+                        (cause) -> log.info("Update is_new param for project of projectid: " + projectID + " failed")
+                ));
     }
 
     //V2 API
     public void starProject(Message<JsonObject> message)
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
-        Object isStarObject = message.body().getString(ParamConfig.getStatusParam());
+        String isStarObject = message.body().getString(ParamConfig.getStatusParam());
 
         boolean isStarStatus;
 
         try
         {
-            if (isStarObject instanceof String)
+            if (isStarObject != null)
             {
-                String isStarStr = (String) isStarObject;
-
-                isStarStatus = ConversionHandler.String2boolean(isStarStr);
+                isStarStatus = ConversionHandler.String2boolean(isStarObject);
             }
             else
             {
@@ -602,17 +521,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getStarProject())
                 .execute(params)
-                .onComplete(fetch ->{
-
-                    if (fetch.succeeded())
-                    {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(message));
     }
 
     private static Tuple buildNewProject(@NonNull ProjectLoader loader)
