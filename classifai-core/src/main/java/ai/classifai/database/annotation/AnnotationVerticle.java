@@ -55,6 +55,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation of Functionalities for each annotation type
@@ -92,7 +93,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                                 String dataPath = row.getString(0);
 
-                                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+                                ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
                                 if(loader.isCloud())
                                 {
@@ -115,7 +116,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         return Paths.get(loader.getProjectPath().getAbsolutePath(), dataSubPath).toFile();
 
@@ -123,7 +124,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public static void loadValidProjectUuid(@NonNull String projectId)
     {
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         List<String> oriUUIDList = loader.getUuidListFromDb();
 
@@ -213,16 +214,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             }
                             else
                             {
-                                RowIterator<Row> rowIterator = result.iterator();
 
-                                while(rowIterator.hasNext())
-                                {
-                                    Row row = rowIterator.next();
-
+                                for (Row row : result) {
                                     String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
-                                    if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
-                                    {
+                                    if (loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath))) {
                                         Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
 
                                         Annotation annotation = Annotation.builder()
@@ -237,9 +233,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                                 .build();
 
                                         uuidAnnotationDict.put(row.getString(0), annotation);
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         //remove uuid which is not readable
                                         loader.getSanityUuidList().remove(row.getString(0));
                                     }
@@ -378,7 +372,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             String projectId = requestBody.getString(ParamConfig.getProjectIdParam());
             String uuid = requestBody.getString(ParamConfig.getUuidParam());
 
-            ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+            ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
             Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
             Integer imgDepth = requestBody.getInteger(ParamConfig.getImgDepth());
@@ -427,7 +421,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
         String uuid = message.body().getString(ParamConfig.getUuidParam());
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
