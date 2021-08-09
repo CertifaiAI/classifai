@@ -52,6 +52,8 @@
         "projectPath": "Project Path"
     },
     "deleteMsg": "deleted ",
+    "deleteConfirmation": "Are you sure you want to delete",
+    "confirm": "Confirm",
     "renameMsg": "renamed ",
     "success": "successfully",
     "deleteProject": "Delete Project",

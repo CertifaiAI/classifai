@@ -15,11 +15,16 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Sorting of project card with options of created date, last modified date or project name.
 - Renaming data from workspace - UI and F2 shortcut key
 - Updated keyShortcut.md [#455](https://github.com/CertifaiAI/classifai/pull/455)
-- Deleting data from workspace
+- Deleting data from workspace [#392](https://github.com/CertifaiAI/classifai/issues/392)
+- Add guiding cross line for more effective bounding box labelling [#201](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/201)
+- Ask user confirmation when user want to delete a project [#201](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/201)
 
 ### Fixed
 - Fixed the display of full image path instead of intentional image name in Ubuntu and Mac OS [#446](https://github.com/CertifaiAI/classifai/issues/446)
 - Bug fix for removing "\r" and spaces " " in imported labels [#437](https://github.com/CertifaiAI/classifai/issues/437)
+- Support WebP image format [#394](https://github.com/CertifaiAI/classifai/issues/394)
+- Fix create empty project [#466](https://github.com/CertifaiAI/classifai/issues/466)
+- Frontend code refactoring [#198](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/198)
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added

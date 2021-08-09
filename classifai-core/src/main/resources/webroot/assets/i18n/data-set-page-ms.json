@@ -52,7 +52,9 @@
         "projectPath": "Lokasi Projek"
     },
     "deleteMsg": "dipadam ",
-    "success": "berjaya",
+    "deleteConfirmation": "Adakah anda pasti untuk memadam imej",
+    "confirm": "Teruskan",
+    "success": "dengan jayanya",
     "renameMsg": "dinamakan semula",
     "renameSuccess": "telah berjaya dinamakan semula!",
     "deleteProject": "Padam Projek",

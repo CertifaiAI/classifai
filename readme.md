@@ -1,6 +1,8 @@
+
+
 <p align="center">
 <img src="metadata/logo/Classifai_Logo_Horizontal_Dark.jpg" width="450" height="110" style="float:left"/>
-</p>                                                                                   
+</p> 
 
 <p>
   <p align="center">
@@ -24,6 +26,10 @@
 <h3 align="center">
 Data Annotation Platform for AI Training
 </h3>
+
+<p align="center">
+<a href="https://certifai.ai/ai-from-the-data-perspective-aifdp/"><img src="metadata/AIFDP_Banner.png" width="600" height="110" style="float:left"/></a>
+</p> 
 
 **Classifai** is one of the most comprehensive open-source data annotation platform.  
 It supports the labelling of various data types with multi labelled outputs forms for AI model training.  
@@ -163,9 +169,23 @@ java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 | [Documentation](https://docs.classifai.ai/) | Full API documentation and tutorials |
 | [Blogs](https://medium.com/classifai-ai) | Technical Posts |
 | [Discord](https://discord.gg/WsBFgNP) | Community Support for Classifai Tool |
-| Training (Coming Soon) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
+| [AI from the Data Perspective](https://certifai.ai/ai-from-the-data-perspective-aifdp/) | Self-Paced Training to learn about Data Annotation and the use of Classifai |
 
 ## Contact us
 
 For custom functionality development support, enterprise support and other related questions, \
 contact the team at _hello@classifai.ai_:smiley:
+
+## BiWeekly Dev Meeting
+
+Welcome to join! We have bi-weekly meeting to discuss about features, roadmaps and issues we are working on.
+
+- :alarm_clock: Biweekly Wednesday - Odd Week [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
+- :telephone_receiver: [Zoom](https://zoom.us/j/99519401430?pwd=bnlqckZJcEp0azU5QmRqcDdGSjJ3Zz09)
+- :memo: [Meeting minutes](https://hackmd.io/IvEUZR_bTOy5-y8GbIYcLg?view)
+- :busts_in_silhouette:	 Community Support Channel with Discord
+  - First Timer
+    - [Sign Up](https://discord.com/invite/WsBFgNP) 
+  - Log In
+    - [Log in to Discord](https://discord.com/login) and go to _Certifai Server -> #classifai channel_ 
+![Discord with Classifai](https://bit.ly/3kUSk3l)
