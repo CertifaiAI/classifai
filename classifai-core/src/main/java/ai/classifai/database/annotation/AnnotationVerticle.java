@@ -19,6 +19,7 @@ package ai.classifai.database.annotation;
 import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
+import ai.classifai.database.DBUtils;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
@@ -74,48 +75,42 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcPool.preparedQuery(AnnotationQuery.getRetrieveDataPath())
                 .execute(params)
-                .onComplete(fetch -> {
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
 
-                    if (fetch.succeeded())
-                    {
-                        RowSet<Row> rowSet = fetch.result();
-
-                        if (rowSet.size() == 0)
-                        {
-                            String projectName = message.body().getString(ParamConfig.getProjectNameParam());
-                            String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
-                            message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
-                        }
-                        else
-                        {
-                            JsonObject response = ReplyHandler.getOkReply();
-
-                            Row row = rowSet.iterator().next();
-
-                            String dataPath = row.getString(0);
-
-                            ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
-                            if(loader.isCloud())
+                            if (result.size() == 0)
                             {
-                                response.put(ParamConfig.getImgSrcParam(), WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
+                                String projectName = message.body().getString(ParamConfig.getProjectNameParam());
+                                String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
+                                message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
                             }
                             else
                             {
-                                File fileImgPath = getDataFullPath(projectID, dataPath);
+                                JsonObject response = ReplyHandler.getOkReply();
 
-                                response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
+                                Row row = result.iterator().next();
+
+                                String dataPath = row.getString(0);
+
+                                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+                                if(loader.isCloud())
+                                {
+                                    response.put(ParamConfig.getImgSrcParam(), WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
+                                }
+                                else
+                                {
+                                    File fileImgPath = getDataFullPath(projectID, dataPath);
+
+                                    response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
+                                }
+
+                                message.replyAndRequest(response);
+
                             }
-
-                            message.replyAndRequest(response);
-
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                        },
+                        (cause) -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
+                ));
     }
 
     private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
@@ -145,27 +140,24 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             clientJdbcPool.preparedQuery(AnnotationQuery.getLoadValidProjectUuid())
                     .execute(params)
-                    .onComplete(fetch -> {
-
-                        if (fetch.succeeded())
-                        {
-                            RowSet<Row> rowSet = fetch.result();
-
-                            if(rowSet.iterator().hasNext())
-                            {
-                                Row row = rowSet.iterator().next();
-
-                                String dataSubPath = row.getString(0);
-                                File dataFullPath = getDataFullPath(projectId, dataSubPath);
-
-                                if (ImageHandler.isImageReadable(dataFullPath))
+                    .onComplete(DBUtils.handleResponse(
+                            (result) -> {
+                                if(result.iterator().hasNext())
                                 {
-                                    loader.pushDBValidUUID(UUID);
+                                    Row row = result.iterator().next();
+
+                                    String dataSubPath = row.getString(0);
+                                    File dataFullPath = getDataFullPath(projectId, dataSubPath);
+
+                                    if (ImageHandler.isImageReadable(dataFullPath))
+                                    {
+                                        loader.pushDBValidUUID(UUID);
+                                    }
                                 }
-                            }
-                        }
-                        loader.updateDBLoadingProgress(currentLength);
-                    });
+                                loader.updateDBLoadingProgress(currentLength);
+                            },
+                            (cause) -> log.info("Fail to load prject UUID")
+                    ));
         }
     }
 
@@ -195,19 +187,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        loader.pushFileSysNewUUIDList(uuid);
-                    }
-                    else
-                    {
-                        log.error("Push data point with path " + dataPath + " failed: " + fetch.cause().getMessage());
-                    }
-
-                    loader.updateLoadingProgress(currentLength);
-                });
+                .onComplete(DBUtils.handleEmptyResponse(
+                        () -> {
+                            loader.pushFileSysNewUUIDList(uuid);
+                            loader.updateLoadingProgress(currentLength);
+                        },
+                        (cause) -> log.error("Push data point with path " + dataPath + " failed: " + cause)
+                ));
     }
 
     public static void configProjectLoaderFromDb(@NonNull ProjectLoader loader)
@@ -219,53 +205,50 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         clientJdbcPool.preparedQuery(AnnotationQuery.getExtractProject())
                 .execute(Tuple.of(loader.getProjectId()))
-                .onComplete(annotationFetch ->{
-
-                    if (annotationFetch.succeeded())
-                    {
-                        RowSet<Row> projectRowSet = annotationFetch.result();
-
-                        if(projectRowSet.size() == 0)
-                        {
-                            log.debug("Extract project annotation retrieve 0 rows. Project not found from project database");
-                        }
-                        else
-                        {
-                            RowIterator<Row> rowIterator = projectRowSet.iterator();
-
-                            while(rowIterator.hasNext())
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            if(result.size() == 0)
                             {
-                                Row row = rowIterator.next();
-
-                                String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
-
-                                if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
-                                {
-                                    Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
-
-                                    Annotation annotation = Annotation.builder()
-                                            .uuid(row.getString(0))         //uuid
-                                            .projectId(loader.getProjectId())    //project_id
-                                            .imgPath(row.getString(1))      //img_path
-                                            .annotationDict(annotationDict)      //version_list
-                                            .imgDepth(row.getInteger(3))    //img_depth
-                                            .imgOriW(row.getInteger(4))     //img_ori_w
-                                            .imgOriH(row.getInteger(5))     //img_ori_h
-                                            .fileSize(row.getInteger(6))    //file_size
-                                            .build();
-
-                                    uuidAnnotationDict.put(row.getString(0), annotation);
-                                }
-                                else
-                                {
-                                    //remove uuid which is not readable
-                                    loader.getSanityUuidList().remove(row.getString(0));
-                                }
-
+                                log.debug("Extract project annotation retrieve 0 rows. Project not found from project database");
                             }
-                        }
-                    }
-                });
+                            else
+                            {
+                                RowIterator<Row> rowIterator = result.iterator();
+
+                                while(rowIterator.hasNext())
+                                {
+                                    Row row = rowIterator.next();
+
+                                    String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
+
+                                    if(loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath)))
+                                    {
+                                        Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
+
+                                        Annotation annotation = Annotation.builder()
+                                                .uuid(row.getString(0))         //uuid
+                                                .projectId(loader.getProjectId())    //project_id
+                                                .imgPath(row.getString(1))      //img_path
+                                                .annotationDict(annotationDict)      //version_list
+                                                .imgDepth(row.getInteger(3))    //img_depth
+                                                .imgOriW(row.getInteger(4))     //img_ori_w
+                                                .imgOriH(row.getInteger(5))     //img_ori_h
+                                                .fileSize(row.getInteger(6))    //file_size
+                                                .build();
+
+                                        uuidAnnotationDict.put(row.getString(0), annotation);
+                                    }
+                                    else
+                                    {
+                                        //remove uuid which is not readable
+                                        loader.getSanityUuidList().remove(row.getString(0));
+                                    }
+
+                                }
+                            }
+                        },
+                        (cause) -> log.info("Error query for config loader from db")
+                ));
     }
 
 
@@ -288,19 +271,16 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
-                .onComplete(fetch -> {
-
-                    if (fetch.succeeded())
-                    {
-                        loader.uploadUuidFromRootPath(uuid);
-                        PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
-                    }
-                    else
-                    {
-                        String dataFullPath = loader.getProjectPath() + dataSubPath;
-                        log.error("Push data point with path " + dataFullPath + " failed: " + fetch.cause().getMessage());
-                    }
-                });
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            loader.uploadUuidFromRootPath(uuid);
+                            PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
+                        },
+                        (cause) -> {
+                            String dataFullPath = loader.getProjectPath() + dataSubPath;
+                            log.error("Push data point with path " + dataFullPath + " failed: " + cause);
+                        }
+                ));
     }
 
     public static void uploadUuidFromConfigFile(@NonNull Tuple param, @NonNull ProjectLoader loader)
@@ -309,26 +289,23 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(param)
-                .onComplete(fetch -> {
+                .onComplete(DBUtils.handleResponse(
+                        (result) ->  {
+                            String childPath = param.getString(2);
 
-                    if (fetch.succeeded())
-                    {
-                        String childPath = param.getString(2);
+                            File currentImagePath = Paths.get(loader.getProjectPath().getAbsolutePath(), childPath).toFile();
 
-                        File currentImagePath = Paths.get(loader.getProjectPath().getAbsolutePath(), childPath).toFile();
+                            if(ImageHandler.isImageReadable(currentImagePath))
+                            {
+                                String uuid = param.getString(0);
 
-                        if(ImageHandler.isImageReadable(currentImagePath))
-                        {
-                            String uuid = param.getString(0);
-
-                            loader.uploadSanityUuidFromConfigFile(uuid);
+                                loader.uploadSanityUuidFromConfigFile(uuid);
+                            }
+                        },
+                        (cause) -> {
+                            log.error("Push data point from config file failed " + cause);
                         }
-                    }
-                    else
-                    {
-                        log.error("Push data point from config file failed" + fetch.cause().getMessage());
-                    }
-                });
+                ));
     }
 
     public static void createUuidIfNotExist(@NonNull ProjectLoader loader, @NonNull File dataFullPath, @NonNull Integer currentProcessedLength)
@@ -343,35 +320,36 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         clientJdbcPool.preparedQuery(AnnotationQuery.getQueryUuid())
                 .execute(params)
-                .onComplete(fetch -> {
+                .onComplete(DBUtils.handleResponse(
+                        (result) -> {
+                            //not exist , create data point
+                            if (result.size() == 0)
+                            {
+                                if(ImageHandler.isImageFileValid(dataFullPath))
+                                {
+                                    writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
+                                }
+                            }
+                            else
+                            {
+                                Row row = result.iterator().next();
+                                String uuid = row.getString(0);
 
-                    RowSet<Row> rowSet = fetch.result();
+                                // if exist remove from Listbuffer to prevent from checking the item again
+                                if(!loader.getSanityUuidList().contains(uuid))
+                                {
+                                    loader.uploadUuidFromRootPath(uuid);
+                                }
 
-                    //not exist , create data point
-                    if (rowSet.size() == 0)
-                    {
-                        if(ImageHandler.isImageFileValid(dataFullPath))
-                        {
-                            writeUuidToDbFromReloadingRootPath(loader, dataChildPath);
+                                loader.getDbListBuffer().remove(uuid);
+                            }
+
+                            loader.updateReloadingProgress(currentProcessedLength);
+                        },
+                        (cause) -> {
+
                         }
-                    }
-                    else
-                    {
-                        Row row = rowSet.iterator().next();
-                        String uuid = row.getString(0);
-
-                        // if exist remove from Listbuffer to prevent from checking the item again
-                        if(!loader.getSanityUuidList().contains(uuid))
-                        {
-                            loader.uploadUuidFromRootPath(uuid);
-                        }
-
-                        loader.getDbListBuffer().remove(uuid);
-                    }
-
-                    loader.updateReloadingProgress(currentProcessedLength);
-                });
-
+                ));
 
     }
 
@@ -383,17 +361,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         jdbcPool.preparedQuery(AnnotationQuery.getDeleteProject())
                 .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded())
-                    {
-                        message.replyAndRequest(ReplyHandler.getOkReply());
-                    }
-                    else
-                    {
-                        log.debug("Failure in deleting uuid list from Annotation Verticle");
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
+                .onComplete(DBUtils.handleEmptyResponse(message));
     }
 
     public void deleteProjectData(Message<JsonObject> message)
@@ -445,16 +413,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             jdbcPool.preparedQuery(AnnotationQuery.getUpdateData())
                     .execute(params)
-                    .onComplete(fetch -> {
-                        if (fetch.succeeded())
-                        {
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                        }
-                    });
+                    .onComplete(DBUtils.handleEmptyResponse(message));
         }
         catch (Exception e)
         {
