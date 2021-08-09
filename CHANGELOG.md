@@ -25,6 +25,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Support WebP image format [#394](https://github.com/CertifaiAI/classifai/issues/394)
 - Fix create empty project [#466](https://github.com/CertifaiAI/classifai/issues/466)
 - Frontend code refactoring [#198](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/198)
+- Fix images loaded inconsistent with/more than total images in a project folder [#487](https://github.com/CertifaiAI/classifai/issues/487)
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added
