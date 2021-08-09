@@ -80,18 +80,22 @@
                 "functionality": "Paste the selected bounding box/ polygon"
             },
             "5": {
-                "key": "Delete/Backspace (With selected bounding box/polygon)",
+                "key": "Delete (With selected bounding box/polygon)",
                 "functionality": "Delete a selected bounding box/ polygon"
             },
             "6": {
+                "key": "Backspace",
+                "functionality": "Delete a selected bounding box/ polygon/ remove previous polygon points when drawing"
+            },
+            "7": {
                 "key": "Delete",
                 "functionality": "Delete the current image"
             },
-            "7": {
+            "8": {
                 "key": "F2",
                 "functionality": "Rename the current image"
             },
-            "8": {
+            "9": {
                 "key": "Double click on a selected bounding box/ polygon",
                 "functionality": "Choose label for the selected bounding box"
             }
