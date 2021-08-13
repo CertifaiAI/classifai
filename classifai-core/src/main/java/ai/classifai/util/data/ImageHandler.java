@@ -16,27 +16,23 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageData;
-import ai.classifai.data.type.image.ImageDataFactory;
 import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.jpeg.JpegMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.opencv.core.Mat;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -47,6 +43,21 @@ import java.util.*;
  */
 @Slf4j
 public class ImageHandler {
+
+    public static BufferedImage toBufferedImage(Mat matrix)
+    {
+        int type = BufferedImage.TYPE_BYTE_GRAY;
+        if (matrix.channels() > 1) {
+            type = BufferedImage.TYPE_3BYTE_BGR;
+        }
+        int bufferSize = matrix.channels() * matrix.cols() * matrix.rows();
+        byte[] buffer = new byte[bufferSize];
+        matrix.get(0, 0, buffer); // get all the pixels
+        BufferedImage image = new BufferedImage(matrix.cols(), matrix.rows(), type);
+        final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);
+        return image;
+    }
 
     private static String getImageHeader(String input)
     {
@@ -102,106 +113,53 @@ public class ImageHandler {
         return true;
     }
 
-    private static int getExifOrientation(File file)
+    private static BufferedImage rotateWithOrientation(BufferedImage image) throws IOException
     {
-        try
-        {
-            Metadata metadata = JpegMetadataReader.readMetadata(file);
-            Directory dir= metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-            return dir.getInt(274);
-        }
-        catch (Exception e)
-        {
-            return 0;
-        }
-    }
+        double angle = imgData.getAngle();
 
-    private static BufferedImage rotate(BufferedImage image, double angle)
-    {
         double sin = Math.abs(Math.sin(angle));
         double cos = Math.abs(Math.cos(angle));
 
-        int w = image.getWidth();
-        int h = image.getHeight();
+        int w = imgData.getWidth();
+        int h = imgData.getHeight();
 
         int newW = (int) Math.floor(w * cos + h * sin);
         int newH = (int) Math.floor(h * cos + w * sin);
-
         int type = image.getType();
+
         BufferedImage result = new BufferedImage(newW, newH, type);
 
         Graphics2D g = result.createGraphics();
 
         g.translate((newW - w) / 2, (newH - h) / 2);
-        g.rotate(angle,((double)w) / 2, ((double)h) / 2);
+        g.rotate(angle,(double) w / 2, (double) h / 2);
         g.drawRenderedImage(image, null);
 
         return result;
     }
 
-    private static BufferedImage rotateWithOrientation(BufferedImage img, int orientation)
-    {
-        double angle = 0;
-
-        if (orientation == 8) angle = -Math.PI/2;
-        else if (orientation == 3) angle = Math.PI;
-        else if (orientation == 6) angle = Math.PI/2;
-
-        return rotate(img,angle);
-    }
-
-    private static int getHeight(BufferedImage img, int orientation)
-    {
-        if (orientation == 8 || orientation == 6)
-        {
-            return img.getWidth();
-        }
-
-        return img.getHeight();
-    }
-
-    private static int getWidth(BufferedImage img, int orientation)
-    {
-        if (orientation == 8 || orientation == 6)
-        {
-            return img.getHeight();
-        }
-        return img.getWidth();
-    }
-
-
-    public static Map<String, String> getThumbNail(BufferedImage img, boolean toCheckOrientation, File file)
-    {
+    public static Map<String, String> getThumbNail(BufferedImage image) throws IOException {
         Map<String, String> imageData = new HashMap<>();
 
-        Integer oriHeight;
-        Integer oriWidth;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", out);
+        ImageData imgData = ImageData.getImageData(out.toByteArray());
 
-        if(toCheckOrientation)
-        {
-            int orientation = getExifOrientation(file);
+        int oriWidth = imgData.getWidth();
 
-            oriHeight = getHeight(img, orientation);
-            oriWidth = getWidth(img, orientation);
+        int oriHeight = imgData.getHeight();
 
-            //rotate for thumbnail generation
-            img = rotateWithOrientation(img, orientation);
-        }
-        else
-        {
-            oriHeight = img.getHeight();
-            oriWidth = img.getWidth();
-        }
+        int depth = imgData.getDepth();
 
-        int type = img.getColorModel().getColorSpace().getType();
-        boolean grayscale = (type == ColorSpace.TYPE_GRAY || type == ColorSpace.CS_GRAY);
-
-        Integer depth = grayscale ? 1 : 3;
+        image = rotateWithOrientation(image);
 
         Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
         Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
-      
+
         if (oriHeight > oriWidth)
         {
             thumbnailWidth =  thumbnailHeight * oriWidth / oriHeight;
@@ -211,15 +169,15 @@ public class ImageHandler {
             thumbnailHeight = thumbnailWidth * oriHeight / oriWidth;
         }
 
-        Image tmp = img.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
+        Image tmp = image.getScaledInstance(thumbnailWidth, thumbnailHeight, Image.SCALE_SMOOTH);
         BufferedImage resized = new BufferedImage(thumbnailWidth, thumbnailHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = resized.createGraphics();
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
 
         imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
-        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
-        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
+        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(imgData.getHeight()));
+        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(imgData.getWidth()));
         imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
         return imageData;
@@ -237,6 +195,8 @@ public class ImageHandler {
 
             String encodedfile = new String(Base64.getEncoder().encode(bytes));
 
+            fileInputStreamReader.close();
+
             return getImageHeader(file.getAbsolutePath()) + encodedfile;
         }
         catch (Exception e)
@@ -251,13 +211,15 @@ public class ImageHandler {
     {
         try
         {
-            Metadata metadata = ImageMetadataReader.readMetadata(file);
-
-            ImageData imgData = new ImageDataFactory().getImageData(metadata);
+            ImageData imgData = ImageData.getImageData(file);
 
             if (imgData.getWidth() > ImageFileType.getMaxWidth() || imgData.getHeight() > ImageFileType.getMaxHeight())
             {
                 log.info("Image size bigger than maximum allowed input size. Skipped " + file);
+                return false;
+            }
+            else if (imgData.isAnimation()) {
+                log.info("The image is animated and not supported ");
                 return false;
             }
         }
@@ -325,9 +287,9 @@ public class ImageHandler {
      *     scenario 4: adding new files
      *     scenario 5: evrything stills the same
      */
-    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, boolean isNewProject)
+    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader)
     {
-        if(isNewProject)
+        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
         {
             loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
         }
@@ -365,7 +327,7 @@ public class ImageHandler {
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-        if(isNewProject)
+        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
         {
             saveToProjectTable(loader, dataFullPathList);
         }

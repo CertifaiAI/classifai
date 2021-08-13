@@ -26,20 +26,62 @@ import com.drew.metadata.bmp.BmpHeaderDirectory;
  */
 public class BmpImageData extends ImageData
 {
-    public BmpImageData(Metadata metadata)
-    {
-        super(metadata);
+    private static final int SRGB_COLOR_SPACE = 1934772034;
+
+    protected BmpImageData(Metadata metadata) {
+        super(metadata, BmpHeaderDirectory.class, "image/bmp");
     }
 
     @Override
-    public int getWidth() throws MetadataException
+    protected int getRawWidth()
     {
-        return metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+        try
+        {
+            return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_WIDTH);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
     }
 
     @Override
-    public int getHeight() throws MetadataException
+    protected int getRawHeight()
     {
-        return metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class).getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        try {
+            return directory.getInt(BmpHeaderDirectory.TAG_IMAGE_HEIGHT);
+        }
+        catch (MetadataException e)
+        {
+            logMetadataError();
+            return 0;
+        }
     }
+
+    /**
+     * color space type: [1934772034: sRGB, null: BnW]
+     * @return number of channels 1 or 3
+     */
+    @Override
+    public int getDepth() {
+        try {
+            int colorSpaceType = directory.getInt(BmpHeaderDirectory.TAG_COLOR_SPACE_TYPE);
+            if (colorSpaceType == SRGB_COLOR_SPACE)
+            {
+                return 3;
+            }
+        }
+        catch (MetadataException e){
+            logMetadataError();
+        }
+        return 1;
+    }
+
+    @Override
+    public boolean isAnimation() {
+        // Bmp image is always static
+        return false;
+    }
+
 }

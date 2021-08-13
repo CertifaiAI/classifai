@@ -18,16 +18,18 @@ package ai.classifai.router;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
-import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.selector.status.NewProjectStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -36,13 +38,16 @@ import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Classifai v2 endpoints
@@ -141,57 +146,104 @@ public class V2Endpoint extends EndpointBase {
      * PUT http://localhost:{port}/v2/projects
      *
      * Request Body
+     * create raw project
      * {
+     *   "status": "raw",
      *   "project_name": "test-project",
      *   "annotation_type": "boundingbox",
      *   "project_path": "/Users/codenamwei/Desktop/Education/books",
      *   "label_file_path": "/Users/codenamewei/Downloads/test_label.txt",
      * }
      *
+     * create config project
+     * {
+     *   "status": "config"
+     * }
      */
     public void createProject(RoutingContext context)
     {
         context.request().bodyHandler(h ->
         {
-            JsonObject requestBody = h.toJsonObject();
-
-            String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
-
-            String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
-            Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
-
-            if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+            try
             {
-                String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
+                JsonObject requestBody = h.toJsonObject();
 
-                String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
-                List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+                String projectStatus = requestBody.getString(ParamConfig.getStatusParam()).toUpperCase();
 
-                ProjectLoader loader = ProjectLoader.builder()
-                        .projectId(UuidGenerator.generateUuid())
-                        .projectName(projectName)
-                        .annotationType(annotationInt)
-                        .projectPath(new File(projectPath))
-                        .labelList(labelList)
-                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                        .isProjectStarred(Boolean.FALSE)
-                        .isProjectNew(Boolean.TRUE)
-                        .projectVersion(new ProjectVersion())
-                        .projectInfra(ProjectInfra.ON_PREMISE)
-                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                        .build();
+                if(projectStatus.equals(NewProjectStatus.CONFIG.name()))
+                {
+                    createConfigProject(context);
+                }
+                else if(projectStatus.equals(NewProjectStatus.RAW.name()))
+                {
+                    createRawProject(requestBody, context);
+                }
+                else
+                {
+                    String errorMessage = "Project status: " + projectStatus + " not recognizable. Expect " + NewProjectStatus.getParamList();
 
-                ProjectHandler.loadProjectLoader(loader);
-
-                loader.initFolderIteration();
-
-                HTTPResponseHandler.configureOK(context);
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+                }
             }
-            else
+            catch(Exception e)
             {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project name exist: " + projectName));
+                String errorMessage = "Parameter of status with " + NewProjectStatus.getParamList() + " is compulsory in request body";
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+
             }
         });
+    }
+
+    protected void createConfigProject(RoutingContext context)
+    {
+        if(projectImporter.isWindowOpen())
+        {
+            JsonObject jsonResponse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
+
+            HTTPResponseHandler.configureOK(context, jsonResponse);
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context);
+        }
+
+        projectImporter.run();
+    }
+
+    protected void createRawProject(JsonObject requestBody, RoutingContext context) throws IOException {
+        String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
+
+        String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
+        Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
+
+        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        {
+            String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
+
+            String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
+            List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+
+            ProjectLoader loader = ProjectLoader.builder()
+                    .projectId(UuidGenerator.generateUuid())
+                    .projectName(projectName)
+                    .annotationType(annotationInt)
+                    .projectPath(new File(projectPath))
+                    .labelList(labelList)
+                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                    .projectInfra(ProjectInfra.ON_PREMISE)
+                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                    .build();
+
+            ProjectHandler.loadProjectLoader(loader);
+
+            loader.initFolderIteration();
+
+            HTTPResponseHandler.configureOK(context);
+        }
+        else
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project name exist: " + projectName));
+        }
     }
 
     /**
@@ -422,22 +474,6 @@ public class V2Endpoint extends EndpointBase {
         HTTPResponseHandler.configureOK(context, response);
     }
 
-    public void importProject(RoutingContext context)
-    {
-        if(projectImporter.isWindowOpen())
-        {
-            JsonObject jsonResonse = ReplyHandler.reportUserDefinedError("Import config file selector window has already opened. Close that to proceed.");
-
-            HTTPResponseHandler.configureOK(context, jsonResonse);
-        }
-        else
-        {
-            HTTPResponseHandler.configureOK(context);
-        }
-
-        projectImporter.run();
-    }
-
     /**
      * Get import project status
      * GET http://localhost:{port}/v2/:annotation_type/projects/importstatus
@@ -545,5 +581,97 @@ public class V2Endpoint extends EndpointBase {
         }
 
         HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+    /**
+     * Load data based on uuid
+     * DELETE http://localhost:{port}/v2/:annotation_type/projects/:project_name/uuids
+     *
+     * json payload = {
+     *      "uuid_list": ["d99fed36-4eb5-4572-b2c7-ca8d4136e692", "d99fed36-4eb5-4572-b2c7-ca8d4136d2d3f"],
+     *      "img_path_list": [
+     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\12.jpg",
+     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\1.jpg"
+     *       ]
+     *  }
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/uuids
+     */
+    public void deleteProjectData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        String query = AnnotationQuery.getDeleteProjectData();
+
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
+            JsonArray uuidImgPathList = request.getJsonArray(ParamConfig.getImgPathListParam());
+
+            request.put(ParamConfig.getProjectIdParam(), projectID);
+            request.put(ParamConfig.getUuidListParam(), uuidListArray);
+            request.put(ParamConfig.getImgPathListParam(), uuidImgPathList);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply ->
+            {
+                if (reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+    }
+
+    /**
+     * Rename data filename
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/imgsrc/rename
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/imgsrc/rename
+     *
+     * json payload = {
+     *      "uuid" : "f592a6e2-53f8-4730-930c-8357d191de48"
+     *      "new_fname" : "new_7.jpg"
+     * }
+     *
+     */
+    public void renameData(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        context.request().bodyHandler(h -> {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            request.put(ParamConfig.getProjectIdParam(), projectId);
+            request.put(ParamConfig.getUuidParam(), request.getString(ParamConfig.getUuidParam()));
+            request.put(ParamConfig.getNewFileNameParam(), request.getString(ParamConfig.getNewFileNameParam()));
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
+
+            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply -> {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+
     }
 }

@@ -26,18 +26,61 @@ import com.drew.metadata.jpeg.JpegDirectory;
  */
 public class JpegImageData extends ImageData
 {
-    public JpegImageData(Metadata metadata)
-    {
-        super(metadata);
+    protected JpegImageData(Metadata metadata) {
+        super(metadata, JpegDirectory.class, "image/jpg");
     }
 
     @Override
-    public int getWidth() throws MetadataException {
-        return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+    protected int getRawWidth() {
+        try {
+            return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_WIDTH);
+        } catch (MetadataException e) {
+            logMetadataError();
+            return 0;
+        }
     }
 
     @Override
-    public int getHeight() throws MetadataException {
-        return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
+    protected int getRawHeight() {
+        try {
+            return metadata.getFirstDirectoryOfType(JpegDirectory.class).getInt(JpegDirectory.TAG_IMAGE_HEIGHT);
+        } catch (MetadataException e) {
+            logMetadataError();
+            return 0;
+        }
     }
+
+    /**
+     * get Exif orientation from metatdata
+     * orientation value: [1: 0 deg, 8: 270 deg, 3: 180 deg, 6: 90 deg]
+     * ref: https://www.impulseadventure.com/photo/exif-orientation.html
+     *
+     * 1 = 0 degree                  (Horizontal, normal)
+     * 2 = 0 degree,mirrored         (Mirror horizontally)
+     * 3 = 180 degree                (Rotate 180 degree)
+     * 4 = 180 degree,mirrored       (Mirror vertically)
+     * 5 = 90 degree, mirrored       (Mirror horizontal and rotate 270 degree clockwise)
+     * 6 = 90 degree  CW             (Rotate 90 degree clockwise)
+     * 7 = 270 degree, mirrored      (Mirror horizontal and rotate 90 degree clockwise)
+     * 8 = 270 degree CW             (Rotate 270 degree clockwise)
+     *
+     * @return orientation
+     */
+
+    @Override
+    public int getDepth() {
+        try {
+            return directory.getInt(JpegDirectory.TAG_NUMBER_OF_COMPONENTS);
+        } catch (MetadataException e) {
+            logMetadataError();
+        }
+        return 3;
+    }
+
+    @Override
+    public boolean isAnimation() {
+        // Jpeg is always static image
+        return false;
+    }
+
 }

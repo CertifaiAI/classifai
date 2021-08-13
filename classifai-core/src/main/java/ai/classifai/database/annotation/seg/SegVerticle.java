@@ -71,9 +71,13 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.deleteProject(message);
         }
-        else if (action.equals(AnnotationQuery.getDeleteSelectionUuidList()))
+        else if (action.equals(AnnotationQuery.getDeleteProjectData()))
         {
-            this.deleteSelectionUuidList(message);
+            this.deleteProjectData(message);
+        }
+        else if(action.equals(AnnotationQuery.getRenameProjectData()))
+        {
+            this.renameProjectData(message);
         }
         else
         {

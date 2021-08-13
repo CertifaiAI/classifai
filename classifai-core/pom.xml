@@ -20,7 +20,7 @@
     <parent>
         <groupId>ai.classifai</groupId>
         <artifactId>classifai</artifactId>
-        <version>2.0.0-alpha1</version>
+        <version>2.0.0-alpha2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -115,6 +115,10 @@
         <dependency>
             <groupId>com.drewnoakes</groupId>
             <artifactId>metadata-extractor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
         </dependency>
     </dependencies>
 

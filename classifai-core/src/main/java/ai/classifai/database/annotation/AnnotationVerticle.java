@@ -15,6 +15,9 @@
  */
 package ai.classifai.database.annotation;
 
+
+import ai.classifai.action.DeleteProjectData;
+import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -22,7 +25,6 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
@@ -43,11 +45,11 @@ import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -394,59 +396,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 });
     }
 
-    public void deleteSelectionUuidList(Message<JsonObject> message)
+    public void deleteProjectData(Message<JsonObject> message)
     {
-        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray UUIDListJsonArray =  message.body().getJsonArray(ParamConfig.getUuidListParam());
+        DeleteProjectData.deleteProjectData(jdbcPool, message);
+    }
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
-        List<String> dbUUIDList = loader.getUuidListFromDb();
-
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(UUIDListJsonArray);
-        String uuidQueryParam = String.join(",", deleteUUIDList);
-
-        Tuple params = Tuple.of(projectId, uuidQueryParam);
-
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteSelectionUuidList())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded())
-                    {
-                        if (dbUUIDList.removeAll(deleteUUIDList))
-                        {
-                            loader.setUuidListFromDb(dbUUIDList);
-
-                            List<String> sanityUUIDList = loader.getSanityUuidList();
-
-                            if (sanityUUIDList.removeAll(deleteUUIDList))
-                            {
-                                loader.setSanityUuidList(sanityUUIDList);
-                            }
-                            else
-                            {
-                                log.info("Error in removing uuid list");
-                            }
-
-                            //update Portfolio Verticle
-                            PortfolioVerticle.updateFileSystemUuidList(projectId);
-
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-                        }
-                        else
-                        {
-                            message.reply(ReplyHandler.reportUserDefinedError("Failed to remove uuid from Portfolio Verticle. Project not expected to work fine"));
-                        }
-                    }
-                    else
-                    {
-                        message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-                    }
-                });
-   }
-
-
-   public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-   {
+    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
+    {
         JsonObject requestBody = message.body();
 
         try
@@ -523,10 +479,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         if(loader.isCloud())
         {
-            BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
+            try
+            {
+                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
-            //not checking orientation for on cloud version
-            imgData = ImageHandler.getThumbNail(img, false, null);
+                //not checking orientation for on cloud version
+                imgData = ImageHandler.getThumbNail(img);
+            }
+            catch(Exception e)
+            {
+                log.debug("Unable to write Buffered Image.");
+            }
+
         }
         else
         {
@@ -534,13 +498,13 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
-                File fileDataPath = new File(dataPath);
+                Mat imageMat  = Imgcodecs.imread(dataPath);
 
-                BufferedImage img  = ImageIO.read(fileDataPath);
+                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
 
-                imgData = ImageHandler.getThumbNail(img, true, fileDataPath);
+                imgData = ImageHandler.getThumbNail(img);
             }
-            catch(IOException e)
+            catch(Exception e)
             {
                 log.debug("Failure in reading image of path " + dataPath, e);
             }
@@ -564,5 +528,10 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
 
         message.replyAndRequest(response);
+    }
+
+    public void renameProjectData(Message<JsonObject> message)
+    {
+        RenameProjectData.renameProjectData(jdbcPool, message);
     }
 }

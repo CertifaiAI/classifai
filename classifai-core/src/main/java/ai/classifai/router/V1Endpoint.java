@@ -17,9 +17,11 @@ package ai.classifai.router;
 
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
+import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -336,6 +338,8 @@ public class V1Endpoint extends EndpointBase
 
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
         context.request().bodyHandler(h ->
@@ -352,10 +356,7 @@ public class V1Endpoint extends EndpointBase
                 {
                     if (fetch.succeeded())
                     {
-                        JsonObject response = (JsonObject) fetch.result().body();
-
-                        HTTPResponseHandler.configureOK(context, response);
-
+                        updateLastModifiedDate(loader, context);
                     }
                     else
                     {
@@ -366,6 +367,38 @@ public class V1Endpoint extends EndpointBase
             }catch (Exception e)
             {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
+            }
+        });
+    }
+
+    private void updateLastModifiedDate(ProjectLoader loader, RoutingContext context)
+    {
+        String queue = PortfolioDbQuery.getQueue();
+
+        JsonObject jsonObj = new JsonObject();
+
+        String projectID = loader.getProjectId();
+
+        Version version = loader.getProjectVersion().getCurrentVersion();
+
+        version.setLastModifiedDate(new DateTime());
+
+        jsonObj.put(ParamConfig.getProjectIdParam(), projectID);
+        jsonObj.put(ParamConfig.getCurrentVersionParam(), version.getDbFormat());
+
+        DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLastModifiedDate());
+
+        vertx.eventBus().request(queue, jsonObj, updateOptions, fetch ->
+        {
+            if (fetch.succeeded())
+            {
+                JsonObject response = (JsonObject) fetch.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName()));
             }
         });
     }
@@ -473,4 +506,5 @@ public class V1Endpoint extends EndpointBase
             }
         });
     }
+
 }
