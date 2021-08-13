@@ -48,7 +48,7 @@ public class WelcomeLauncher extends JFrame
 {
     private static JFrame mainFrame;
     private static final String BUTTON_PATH = "/console/";
-    private static final String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler.jpg";
+    private static final String BACKGROUND_FILE_NAME = "CS.DataLabel_Welcome_Handler.jpg";
     private static final String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
     private static final String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
     private static final String LOG_BUTTON_FILE_NAME = "Log_Button.png";
