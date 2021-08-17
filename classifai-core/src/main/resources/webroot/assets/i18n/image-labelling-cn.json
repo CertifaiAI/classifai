@@ -4,7 +4,8 @@
         "datasetManagement": "资料集管理",
         "revision": "修订",
         "addUser": "添加用户",
-        "profile": "用户资料"
+        "profile": "用户资料",
+        "tutorial": "教程"
     },
     "labellingInfo": {
         "previous": "上一个",
