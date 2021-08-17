@@ -4,7 +4,8 @@
         "datasetManagement": "Dataset Management",
         "revision": "Revision",
         "addUser": "Add user",
-        "profile": "Profile"
+        "profile": "Profile",
+        "tutorial": "Tutorial"
     },
     "labellingInfo": {
         "previous": "Previous",

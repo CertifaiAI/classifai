@@ -4,7 +4,8 @@
         "datasetManagement": "Pengurusan Set Data",
         "revision": "Semakan",
         "addUser": "Tambah pengguna",
-        "profile": "Profil"
+        "profile": "Profil",
+        "tutorial": "Tutorial"
     },
     "labellingInfo": {
         "previous": "Sebelumnya",
