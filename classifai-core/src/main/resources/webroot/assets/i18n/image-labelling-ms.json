@@ -4,7 +4,8 @@
         "datasetManagement": "Pengurusan Set Data",
         "revision": "Semakan",
         "addUser": "Tambah pengguna",
-        "profile": "Profil"
+        "profile": "Profil",
+        "tutorial": "Tutorial"
     },
     "labellingInfo": {
         "previous": "Sebelumnya",
@@ -78,18 +79,22 @@
                 "functionality": "Menampal kotak sempadan/poligon yang telah disalin"
             },
             "5": {
-                "key": "Delete/Backspace (ketika kotak sempadan/poligon dipilih)",
+                "key": "Delete (ketika kotak sempadan/poligon dipilih)",
                 "functionality": "Memadam kotak sempadan/poligon yang dipilih"
             },
             "6": {
+                "key": "Backspace",
+                "functionality": "Memadam kotak sempadan/ poligon yang dipilih/ Padam titik poligon sebelumnya"
+            },
+            "7": {
                 "key": "Delete",
                 "functionality": "Memadam imej semasa"
             },
-            "7": {
+            "8": {
                 "key": "F2",
                 "functionality": "Menamakan semula imej semasa"
             },
-            "8": {
+            "9": {
                 "key": "Klik dua kali pada kotak sempadan/poligon yang dipilih",
                 "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
             }

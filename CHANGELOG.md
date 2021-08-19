@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The detailed rules and walkthrough of writing a changelog is located [here](https://docs.google.com/document/d/10N5B6ojby5rS7hq3cs83vqHfZgkHBU1HCKalsV2tOo0/edit#heading=h.uh2vc5aigamo)
 
 *Note: This changelog is implemented since `2.0.0-alpha` version. All records before it are drafted based on [release notes](https://github.com/CertifaiAI/classifai/releases) might not be as detailed.*
-## [Unreleased]
+## Unreleased
 ### Added
+- Added tutorial modal for user guide [#212](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/212)
 - Project versioning [WIP]
 - Project import image from cloud storage [WIP]
 - Database migration [WIP]
+
+## [2.0.0-alpha2] - 2021-08-12
+### Added
 - Sorting of project card with options of created date, last modified date or project name.
 - Renaming data from workspace - UI and F2 shortcut key
 - Updated keyShortcut.md [#455](https://github.com/CertifaiAI/classifai/pull/455)
@@ -26,6 +30,8 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Fix create empty project [#466](https://github.com/CertifaiAI/classifai/issues/466)
 - Frontend code refactoring [#198](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/198)
 - Fix images loaded inconsistent with/more than total images in a project folder [#487](https://github.com/CertifaiAI/classifai/issues/487)
+- Fix polygon line not pointed to the cursor during drawing [#208](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/208)
+- Fix Undo/Redo when drawing polygons [#205](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/205)
 
 ## [2.0.0-alpha1] - 2021-02-26
 ### Added
@@ -100,6 +106,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Distribution for Windows(7, 8, 10), Mac, Ubuntu(18 LTS, 20 LTS) and Centos(7, 8)  
 
 [Unreleased]: https://github.com/CertifaiAI/classifai/compare/main...v2_alpha?expand=1
+[2.0.0-alpha2]: https://github.com/CertifaiAI/classifai/releases/tag/v2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/CertifaiAI/classifai/releases/tag/v2.0.0-alpha1
 [1.0.0]: https://github.com/CertifaiAI/classifai/releases/tag/v1.0
 [1.1.0]: https://github.com/CertifaiAI/classifai/releases/tag/v1.1.0

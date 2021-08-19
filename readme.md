@@ -150,12 +150,11 @@ The installation packages and formats are listed below.
 
 | Operating System | Supported Version | Installation package format |
 |:-------------:|:-------------:|:-------------:|
-| [Windows](https://bit.ly/3xMayat) | 7, 8, 10 | msi|
-| [Mac](https://bit.ly/3zObcpJ) | 10 | pkg |
-| Ubuntu | [18 LTS](https://bit.ly/3gJZPY7), [20 LTS](https://bit.ly/3gSgd7Y) | deb |
-| Centos | [7](https://bit.ly/3gJ7S7J), [8](https://bit.ly/3xUmOWv) | rpm |
+| [Windows](https://bit.ly/37Ci3FP) | 7, 8, 10 | msi|
+| Ubuntu | [18 LTS](https://bit.ly/3jMohZg), [20 LTS](https://bit.ly/3fSLpEx) | deb |
+| Centos | [7](https://bit.ly/3s5lK02), [8](https://bit.ly/3CGYevs) | rpm |
 
-Alternatively, download the [uber jar file](https://bit.ly/3xHTpP6) and run with Java JDK/JRE 14.
+Alternatively, download the [uber jar file](https://bit.ly/3sbmpgG) and run with Java JDK/JRE 14.
 ```
 java -jar classifai-uberjar-dev.jar --unlockdb --port=9999
 ```
@@ -180,8 +179,8 @@ contact the team at _hello@classifai.ai_:smiley:
 
 Welcome to join! We have bi-weekly meeting to discuss about features, roadmaps and issues we are working on.
 
-- :alarm_clock: Biweekly Wednesday - Odd Week [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
-- :telephone_receiver: [Zoom](https://zoom.us/j/99519401430?pwd=bnlqckZJcEp0azU5QmRqcDdGSjJ3Zz09)
+- :alarm_clock: Monthly on Wednesday [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
+- :telephone_receiver: [Zoom](https://us02web.zoom.us/j/82283024486?pwd=NGoyNUJNbzFLdDdxblNHTHdLZmpCUT09)
 - :memo: [Meeting minutes](https://hackmd.io/IvEUZR_bTOy5-y8GbIYcLg?view)
 - :busts_in_silhouette:	 Community Support Channel with Discord
   - First Timer

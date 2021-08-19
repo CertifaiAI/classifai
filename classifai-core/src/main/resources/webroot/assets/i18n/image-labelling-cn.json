@@ -4,7 +4,8 @@
         "datasetManagement": "资料集管理",
         "revision": "修订",
         "addUser": "添加用户",
-        "profile": "用户资料"
+        "profile": "用户资料",
+        "tutorial": "教程"
     },
     "labellingInfo": {
         "previous": "上一个",
@@ -78,18 +79,22 @@
                 "functionality": "粘贴选定的边界框/多边形"
             },
             "5": {
-                "key": "Delete/Backspace (包括选定的边界框/多边形)",
+                "key": "Delete (包括选定的边界框/多边形)",
                 "functionality": "删除选定的边界框/多边形"
             },
             "6": {
+                "key": "Backspace",
+                "functionality": "删除选定的边界框/多边形/删除之前的多边形点"
+            },
+            "7": {
                 "key": "Delete",
                 "functionality": "删除当前图像"
             },
-            "7": {
+            "8": {
                 "key": "F2",
                 "functionality": "重命名当前图像"
             },
-            "8": {
+            "9": {
                 "key": "双击选定的边界框/多边形",
                 "functionality": "为选定的边界框选择标签/多边形"
             }
