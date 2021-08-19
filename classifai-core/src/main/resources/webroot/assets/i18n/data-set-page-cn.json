@@ -28,7 +28,8 @@
         "datasetManagement": "资料集管理",
         "revision": "修订",
         "addUser": "添加用户",
-        "profile": "用户资料"
+        "profile": "用户资料",
+        "tutorial": "教程"
     },
     "datasetCard": {
         "fetchingProject": "正在读取档案...",
@@ -47,9 +48,13 @@
         "totalPhoto": "图像总数:",
         "noProject": "没有项目",
         "createNew": "开始新的项目吧！",
+        "noStarred": "无星级项目",
+        "starIt": "从事高优先级项目？为它加星标，以便您可以快速访问它！",
         "projectPath": "项目路径"
     },
     "deleteMsg": "删除 ",
+    "deleteConfirmation": "确定要删除吗",
+    "confirm": "确认",
     "success": "成功",
     "renameMsg": "名称更新 ",
     "renameSuccess": "名称更新成功!",

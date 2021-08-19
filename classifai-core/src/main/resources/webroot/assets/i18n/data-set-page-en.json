@@ -28,7 +28,8 @@
         "datasetManagement": "Dataset Management",
         "revision": "Revision",
         "addUser": "Add user",
-        "profile": "Profile"
+        "profile": "Profile",
+        "tutorial": "Tutorial"
     },
     "datasetCard": {
         "fetchingProject": "Fetching your project...",
@@ -47,9 +48,13 @@
         "totalPhoto": "Total Photo:",
         "noProject": "Wait a minute... there's no project",
         "createNew": "Gear up and start creating new project!",
+        "noStarred": "No starred projects",
+        "starIt": "Working on a high priority project? Star it so you can access it quickly!",
         "projectPath": "Project Path"
     },
     "deleteMsg": "deleted ",
+    "deleteConfirmation": "Are you sure you want to delete",
+    "confirm": "Confirm",
     "renameMsg": "renamed ",
     "success": "successfully",
     "deleteProject": "Delete Project",

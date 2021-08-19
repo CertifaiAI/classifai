@@ -75,6 +75,10 @@ public class SegVerticle extends AnnotationVerticle
         {
             this.deleteProjectData(message);
         }
+        else if(action.equals(AnnotationQuery.getRenameProjectData()))
+        {
+            this.renameProjectData(message);
+        }
         else
         {
             log.error("SegVerticle query error. Action did not have an assigned function for handling.");
