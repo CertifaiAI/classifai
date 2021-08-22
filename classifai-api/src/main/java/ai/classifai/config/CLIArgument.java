@@ -36,7 +36,7 @@ import java.io.File;
  *         2) java -jar classifai-uberjar-dev.jar --port=8888 --docker --projectname=demo --projecttype=segmentation --datapath=/Users/john/Desktop/sample-image --labelpath=/Users/john/Desktop/sample-image/sample-label.txt  (Use if label list text file is available)
  *
  * Import project using CLI
- * Sample : java -jar classifai-uberjar-dev.jar --port=8888 --docker --projecttype=boundingbox --configpath=/Users/chia wei/Desktop/sample-image/sample-config.json
+ * Sample : java -jar classifai-uberjar-dev.jar --port=9999 --docker --configpath=/Users/chia wei/Desktop/sample-image/sample-config.json
  *
  * Argument:
  * 1. --port=1234

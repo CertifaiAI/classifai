@@ -62,6 +62,8 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -563,6 +565,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         ProjectLoader loader = PortfolioParser.parseIn(inputJsonObject);
         String projectName = loader.getProjectName();
+        String projectId = loader.getProjectId();
         String projectPath = loader.getProjectPath().getAbsolutePath();
         Map <String, String> project = new HashMap<>();
 
@@ -576,13 +579,14 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             project.put(row.getString(1), row.getString(3));
                         }
 
+                        // If the project to be loaded same name and path with project in database, load project with no change
                         if (project.containsKey(projectName))
                         {
                             if (project.get(projectName).equals(projectPath))
                             {
                                 try {
-                                    loader.initFolderIteration();
-                                    ProjectHandler.loadProjectLoader(loader);
+                                    ProjectLoader load = ProjectHandler.getProjectLoader(projectId);
+                                    Objects.requireNonNull(load).initFolderIteration();
                                 } catch (IOException e) {
                                     log.info("Project not loaded");
                                 }
@@ -591,14 +595,42 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                             else
                             {
+                                // If the project to be loaded has same name and different path with project in database, load project with new generated name
                                 inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
                                 inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
                                 loadProjectFromImportingConfigFile(inputJsonObject);
                                 log.info("Project loaded with new generated name " + inputJsonObject.getString(ParamConfig.getProjectNameParam()));
+
+                                // handle old project configuration file
+                                String originalConfigFilePath = loader.getProjectPath().toString();
+                                String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteProjectConfigFolderName()).toString();
+                                String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
+
+                                Path folderPath = Paths.get(deletedConfigFolderName);
+                                File folder = new File(deletedConfigFolderName);
+
+                                Path oriConfigDir = Paths.get(projectConfigFile.toString());
+                                Path deletedDir = Paths.get(deletedConfigFolderName, projectConfigName);
+
+                                if(!folder.exists()){
+                                    try {
+                                        Files.createDirectories(folderPath);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                try {
+                                    Files.move(oriConfigDir, deletedDir);
+                                } catch (IOException e) {
+                                    log.info("Project Configuration file failed to move");
+                                }
+                                log.debug("Please export a new project configuration file for this project");
                             }
 
                         }
 
+                        // If the database don't have the project name, load the project json file
                         if (!project.containsKey(projectName))
                         {
                             loadProjectFromImportingConfigFile(inputJsonObject);

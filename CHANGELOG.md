@@ -22,6 +22,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Deleting data from workspace [#392](https://github.com/CertifaiAI/classifai/issues/392)
 - Add guiding cross line for more effective bounding box labelling [#201](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/201)
 - Ask user confirmation when user want to delete a project [#201](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/201)
+- Build project and Import project using command line interface 
 
 ### Fixed
 - Fixed the display of full image path instead of intentional image name in Ubuntu and Mac OS [#446](https://github.com/CertifaiAI/classifai/issues/446)
