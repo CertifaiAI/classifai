@@ -625,7 +625,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 } catch (IOException e) {
                                     log.info("Project Configuration file failed to move");
                                 }
-                                log.debug("Please export a new project configuration file for this project");
+                                log.info("Please export a new project configuration file for this project");
                             }
 
                         }
