@@ -603,7 +603,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                 // handle old project configuration file
                                 String originalConfigFilePath = loader.getProjectPath().toString();
-                                String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteProjectConfigFolderName()).toString();
+                                String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteProjectConfig()).toString();
                                 String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
 
                                 Path folderPath = Paths.get(deletedConfigFolderName);
