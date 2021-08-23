@@ -496,32 +496,29 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             nameList.add(row.getString(0));
                         }
 
-                        if (!nameList.contains(projectName)) {
+                        if (!nameList.contains(projectName) && labelPath == null) {
 
-                            if (labelPath == null) {
+                            ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
+                                    .projectId(UuidGenerator.generateUuid())
+                                    .projectName(projectName)
+                                    .annotationType(annotationType.ordinal())
+                                    .projectPath(dataPath)
+                                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                    .projectInfra(ProjectInfra.ON_PREMISE)
+                                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                    .build();
 
-                                ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
-                                        .projectId(UuidGenerator.generateUuid())
-                                        .projectName(projectName)
-                                        .annotationType(annotationType.ordinal())
-                                        .projectPath(dataPath)
-                                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                                        .projectInfra(ProjectInfra.ON_PREMISE)
-                                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                                        .build();
-
-                                try {
-                                    loaderWithoutLabel.initFolderIteration();
-                                    ProjectHandler.loadProjectLoader(loaderWithoutLabel);
-
-                                } catch (IOException e) {
-                                    log.info("No project is loaded");
-                                }
+                            try {
+                                loaderWithoutLabel.initFolderIteration();
+                                ProjectHandler.loadProjectLoader(loaderWithoutLabel);
+                            } catch (IOException e) {
+                                log.info("Project fail to create");
                             }
+                        }
 
-                            else {
+                        else if (!nameList.contains(projectName) && labelPath != null) {
 
-                                List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
+                            List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
 
                                 ProjectLoader loaderWithLabel = ProjectLoader.builder()
                                         .projectId(UuidGenerator.generateUuid())
@@ -541,9 +538,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 } catch (IOException e) {
                                     log.info("No project is loaded");
                                 }
-                            }
-
                         }
+
                         else
                         {
                             log.info("Project name exist in database, please use another name");
