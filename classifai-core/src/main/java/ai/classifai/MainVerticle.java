@@ -105,7 +105,7 @@ public class MainVerticle extends AbstractVerticle
                     portfolioVerticle.buildProjectFromCLI();
                     portfolioVerticle.importProjectFromCLI();
                 } catch (NullPointerException | IOException e) {
-                    log.info("Project not build or import using command line interface");
+                    log.debug("Project not build or import using command line interface");
                 }
 
                 log.info("Classifai started successfully");
