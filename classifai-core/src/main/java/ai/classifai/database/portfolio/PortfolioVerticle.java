@@ -490,13 +490,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(fetch -> {
                     if (fetch.succeeded()) {
-                        RowSet<Row> rowSet = fetch.result();
 
-                        for (Row row : rowSet) {
+                        for (Row row : fetch.result()) {
                             nameList.add(row.getString(0));
                         }
 
-                        if (!nameList.contains(projectName)) {
+                        if (nameList.contains(projectName)) {
+                            log.info("Project name exist in database, please use another name");
+                        }
+
+                        if (!nameList.contains(projectName) && labelPath == null) {
 
                             ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
                                     .projectId(UuidGenerator.generateUuid())
@@ -508,16 +511,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                                     .build();
 
-                            ProjectHandler.loadProjectLoader(loaderWithoutLabel);
                             try {
+                                ProjectHandler.loadProjectLoader(loaderWithoutLabel);
                                 loaderWithoutLabel.initFolderIteration();
                             } catch (IOException e) {
-                                log.info("Loading files in project folder failed");
+                                log.debug("Loading files in project folder failed");
                             }
 
                         }
 
-                        else if (!nameList.contains(projectName) && labelPath != null) {
+                        else if (!nameList.contains(projectName)) {
 
                             List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
 
@@ -532,11 +535,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                                     .build();
 
-                            ProjectHandler.loadProjectLoader(loaderWithLabel);
                             try {
+                                ProjectHandler.loadProjectLoader(loaderWithLabel);
                                 loaderWithLabel.initFolderIteration();
                             } catch (IOException e) {
-                                log.info("Loading files in project folder failed");
+                                log.debug("Loading files in project folder failed");
                             }
 
                         }
