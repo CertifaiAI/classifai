@@ -184,8 +184,8 @@ public class CLIArgument
         CLIProjectInitiator initiator;
 
         boolean isDataPathValid = dataPath != null && !dataPath.equals("") && new File(dataPath).exists();
-        boolean isProjectNameValid = (projectName != null) && (!projectName.equals(""));
-        boolean isLabelPathValid = (labelpath != null) && (!labelpath.equals("")) && (new File(labelpath).exists());
+        boolean isProjectNameValid = projectName != null && !projectName.equals("");
+        boolean isLabelPathValid = labelpath != null && !labelpath.equals("") && new File(labelpath).exists();
 
         if (isDataPathValid)
         {
@@ -216,26 +216,9 @@ public class CLIArgument
                         .projectType(type)
                         .build();
             }
-        }
-        else
-        {
-            if (isProjectNameValid)
-            {
-                initiator = CLIProjectInitiator.builder()
-                        .projectName(projectName)
-                        .projectType(type)
-                        .build();
-            }
-            else
-            {
-                initiator = CLIProjectInitiator.builder()
-                        .projectType(type)
-                        .build();
-            }
 
+            ProjectHandler.setCliProjectInitiator(initiator);
         }
-
-        ProjectHandler.setCliProjectInitiator(initiator);
     }
 
     private void checkToImportProject(){
