@@ -30,6 +30,7 @@ import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.IOException;
 
@@ -100,25 +101,11 @@ public class MainVerticle extends AbstractVerticle
 
                 portfolioVerticle.configProjectLoaderFromDb();
 
-                if (ProjectHandler.getCliProjectInitiator() != null)
-                {
-
+                try {
                     portfolioVerticle.buildProjectFromCLI();
-
-                }
-
-                if (ProjectHandler.getCliProjectImporter() != null)
-                {
-
-                    try
-                    {
-                        portfolioVerticle.importProjectFromCLI();
-                    }
-                    catch (IOException e)
-                    {
-                        log.info("No project is imported ");
-                    }
-
+                    portfolioVerticle.importProjectFromCLI();
+                } catch (NullPointerException | IOException e) {
+                    log.info("Project not build or import using command line interface");
                 }
 
                 log.info("Classifai started successfully");
