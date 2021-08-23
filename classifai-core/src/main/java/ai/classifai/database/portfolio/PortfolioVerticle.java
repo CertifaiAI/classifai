@@ -490,58 +490,60 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(fetch -> {
                     if (fetch.succeeded()) {
+                        RowSet<Row> rowSet = fetch.result();
 
-                        for (Row row : fetch.result()) {
+                        for (Row row : rowSet) {
                             nameList.add(row.getString(0));
                         }
-
+                        
                         if (nameList.contains(projectName)) {
                             log.info("Project name exist in database, please use another name");
                         }
+                        else {
+                                if (labelPath == null) {
 
-                        if (!nameList.contains(projectName) && labelPath == null) {
+                                    ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
+                                            .projectId(UuidGenerator.generateUuid())
+                                            .projectName(projectName)
+                                            .annotationType(annotationType.ordinal())
+                                            .projectPath(dataPath)
+                                            .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                            .projectInfra(ProjectInfra.ON_PREMISE)
+                                            .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                            .build();
 
-                            ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
-                                    .projectId(UuidGenerator.generateUuid())
-                                    .projectName(projectName)
-                                    .annotationType(annotationType.ordinal())
-                                    .projectPath(dataPath)
-                                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                                    .projectInfra(ProjectInfra.ON_PREMISE)
-                                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                                    .build();
+                                    try {
+                                        ProjectHandler.loadProjectLoader(loaderWithoutLabel);
+                                        loaderWithoutLabel.initFolderIteration();
+                                    } catch (IOException e) {
+                                        log.debug("Loading files in project folder failed");
+                                    }
 
-                            try {
-                                ProjectHandler.loadProjectLoader(loaderWithoutLabel);
-                                loaderWithoutLabel.initFolderIteration();
-                            } catch (IOException e) {
-                                log.debug("Loading files in project folder failed");
-                            }
+                                }
 
-                        }
+                                else {
 
-                        else if (!nameList.contains(projectName)) {
+                                    List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
 
-                            List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
+                                    ProjectLoader loaderWithLabel = ProjectLoader.builder()
+                                            .projectId(UuidGenerator.generateUuid())
+                                            .projectName(projectName)
+                                            .annotationType(annotationType.ordinal())
+                                            .projectPath(dataPath)
+                                            .labelList(labelList)
+                                            .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                            .projectInfra(ProjectInfra.ON_PREMISE)
+                                            .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                            .build();
 
-                            ProjectLoader loaderWithLabel = ProjectLoader.builder()
-                                    .projectId(UuidGenerator.generateUuid())
-                                    .projectName(projectName)
-                                    .annotationType(annotationType.ordinal())
-                                    .projectPath(dataPath)
-                                    .labelList(labelList)
-                                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                                    .projectInfra(ProjectInfra.ON_PREMISE)
-                                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                                    .build();
+                                    try {
+                                        ProjectHandler.loadProjectLoader(loaderWithLabel);
+                                        loaderWithLabel.initFolderIteration();
+                                    } catch (IOException e) {
+                                        log.debug("Loading files in project folder failed");
+                                    }
 
-                            try {
-                                ProjectHandler.loadProjectLoader(loaderWithLabel);
-                                loaderWithLabel.initFolderIteration();
-                            } catch (IOException e) {
-                                log.debug("Loading files in project folder failed");
-                            }
-
+                                }
                         }
                     }
                     else
