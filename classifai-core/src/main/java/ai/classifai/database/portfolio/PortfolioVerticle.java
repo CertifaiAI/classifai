@@ -616,7 +616,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     try {
                                         Files.createDirectories(folderPath);
                                     } catch (IOException e) {
-                                        e.printStackTrace();
+                                        log.info("Backup folder for deleted configuration file fail to create");
                                     }
                                 }
 
