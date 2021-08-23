@@ -499,7 +499,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                             if (labelPath == null) {
 
-                                ProjectLoader loader_withoutLabelList = ProjectLoader.builder()
+                                ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
                                         .projectId(UuidGenerator.generateUuid())
                                         .projectName(projectName)
                                         .annotationType(annotationType.ordinal())
@@ -510,8 +510,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         .build();
 
                                 try {
-                                    loader_withoutLabelList.initFolderIteration();
-                                    ProjectHandler.loadProjectLoader(loader_withoutLabelList);
+                                    loaderWithoutLabel.initFolderIteration();
+                                    ProjectHandler.loadProjectLoader(loaderWithoutLabel);
 
                                 } catch (IOException e) {
                                     log.info("No project is loaded");
@@ -522,7 +522,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                 List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
 
-                                ProjectLoader loader_withLabelList = ProjectLoader.builder()
+                                ProjectLoader loaderWithLabel = ProjectLoader.builder()
                                         .projectId(UuidGenerator.generateUuid())
                                         .projectName(projectName)
                                         .annotationType(annotationType.ordinal())
@@ -534,8 +534,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                         .build();
 
                                 try {
-                                    loader_withLabelList.initFolderIteration();
-                                    ProjectHandler.loadProjectLoader(loader_withLabelList);
+                                    loaderWithLabel.initFolderIteration();
+                                    ProjectHandler.loadProjectLoader(loaderWithLabel);
 
                                 } catch (IOException e) {
                                     log.info("No project is loaded");
@@ -603,7 +603,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                 // handle old project configuration file
                                 String originalConfigFilePath = loader.getProjectPath().toString();
-                                String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteProjectConfig()).toString();
+                                String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteConfiguration()).toString();
                                 String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
 
                                 Path folderPath = Paths.get(deletedConfigFolderName);
