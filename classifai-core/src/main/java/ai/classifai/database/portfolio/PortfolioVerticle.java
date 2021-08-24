@@ -604,25 +604,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDELETED_PROJECT_CONFIG()).toString();
                                 String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
 
-                                Path folderPath = Paths.get(deletedConfigFolderName);
+
                                 File folder = new File(deletedConfigFolderName);
 
-                                Path oriConfigDir = Paths.get(projectConfigFile.toString());
-                                Path deletedDir = Paths.get(deletedConfigFolderName, projectConfigName);
+                                File deletedConfigFile = Paths.get(deletedConfigFolderName, projectConfigName).toFile();
 
-                                if(!folder.exists()){
-                                    try {
-                                        Files.createDirectories(folderPath);
-                                    } catch (IOException e) {
-                                        log.info("Backup folder for deleted configuration file fail to create");
-                                    }
+                                if(!folder.exists()) {
+                                    folder.mkdir();
                                 }
 
-                                try {
-                                    Files.move(oriConfigDir, deletedDir);
-                                } catch (IOException e) {
-                                    log.info("Project Configuration file failed to move");
-                                }
+                                projectConfigFile.renameTo(deletedConfigFile);
+
                                 log.info("Please export a new project configuration file for this project");
                             }
 

@@ -102,11 +102,17 @@ public class MainVerticle extends AbstractVerticle
                 portfolioVerticle.configProjectLoaderFromDb();
 
                 try {
-                    portfolioVerticle.buildProjectFromCLI();
                     portfolioVerticle.importProjectFromCLI();
                 } catch (NullPointerException | IOException e) {
-                    log.debug("Project not build or import using command line interface");
+                    log.debug("Project not import using command line interface");
                 }
+
+                try {
+                    portfolioVerticle.buildProjectFromCLI();
+                } catch (NullPointerException e) {
+                    log.debug("Project not create using command line interface");
+                }
+
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
