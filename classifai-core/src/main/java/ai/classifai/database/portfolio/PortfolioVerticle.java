@@ -567,9 +567,15 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             project.put(row.getString(1), row.getString(3));
                         }
 
-                        if (project.containsKey(projectName))
+                        // If database dont have the project name, load the project configuration file
+                        if (!project.containsKey(projectName))
                         {
-                            // If the project to be loaded same name and path with project in database, load project with no change
+                            loadProjectFromImportingConfigFile(inputJsonObject);
+                            log.info("Project " + projectName + " loaded from configuration file");
+                        }
+                        else
+                        {
+                            // If the project to be loaded has the same name and path with a project in database, reload the project
                             if (project.get(projectName).equals(projectPath))
                             {
                                 ProjectHandler.checkCLIReloadProjectStatus(projectId);
@@ -577,7 +583,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                             else
                             {
-                                // If the project to be loaded has same name and different path with project in database, load project with new generated name
+                                // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
                                 inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
                                 inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
                                 loadProjectFromImportingConfigFile(inputJsonObject);
@@ -596,13 +602,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 FileMover.moveConfigFile(folderName, source, target);
                             }
 
-                        }
-
-                        // If the database don't have the project name, load the project json file
-                        if (!project.containsKey(projectName))
-                        {
-                            loadProjectFromImportingConfigFile(inputJsonObject);
-                            log.info("Project " + projectName + " loaded from configuration file");
                         }
 
                     }
