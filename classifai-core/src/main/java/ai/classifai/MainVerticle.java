@@ -20,6 +20,7 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.wasabis3.WasabiVerticle;
+import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.component.LookFeelSetter;
 import ai.classifai.ui.launcher.LogoLauncher;
@@ -101,18 +102,13 @@ public class MainVerticle extends AbstractVerticle
 
                 portfolioVerticle.configProjectLoaderFromDb();
 
-                try {
-                    portfolioVerticle.importProjectFromCLI();
-                } catch (NullPointerException | IOException e) {
-                    log.debug("Project not import using command line interface");
-                }
-
-                try {
+                if (ProjectHandler.getCliProjectInitiator() != null) {
                     portfolioVerticle.buildProjectFromCLI();
-                } catch (NullPointerException e) {
-                    log.debug("Project not create using command line interface");
                 }
 
+                if (ProjectHandler.getCliProjectImporter() != null) {
+                    portfolioVerticle.importProjectFromCLI();
+                }
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());

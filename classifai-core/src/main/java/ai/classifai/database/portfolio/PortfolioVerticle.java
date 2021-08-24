@@ -58,6 +58,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -472,34 +473,33 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    public void buildProjectFromCLI()
-    {
-        // To build project from cli
-        String projectName = ProjectHandler.getCliProjectInitiator().getProjectName();
-        AnnotationType annotationType = ProjectHandler.getCliProjectInitiator().getProjectType();
-        File dataPath = ProjectHandler.getCliProjectInitiator().getRootDataPath();
+    public void buildProjectFromCLI() {
+        try {
+            // To build project from cli
+            String projectName = ProjectHandler.getCliProjectInitiator().getProjectName();
+            AnnotationType annotationType = ProjectHandler.getCliProjectInitiator().getProjectType();
+            File dataPath = ProjectHandler.getCliProjectInitiator().getRootDataPath();
 
-        // load label list file into project
-        File labelPath = ProjectHandler.getCliProjectInitiator().getLabelFilePath();
+            // load label list file into project
+            File labelPath = ProjectHandler.getCliProjectInitiator().getLabelFilePath();
 
-        int annotationIndex = annotationType.ordinal();
-        Tuple params = Tuple.of(annotationIndex);
-        ArrayList<String> nameList = new ArrayList<>();
+            int annotationIndex = annotationType.ordinal();
+            Tuple params = Tuple.of(annotationIndex);
+            ArrayList<String> nameList = new ArrayList<>();
 
-        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if (fetch.succeeded()) {
-                        RowSet<Row> rowSet = fetch.result();
+            portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
+                    .execute(params)
+                    .onComplete(fetch -> {
+                        if (fetch.succeeded()) {
+                            RowSet<Row> rowSet = fetch.result();
 
-                        for (Row row : rowSet) {
-                            nameList.add(row.getString(0));
-                        }
-                        
-                        if (nameList.contains(projectName)) {
-                            log.info("Project name exist in database, please use another name");
-                        }
-                        else {
+                            for (Row row : rowSet) {
+                                nameList.add(row.getString(0));
+                            }
+
+                            if (nameList.contains(projectName)) {
+                                log.info("Project name exist in database, please use another name");
+                            } else {
                                 if (labelPath == null) {
 
                                     ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
@@ -514,9 +514,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                     ProjectHandler.checkCLIBuildProjectStatus(loaderWithoutLabel);
 
-                                }
-
-                                else {
+                                } else {
 
                                     List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
 
@@ -534,82 +532,77 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     ProjectHandler.checkCLIBuildProjectStatus(loaderWithLabel);
 
                                 }
+                            }
+                        } else {
+                            log.info("Project failed to create");
                         }
-                    }
-                    else
-                    {
-                        log.info("Project failed to create");
-                    }
-                });
+                    });
+        } catch (NullPointerException e) {
+            log.debug("Build project using command line interface not initiated");
+        }
     }
 
-    public void importProjectFromCLI() throws IOException {
+    public void importProjectFromCLI() {
+        try {
+            // Load configuration file using CLI
+            File projectConfigFile = ProjectHandler.getCliProjectImporter().getConfigFilePath();
+            ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(projectConfigFile.toString())).toString());
+            String jsonStr = IOUtils.toString(new FileReader(projectConfigFile));
+            JsonObject inputJsonObject = new JsonObject(jsonStr);
 
-        // Load configuration file using CLI
-        File projectConfigFile = ProjectHandler.getCliProjectImporter().getConfigFilePath();
-        ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(projectConfigFile.toString())).toString());
-        String jsonStr = IOUtils.toString(new FileReader(projectConfigFile));
-        JsonObject inputJsonObject = new JsonObject(jsonStr);
+            ProjectLoader loader = PortfolioParser.parseIn(inputJsonObject);
+            String projectName = loader.getProjectName();
+            String projectId = loader.getProjectId();
+            String projectPath = loader.getProjectPath().getAbsolutePath();
+            Map<String, String> project = new HashMap<>();
 
-        ProjectLoader loader = PortfolioParser.parseIn(inputJsonObject);
-        String projectName = loader.getProjectName();
-        String projectId = loader.getProjectId();
-        String projectPath = loader.getProjectPath().getAbsolutePath();
-        Map <String, String> project = new HashMap<>();
+            portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjects())
+                    .execute()
+                    .onComplete(fetch -> {
+                        if (fetch.succeeded()) {
+                            RowSet<Row> rowSet = fetch.result();
 
-        portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjects())
-                .execute()
-                .onComplete(fetch -> {
-                    if (fetch.succeeded()) {
-                        RowSet<Row> rowSet = fetch.result();
-
-                        for (Row row : rowSet) {
-                            project.put(row.getString(1), row.getString(3));
-                        }
-
-                        // If database dont have the project name, load the project configuration file
-                        if (!project.containsKey(projectName))
-                        {
-                            loadProjectFromImportingConfigFile(inputJsonObject);
-                            log.info("Project " + projectName + " loaded from configuration file");
-                        }
-                        else
-                        {
-                            // If the project to be loaded has the same name and path with a project in database, reload the project
-                            if (project.get(projectName).equals(projectPath))
-                            {
-                                ProjectHandler.checkCLIReloadProjectStatus(projectId);
+                            for (Row row : rowSet) {
+                                project.put(row.getString(1), row.getString(3));
                             }
 
-                            else
-                            {
-                                // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
-                                inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
-                                inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
+                            // If database dont have the project name, load the project configuration file
+                            if (!project.containsKey(projectName)) {
                                 loadProjectFromImportingConfigFile(inputJsonObject);
-                                log.info("Project loaded with new generated name " + inputJsonObject.getString(ParamConfig.getProjectNameParam()));
+                                log.info("Project " + projectName + " loaded from configuration file");
+                            } else {
+                                // If the project to be loaded has the same name and path with a project in database, reload the project
+                                if (project.get(projectName).equals(projectPath)) {
+                                    ProjectHandler.checkCLIReloadProjectStatus(projectId);
+                                } else {
+                                    // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
+                                    inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
+                                    inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
+                                    loadProjectFromImportingConfigFile(inputJsonObject);
+                                    log.info("Project loaded with new generated name " + inputJsonObject.getString(ParamConfig.getProjectNameParam()));
 
-                                // handle old project configuration file
-                                String originalConfigFilePath = loader.getProjectPath().toString();
-                                String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDELETED_PROJECT_CONFIG()).toString();
-                                String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
+                                    // handle old project configuration file
+                                    String originalConfigFilePath = loader.getProjectPath().toString();
+                                    String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDELETED_PROJECT_CONFIG()).toString();
+                                    String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
 
 
-                                File folderName = new File(deletedConfigFolderName);
-                                Path source = Paths.get(projectConfigFile.toString());
-                                Path target = Paths.get(deletedConfigFolderName, projectConfigName);
+                                    File folderName = new File(deletedConfigFolderName);
+                                    Path source = Paths.get(projectConfigFile.toString());
+                                    Path target = Paths.get(deletedConfigFolderName, projectConfigName);
 
-                                FileMover.moveConfigFile(folderName, source, target);
+                                    FileMover.moveConfigFile(folderName, source, target);
+                                }
+
                             }
 
+                        } else {
+                            log.info("Project failed to load from configuration file");
                         }
-
-                    }
-                    else
-                    {
-                        log.info("Project failed to load from configuration file");
-                    }
-                });
+                    });
+        } catch (IOException e) {
+            log.debug("Import project using command line interface not initiated");
+        }
     }
 
     public void getProjectMetadata(Message<JsonObject> message)
