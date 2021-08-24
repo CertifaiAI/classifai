@@ -20,20 +20,14 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.wasabis3.WasabiVerticle;
-import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.component.LookFeelSetter;
-import ai.classifai.ui.launcher.LogoLauncher;
 import ai.classifai.ui.launcher.RunningStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-
-import java.io.IOException;
 
 /**
  * Main verticle to create multiple verticles
