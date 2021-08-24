@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -232,6 +233,16 @@ public class ProjectHandler {
         catch (Exception e)
         {
             log.debug("Error: ", e);
+        }
+    }
+
+    public static void checkCLIBuildProjectStatus(ProjectLoader loader) {
+        try {
+            ProjectHandler.loadProjectLoader(loader);
+            loader.initFolderIteration();
+            log.info("New project build successfully using command line interface");
+        } catch (IOException e) {
+            log.debug("Loading files in project folder failed");
         }
     }
 

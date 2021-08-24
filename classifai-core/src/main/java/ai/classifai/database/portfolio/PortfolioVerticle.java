@@ -512,12 +512,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                             .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                                             .build();
 
-                                    try {
-                                        ProjectHandler.loadProjectLoader(loaderWithoutLabel);
-                                        loaderWithoutLabel.initFolderIteration();
-                                    } catch (IOException e) {
-                                        log.debug("Loading files in project folder failed");
-                                    }
+                                    ProjectHandler.checkCLIBuildProjectStatus(loaderWithoutLabel);
 
                                 }
 
@@ -536,12 +531,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                             .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                                             .build();
 
-                                    try {
-                                        ProjectHandler.loadProjectLoader(loaderWithLabel);
-                                        loaderWithLabel.initFolderIteration();
-                                    } catch (IOException e) {
-                                        log.debug("Loading files in project folder failed");
-                                    }
+                                    ProjectHandler.checkCLIBuildProjectStatus(loaderWithLabel);
 
                                 }
                         }
@@ -605,17 +595,11 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
 
 
-                                File folder = new File(deletedConfigFolderName);
+                                File folderName = new File(deletedConfigFolderName);
+                                Path source = Paths.get(projectConfigFile.toString());
+                                Path target = Paths.get(deletedConfigFolderName, projectConfigName);
 
-                                File deletedConfigFile = Paths.get(deletedConfigFolderName, projectConfigName).toFile();
-
-                                if(!folder.exists()) {
-                                    folder.mkdir();
-                                }
-
-                                projectConfigFile.renameTo(deletedConfigFile);
-
-                                log.info("Please export a new project configuration file for this project");
+                                FileMover.moveConfigFile(folderName, source, target);
                             }
 
                         }
