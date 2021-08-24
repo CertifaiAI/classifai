@@ -58,7 +58,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -473,8 +472,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    public void buildProjectFromCLI() {
-        try {
+    public void buildProjectFromCLI()
+    {
+        try
+        {
             // To build project from cli
             String projectName = ProjectHandler.getCliProjectInitiator().getProjectName();
             AnnotationType annotationType = ProjectHandler.getCliProjectInitiator().getProjectType();
@@ -490,18 +491,23 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                     .execute(params)
                     .onComplete(fetch -> {
-                        if (fetch.succeeded()) {
+                        if (fetch.succeeded())
+                        {
                             RowSet<Row> rowSet = fetch.result();
 
-                            for (Row row : rowSet) {
+                            for (Row row : rowSet)
+                            {
                                 nameList.add(row.getString(0));
                             }
 
-                            if (nameList.contains(projectName)) {
+                            if (nameList.contains(projectName))
+                            {
                                 log.info("Project name exist in database, please use another name");
-                            } else {
-                                if (labelPath == null) {
-
+                            }
+                            else
+                            {
+                                if (labelPath == null)
+                                {
                                     ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
                                             .projectId(UuidGenerator.generateUuid())
                                             .projectName(projectName)
@@ -513,9 +519,9 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                             .build();
 
                                     ProjectHandler.checkCLIBuildProjectStatus(loaderWithoutLabel);
-
-                                } else {
-
+                                }
+                                else
+                                {
                                     List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
 
                                     ProjectLoader loaderWithLabel = ProjectLoader.builder()
@@ -530,20 +536,21 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                             .build();
 
                                     ProjectHandler.checkCLIBuildProjectStatus(loaderWithLabel);
-
                                 }
                             }
-                        } else {
-                            log.info("Project failed to create");
                         }
                     });
-        } catch (NullPointerException e) {
+        }
+        catch (NullPointerException e)
+        {
             log.debug("Build project using command line interface not initiated");
         }
     }
 
-    public void importProjectFromCLI() {
-        try {
+    public void importProjectFromCLI()
+    {
+        try
+        {
             // Load configuration file using CLI
             File projectConfigFile = ProjectHandler.getCliProjectImporter().getConfigFilePath();
             ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(projectConfigFile.toString())).toString());
@@ -562,19 +569,26 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                         if (fetch.succeeded()) {
                             RowSet<Row> rowSet = fetch.result();
 
-                            for (Row row : rowSet) {
+                            for (Row row : rowSet)
+                            {
                                 project.put(row.getString(1), row.getString(3));
                             }
 
                             // If database dont have the project name, load the project configuration file
-                            if (!project.containsKey(projectName)) {
+                            if (!project.containsKey(projectName))
+                            {
                                 loadProjectFromImportingConfigFile(inputJsonObject);
                                 log.info("Project " + projectName + " loaded from configuration file");
-                            } else {
+                            }
+                            else
+                            {
                                 // If the project to be loaded has the same name and path with a project in database, reload the project
-                                if (project.get(projectName).equals(projectPath)) {
+                                if (project.get(projectName).equals(projectPath))
+                                {
                                     ProjectHandler.checkCLIReloadProjectStatus(projectId);
-                                } else {
+                                }
+                                else
+                                {
                                     // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
                                     inputJsonObject.put(ParamConfig.getProjectIdParam(), UuidGenerator.generateUuid());
                                     inputJsonObject.put(ParamConfig.getProjectNameParam(), new NameGenerator().getNewProjectName());
@@ -593,14 +607,12 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                     FileMover.moveConfigFile(folderName, source, target);
                                 }
-
                             }
-
-                        } else {
-                            log.info("Project failed to load from configuration file");
                         }
                     });
-        } catch (IOException e) {
+        }
+        catch (NullPointerException | IOException e)
+        {
             log.debug("Import project using command line interface not initiated");
         }
     }

@@ -102,13 +102,9 @@ public class MainVerticle extends AbstractVerticle
 
                 portfolioVerticle.configProjectLoaderFromDb();
 
-                if (ProjectHandler.getCliProjectInitiator() != null) {
-                    portfolioVerticle.buildProjectFromCLI();
-                }
-
-                if (ProjectHandler.getCliProjectImporter() != null) {
-                    portfolioVerticle.importProjectFromCLI();
-                }
+                // Method below will only initiate when receive argument input from command line interface
+                portfolioVerticle.buildProjectFromCLI();
+                portfolioVerticle.importProjectFromCLI();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
