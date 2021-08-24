@@ -567,18 +567,12 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             project.put(row.getString(1), row.getString(3));
                         }
 
-                        // If the project to be loaded same name and path with project in database, load project with no change
                         if (project.containsKey(projectName))
                         {
+                            // If the project to be loaded same name and path with project in database, load project with no change
                             if (project.get(projectName).equals(projectPath))
                             {
-                                try {
-                                    ProjectLoader load = ProjectHandler.getProjectLoader(projectId);
-                                    Objects.requireNonNull(load).initFolderIteration();
-                                } catch (IOException e) {
-                                    log.info("Project not loaded");
-                                }
-                                log.info("Project reloaded");
+                                ProjectHandler.checkCLIReloadProjectStatus(projectId);
                             }
 
                             else

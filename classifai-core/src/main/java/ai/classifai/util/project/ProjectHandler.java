@@ -32,6 +32,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -246,5 +247,14 @@ public class ProjectHandler {
         }
     }
 
+    public static void checkCLIReloadProjectStatus(String projectId ){
+        try {
+            ProjectLoader load = ProjectHandler.getProjectLoader(projectId);
+            Objects.requireNonNull(load).initFolderIteration();
+        } catch (IOException e) {
+            log.info("Project not loaded");
+        }
+        log.info("Project reloaded");
+    }
 
 }
