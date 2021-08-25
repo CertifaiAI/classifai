@@ -617,10 +617,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             log.debug("Import project using command line interface not initiated");
         }
-        catch (Exception e)
-        {
-            log.debug("Error in importing project configuration file");
-        }
     }
 
     public void getProjectMetadata(Message<JsonObject> message)
