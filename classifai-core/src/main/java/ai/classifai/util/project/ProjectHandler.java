@@ -252,9 +252,10 @@ public class ProjectHandler {
             ProjectLoader load = ProjectHandler.getProjectLoader(projectId);
             Objects.requireNonNull(load).initFolderIteration();
         } catch (IOException e) {
-            log.info("Project not loaded");
+            log.info("Project not reloaded from database");
         }
-        log.info("Project reloaded");
+        log.info("Detected project is exist in database from information given in configuration file");
+        log.info("Project is reloaded from database");
     }
 
 }

@@ -240,17 +240,25 @@ public class CLIArgument
 
     private void printMessageForCLIProjectFailed()
     {
-        log.info("\n" +
-                "Usage:  java -jar classifai-uberjar-dev.jar [OPTIONS]\n" +
-                "\n" +
-                "Options\n" +
-                "      --unlockdb                Unlock database to start if lck file exist\n" +
-                "      --port=integer            Run in a designated port. Example: --port=1234\n\n" +
-                "      --docker                  Run in docker mode. Not showing Welcome Launcher and File/Folder Selector.\n" +
-                "      --projectname=string      Assign a project name when starting classifai. Project created when not exist. Example: --projectname=demo\n" +
-                "      --projecttype=string      Assign the type of project. Only accepts [boundingbox/segmentation] argument. Example: --projecttype=segmentation\n" +
-                "      --datapath=string         Folder path to import data points to a project. Example: --datapath=/image-folder\n" +
-                "      --labelpath=string    Folder path to import label text file to a project. Example: --labelpath=/image-folder/sample-label.txt\n" +
-                "      --configpath=string   Folder path to import configuration file to a project. Example: --configpath=/image-folder/sample-config.json\n");
+        if (configpath != null)
+        {
+            log.info("Project configuration file path detected");
+            log.info("--projecttype parameter is not required when importing project");
+        }
+        else
+        {
+            log.info("\n" +
+                    "Usage:  java -jar classifai-uberjar-dev.jar [OPTIONS]\n" +
+                    "\n" +
+                    "Options\n" +
+                    "      --unlockdb                Unlock database to start if lck file exist\n" +
+                    "      --port=integer            Run in a designated port. Example: --port=1234\n\n" +
+                    "      --docker                  Run in docker mode. Not showing Welcome Launcher and File/Folder Selector.\n" +
+                    "      --projectname=string      Assign a project name when starting classifai. Project created when not exist. Example: --projectname=demo\n" +
+                    "      --projecttype=string      Assign the type of project. Only accepts [boundingbox/segmentation] argument. Example: --projecttype=segmentation\n" +
+                    "      --datapath=string         Folder path to import data points to a project. Example: --datapath=/image-folder\n" +
+                    "      --labelpath=string        Folder path to import label text file to a project. Example: --labelpath=/image-folder/sample-label.txt\n" +
+                    "      --configpath=string       Folder path to import configuration file to a project. Example: --configpath=/image-folder/sample-config.json\n");
+        }
     }
 }

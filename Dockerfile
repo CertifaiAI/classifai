@@ -8,9 +8,9 @@
 #         Noted that datapath, labelpath and configpath are paths that use to access the files in the docker container
 #         that shared from the local machine.
 #
-# Step 3: Modify the arguments in startDocker.bat
+# Step 3: Modify the arguments in startDocker.bat or startDocker.sh
 #         Make sure to mount volume using -v in order to share the dataset folder and database from local machine
-#         into docker container before running the bat file.
+#         into docker container before running the bat or sh file.
 #
 # Instruction:
 # For Build project: ENV parameter required are port, projectname, projecttype, datapath, labelpath(optional)

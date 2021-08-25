@@ -32,6 +32,7 @@ import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ErrorCodes;
@@ -498,9 +499,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 nameList.add(row.getString(0));
                             }
 
-                            if (nameList.contains(projectName))
+                            if(nameList.contains(projectName))
                             {
                                 log.info("Project name exist in database, please use another name");
+                                System.exit(0);
                             }
                             else
                             {
@@ -551,6 +553,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             // Load configuration file using CLI
             File projectConfigFile = ProjectHandler.getCliProjectImporter().getConfigFilePath();
+            FileHandler.checkProjectConfigExtension(projectConfigFile.toString());
+
             ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(projectConfigFile.toString())).toString());
             String jsonStr = IOUtils.toString(new FileReader(projectConfigFile));
             JsonObject inputJsonObject = new JsonObject(jsonStr);
@@ -612,6 +616,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         catch (NullPointerException | IOException e)
         {
             log.debug("Import project using command line interface not initiated");
+        }
+        catch (Exception e)
+        {
+            log.debug("Error in importing project configuration file");
         }
     }
 
