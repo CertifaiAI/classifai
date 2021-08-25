@@ -101,6 +101,6 @@ public class FileMover {
             log.info("Configuration file fail to move to backup folder");
         }
 
-        log.info("Please export a new project configuration file for this project");
+        log.info("Please export a new project configuration file for this project after finish the annotation work");
     }
 }
