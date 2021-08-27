@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Classifai v2 endpoints
@@ -558,6 +559,29 @@ public class V2Endpoint extends EndpointBase {
 
         }
         HTTPResponseHandler.configureOK(context);
+    }
+
+    /**
+     * Close/terminate classifai
+     * PUT http://localhost:{port}/v2/close
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/close
+     */
+    public void closeClassifai(RoutingContext context)
+    {
+        HTTPResponseHandler.configureOK(context);
+
+        //terminate after 1 seconds
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        System.exit(0);
+                    }
+                },
+                1000
+        );
     }
 
     /**
