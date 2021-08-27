@@ -40,8 +40,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
@@ -77,6 +75,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         jdbcPool.preparedQuery(AnnotationQuery.getRetrieveDataPath())
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
+                        message,
                         (result) -> {
 
                             if (result.size() == 0)
@@ -109,8 +108,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 message.replyAndRequest(response);
 
                             }
-                        },
-                        (cause) -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
+                        }
                 ));
     }
 
