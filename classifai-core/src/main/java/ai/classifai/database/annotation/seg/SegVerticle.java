@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.annotation.seg;
 
+import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
@@ -124,22 +125,19 @@ public class SegVerticle extends AnnotationVerticle
             {
                 jdbcPool.query(SegDbQuery.getCreateProject())
                         .execute()
-                        .onComplete(create -> {
-                                if (create.failed())
-                                {
-                                    log.error("SegVerticle database preparation error", create.cause());
-                                    promise.fail(create.cause());
-
-                                }
-                                else
-                                {
+                        .onComplete(DBUtils.handleResponse(
+                                (result) -> {
                                     AnnotationHandler.addJDBCPool(AnnotationType.SEGMENTATION, jdbcPool);
 
                                     //the consumer methods registers an event bus destination handler
                                     vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
                                     promise.complete();
+                                },
+                                (cause) -> {
+                                    log.error("SegVerticle database preparation error ", cause);
+                                    promise.fail(cause);
                                 }
-                        });
+                        ));
             }
         });
     }

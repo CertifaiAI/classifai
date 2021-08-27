@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.annotation.bndbox;
 
+import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
@@ -124,22 +125,19 @@ public class BoundingBoxVerticle extends AnnotationVerticle
             {
                 jdbcPool.query(BoundingBoxDbQuery.getCreateProject())
                         .execute()
-                        .onComplete(create -> {
-                            if (create.failed())
-                            {
-                                log.error("BoundingBoxVerticle database preparation error", create.cause());
-                                promise.fail(create.cause());
+                        .onComplete(DBUtils.handleResponse(
+                                (result) -> {
+                                    AnnotationHandler.addJDBCPool(AnnotationType.BOUNDINGBOX, jdbcPool);
 
-                            }
-                            else
-                            {
-                                AnnotationHandler.addJDBCPool(AnnotationType.BOUNDINGBOX, jdbcPool);
-
-                                //the consumer methods registers an event bus destination handler
-                                vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
-                                promise.complete();
-                            }
-                        });
+                                    //the consumer methods registers an event bus destination handler
+                                    vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
+                                    promise.complete();
+                                },
+                                (cause) -> {
+                                    log.error("BoundingBoxVerticle database preparation error ", cause);
+                                    promise.fail(cause);
+                                }
+                        ));
             }
         });
     }

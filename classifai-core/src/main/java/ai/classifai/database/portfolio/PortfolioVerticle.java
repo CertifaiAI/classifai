@@ -586,19 +586,19 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 if (ar.succeeded()) {
                      portfolioDbPool.query(PortfolioDbQuery.getCreatePortfolioTable())
                             .execute()
-                            .onComplete(create -> {
-                                if (create.succeeded()) {
-                                    //the consumer methods registers an event bus destination handler
-                                    vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
+                            .onComplete(DBUtils.handleResponse(
+                                    (result) -> {
+                                        //the consumer methods registers an event bus destination handler
+                                        vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
-                                    promise.complete();
-                                }
-                                else
-                                {
-                                    log.error("Portfolio database preparation error", create.cause());
-                                    promise.fail(create.cause());
-                                }
-                            });
+                                        promise.complete();
+                                    },
+                                    (cause) -> {
+                                        log.error("Portfolio database preparation error", cause);
+                                        promise.fail(cause);
+                                    }
+
+                            ));
                 }
                 else
                 {
