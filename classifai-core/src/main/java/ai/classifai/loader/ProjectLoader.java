@@ -102,6 +102,10 @@ public class ProjectLoader
 
     @Builder.Default private List<String> unsupportedImageList = new ArrayList<>();
 
+    // list of label and unlabelled image
+    @Builder.Default private List<String> labelledImageList = new ArrayList<>();
+    @Builder.Default private List<String> unLabelledImageList = new ArrayList<>();
+
     public String getCurrentVersionUuid()
     {
         return projectVersion.getCurrentVersion().getVersionUuid();

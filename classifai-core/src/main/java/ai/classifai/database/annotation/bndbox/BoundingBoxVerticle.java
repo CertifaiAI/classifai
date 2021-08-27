@@ -29,6 +29,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -77,6 +79,10 @@ public class BoundingBoxVerticle extends AnnotationVerticle
             this.deleteProjectData(message);
         }
         else if(action.equals(AnnotationQuery.getRenameProjectData()))
+        {
+            this.renameProjectData(message);
+        }
+        else if(action.equals(AnnotationQuery.getRetrieveAllProjects()))
         {
             this.renameProjectData(message);
         }
