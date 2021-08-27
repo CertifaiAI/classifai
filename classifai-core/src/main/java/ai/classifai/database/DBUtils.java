@@ -12,13 +12,18 @@ import lombok.NonNull;
 import java.util.function.Consumer;
 
 public class DBUtils {
+
+    private DBUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static Handler<AsyncResult<RowSet<Row>>> handleEmptyResponse(@NonNull Message<JsonObject> message) {
         return handleEmptyResponse(message, () -> message.replyAndRequest(ReplyHandler.getOkReply()));
     }
 
     public static Handler<AsyncResult<RowSet<Row>>> handleEmptyResponse(@NonNull Message<JsonObject> message,
                                                                         @NonNull Runnable successSideEffect) {
-        return handleEmptyResponse(successSideEffect, (cause) ->
+        return handleEmptyResponse(successSideEffect, cause ->
                 message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause)));
     }
 
@@ -38,7 +43,7 @@ public class DBUtils {
                                                                    @NonNull Consumer<RowSet<Row>> successSideEffect)
     {
 
-        return handleResponse(successSideEffect, (cause) ->
+        return handleResponse(successSideEffect, cause ->
                 message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause)));
     }
 

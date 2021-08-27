@@ -112,14 +112,14 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
             wasabiTablePool.preparedQuery(WasabiQuery.getWriteCredential())
                     .execute(wasabiTuple)
                     .onComplete(DBUtils.handleResponse(
-                            (result) -> {
+                            result -> {
                                 message.replyAndRequest(ReplyHandler.getOkReply());
                                 log.info("Save credential in wasabi table success");
                                 ProjectHandler.loadProjectLoader(loader);
                                 //only save project to portfolio after get all the data
                                 saveObjectsInBucket(loader);
                             },
-                            (cause) -> {
+                            cause -> {
                                 String errorMessage = "Create credential in wasabi table failed";
                                 log.debug(errorMessage);
                                 message.replyAndRequest(ReplyHandler.reportUserDefinedError(errorMessage));

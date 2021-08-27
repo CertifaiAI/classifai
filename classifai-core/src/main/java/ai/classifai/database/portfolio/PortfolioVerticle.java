@@ -217,7 +217,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                             ProjectImportSelector.setProjectName(loader.getProjectName());
                             log.info("Import project " + loader.getProjectName() + " success!");
                             },
-                        (cause) -> log.info("Failed to import project " + loader.getProjectName() + " from configuration file")
+                        cause -> log.info("Failed to import project " + loader.getProjectName() + " from configuration file")
                         ));
 
     }
@@ -265,7 +265,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getExportProject())
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             // export project table relevant
                             ProjectLoader loader = ProjectHandler.getProjectLoader(projectId);
                             JDBCPool client = AnnotationHandler.getJDBCPool(Objects.requireNonNull(loader));
@@ -281,7 +281,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                     });
                             message.replyAndRequest(ReplyHandler.getOkReply());
                         },
-                        (cause) -> {
+                        cause -> {
                             message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause));
                             ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
                         }
@@ -317,7 +317,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             List<String> projectNameList = new ArrayList<>();
                             for (Row row : result)
                             {
@@ -329,7 +329,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                             message.replyAndRequest(response);
                         },
-                        (cause) -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
+                        cause -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
                 ));
     }
 
@@ -360,7 +360,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbPool.query(PortfolioDbQuery.getRetrieveAllProjects())
                 .execute()
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             if (result.size() == 0) {
                                 log.debug("No projects founds.");
                             } else {
@@ -396,7 +396,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                                 }
                             }
                         },
-                        (cause) -> log.info("Retrieving from portfolio database to project loader failed")
+                        cause -> log.info("Retrieving from portfolio database to project loader failed")
                 ));
     }
 
@@ -461,7 +461,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             List<JsonObject> projectData = new ArrayList<>();
 
                             for (Row row : result)
@@ -476,7 +476,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                             message.replyAndRequest(response);
                         },
-                        (cause) -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
+                        cause -> message.replyAndRequest(ReplyHandler.reportDatabaseQueryError(cause))
                 ));
     }
 
@@ -488,7 +488,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(DBUtils.handleEmptyResponse(
                         () -> Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID)).setIsProjectNew(Boolean.FALSE),
-                        (cause) -> log.info("Update is_new param for project of projectid: " + projectID + " failed")
+                        cause -> log.info("Update is_new param for project of projectid: " + projectID + " failed")
                 ));
     }
 
@@ -587,13 +587,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                      portfolioDbPool.query(PortfolioDbQuery.getCreatePortfolioTable())
                             .execute()
                             .onComplete(DBUtils.handleResponse(
-                                    (result) -> {
+                                    result -> {
                                         //the consumer methods registers an event bus destination handler
                                         vertx.eventBus().consumer(PortfolioDbQuery.getQueue(), this::onMessage);
 
                                         promise.complete();
                                     },
-                                    (cause) -> {
+                                    cause -> {
                                         log.error("Portfolio database preparation error", cause);
                                         promise.fail(cause);
                                     }

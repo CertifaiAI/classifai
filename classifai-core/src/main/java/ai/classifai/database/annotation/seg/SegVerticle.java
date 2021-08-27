@@ -126,14 +126,14 @@ public class SegVerticle extends AnnotationVerticle
                 jdbcPool.query(SegDbQuery.getCreateProject())
                         .execute()
                         .onComplete(DBUtils.handleResponse(
-                                (result) -> {
+                                result -> {
                                     AnnotationHandler.addJDBCPool(AnnotationType.SEGMENTATION, jdbcPool);
 
                                     //the consumer methods registers an event bus destination handler
                                     vertx.eventBus().consumer(SegDbQuery.getQueue(), this::onMessage);
                                     promise.complete();
                                 },
-                                (cause) -> {
+                                cause -> {
                                     log.error("SegVerticle database preparation error ", cause);
                                     promise.fail(cause);
                                 }

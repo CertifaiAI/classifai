@@ -76,7 +76,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
                         message,
-                        (result) -> {
+                        result -> {
 
                             if (result.size() == 0)
                             {
@@ -140,7 +140,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
             clientJdbcPool.preparedQuery(AnnotationQuery.getLoadValidProjectUuid())
                     .execute(params)
                     .onComplete(DBUtils.handleResponse(
-                            (result) -> {
+                            result -> {
                                 if(result.iterator().hasNext())
                                 {
                                     Row row = result.iterator().next();
@@ -155,7 +155,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 }
                                 loader.updateDBLoadingProgress(currentLength);
                             },
-                            (cause) -> log.info("Fail to load prject UUID")
+                            cause -> log.info("Fail to load prject UUID")
                     ));
         }
     }
@@ -191,7 +191,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                             loader.pushFileSysNewUUIDList(uuid);
                             loader.updateLoadingProgress(currentLength);
                         },
-                        (cause) -> log.error("Push data point with path " + dataPath + " failed: " + cause)
+                        cause -> log.error("Push data point with path " + dataPath + " failed: " + cause)
                 ));
     }
 
@@ -205,7 +205,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         clientJdbcPool.preparedQuery(AnnotationQuery.getExtractProject())
                 .execute(Tuple.of(loader.getProjectId()))
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             if(result.size() == 0)
                             {
                                 log.debug("Extract project annotation retrieve 0 rows. Project not found from project database");
@@ -239,7 +239,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 }
                             }
                         },
-                        (cause) -> log.info("Error query for config loader from db")
+                        cause -> log.info("Error query for config loader from db")
                 ));
     }
 
@@ -264,11 +264,11 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(annotation.getTuple())
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             loader.uploadUuidFromRootPath(uuid);
                             PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
                         },
-                        (cause) -> {
+                        cause -> {
                             String dataFullPath = loader.getProjectPath() + dataSubPath;
                             log.error("Push data point with path " + dataFullPath + " failed: " + cause);
                         }
@@ -282,7 +282,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         clientJdbcPool.preparedQuery(AnnotationQuery.getCreateData())
                 .execute(param)
                 .onComplete(DBUtils.handleResponse(
-                        (result) ->  {
+                        result ->  {
                             String childPath = param.getString(2);
 
                             File currentImagePath = Paths.get(loader.getProjectPath().getAbsolutePath(), childPath).toFile();
@@ -294,9 +294,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                 loader.uploadSanityUuidFromConfigFile(uuid);
                             }
                         },
-                        (cause) -> {
-                            log.error("Push data point from config file failed " + cause);
-                        }
+                        cause -> log.error("Push data point from config file failed " + cause)
                 ));
     }
 
@@ -313,7 +311,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         clientJdbcPool.preparedQuery(AnnotationQuery.getQueryUuid())
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
-                        (result) -> {
+                        result -> {
                             //not exist , create data point
                             if (result.size() == 0)
                             {
@@ -338,7 +336,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                             loader.updateReloadingProgress(currentProcessedLength);
                         },
-                        (cause) -> {
+                        cause -> {
 
                         }
                 ));

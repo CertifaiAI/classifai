@@ -126,14 +126,14 @@ public class BoundingBoxVerticle extends AnnotationVerticle
                 jdbcPool.query(BoundingBoxDbQuery.getCreateProject())
                         .execute()
                         .onComplete(DBUtils.handleResponse(
-                                (result) -> {
+                                result -> {
                                     AnnotationHandler.addJDBCPool(AnnotationType.BOUNDINGBOX, jdbcPool);
 
                                     //the consumer methods registers an event bus destination handler
                                     vertx.eventBus().consumer(BoundingBoxDbQuery.getQueue(), this::onMessage);
                                     promise.complete();
                                 },
-                                (cause) -> {
+                                cause -> {
                                     log.error("BoundingBoxVerticle database preparation error ", cause);
                                     promise.fail(cause);
                                 }
