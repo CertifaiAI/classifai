@@ -48,7 +48,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
@@ -494,7 +493,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         File projectPath = loader.getProjectPath();
 
         ArrayList<ArrayList<JsonArray>> totalImage = LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
-//        String labelPerClassPerImage = LabelListHandler.getImageLabel(loader.getUuidAnnotationDict());
+        String labelPerClassPerImage = LabelListHandler.getLabelPerClassPerImage(loader.getUuidAnnotationDict());
 
         if (!projectPath.exists())
         {
@@ -517,8 +516,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists())
                 .put(ParamConfig.getLabelledImageParam(), totalImage.get(0).size())
-                .put(ParamConfig.getUnLabelledImageParam(), totalImage.get(1).size()));
-//                .put(ParamConfig.getLabelPerClassPerImage(), labelPerClassPerImage));
+                .put(ParamConfig.getUnLabelledImageParam(), totalImage.get(1).size())
+                .put(ParamConfig.getLabelPerClassPerImage(), labelPerClassPerImage));
     }
 
     /**
