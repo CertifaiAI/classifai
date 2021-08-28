@@ -493,7 +493,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         File projectPath = loader.getProjectPath();
 
         ArrayList<ArrayList<JsonArray>> totalImage = LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
-        String labelPerClassPerImage = LabelListHandler.getLabelPerClassPerImage(loader.getUuidAnnotationDict());
+        JsonObject labelPerClassPerImage = LabelListHandler.getLabelPerClassPerImage(loader.getUuidAnnotationDict());
 
         if (!projectPath.exists())
         {

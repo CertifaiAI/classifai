@@ -9,12 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
-/*
-* Objective of this class:
-* 1) retrieve information of the annotation from database
-* 2) sort label according to class
-* 3) send label and unlabeled information
-* */
+/**
+ * Getting information of labeled and unlabeled image
+ *
+ * @author ken479
+ */
 
 @Slf4j
 public class LabelListHandler {
@@ -85,7 +84,7 @@ public class LabelListHandler {
 
     }
 
-    public static String getLabelPerClassPerImage(Map<String, Annotation> uuidAnnotationDict) {
+    public static JsonObject getLabelPerClassPerImage(Map<String, Annotation> uuidAnnotationDict) {
 
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
@@ -102,7 +101,7 @@ public class LabelListHandler {
             jsonObject.put(annotation.getUuid(), labelByClass);
         }
 
-        return jsonObject.encode();
+        return jsonObject;
 
     }
 
