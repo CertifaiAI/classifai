@@ -1,7 +1,6 @@
 package ai.classifai.util.data;
 
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.util.ParamConfig;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -24,7 +23,7 @@ public class LabelListHandler {
     public static ArrayList<ArrayList<JsonArray>> getImageLabeledStatus(Map<String, Annotation> uuidAnnotationDict) {
 
         Set<String> imageUUID = uuidAnnotationDict.keySet(); // key for each project
-        List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);// a list of Image metadata
+        List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);// a list of annotation
         ArrayList <JsonArray> labeledImageList= new ArrayList<>();
         ArrayList <JsonArray> unlabeledImageList = new ArrayList<>();
 
@@ -88,11 +87,10 @@ public class LabelListHandler {
 
     public static String getLabelPerClassPerImage(Map<String, Annotation> uuidAnnotationDict) {
 
-        Set<String> imageUUID = uuidAnnotationDict.keySet(); // key for each project
-        List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict); // a list of Image metadata
+        Set<String> imageUUID = uuidAnnotationDict.keySet();
+        List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
         Map<String, Integer> labelByClass;
 
-        JsonArray jsonArray = new JsonArray();
         JsonObject jsonObject = new JsonObject();
 
         for (Annotation annotation : annotationList) {
@@ -102,10 +100,9 @@ public class LabelListHandler {
             labelByClass = getLabelByClass(labelPointData);
 
             jsonObject.put(annotation.getUuid(), labelByClass);
-            jsonArray.add(jsonObject);
         }
 
-        return jsonArray.encode();
+        return jsonObject.encode();
 
     }
 
