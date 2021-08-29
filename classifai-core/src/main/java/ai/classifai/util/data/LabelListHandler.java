@@ -18,8 +18,10 @@ import java.util.*;
 @Slf4j
 public class LabelListHandler {
 
+    private static final ArrayList<ArrayList<JsonArray>> totalImage = new ArrayList<>();
+
     // Handling the number of labeled and unlabeled image
-    public static ArrayList<ArrayList<JsonArray>> getImageLabeledStatus(Map<String, Annotation> uuidAnnotationDict) {
+    public static void getImageLabeledStatus(Map<String, Annotation> uuidAnnotationDict) {
 
         Set<String> imageUUID = uuidAnnotationDict.keySet(); // key for each project
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);// a list of annotation
@@ -40,14 +42,17 @@ public class LabelListHandler {
 
         }
 
-        ArrayList<ArrayList<JsonArray>> totalImage = new ArrayList<>();
-        totalImage.add(labeledImageList);
-        totalImage.add(unlabeledImageList);
-
-        return totalImage;
-
+        totalImage.add(0, labeledImageList);
+        totalImage.add(1, unlabeledImageList);
     }
 
+    public static Integer getNumberOfLabeledImage(){
+        return totalImage.get(0).size();
+    }
+
+    public static Integer getNumberOfUnLabeledImage(){
+        return totalImage.get(1).size();
+    }
 
     private static LinkedHashMap<String,JsonObject > getAnnotationData(String annotationDict) {
 
@@ -84,13 +89,15 @@ public class LabelListHandler {
 
     }
 
-    public static JsonObject getLabelPerClassPerImage(Map<String, Annotation> uuidAnnotationDict) {
+    public static JsonArray getLabelPerClassPerImage(Map<String, Annotation> uuidAnnotationDict) {
 
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
         Map<String, Integer> labelByClass;
 
         JsonObject jsonObject = new JsonObject();
+        JsonObject sortedJsonObject = new JsonObject();
+        JsonArray labelPerClassPerImageJsonArray = new JsonArray();
 
         for (Annotation annotation : annotationList) {
 
@@ -101,7 +108,15 @@ public class LabelListHandler {
             jsonObject.put(annotation.getUuid(), labelByClass);
         }
 
-        return jsonObject;
+        Collections.reverse(annotationList);
+
+        for(Annotation annotation : annotationList) {
+            sortedJsonObject.put(annotation.getUuid(), jsonObject.getJsonObject(annotation.getUuid()));
+        }
+
+        labelPerClassPerImageJsonArray.add(sortedJsonObject);
+
+        return labelPerClassPerImageJsonArray;
 
     }
 

@@ -492,8 +492,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         File projectPath = loader.getProjectPath();
 
-        ArrayList<ArrayList<JsonArray>> totalImage = LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
-        JsonObject labelPerClassPerImage = LabelListHandler.getLabelPerClassPerImage(loader.getUuidAnnotationDict());
+        LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
+        JsonArray labelPerClassPerImage = LabelListHandler.getLabelPerClassPerImage(loader.getUuidAnnotationDict());
 
         if (!projectPath.exists())
         {
@@ -515,8 +515,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists())
-                .put(ParamConfig.getLabelledImageParam(), totalImage.get(0).size())
-                .put(ParamConfig.getUnLabelledImageParam(), totalImage.get(1).size())
+                .put(ParamConfig.getLabelledImageParam(), LabelListHandler.getNumberOfLabeledImage())
+                .put(ParamConfig.getUnLabelledImageParam(), LabelListHandler.getNumberOfUnLabeledImage())
                 .put(ParamConfig.getLabelPerClassPerImage(), labelPerClassPerImage));
     }
 
