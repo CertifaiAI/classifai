@@ -97,7 +97,10 @@ public class ParamConfig
     @Getter private static final String isRootPathValidParam = "root_path_valid";
     @Getter private static final String labeledImageParam = "labeled_image";
     @Getter private static final String unLabeledImageParam = "unlabeled_image";
-    @Getter private static final String labelPerClassInProject = "labelPerClassInProject";
+    @Getter private static final String labelPerClassInProject = "label_Per_Class_In_Project";
+    @Getter private static final String labelParam = "label";
+    @Getter private static final String labelCountParam = "count";
+    @Getter private static final String statisticDataParam = "statistic_data";
 
     @Getter private static final String statusParam = "status";
 

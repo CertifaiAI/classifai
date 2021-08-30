@@ -93,8 +93,9 @@ public class LabelListHandler {
 
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
-        Map<String, Integer> labelByClass = new HashMap<>();
+        Map<String, Integer> labelByClass;
         List<Map<String, Integer>> labelByClassList = new ArrayList<>();
+        JsonObject labelCountJsonObject;
         JsonArray labelPerClassInProjectJsonArray = new JsonArray();
 
         for (Annotation annotation : annotationList) {
@@ -109,10 +110,22 @@ public class LabelListHandler {
                 .flatMap(m -> m.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
 
-        labelPerClassInProjectJsonArray.add(sumLabelByClass);
+        for(Map.Entry<String, Integer> m : sumLabelByClass.entrySet()) {
+            labelCountJsonObject = getJsonObject(m.getKey(), m.getValue());
+            labelPerClassInProjectJsonArray.add(labelCountJsonObject);
+        }
 
         return labelPerClassInProjectJsonArray;
 
+    }
+
+    private static JsonObject getJsonObject(String key, Integer value){
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.put(ParamConfig.getLabelParam(), key);
+        jsonObject.put(ParamConfig.getLabelCountParam(), value);
+
+        return jsonObject;
     }
 
     private static Map<String, Integer> getLabelByClass(JsonArray labelPointData){

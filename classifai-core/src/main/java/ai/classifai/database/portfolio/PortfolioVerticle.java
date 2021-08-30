@@ -679,12 +679,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
 
         result.add(new JsonObject()
+                .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
                 .put(ParamConfig.getLabeledImageParam(), LabelListHandler.getNumberOfLabeledImage())
                 .put(ParamConfig.getUnLabeledImageParam(), LabelListHandler.getNumberOfUnLabeledImage())
                 .put(ParamConfig.getLabelPerClassInProject(), labelPerClassInProject));
 
         JsonObject response = ReplyHandler.getOkReply();
-        response.put(loader.getProjectName(), result);
+        response.put(ParamConfig.getStatisticDataParam(), result);
 
         message.replyAndRequest(response);
     }
