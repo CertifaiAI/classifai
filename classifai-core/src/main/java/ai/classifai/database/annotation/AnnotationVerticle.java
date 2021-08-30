@@ -336,9 +336,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                             loader.updateReloadingProgress(currentProcessedLength);
                         },
-                        cause -> {
-
-                        }
+                        cause -> log.info("Fail to create UUID")
                 ));
 
     }
