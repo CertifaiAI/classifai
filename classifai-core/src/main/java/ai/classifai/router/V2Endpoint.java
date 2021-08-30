@@ -19,6 +19,7 @@ import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.database.annotation.AnnotationQuery;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -62,6 +63,8 @@ public class V2Endpoint extends EndpointBase {
     @Setter private ProjectImportSelector projectImporter = null;
 
     @Setter private LabelFileSelector labelFileSelector = null;
+
+    @Setter private PortfolioDB portfolioDB;
 
     /***
      * change is_load state of a project to false
@@ -296,30 +299,34 @@ public class V2Endpoint extends EndpointBase {
 
         if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
+//            JsonObject jsonObject = new JsonObject();
+//            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+//            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
+//
+//            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
+//
+//            loader.setProjectName(newProjectName);
+//
+//            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
+//            {
+//                JsonObject response = (JsonObject) fetch.result().body();
+//
+//                if (ReplyHandler.isReplyOk(response))
+//                {
+//                    // Update loader in cache after success db update
+//                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+//                    log.debug("Rename to " + newProjectName + " success.");
+//                    HTTPResponseHandler.configureOK(context);
+//                }
+//                else
+//                {
+//                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
+//                }
+//            });
 
-            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
+            portfolioDB.renameProject(loader.getProjectId(), newProjectName);
 
-            loader.setProjectName(newProjectName);
 
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
-            {
-                JsonObject response = (JsonObject) fetch.result().body();
-
-                if (ReplyHandler.isReplyOk(response))
-                {
-                    // Update loader in cache after success db update
-                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-                    log.debug("Rename to " + newProjectName + " success.");
-                    HTTPResponseHandler.configureOK(context);
-                }
-                else
-                {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
-                }
-            });
         }
         else
         {
