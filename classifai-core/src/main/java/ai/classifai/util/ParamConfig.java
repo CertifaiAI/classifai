@@ -95,9 +95,9 @@ public class ParamConfig
     @Getter private static final String createdDateParam = "created_date";
     @Getter private static final String lastModifiedDate = "last_modified_date";
     @Getter private static final String isRootPathValidParam = "root_path_valid";
-    @Getter private static final String labelledImageParam = "labelled_image";
-    @Getter private static final String unLabelledImageParam = "unlabelled_image";
-    @Getter private static final String labelPerClassPerImage = "labelPerClass_per_Image";
+    @Getter private static final String labeledImageParam = "labeled_image";
+    @Getter private static final String unLabeledImageParam = "unlabeled_image";
+    @Getter private static final String labelPerClassInProject = "labelPerClassInProject";
 
     @Getter private static final String statusParam = "status";
 

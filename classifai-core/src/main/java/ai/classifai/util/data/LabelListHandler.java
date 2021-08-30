@@ -6,8 +6,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Getting information of labeled and unlabeled image
@@ -89,34 +89,29 @@ public class LabelListHandler {
 
     }
 
-    public static JsonArray getLabelPerClassPerImage(Map<String, Annotation> uuidAnnotationDict) {
+    public static JsonArray getLabelPerClassInProject(Map<String, Annotation> uuidAnnotationDict) {
 
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
-        Map<String, Integer> labelByClass;
-
-        JsonObject jsonObject = new JsonObject();
-        JsonObject sortedJsonObject = new JsonObject();
-        JsonArray labelPerClassPerImageJsonArray = new JsonArray();
+        Map<String, Integer> labelByClass = new HashMap<>();
+        List<Map<String, Integer>> labelByClassList = new ArrayList<>();
+        JsonArray labelPerClassInProjectJsonArray = new JsonArray();
 
         for (Annotation annotation : annotationList) {
 
             LinkedHashMap<String, JsonObject> annotationDataMap = getAnnotationData(annotation.getAnnotationDictDbFormat());
             JsonArray labelPointData = getAnnotationStatus(String.valueOf(annotationDataMap.values()));
             labelByClass = getLabelByClass(labelPointData);
-
-            jsonObject.put(annotation.getUuid(), labelByClass);
+            labelByClassList.add(labelByClass);
         }
 
-        Collections.reverse(annotationList);
+        Map<String, Integer> sumLabelByClass = labelByClassList.stream()
+                .flatMap(m -> m.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
 
-        for(Annotation annotation : annotationList) {
-            sortedJsonObject.put(annotation.getUuid(), jsonObject.getJsonObject(annotation.getUuid()));
-        }
+        labelPerClassInProjectJsonArray.add(sumLabelByClass);
 
-        labelPerClassPerImageJsonArray.add(sortedJsonObject);
-
-        return labelPerClassPerImageJsonArray;
+        return labelPerClassInProjectJsonArray;
 
     }
 

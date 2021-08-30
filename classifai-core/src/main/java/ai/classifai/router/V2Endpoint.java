@@ -698,4 +698,55 @@ public class V2Endpoint extends EndpointBase {
         });
 
     }
+
+
+    /**
+     * Retrieve number of labeled Image, unlabeled Image and total number of labels per class in a project
+     *
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/statistic
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/demo/statistic
+     *
+     */
+    public void getProjectStatistic (RoutingContext context){
+
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        log.debug("Get project statistic : " + projectName + " of annotation type: " + type.name());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
+
+        if(loader == null)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving statistic of project: " + projectName));
+        }
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), Objects.requireNonNull(loader).getProjectId());
+
+        //load label list
+        DeliveryOptions statisticDataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveProjectStatistic());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, statisticDataOptions, statisticReply ->
+        {
+            if (statisticReply.succeeded()) {
+
+                JsonObject statisticResponse = (JsonObject) statisticReply.result().body();
+
+                if (ReplyHandler.isReplyOk(statisticResponse))
+                {
+                    HTTPResponseHandler.configureOK(context, statisticResponse);
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve statistic for project " + projectName));
+                }
+            }
+        });
+
+    }
 }

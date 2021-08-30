@@ -128,6 +128,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.updateLastModifiedDate(message);
         }
+        else if(action.equals(PortfolioDbQuery.getRetrieveProjectStatistic()))
+        {
+            this.getProjectStatistic(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -492,9 +496,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         File projectPath = loader.getProjectPath();
 
-        LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
-        JsonArray labelPerClassPerImage = LabelListHandler.getLabelPerClassPerImage(loader.getUuidAnnotationDict());
-
         if (!projectPath.exists())
         {
             log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
@@ -514,10 +515,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getLastModifiedDate(), currentVersion.getLastModifiedDate().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
-                .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists())
-                .put(ParamConfig.getLabelledImageParam(), LabelListHandler.getNumberOfLabeledImage())
-                .put(ParamConfig.getUnLabelledImageParam(), LabelListHandler.getNumberOfUnLabeledImage())
-                .put(ParamConfig.getLabelPerClassPerImage(), labelPerClassPerImage));
+                .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
     }
 
     /**
@@ -660,6 +658,35 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         ImageHandler.loadProjectRootPath(loader);
+    }
+
+    public void getProjectStatistic(Message<JsonObject> message)
+    {
+        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
+
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+
+        File projectPath = loader.getProjectPath();
+
+        LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
+        JsonArray labelPerClassInProject = LabelListHandler.getLabelPerClassInProject(loader.getUuidAnnotationDict());
+
+        List<JsonObject> result = new ArrayList<>();
+
+        if (!projectPath.exists())
+        {
+            log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
+        }
+
+        result.add(new JsonObject()
+                .put(ParamConfig.getLabeledImageParam(), LabelListHandler.getNumberOfLabeledImage())
+                .put(ParamConfig.getUnLabeledImageParam(), LabelListHandler.getNumberOfUnLabeledImage())
+                .put(ParamConfig.getLabelPerClassInProject(), labelPerClassInProject));
+
+        JsonObject response = ReplyHandler.getOkReply();
+        response.put(loader.getProjectName(), result);
+
+        message.replyAndRequest(response);
     }
 
     @Override
