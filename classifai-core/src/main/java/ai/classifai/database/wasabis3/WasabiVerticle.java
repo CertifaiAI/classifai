@@ -16,6 +16,7 @@
 package ai.classifai.database.wasabis3;
 
 import ai.classifai.data.type.image.ImageFileType;
+import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.loader.ProjectLoader;
@@ -110,26 +111,20 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
 
             wasabiTablePool.preparedQuery(WasabiQuery.getWriteCredential())
                     .execute(wasabiTuple)
-                    .onComplete(fetch -> {
-                        if(fetch.succeeded())
-                        {
-                            message.replyAndRequest(ReplyHandler.getOkReply());
-
-                            log.info("Save credential in wasabi table success");
-
-                            ProjectHandler.loadProjectLoader(loader);
-
-                            //only save project to portfolio after get all the data
-                            saveObjectsInBucket(loader);
-
-                        }
-                        else
-                        {
-                            String errorMessage = "Create credential in wasabi table failed";
-                            log.debug(errorMessage);
-                            message.replyAndRequest(ReplyHandler.reportUserDefinedError(errorMessage));
-                        }
-                    });
+                    .onComplete(DBUtils.handleResponse(
+                            result -> {
+                                message.replyAndRequest(ReplyHandler.getOkReply());
+                                log.info("Save credential in wasabi table success");
+                                ProjectHandler.loadProjectLoader(loader);
+                                //only save project to portfolio after get all the data
+                                saveObjectsInBucket(loader);
+                            },
+                            cause -> {
+                                String errorMessage = "Create credential in wasabi table failed";
+                                log.debug(errorMessage);
+                                message.replyAndRequest(ReplyHandler.reportUserDefinedError(errorMessage));
+                            }
+                    ));
 
         }
         else
