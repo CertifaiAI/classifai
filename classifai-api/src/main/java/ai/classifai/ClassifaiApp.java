@@ -16,8 +16,6 @@
 package ai.classifai;
 
 import ai.classifai.config.CLIArgument;
-import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.util.data.LabelListHandler;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
