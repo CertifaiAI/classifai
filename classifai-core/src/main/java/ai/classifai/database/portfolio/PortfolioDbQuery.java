@@ -59,6 +59,6 @@ public class PortfolioDbQuery
 
     @Getter private static final String updateLastModifiedDate = "UPDATE Portfolio SET current_version = ? WHERE project_id = ?";
 
-    @Getter private static final String retrieveProjectStatistic = "retrieveProjectStatistic";
+    @Getter private static final String RETRIEVEPROJECTSTATISTIC = "retrieveProjectStatistic";
 
 }

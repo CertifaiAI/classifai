@@ -729,7 +729,7 @@ public class V2Endpoint extends EndpointBase {
         JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), Objects.requireNonNull(loader).getProjectId());
 
         //load label list
-        DeliveryOptions statisticDataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveProjectStatistic());
+        DeliveryOptions statisticDataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRETRIEVEPROJECTSTATISTIC());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, statisticDataOptions, statisticReply ->
         {

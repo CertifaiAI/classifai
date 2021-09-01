@@ -128,7 +128,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.updateLastModifiedDate(message);
         }
-        else if(action.equals(PortfolioDbQuery.getRetrieveProjectStatistic()))
+        else if(action.equals(PortfolioDbQuery.getRETRIEVEPROJECTSTATISTIC()))
         {
             this.getProjectStatistic(message);
         }
