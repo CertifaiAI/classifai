@@ -159,9 +159,7 @@ public class LabelListHandler {
                 .map(m -> m.getString("label"))
                 .collect(Collectors.toList());
 
-        Consumer<String> action = s -> {
-            labelByClass.put(s, Collections.frequency(labels, s));
-        };
+        Consumer<String> action = s -> labelByClass.put(s, Collections.frequency(labels, s));
 
         labels.forEach(action);
 
@@ -178,6 +176,8 @@ public class LabelListHandler {
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         List<String> oriLabelList = loader.getLabelList();
+        Map<String, Integer> unUsedLabels = new HashMap<>();
+        List<Map<String, Integer>> unUsedLabelList = new ArrayList<>();
 
         List<String> usedLabel = labelByClassList.stream()
                 .flatMap(m -> m.entrySet().stream())
@@ -187,9 +187,6 @@ public class LabelListHandler {
         List<String> filterList = oriLabelList.stream()
                 .filter(s -> !usedLabel.contains(s))
                 .collect(Collectors.toList());
-
-        Map<String, Integer> unUsedLabels = new HashMap<>();
-        List<Map<String, Integer>> unUsedLabelList = new ArrayList<>();
 
         for(String label : filterList){
             unUsedLabels.put(label, 0);
