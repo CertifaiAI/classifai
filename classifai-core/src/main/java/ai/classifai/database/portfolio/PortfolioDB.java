@@ -45,12 +45,9 @@ public class PortfolioDB {
         DeliveryOptions options = new DeliveryOptions()
                 .addHeader(ParamConfig.getActionKeyword(), action);
 
-        log.info("DEVEN: runAnnotationQuery " + msg);
-
         final Promise<JsonObject> promise = Promise.promise();
         eventBus.request(annotationQueue, msg, options, fetch -> {
             JsonObject response = (JsonObject) fetch.result().body();
-            log.info("DEVEN: runAnnotationQuery response " + response);
             promise.complete(response);
         });
         return promise.future();
@@ -60,12 +57,9 @@ public class PortfolioDB {
         DeliveryOptions options = new DeliveryOptions()
                 .addHeader(ParamConfig.getActionKeyword(), action);
 
-        log.info("DEVEN: runPortfolioQuery " + msg);
-
         final Promise<JsonObject> promise = Promise.promise();
         eventBus.request(queue, msg, options, fetch -> {
             JsonObject response = (JsonObject) fetch.result().body();
-            log.info("DEVEN: runPortfolioQuery response " + response);
             promise.complete(response);
         });
         return promise.future();
