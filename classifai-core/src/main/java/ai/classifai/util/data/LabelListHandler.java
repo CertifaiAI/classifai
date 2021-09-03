@@ -16,7 +16,9 @@
 package ai.classifai.util.data;
 
 import ai.classifai.database.versioning.Annotation;
+import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -108,7 +110,7 @@ public class LabelListHandler {
 
     }
 
-    public static JsonArray getLabelPerClassInProject(Map<String, Annotation> uuidAnnotationDict)
+    public static JsonArray getLabelPerClassInProject(Map<String, Annotation> uuidAnnotationDict, String projectId)
     {
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
@@ -122,6 +124,10 @@ public class LabelListHandler {
                 .map(LabelListHandler::getAnnotationStatus)
                 .map(LabelListHandler::getLabelByClass)
                 .collect(Collectors.toList());
+
+        List<Map<String, Integer>> unUsedLabelList = getUnUsedLabelList(projectId, labelByClassList);
+
+        labelByClassList.addAll(unUsedLabelList);
 
         Map<String,Integer> sumLabelByClass = labelByClassList.stream()
                 .flatMap(m -> m.entrySet().stream())
@@ -154,12 +160,7 @@ public class LabelListHandler {
                 .collect(Collectors.toList());
 
         Consumer<String> action = s -> {
-            Integer count = labelByClass.get(s);
-            if (count == null)
-            {
-                count = 0;
-            }
-            labelByClass.put(s, count + 1);
+            labelByClass.put(s, Collections.frequency(labels, s));
         };
 
         labels.forEach(action);
@@ -171,6 +172,31 @@ public class LabelListHandler {
     private static List<Annotation> getAnnotationList(Set<String> imageUUID, Map<String, Annotation> uuidAnnotationDict)
     {
         return imageUUID.stream().map(uuidAnnotationDict::get).collect(Collectors.toList());
+    }
+
+    private static List<Map<String, Integer>> getUnUsedLabelList (String projectId, List<Map<String, Integer>> labelByClassList)
+    {
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        List<String> oriLabelList = loader.getLabelList();
+
+        List<String> usedLabel = labelByClassList.stream()
+                .flatMap(m -> m.entrySet().stream())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        List<String> filterList = oriLabelList.stream()
+                .filter(s -> !usedLabel.contains(s))
+                .collect(Collectors.toList());
+
+        Map<String, Integer> unUsedLabels = new HashMap<>();
+        List<Map<String, Integer>> unUsedLabelList = new ArrayList<>();
+
+        for(String label : filterList){
+            unUsedLabels.put(label, 0);
+            unUsedLabelList.add(unUsedLabels);
+        }
+
+        return unUsedLabelList;
     }
 
 
