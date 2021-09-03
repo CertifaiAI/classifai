@@ -82,10 +82,6 @@ public class BoundingBoxVerticle extends AnnotationVerticle
         {
             this.renameProjectData(message);
         }
-        else if(action.equals(AnnotationQuery.getRetrieveAllProjects()))
-        {
-            this.renameProjectData(message);
-        }
         else
         {
             log.error("BoundingBox Verticle query error. Action did not have an assigned function for handling.");
