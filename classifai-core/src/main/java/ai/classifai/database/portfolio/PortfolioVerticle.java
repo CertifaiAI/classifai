@@ -128,7 +128,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         {
             this.updateLastModifiedDate(message);
         }
-        else if(action.equals(PortfolioDbQuery.getRETRIEVEPROJECTSTATISTIC()))
+        else if(action.equals(PortfolioDbQuery.getRetrieveProjectStatistic()))
         {
             this.getProjectStatistic(message);
         }
@@ -680,12 +680,12 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         result.add(new JsonObject()
                 .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
-                .put(ParamConfig.getLABELEDIMAGEPARAM(), LabelListHandler.getNumberOfLabeledImage())
-                .put(ParamConfig.getUNLABELEDIMAGEPARAM(), LabelListHandler.getNumberOfUnLabeledImage())
-                .put(ParamConfig.getLABELPERCLASSINPROJECTPARAM(), labelPerClassInProject));
+                .put(ParamConfig.getLabeledImageParam(), LabelListHandler.getNumberOfLabeledImage())
+                .put(ParamConfig.getUnlabeledImageParam(), LabelListHandler.getNumberOfUnLabeledImage())
+                .put(ParamConfig.getLabelPerClassInProject(), labelPerClassInProject));
 
         JsonObject response = ReplyHandler.getOkReply();
-        response.put(ParamConfig.getSTATISTICDATAPARAM(), result);
+        response.put(ParamConfig.getStatisticData(), result);
 
         message.replyAndRequest(response);
     }

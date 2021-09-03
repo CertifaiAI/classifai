@@ -22,7 +22,10 @@ import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Getting information of labeled and unlabeled image
@@ -38,35 +41,36 @@ public class LabelListHandler {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final ArrayList<ArrayList<JsonArray>> totalImage = new ArrayList<>();
+    private static final List<List<JsonArray>> totalImage = new ArrayList<>();
 
     // Handling the number of labeled and unlabeled image
     public static void getImageLabeledStatus(Map<String, Annotation> uuidAnnotationDict)
     {
         Set<String> imageUUID = uuidAnnotationDict.keySet(); // key for each project
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);// a list of annotation
-        ArrayList <JsonArray> labeledImageList= new ArrayList<>();
-        ArrayList <JsonArray> unlabeledImageList = new ArrayList<>();
 
-        // Every annotation represent an image
-        for (Annotation annotation : annotationList)
-        {
-            LinkedHashMap<String, JsonObject> annotationDataMap = getAnnotationData(annotation.getAnnotationDictDbFormat()); // version uuid, annotation data
-            JsonArray labelPointData = getAnnotationStatus(String.valueOf(annotationDataMap.values()));
+        List<JsonArray> labelPointData = annotationList.stream()
+                .map(Annotation::getAnnotationDictDbFormat)
+                .map(LabelListHandler::getAnnotationData)
+                .map(Map::values)
+                .map(String::valueOf)
+                .map(LabelListHandler::getAnnotationStatus)
+                .collect(Collectors.toList());
 
-            if (getAnnotatedImage(labelPointData) != null)
-            {
-                labeledImageList.add(labelPointData);
-            }
-            else
-            {
-                unlabeledImageList.add(labelPointData);
-            }
+        Predicate<JsonArray> isEmpty = JsonArray::isEmpty;
+        Predicate<JsonArray> notEmpty = isEmpty.negate();
 
-        }
+        List<JsonArray> labeledImageList = labelPointData.stream()
+                .filter(notEmpty)
+                .collect(Collectors.toList());
+
+        List<JsonArray> unlabeledImageList = labelPointData.stream()
+                .filter(isEmpty)
+                .collect(Collectors.toList());
 
         totalImage.add(0, labeledImageList);
         totalImage.add(1, unlabeledImageList);
+
     }
 
     public static Integer getNumberOfLabeledImage()
@@ -79,14 +83,14 @@ public class LabelListHandler {
         return totalImage.get(1).size();
     }
 
-    private static LinkedHashMap<String,JsonObject > getAnnotationData(String annotationDict)
+    private static LinkedHashMap<String,JsonObject> getAnnotationData(String annotationDict)
     {
         LinkedHashMap<String, JsonObject> annotationDataMap = new LinkedHashMap<>();
         String s = StringUtils.removeStart(StringUtils.removeEnd(annotationDict, "]"), "[");
 
         JsonObject annotationDictJsonObject = new JsonObject(s);
         String versionUuid = annotationDictJsonObject.getString(ParamConfig.getVersionUuidParam());
-        JsonObject annotationData= annotationDictJsonObject.getJsonObject(ParamConfig.getAnnotationDataParam());
+        JsonObject annotationData = annotationDictJsonObject.getJsonObject(ParamConfig.getAnnotationDataParam());
 
         annotationDataMap.put(versionUuid, annotationData);
 
@@ -104,45 +108,28 @@ public class LabelListHandler {
 
     }
 
-    private static Number getAnnotatedImage(JsonArray labelPointData)
-    {
-        if(!labelPointData.isEmpty())
-        {
-            return labelPointData.size();
-        }
-        else
-        {
-            return null;
-        }
-
-    }
-
     public static JsonArray getLabelPerClassInProject(Map<String, Annotation> uuidAnnotationDict)
     {
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
-        Map<String, Integer> labelByClass;
-        List<Map<String, Integer>> labelByClassList = new ArrayList<>();
-        JsonObject labelCountJsonObject;
         JsonArray labelPerClassInProjectJsonArray = new JsonArray();
 
-        for (Annotation annotation : annotationList)
-        {
-            LinkedHashMap<String, JsonObject> annotationDataMap = getAnnotationData(annotation.getAnnotationDictDbFormat());
-            JsonArray labelPointData = getAnnotationStatus(String.valueOf(annotationDataMap.values()));
-            labelByClass = getLabelByClass(labelPointData);
-            labelByClassList.add(labelByClass);
-        }
+        List<Map<String, Integer>> labelByClassList = annotationList.stream()
+                .map(Annotation::getAnnotationDictDbFormat)
+                .map(LabelListHandler::getAnnotationData)
+                .map(Map::values)
+                .map(String::valueOf)
+                .map(LabelListHandler::getAnnotationStatus)
+                .map(LabelListHandler::getLabelByClass)
+                .collect(Collectors.toList());
 
-        Map<String, Integer> sumLabelByClass = labelByClassList.stream()
+        Map<String,Integer> sumLabelByClass = labelByClassList.stream()
                 .flatMap(m -> m.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
 
-        for(Map.Entry<String, Integer> m : sumLabelByClass.entrySet())
-        {
-            labelCountJsonObject = getJsonObject(m.getKey(), m.getValue());
-            labelPerClassInProjectJsonArray.add(labelCountJsonObject);
-        }
+       sumLabelByClass.entrySet().stream()
+                .map(m -> getJsonObject(m.getKey(), m.getValue()))
+                .forEach(labelPerClassInProjectJsonArray::add);
 
         return labelPerClassInProjectJsonArray;
 
@@ -151,49 +138,39 @@ public class LabelListHandler {
     private static JsonObject getJsonObject(String key, Integer value)
     {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.put(ParamConfig.getLABELPARAM(), key);
-        jsonObject.put(ParamConfig.getLABELCOUNTPARAM(), value);
+        jsonObject.put(ParamConfig.getLabelParam(), key);
+        jsonObject.put(ParamConfig.getLabelCountParam(), value);
 
         return jsonObject;
     }
 
-    private static Map<String, Integer> getLabelByClass(JsonArray labelPointData)
+    private static Map<String,Integer> getLabelByClass(JsonArray labelPointData)
     {
-        Map<String, Integer> labelByClass = new HashMap<>();
-        ArrayList<String> labels = new ArrayList<>();
+        Map<String,Integer> labelByClass = new HashMap<>();
 
-        for (int i = 0; i < labelPointData.size(); i++)
-        {
-            JsonObject jsonArray = labelPointData.getJsonObject(i);
-            String label = jsonArray.getString("label");
-            labels.add(label);
-        }
+        List<String> labels = IntStream.range(0, labelPointData.size())
+                .mapToObj(labelPointData::getJsonObject)
+                .map(m -> m.getString("label"))
+                .collect(Collectors.toList());
 
-        for (String label : labels)
-        {
-            Integer count = labelByClass.get(label);
-
+        Consumer<String> action = s -> {
+            Integer count = labelByClass.get(s);
             if (count == null)
             {
                 count = 0;
             }
+            labelByClass.put(s, count + 1);
+        };
 
-            labelByClass.put(label, count + 1);
-        }
+        labels.forEach(action);
 
         return labelByClass;
+
     }
 
     private static List<Annotation> getAnnotationList(Set<String> imageUUID, Map<String, Annotation> uuidAnnotationDict)
     {
-        List<Annotation> annotationList = new ArrayList<>();
-
-        for (String s : imageUUID)
-        {
-            annotationList.add(uuidAnnotationDict.get(s));
-        }
-
-        return annotationList;
+        return imageUUID.stream().map(uuidAnnotationDict::get).collect(Collectors.toList());
     }
 
 
