@@ -78,33 +78,6 @@ public class V1Endpoint extends EndpointBase
                        ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
            }
         });
-
-
-//        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), Objects.requireNonNull(loader).getProjectId());
-//
-//        //load label list
-//        DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveProjectMetadata());
-//
-//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, metadataOptions, metaReply ->
-//        {
-//            if (metaReply.succeeded()) {
-//
-//                JsonObject metaResponse = (JsonObject) metaReply.result().body();
-//
-//                if (ReplyHandler.isReplyOk(metaResponse))
-//                {
-//                    HTTPResponseHandler.configureOK(context, metaResponse);
-//                }
-//                else
-//                {
-//                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
-//                }
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving project metadata " + projectName));
-//            }
-//        });
     }
 
     /**
@@ -125,26 +98,6 @@ public class V1Endpoint extends EndpointBase
                        ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
            }
         });
-
-
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal());
-//
-//        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRetrieveAllProjectsMetadata());
-//
-//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-//
-//            if(reply.succeeded())
-//            {
-//                JsonObject response = (JsonObject) reply.result().body();
-//
-//                HTTPResponseHandler.configureOK(context, response);
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
-//            }
-//        });
     }
 
     /**
@@ -159,8 +112,6 @@ public class V1Endpoint extends EndpointBase
     public void loadProject(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-//        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -196,27 +147,6 @@ public class V1Endpoint extends EndpointBase
                                 ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
                     }
                 });
-
-
-//                JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-//
-//                DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getLoadValidProjectUuid());
-//
-//                //start checking uuid if it's path is still exist
-//                vertx.eventBus().request(queue, jsonObject, uuidListOptions, fetch ->
-//                {
-//                    JsonObject removalResponse = (JsonObject) fetch.result().body();
-//
-//                    if (ReplyHandler.isReplyOk(removalResponse))
-//                    {
-//                        HTTPResponseHandler.configureOK(context);
-//                    }
-//                    else
-//                    {
-//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-//                    }
-//                });
-
             }
             else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
             {
@@ -309,28 +239,6 @@ public class V1Endpoint extends EndpointBase
                         ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail: " + result.cause().getMessage()));
             }
         });
-
-
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID);
-//
-//        DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getQueryData());
-//
-//        vertx.eventBus().request(queue, request, thumbnailOptions, fetch -> {
-//
-//            if (fetch.succeeded())
-//            {
-//                JsonObject result = (JsonObject) fetch.result().body();
-//
-//                HTTPResponseHandler.configureOK(context, result);
-//
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail: " + fetch.cause().getMessage()));
-//            }
-//        });
     }
 
     /***
@@ -360,28 +268,6 @@ public class V1Endpoint extends EndpointBase
                        ReplyHandler.reportUserDefinedError("Failure in getting image source."));
            }
         });
-
-
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getUuidParam(), uuid)
-//                .put(ParamConfig.getProjectIdParam(), projectID)
-//                .put(ParamConfig.getProjectNameParam(), projectName);
-//
-//        DeliveryOptions imgSrcOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRetrieveDataPath());
-//
-//        vertx.eventBus().request(queue, request, imgSrcOptions, fetch -> {
-//
-//            if (fetch.succeeded()) {
-//
-//                JsonObject result = (JsonObject) fetch.result().body();
-//
-//                HTTPResponseHandler.configureOK(context, result);
-//
-//            }
-//            else {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting image source."));
-//            }
-//        });
     }
 
     /***
@@ -394,7 +280,6 @@ public class V1Endpoint extends EndpointBase
     public void updateData(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-        String queue = helper.getDbQuery(type);
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -419,36 +304,6 @@ public class V1Endpoint extends EndpointBase
             });
 
         });
-
-
-
-//        context.request().bodyHandler(h ->
-//        {
-//            DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getUpdateData());
-//
-//            try
-//            {
-//                JsonObject jsonObject = h.toJsonObject();
-//
-//                jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-//
-//                vertx.eventBus().request(queue, jsonObject, updateOptions, fetch ->
-//                {
-//                    if (fetch.succeeded())
-//                    {
-//                        updateLastModifiedDate(loader, context);
-//                    }
-//                    else
-//                    {
-//                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for " + type + " project: " + projectName));
-//                    }
-//                });
-//
-//            }catch (Exception e)
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-//            }
-//        });
     }
 
     private void updateLastModifiedDate(ProjectLoader loader, RoutingContext context)
@@ -470,26 +325,6 @@ public class V1Endpoint extends EndpointBase
                        ReplyHandler.reportUserDefinedError("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName()));
            }
         });
-
-//        JsonObject jsonObj = new JsonObject();
-//        jsonObj.put(ParamConfig.getProjectIdParam(), projectID);
-//        jsonObj.put(ParamConfig.getCurrentVersionParam(), version.getDbFormat());
-//
-//        DeliveryOptions updateOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLastModifiedDate());
-//
-//        vertx.eventBus().request(queue, jsonObj, updateOptions, fetch ->
-//        {
-//            if (fetch.succeeded())
-//            {
-//                JsonObject response = (JsonObject) fetch.result().body();
-//
-//                HTTPResponseHandler.configureOK(context, response);
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName()));
-//            }
-//        });
     }
 
 
@@ -524,33 +359,6 @@ public class V1Endpoint extends EndpointBase
                 }
             });
         });
-
-
-//        context.request().bodyHandler(h ->
-//        {
-//            try
-//            {
-//                JsonObject jsonObject = h.toJsonObject();
-//
-//                jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-//
-//                DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getUpdateLabelList());
-//
-//                vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-//                {
-//                    if (reply.succeeded()) {
-//                        JsonObject response = (JsonObject) reply.result().body();
-//
-//                        HTTPResponseHandler.configureOK(context, response);
-//                    }
-//                });
-//            }
-//            catch (Exception e)
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request payload failed to parse: " + projectName + ". " + e));
-//
-//            }
-//        });
     }
 
     /**
@@ -595,42 +403,6 @@ public class V1Endpoint extends EndpointBase
                         ReplyHandler.reportUserDefinedError(errorMessage));
             }
         });
-
-
-//        JsonObject request = new JsonObject()
-//                .put(ParamConfig.getProjectIdParam(), projectID);
-//
-//        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getDeleteProject());
-//
-//        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-//
-//            if(reply.succeeded())
-//            {
-//                JsonObject response = (JsonObject) reply.result().body();
-//
-//                if(ReplyHandler.isReplyOk(response)) {
-//                    //delete in respective Table
-//                    DeliveryOptions deleteListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getDeleteProject());
-//
-//                    vertx.eventBus().request(queue, request, deleteListOptions, fetch -> {
-//
-//                        if (fetch.succeeded()) {
-//                            JsonObject replyResponse = (JsonObject) fetch.result().body();
-//
-//                            //delete in Project Handler
-//                            ProjectHandler.deleteProjectFromCache(projectID);
-//                            HTTPResponseHandler.configureOK(context, replyResponse);
-//                        } else {
-//                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
-//                        }
-//                    });
-//                }
-//            }
-//            else
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage  + " from Portfolio Database"));
-//            }
-//        });
     }
 
 }
