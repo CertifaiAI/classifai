@@ -186,7 +186,7 @@ public class LabelListHandler {
     private static List<Map<String, Integer>> getUnUsedLabelList (String projectId, List<Map<String, Integer>> labelByClassList)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        List<String> oriLabelList = loader.getLabelList();
+        List<String> originalLabelList = loader.getLabelList();
         Map<String, Integer> unUsedLabels = new HashMap<>();
         List<Map<String, Integer>> unUsedLabelList = new ArrayList<>();
 
@@ -197,7 +197,7 @@ public class LabelListHandler {
                 .collect(Collectors.toList());
 
         // To filter out the unused label from original label list
-        List<String> filterList = oriLabelList.stream()
+        List<String> filterList = originalLabelList.stream()
                 .filter(s -> !usedLabel.contains(s))
                 .collect(Collectors.toList());
 
