@@ -145,7 +145,7 @@ public class ParamConfig
     @Getter private static final String isCloudParam = "is_cloud";
     @Getter private static final String projectInfraParam = "project_infra";
 
-    // backup folder
-    @Getter private static final String DELETED_PROJECT_CONFIG = "classifai_deleted_projectConfig";
+    // deleted project config file
+    @Getter private static final String deletedProjectConfig = "classifai_deleted_projectConfig";
 
 }
