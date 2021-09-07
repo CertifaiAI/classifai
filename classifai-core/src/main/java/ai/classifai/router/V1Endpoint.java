@@ -311,16 +311,11 @@ public class V1Endpoint extends EndpointBase
 
         String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
 
-        portfolioDB.deleteProjectFromPortfolioDb(projectID)
-                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID, helper.getDbQuery(type)))
-                .onComplete(result -> {
-                   if(result.succeeded()) {
-                       ProjectHandler.deleteProjectFromCache(projectID);
-                       HTTPResponseHandler.configureOK(context, result.result());
-                   } else {
-                       HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
-                   }
-                });
+        Future<JsonObject> future = portfolioDB.deleteProjectFromPortfolioDb(projectID)
+                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID, helper.getDbQuery(type)));
+        ReplyHandler.sendResultRunSuccessSideEffect(context, future,
+                () -> ProjectHandler.deleteProjectFromCache(projectID),
+                errorMessage);
     }
 
 }
