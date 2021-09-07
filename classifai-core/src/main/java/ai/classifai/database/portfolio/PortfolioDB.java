@@ -34,14 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PortfolioDB {
     private final EventBus eventBus;
-    private final String queue;
 
     public PortfolioDB(EventBus eventBus) {
         this.eventBus = eventBus;
-        queue = PortfolioDbQuery.getQueue();
     }
 
-    private Future<JsonObject> runAnnotationQuery(JsonObject msg, String action, String annotationQueue) {
+    private Future<JsonObject> runQuery(JsonObject msg, String action, String annotationQueue) {
         DeliveryOptions options = new DeliveryOptions()
                 .addHeader(ParamConfig.getActionKeyword(), action);
 
@@ -53,16 +51,8 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    private Future<JsonObject> runPortfolioQuery(JsonObject msg, String action) {
-        DeliveryOptions options = new DeliveryOptions()
-                .addHeader(ParamConfig.getActionKeyword(), action);
-
-        final Promise<JsonObject> promise = Promise.promise();
-        eventBus.request(queue, msg, options, fetch -> {
-            JsonObject response = (JsonObject) fetch.result().body();
-            promise.complete(response);
-        });
-        return promise.future();
+    private Future<JsonObject> runQuery(JsonObject msg, String action) {
+        return runQuery(msg, action, PortfolioDbQuery.getQueue());
     }
 
     public Future<JsonObject> renameProject(String projectId, String newProjectName) {
@@ -70,7 +60,7 @@ public class PortfolioDB {
                 .put(ParamConfig.getProjectIdParam(), projectId)
                 .put(ParamConfig.getNewProjectNameParam(), newProjectName);
 
-        return runPortfolioQuery(msg, PortfolioDbQuery.getRenameProject());
+        return runQuery(msg, PortfolioDbQuery.getRenameProject());
     }
 
     public Future<JsonObject> exportProject(String projectId, int annotationType, int exportType) {
@@ -79,7 +69,7 @@ public class PortfolioDB {
                 .put(ParamConfig.getAnnotationTypeParam(), annotationType)
                 .put(ActionConfig.getExportTypeParam(), exportType);
         
-        return runPortfolioQuery(msg, PortfolioDbQuery.getExportProject());
+        return runQuery(msg, PortfolioDbQuery.getExportProject());
     }
 
     public Future<JsonObject> deleteProjectData(String projectId, String annotationQueue,
@@ -89,7 +79,7 @@ public class PortfolioDB {
                 .put(ParamConfig.getUuidListParam(), uuidListArray)
                 .put(ParamConfig.getImgPathListParam(), uuidImgPathList);
         
-        return runAnnotationQuery(msg, AnnotationQuery.getDeleteProjectData(), annotationQueue);
+        return runQuery(msg, AnnotationQuery.getDeleteProjectData(), annotationQueue);
     }
 
     public Future<JsonObject> renameData(String projectId, String annotationQueue, String uuid, String newFilename) {
@@ -98,7 +88,7 @@ public class PortfolioDB {
                 .put(ParamConfig.getUuidParam(), uuid)
                 .put(ParamConfig.getNewFileNameParam(), newFilename);
 
-        return runAnnotationQuery(msg, AnnotationQuery.getRenameProjectData(), annotationQueue);
+        return runQuery(msg, AnnotationQuery.getRenameProjectData(), annotationQueue);
     }
 
     public Future<JsonObject> startProject(String projectId, Boolean isStarred) {
@@ -106,34 +96,34 @@ public class PortfolioDB {
                 .put(ParamConfig.getStatusParam(), isStarred)
                 .put(ParamConfig.getProjectIdParam(), projectId);
         
-        return runPortfolioQuery(msg, PortfolioDbQuery.getStarProject());
+        return runQuery(msg, PortfolioDbQuery.getStarProject());
     }
 
     public Future<JsonObject> reloadProject(String projectId) {
         JsonObject msg = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectId);
         
-        return runPortfolioQuery(msg, PortfolioDbQuery.getReloadProject());
+        return runQuery(msg, PortfolioDbQuery.getReloadProject());
     }
 
     public Future<JsonObject> getProjectMetadata(String projectId) {
         JsonObject msg = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectId);
         
-        return runPortfolioQuery(msg, PortfolioDbQuery.getRetrieveProjectMetadata());
+        return runQuery(msg, PortfolioDbQuery.getRetrieveProjectMetadata());
     }
 
     public Future<JsonObject> getAllProjectsMeta(int annotationType) {
         JsonObject msg = new JsonObject()
                 .put(ParamConfig.getAnnotationTypeParam(), annotationType);
         
-        return runPortfolioQuery(msg, PortfolioDbQuery.getRetrieveAllProjectsMetadata());
+        return runQuery(msg, PortfolioDbQuery.getRetrieveAllProjectsMetadata());
     }
 
     public Future<JsonObject> loadProject(String projectId, String annotationQueue) {
         JsonObject msg = new JsonObject().put(ParamConfig.getProjectIdParam(), projectId);
         
-        return runAnnotationQuery(msg, AnnotationQuery.getLoadValidProjectUuid(), annotationQueue);
+        return runQuery(msg, AnnotationQuery.getLoadValidProjectUuid(), annotationQueue);
     }
 
     public Future<JsonObject> getThumbnail(String projectID, String annotationQueue, String uuid) {
@@ -141,7 +131,7 @@ public class PortfolioDB {
                 .put(ParamConfig.getUuidParam(), uuid)
                 .put(ParamConfig.getProjectIdParam(), projectID);
         
-        return runAnnotationQuery(msg, AnnotationQuery.getQueryData(), annotationQueue);
+        return runQuery(msg, AnnotationQuery.getQueryData(), annotationQueue);
     }
 
     public Future<JsonObject> getImageSource(String projectID, String annotationQueue, 
@@ -151,13 +141,13 @@ public class PortfolioDB {
                 .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
         
-        return runAnnotationQuery(msg, AnnotationQuery.getRetrieveDataPath(), annotationQueue);
+        return runQuery(msg, AnnotationQuery.getRetrieveDataPath(), annotationQueue);
     }
 
     public Future<JsonObject> updateData(String projectID, String annotationQueue, JsonObject requestBody) {
         requestBody.put(ParamConfig.getProjectIdParam(), projectID);
         
-        return runAnnotationQuery(requestBody, AnnotationQuery.getUpdateData(), annotationQueue);
+        return runQuery(requestBody, AnnotationQuery.getUpdateData(), annotationQueue);
     }
 
     public Future<JsonObject> updateLastModifiedDate(String projectID, String dbFormat) {
@@ -165,26 +155,26 @@ public class PortfolioDB {
                 .put(ParamConfig.getProjectIdParam(), projectID)
                 .put(ParamConfig.getCurrentVersionParam(), dbFormat);
         
-        return runPortfolioQuery(msg, PortfolioDbQuery.getUpdateLastModifiedDate());
+        return runQuery(msg, PortfolioDbQuery.getUpdateLastModifiedDate());
     }
 
     public Future<JsonObject> updateLabels(String projectID, JsonObject requestBody) {
         requestBody.put(ParamConfig.getProjectIdParam(), projectID);
         
-        return runPortfolioQuery(requestBody, PortfolioDbQuery.getUpdateLabelList());
+        return runQuery(requestBody, PortfolioDbQuery.getUpdateLabelList());
     }
 
     public Future<JsonObject> deleteProjectFromPortfolioDb(String projectID) {
         JsonObject msg = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectID);
 
-        return runPortfolioQuery(msg, PortfolioDbQuery.getDeleteProject());
+        return runQuery(msg, PortfolioDbQuery.getDeleteProject());
     }
 
     public Future<JsonObject> deleteProjectFromAnnotationDb(String projectId, String annotationQuery) {
         JsonObject msg = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectId);
 
-        return runAnnotationQuery(msg, AnnotationQuery.getDeleteProject(),annotationQuery);
+        return runQuery(msg, AnnotationQuery.getDeleteProject(),annotationQuery);
     }
 }

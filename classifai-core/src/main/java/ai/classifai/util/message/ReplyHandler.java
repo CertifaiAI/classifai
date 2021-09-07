@@ -81,8 +81,8 @@ public class ReplyHandler {
                                   String errorMessage) {
         future.onComplete(result -> {
             if(result.succeeded()) {
-                HTTPResponseHandler.configureOK(context);
                 successSideEffect.run();
+                HTTPResponseHandler.configureOK(context);
             } else {
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
             }

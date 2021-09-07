@@ -259,7 +259,7 @@ public class V1Endpoint extends EndpointBase
 
         Future<JsonObject> future = portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat());
         future.onComplete(result -> {
-            if(result.failed()) {
+            if(result.succeeded()) {
                 log.info("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName());
             }
         });
