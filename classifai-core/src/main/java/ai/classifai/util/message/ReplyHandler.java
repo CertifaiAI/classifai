@@ -15,7 +15,10 @@
  */
 package ai.classifai.util.message;
 
+import ai.classifai.util.http.HTTPResponseHandler;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -64,6 +67,62 @@ public class ReplyHandler {
         return new JsonObject().put(MESSAGE_KEY, FAILED);
     }
 
+    public static void sendEmptyResult(RoutingContext context, Future<JsonObject> future, String errorMessage) {
+        future.onComplete(result -> {
+            if(result.succeeded()) {
+                HTTPResponseHandler.configureOK(context);
+            } else {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+            }
+        });
+    }
+
+    public static void sendEmptyResult(RoutingContext context, Future<JsonObject> future, Runnable successSideEffect,
+                                  String errorMessage) {
+        future.onComplete(result -> {
+            if(result.succeeded()) {
+                HTTPResponseHandler.configureOK(context);
+                successSideEffect.run();
+            } else {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+            }
+        });
+    }
+
+    public static void sendResult(RoutingContext context, Future<JsonObject> future, String errorMessage) {
+        future.onComplete(result -> {
+            if(result.succeeded()) {
+                HTTPResponseHandler.configureOK(context, result.result());
+            } else {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+            }
+        });
+    }
+
+    public static void sendResultRunSuccessSideEffect(RoutingContext context, Future<JsonObject> future,
+                                                      Runnable successSideEffect, String errorMessage) {
+        future.onComplete(result -> {
+            if(result.succeeded()) {
+                successSideEffect.run();
+                HTTPResponseHandler.configureOK(context, result.result());
+            } else {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+            }
+        });
+    }
+
+    public static void sendResultRunFailSideEffect(RoutingContext context, Future<JsonObject> future,
+                                                   Runnable failSideEffect, String errorMessage) {
+        future.onComplete(result -> {
+            if(result.succeeded()) {
+                HTTPResponseHandler.configureOK(context, result.result());
+            } else {
+                failSideEffect.run();
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+            }
+        });
+    }
+
     public static JsonObject reportUserDefinedError(String userDefinedMessage)
     {
         log.info(userDefinedMessage);
@@ -95,11 +154,6 @@ public class ReplyHandler {
     public static boolean isReplyOk(JsonObject jsonObject)
     {
        return jsonObject.getInteger(MESSAGE_KEY) == SUCCESSFUL;
-    }
-
-    public static boolean isReplyFailed(JsonObject jsonObject)
-    {
-        return jsonObject.getInteger(MESSAGE_KEY) == FAILED;
     }
 
 }

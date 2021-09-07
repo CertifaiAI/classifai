@@ -18,7 +18,6 @@ package ai.classifai.router;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
-import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -117,23 +116,17 @@ public class V2Endpoint extends EndpointBase {
 
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
-
-
         context.request().bodyHandler(handler -> {
-
             JsonObject request = handler.toJsonObject();
             Boolean isStarred = Boolean.parseBoolean(request.getString(ParamConfig.getStatusParam()));
 
             Future<JsonObject> future = portfolioDB.startProject(projectID, isStarred);
-            future.onComplete(result -> {
-                if(result.succeeded()) {
-                    ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-                    loader.setIsProjectStarred(isStarred);
-
-                    HTTPResponseHandler.configureOK(context, future.result());
-                }
-            });
-
+            ReplyHandler.sendResultRunSuccessSideEffect(context, future,
+                    ()-> {
+                        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+                        loader.setIsProjectStarred(isStarred);
+                    },
+                    "Star project fail");
         });
     }
 
@@ -292,20 +285,11 @@ public class V2Endpoint extends EndpointBase {
         if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
             Future<JsonObject> future = portfolioDB.renameProject(loader.getProjectId(), newProjectName);
-            future.onComplete(result -> {
-               if(result.succeeded()) {
-                   // Update loader in cache after success db update
-                   loader.setProjectName(newProjectName);
-                   ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-                   log.debug("Rename to " + newProjectName + " success.");
-                   HTTPResponseHandler.configureOK(context);
-               } else {
-                   HTTPResponseHandler.configureOK(context,
-                           ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
-               }
-            });
-
-
+            ReplyHandler.sendEmptyResult(context, future, () -> {
+                loader.setProjectName(newProjectName);
+                ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+                log.debug("Rename to " + newProjectName + " success.");
+            }, "Failed to rename project " + projectName);
         }
         else
         {
@@ -335,16 +319,8 @@ public class V2Endpoint extends EndpointBase {
 
         loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
-
         Future<JsonObject> future = portfolioDB.reloadProject(loader.getProjectId());
-        future.onComplete(result -> {
-            if(result.succeeded()) {
-                HTTPResponseHandler.configureOK(context);
-            } else if(result.failed()) {
-                HTTPResponseHandler.configureOK(context,
-                        ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
-            }
-        });
+        ReplyHandler.sendEmptyResult(context, future, "Failed to reload project " + projectName);
     }
 
     /**
@@ -401,19 +377,10 @@ public class V2Endpoint extends EndpointBase {
                 context.request().getParam(ActionConfig.getExportTypeParam()));
         if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
 
-
         Future<JsonObject> future = portfolioDB.exportProject(projectId, type.ordinal(), exportType.ordinal());
-
-        future.onComplete(result -> {
-           if(result.succeeded()) {
-               HTTPResponseHandler.configureOK(context, future.result());
-           } else if(result.failed()) {
-               HTTPResponseHandler.configureOK(context,
-                       ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
-               ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
-           }
-        });
-
+        ReplyHandler.sendResultRunFailSideEffect(context, future,
+                () -> ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL),
+                "Export of project failed for " + projectName);
     }
 
     /**
@@ -598,7 +565,6 @@ public class V2Endpoint extends EndpointBase {
 
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
-
         context.request().bodyHandler(handler -> {
             JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(handler.toJson()));
 
@@ -608,13 +574,7 @@ public class V2Endpoint extends EndpointBase {
                     request.getJsonArray(ParamConfig.getUuidListParam()),
                     request.getJsonArray(ParamConfig.getImgPathListParam())
             );
-
-            future.onComplete(result -> {
-               if(result.succeeded()) {
-                   HTTPResponseHandler.configureOK(context, future.result());
-               }
-            });
-
+            ReplyHandler.sendResult(context, future, "Delete project data fail.");
         });
     }
 
@@ -649,11 +609,7 @@ public class V2Endpoint extends EndpointBase {
                     request.getString(ParamConfig.getNewFileNameParam())
             );
 
-            future.onComplete(result -> {
-                if(result.succeeded()) {
-                    HTTPResponseHandler.configureOK(context, future.result());
-                }
-            });
+            ReplyHandler.sendResult(context, future, "Rename data fail");
         });
     }
 }

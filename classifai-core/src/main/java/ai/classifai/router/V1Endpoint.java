@@ -15,9 +15,7 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDB;
-import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -29,8 +27,6 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -68,16 +64,8 @@ public class V1Endpoint extends EndpointBase
 
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
-
         Future<JsonObject> future = portfolioDB.getProjectMetadata(loader.getProjectId());
-        future.onComplete(result -> {
-           if(result.succeeded()) {
-               HTTPResponseHandler.configureOK(context, future.result());
-           } else {
-               HTTPResponseHandler.configureOK(context,
-                       ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
-           }
-        });
+        ReplyHandler.sendResult(context, future, "Failed to retrieve metadata for project " + projectName);
     }
 
     /**
@@ -90,14 +78,7 @@ public class V1Endpoint extends EndpointBase
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         Future<JsonObject> future = portfolioDB.getAllProjectsMeta(type.ordinal());
-        future.onComplete(result -> {
-           if(result.succeeded()) {
-               HTTPResponseHandler.configureOK(context, future.result());
-           } else {
-               HTTPResponseHandler.configureOK(context,
-                       ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
-           }
-        });
+        ReplyHandler.sendResult(context, future, "Failure in getting all the projects for " + type.name());
     }
 
     /**
@@ -114,8 +95,6 @@ public class V1Endpoint extends EndpointBase
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
-        log.info("Load project: " + projectName + " of annotation type: " + type.name());
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
@@ -136,17 +115,8 @@ public class V1Endpoint extends EndpointBase
             if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
             {
                 loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-
-
                 Future<JsonObject> future = portfolioDB.loadProject(loader.getProjectId(), helper.getDbQuery(type));
-                future.onComplete(result -> {
-                    if(result.succeeded()) {
-                        HTTPResponseHandler.configureOK(context);
-                    } else {
-                        HTTPResponseHandler.configureOK(context,
-                                ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-                    }
-                });
+                ReplyHandler.sendEmptyResult(context, future, "Failed to load project " + projectName + ". Check validity of data points failed.");
             }
             else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
             {
@@ -223,22 +193,12 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = helper.getDbQuery(type);
-
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-
         Future<JsonObject> future = portfolioDB.getThumbnail(projectID, helper.getDbQuery(type), uuid);
-        future.onComplete(result -> {
-            if(result.succeeded()) {
-                HTTPResponseHandler.configureOK(context, future.result());
-            } else {
-                HTTPResponseHandler.configureOK(context,
-                        ReplyHandler.reportUserDefinedError("Failure in retrieving thumbnail: " + result.cause().getMessage()));
-            }
-        });
+        ReplyHandler.sendResult(context, future, "Fail retrieving thumbnail");
     }
 
     /***
@@ -252,22 +212,12 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = helper.getDbQuery(type);
-
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-
         Future<JsonObject> future = portfolioDB.getImageSource(projectID, helper.getDbQuery(type), uuid, projectName);
-        future.onComplete(result -> {
-           if(result.succeeded()) {
-               HTTPResponseHandler.configureOK(context, future.result());
-           } else {
-               HTTPResponseHandler.configureOK(context,
-                       ReplyHandler.reportUserDefinedError("Failure in getting image source."));
-           }
-        });
+        ReplyHandler.sendResult(context, future, "Fail getting image source");
     }
 
     /***
@@ -289,27 +239,18 @@ public class V1Endpoint extends EndpointBase
 
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
-
         context.request().bodyHandler(handler -> {
             JsonObject requestBody = handler.toJsonObject();
 
             Future<JsonObject> future = portfolioDB.updateData(projectID, helper.getDbQuery(type), requestBody);
-            future.onComplete(result -> {
-                if(result.succeeded()) {
-                    updateLastModifiedDate(loader, context);
-                } else {
-                    HTTPResponseHandler.configureOK(context,
-                            ReplyHandler.reportUserDefinedError("Failure in updating database for " + type + " project: " + projectName));
-                }
-            });
-
+            ReplyHandler.sendResultRunSuccessSideEffect(context, future,
+                    () -> updateLastModifiedDate(loader),
+                    "Failure in updating database for " + type + " project: " + projectName);
         });
     }
 
-    private void updateLastModifiedDate(ProjectLoader loader, RoutingContext context)
+    private void updateLastModifiedDate(ProjectLoader loader)
     {
-        String queue = PortfolioDbQuery.getQueue();
-
         String projectID = loader.getProjectId();
 
         Version version = loader.getProjectVersion().getCurrentVersion();
@@ -317,13 +258,10 @@ public class V1Endpoint extends EndpointBase
         version.setLastModifiedDate(new DateTime());
 
         Future<JsonObject> future = portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat());
-        future.onComplete(result -> {
-           if(result.succeeded()) {
-               HTTPResponseHandler.configureOK(context, future.result());
-           } else {
-               HTTPResponseHandler.configureOK(context,
-                       ReplyHandler.reportUserDefinedError("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName()));
-           }
+        future.onComplete((result) -> {
+            if(result.failed()) {
+                log.info("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName());
+            }
         });
     }
 
@@ -345,19 +283,10 @@ public class V1Endpoint extends EndpointBase
 
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
-
-
         context.request().bodyHandler(handlers -> {
             JsonObject requestBody = handlers.toJsonObject();
             Future<JsonObject> future = portfolioDB.updateLabels(projectID, requestBody);
-            future.onComplete(result -> {
-                if(result.succeeded()) {
-                    HTTPResponseHandler.configureOK(context, future.result());
-                } else {
-                    HTTPResponseHandler.configureOK(context,
-                            ReplyHandler.reportUserDefinedError("Fail to update labels: " + projectName));
-                }
-            });
+            ReplyHandler.sendResult(context, future, "Fail to update labels: " + projectName);
         });
     }
 
@@ -374,8 +303,6 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        String queue = helper.getDbQuery(type);
-
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
@@ -384,25 +311,16 @@ public class V1Endpoint extends EndpointBase
 
         String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
 
-        Future<JsonObject> future = portfolioDB.deleteProjectFromPortfolioDb(projectID);
-        future.onComplete(result -> {
-            if(result.succeeded()) {
-                Future<JsonObject> annotationFuture = portfolioDB.deleteProjectFromAnnotationDb(projectID, helper.getDbQuery(type));
-                annotationFuture.onComplete(annotationResult -> {
-                    if (annotationResult.succeeded()) {
-                        //delete in Project Handler
-                        ProjectHandler.deleteProjectFromCache(projectID);
-                        HTTPResponseHandler.configureOK(context, future.result());
-                    } else {
-                        HTTPResponseHandler.configureOK(context,
-                                ReplyHandler.reportUserDefinedError(errorMessage));
-                    }
+        portfolioDB.deleteProjectFromPortfolioDb(projectID)
+                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID, helper.getDbQuery(type)))
+                .onComplete(result -> {
+                   if(result.succeeded()) {
+                       ProjectHandler.deleteProjectFromCache(projectID);
+                       HTTPResponseHandler.configureOK(context, result.result());
+                   } else {
+                       HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));
+                   }
                 });
-            } else {
-                HTTPResponseHandler.configureOK(context,
-                        ReplyHandler.reportUserDefinedError(errorMessage));
-            }
-        });
     }
 
 }

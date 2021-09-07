@@ -177,14 +177,14 @@ public class PortfolioDB {
     public Future<JsonObject> deleteProjectFromPortfolioDb(String projectID) {
         JsonObject msg = new JsonObject()
                 .put(ParamConfig.getProjectIdParam(), projectID);
-        
+
         return runPortfolioQuery(msg, PortfolioDbQuery.getDeleteProject());
     }
 
-    public Future<JsonObject> deleteProjectFromAnnotationDb(String projectID, String annotationQueue) {
+    public Future<JsonObject> deleteProjectFromAnnotationDb(String projectId, String annotationQuery) {
         JsonObject msg = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectID);
+                .put(ParamConfig.getProjectIdParam(), projectId);
 
-        return runAnnotationQuery(msg, AnnotationQuery.getDeleteProject(), annotationQueue);
+        return runAnnotationQuery(msg, AnnotationQuery.getDeleteProject(),annotationQuery);
     }
 }
