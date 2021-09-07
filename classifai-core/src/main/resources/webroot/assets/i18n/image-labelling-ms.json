@@ -155,5 +155,6 @@
         "noProgress": " Tidak ada kemajuan pelabelan.",
         "noLabelSelected": "Tidak ada label yang dipilih.",
         "noPolygon": "Tidak ada poligon."
-    }
+    },
+    "projectStats": "Statistik Projek"
 }
