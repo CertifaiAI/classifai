@@ -161,6 +161,8 @@ public class EndpointRouter extends AbstractVerticle
 
         router.put("/v2/close").handler(v2::closeClassifai);
 
+        router.get("/v2/:annotation_type/projects/:project_name/statistic").handler(v2::getProjectStatistic);
+
         //*******************************Cloud*******************************
 
         router.put("/v2/:annotation_type/wasabi/projects/:project_name").handler(cloud::createWasabiCloudProject);

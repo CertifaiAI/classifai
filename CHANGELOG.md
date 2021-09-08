@@ -13,6 +13,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Project versioning [WIP]
 - Project import image from cloud storage [WIP]
 - Database migration [WIP]
+- Project statistic
 
 ## [2.0.0-alpha2] - 2021-08-12
 ### Added

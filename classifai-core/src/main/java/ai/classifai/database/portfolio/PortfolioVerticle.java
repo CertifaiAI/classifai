@@ -35,6 +35,7 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.LabelListHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ErrorCodes;
 import ai.classifai.util.message.ReplyHandler;
@@ -126,6 +127,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         else if(action.equals(PortfolioDbQuery.getUpdateLastModifiedDate()))
         {
             this.updateLastModifiedDate(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getRetrieveProjectStatistic()))
+        {
+            this.getProjectStatistic(message);
         }
         else
         {
@@ -653,6 +658,36 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         ImageHandler.loadProjectRootPath(loader);
+    }
+
+    public void getProjectStatistic(Message<JsonObject> message)
+    {
+        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
+
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+
+        File projectPath = loader.getProjectPath();
+
+        LabelListHandler.getImageLabeledStatus(loader.getUuidAnnotationDict());
+        JsonArray labelPerClassInProject = LabelListHandler.getLabelPerClassInProject(loader.getUuidAnnotationDict(), projectId);
+
+        List<JsonObject> result = new ArrayList<>();
+
+        if (!projectPath.exists())
+        {
+            log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
+        }
+
+        result.add(new JsonObject()
+                .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
+                .put(ParamConfig.getLabeledImageParam(), LabelListHandler.getNumberOfLabeledImage())
+                .put(ParamConfig.getUnlabeledImageParam(), LabelListHandler.getNumberOfUnLabeledImage())
+                .put(ParamConfig.getLabelPerClassInProject(), labelPerClassInProject));
+
+        JsonObject response = ReplyHandler.getOkReply();
+        response.put(ParamConfig.getStatisticData(), result);
+
+        message.replyAndRequest(response);
     }
 
     @Override

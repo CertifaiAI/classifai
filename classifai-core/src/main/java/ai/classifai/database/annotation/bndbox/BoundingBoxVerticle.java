@@ -15,23 +15,23 @@
  */
 package ai.classifai.database.annotation.bndbox;
 
-import ai.classifai.database.DbConfig;
-import ai.classifai.database.annotation.AnnotationQuery;
-import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
-import ai.classifai.util.type.database.H2;
-import ai.classifai.util.type.database.RelationalDb;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
-import io.vertx.jdbcclient.JDBCPool;
-import lombok.extern.slf4j.Slf4j;
+ import ai.classifai.database.DbConfig;
+ import ai.classifai.database.annotation.AnnotationQuery;
+ import ai.classifai.database.annotation.AnnotationVerticle;
+ import ai.classifai.util.ParamConfig;
+ import ai.classifai.util.message.ErrorCodes;
+ import ai.classifai.util.type.AnnotationHandler;
+ import ai.classifai.util.type.AnnotationType;
+ import ai.classifai.util.type.database.H2;
+ import ai.classifai.util.type.database.RelationalDb;
+ import io.vertx.core.Promise;
+ import io.vertx.core.Vertx;
+ import io.vertx.core.eventbus.Message;
+ import io.vertx.core.json.JsonObject;
+ import io.vertx.jdbcclient.JDBCPool;
+ import lombok.extern.slf4j.Slf4j;
 
-/**
+ /**
  * Bounding Box Verticle
  *
  * @author codenamewei
