@@ -157,5 +157,6 @@
         "noProgress": " There are no labelling progress.",
         "noLabelSelected": "There are no label selected.",
         "noPolygon": "There are no polygon."
-    }
+    },
+    "projectStats": "Project Statistics"
 }

@@ -72,5 +72,6 @@
     "containsUnsupportedImage1": "There are ",
     "containsUnsupportedImage2": " unsupported images included in the project!",
     "unsupportedImageList1": "The list of images is in the downloaded TXT file.",
-    "unsupportedImageList2": "Kindly convert them to jpg/png type and reimport them again."
+    "unsupportedImageList2": "Kindly convert them to jpg/png type and reimport them again.",
+    "projectStats": "Project Statistics"
 }

@@ -73,5 +73,6 @@
     "containsUnsupportedImage1": "项目中包含",
     "containsUnsupportedImage2": "个不受支持的图像！",
     "unsupportedImageList1": "图像列表在下载的TXT 文件中。",
-    "unsupportedImageList2": "请将它们转换为 jpg/png 类型并再次重新导入。"
+    "unsupportedImageList2": "请将它们转换为 jpg/png 类型并再次重新导入。",
+    "projectStats": "项目统计"
 }

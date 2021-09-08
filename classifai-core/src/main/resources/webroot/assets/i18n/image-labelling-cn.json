@@ -154,6 +154,7 @@
         "noImageList": "没有图像列表。 ",
         "noProgress": "没有标签进展。",
         "noLabelSelected": "没有选择标签。",
-        "noPolygon": "There are no polygon."
-    }
+        "noPolygon": "没有多边形."
+    },
+    "projectStats": "项目统计"
 }
