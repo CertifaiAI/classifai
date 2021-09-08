@@ -21,8 +21,8 @@ import com.drew.metadata.MetadataException;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.webp.WebpDirectory;
 
-import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
+import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
 
 /**
  * Provides metadata of webp images

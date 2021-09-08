@@ -171,7 +171,7 @@ public class ProjectHandler {
     {
         try
         {
-            Pair projectPair = (Pair) projectNameSearch.remove(projectID);
+            Pair<String, Integer> projectPair = projectNameSearch.remove(projectID);
 
             if (projectPair == null)
             {

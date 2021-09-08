@@ -179,8 +179,8 @@ contact the team at _hello@classifai.ai_:smiley:
 
 Welcome to join! We have bi-weekly meeting to discuss about features, roadmaps and issues we are working on.
 
-- :alarm_clock: Biweekly Wednesday - Odd Week [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
-- :telephone_receiver: [Zoom](https://zoom.us/j/99519401430?pwd=bnlqckZJcEp0azU5QmRqcDdGSjJ3Zz09)
+- :alarm_clock: Monthly on Wednesday [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
+- :telephone_receiver: [Zoom](https://us02web.zoom.us/j/82283024486?pwd=NGoyNUJNbzFLdDdxblNHTHdLZmpCUT09)
 - :memo: [Meeting minutes](https://hackmd.io/IvEUZR_bTOy5-y8GbIYcLg?view)
 - :busts_in_silhouette:	 Community Support Channel with Discord
   - First Timer
