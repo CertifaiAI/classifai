@@ -18,8 +18,7 @@ package ai.classifai.router;
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
-import ai.classifai.database.annotation.AnnotationQuery;
-import ai.classifai.database.portfolio.PortfolioDbQuery;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.project.LabelFileSelector;
@@ -37,8 +36,7 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -61,6 +59,8 @@ public class V2Endpoint extends EndpointBase {
     @Setter private ProjectImportSelector projectImporter = null;
 
     @Setter private LabelFileSelector labelFileSelector = null;
+
+    @Setter private PortfolioDB portfolioDB;
 
     /***
      * change is_load state of a project to false
@@ -116,28 +116,17 @@ public class V2Endpoint extends EndpointBase {
 
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
-        context.request().bodyHandler(h ->
-        {
-            JsonObject jsonObject = h.toJsonObject();
+        context.request().bodyHandler(handler -> {
+            JsonObject request = handler.toJsonObject();
+            Boolean isStarred = Boolean.parseBoolean(request.getString(ParamConfig.getStatusParam()));
 
-            jsonObject.put(ParamConfig.getProjectIdParam(), projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getStarProject());
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
-            {
-                if(reply.succeeded())
-                {
-                    //set status of starring to project loader.
-                    Boolean isStar = Boolean.parseBoolean(jsonObject.getString(ParamConfig.getStatusParam()));
-                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-                    loader.setIsProjectStarred(isStar);
-
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
+            Future<JsonObject> future = portfolioDB.startProject(projectID, isStarred);
+            ReplyHandler.sendResultRunSuccessSideEffect(context, future,
+                    ()-> {
+                        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+                        loader.setIsProjectStarred(isStarred);
+                    },
+                    "Star project fail");
         });
     }
 
@@ -295,30 +284,12 @@ public class V2Endpoint extends EndpointBase {
 
         if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-            jsonObject.put(ParamConfig.getNewProjectNameParam(), newProjectName);
-
-            DeliveryOptions renameOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getRenameProject());
-
-            loader.setProjectName(newProjectName);
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, renameOps, fetch ->
-            {
-                JsonObject response = (JsonObject) fetch.result().body();
-
-                if (ReplyHandler.isReplyOk(response))
-                {
-                    // Update loader in cache after success db update
-                    ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-                    log.debug("Rename to " + newProjectName + " success.");
-                    HTTPResponseHandler.configureOK(context);
-                }
-                else
-                {
-                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName));
-                }
-            });
+            Future<JsonObject> future = portfolioDB.renameProject(loader.getProjectId(), newProjectName);
+            ReplyHandler.sendEmptyResult(context, future, () -> {
+                loader.setProjectName(newProjectName);
+                ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+                log.debug("Rename to " + newProjectName + " success.");
+            }, "Failed to rename project " + projectName);
         }
         else
         {
@@ -348,23 +319,8 @@ public class V2Endpoint extends EndpointBase {
 
         loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-
-        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
-        {
-            JsonObject response = (JsonObject) fetch.result().body();
-
-            if (ReplyHandler.isReplyOk(response))
-            {
-                HTTPResponseHandler.configureOK(context);
-
-            } else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName));
-            }
-        });
+        Future<JsonObject> future = portfolioDB.reloadProject(loader.getProjectId());
+        ReplyHandler.sendEmptyResult(context, future, "Failed to reload project " + projectName);
     }
 
     /**
@@ -421,32 +377,10 @@ public class V2Endpoint extends EndpointBase {
                 context.request().getParam(ActionConfig.getExportTypeParam()));
         if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
 
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getProjectIdParam(), projectId)
-                .put(ParamConfig.getAnnotationTypeParam(), type.ordinal())
-                .put(ActionConfig.getExportTypeParam(), exportType.ordinal());
-
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getExportProject());
-
-        // Initiate export status
-        ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_STARTING);
-        ProjectExport.setExportPath("");
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
-
-            if (reply.succeeded()) {
-
-                JsonObject response = (JsonObject) reply.result().body();
-
-                HTTPResponseHandler.configureOK(context, response);
-            }
-            else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
-                ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
-            }
-        });
-
+        Future<JsonObject> future = portfolioDB.exportProject(projectId, type.ordinal(), exportType.ordinal());
+        ReplyHandler.sendResultRunFailSideEffect(context, future,
+                () -> ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL),
+                "Export of project failed for " + projectName);
     }
 
     /**
@@ -629,32 +563,18 @@ public class V2Endpoint extends EndpointBase {
 
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        String query = AnnotationQuery.getDeleteProjectData();
-
         if(helper.checkIfProjectNull(context, projectID, projectName)) return;
 
-        context.request().bodyHandler(h ->
-        {
-            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+        context.request().bodyHandler(handler -> {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(handler.toJson()));
 
-            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
-            JsonArray uuidImgPathList = request.getJsonArray(ParamConfig.getImgPathListParam());
-
-            request.put(ParamConfig.getProjectIdParam(), projectID);
-            request.put(ParamConfig.getUuidListParam(), uuidListArray);
-            request.put(ParamConfig.getImgPathListParam(), uuidImgPathList);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply ->
-            {
-                if (reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
+            Future<JsonObject> future = portfolioDB.deleteProjectData(
+                    projectID,
+                    helper.getDbQuery(type),
+                    request.getJsonArray(ParamConfig.getUuidListParam()),
+                    request.getJsonArray(ParamConfig.getImgPathListParam())
+            );
+            ReplyHandler.sendResult(context, future, "Delete project data fail.");
         });
     }
 
@@ -678,23 +598,18 @@ public class V2Endpoint extends EndpointBase {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        context.request().bodyHandler(h -> {
-            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
 
-            request.put(ParamConfig.getProjectIdParam(), projectId);
-            request.put(ParamConfig.getUuidParam(), request.getString(ParamConfig.getUuidParam()));
-            request.put(ParamConfig.getNewFileNameParam(), request.getString(ParamConfig.getNewFileNameParam()));
+        context.request().bodyHandler(handler -> {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(handler.toJson()));
 
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), AnnotationQuery.getRenameProjectData());
+            Future<JsonObject> future = portfolioDB.renameData(
+                    projectId,
+                    helper.getDbQuery(type),
+                    request.getString(ParamConfig.getUuidParam()),
+                    request.getString(ParamConfig.getNewFileNameParam())
+            );
 
-            vertx.eventBus().request(helper.getDbQuery(type), request, options, reply -> {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
-                    HTTPResponseHandler.configureOK(context, response);
-                }
-            });
+            ReplyHandler.sendResult(context, future, "Rename data fail");
         });
-
     }
 }

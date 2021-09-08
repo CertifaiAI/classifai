@@ -16,6 +16,7 @@
 package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
@@ -72,12 +73,13 @@ public class EndpointRouter extends AbstractVerticle
     private void configureVersionVertx()
     {
         v1.setVertx(vertx);
-        v2.setVertx(vertx);
+        v1.setPortfolioDB(new PortfolioDB(vertx.eventBus()));
 
+        v2.setVertx(vertx);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
-
         v2.setLabelFileSelector(labelFileSelector);
+        v2.setPortfolioDB(new PortfolioDB(vertx.eventBus()));
 
         cloud.setVertx(vertx);
 
