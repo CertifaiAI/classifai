@@ -359,7 +359,6 @@ public class PortfolioDB {
 
     public Future<JsonObject> updateLastModifiedDate(String projectId, String dbFormat) {
 
-        log.info("DEVEN: " + dbFormat + " " + projectId);
         Tuple params = Tuple.of(dbFormat, projectId);
 
         Promise<JsonObject> promise = Promise.promise();
