@@ -21,6 +21,7 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
@@ -31,6 +32,7 @@ import ai.classifai.util.type.AnnotationType;
 import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -38,6 +40,7 @@ import io.vertx.sqlclient.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import io.vertx.jdbcclient.JDBCPool;
 
+import java.awt.desktop.PreferencesEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -294,11 +297,10 @@ public class PortfolioDB {
 //        return runQuery(msg, AnnotationQuery.getRetrieveDataPath(), annotationQueue);
 //    }
 
-    public Future<JsonObject> updateData(JsonObject requestBody) {
+    public Future<JsonObject> updateData(JsonObject requestBody, String projectId) {
         Promise<JsonObject> promise = Promise.promise();
         try
         {
-            String projectId = requestBody.getString(ParamConfig.getProjectIdParam());
             String uuid = requestBody.getString(ParamConfig.getUuidParam());
 
             ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
@@ -312,7 +314,6 @@ public class PortfolioDB {
 
             Integer imgOriH = requestBody.getInteger(ParamConfig.getImgOriHParam());
             annotation.setImgOriH(imgOriH);
-
             Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
             annotation.setFileSize(fileSize);
 
@@ -342,6 +343,7 @@ public class PortfolioDB {
         }
         catch (Exception e)
         {
+            log.info("Update fail: " + e);
             promise.fail(e);
         }
 
@@ -357,13 +359,17 @@ public class PortfolioDB {
 
     public Future<JsonObject> updateLastModifiedDate(String projectId, String dbFormat) {
 
+        log.info("DEVEN: " + dbFormat + " " + projectId);
         Tuple params = Tuple.of(dbFormat, projectId);
 
         Promise<JsonObject> promise = Promise.promise();
         runQuery(PortfolioDbQuery.getUpdateLastModifiedDate(), params)
                 .onComplete(DBUtils.handleResponse(
                    result -> promise.complete(ReplyHandler.getOkReply()),
-                   promise::fail
+                   cause -> {
+                       log.info(cause.getMessage());
+                       promise.fail(cause);
+                   }
                 ));
         return promise.future();
     }
@@ -376,6 +382,26 @@ public class PortfolioDB {
 //        return runQuery(msg, PortfolioDbQuery.getUpdateLastModifiedDate());
 //    }
 //
+
+
+    public Future<JsonObject> updateLabels(String projectId) {
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        ProjectVersion project = loader.getProjectVersion();
+
+        Tuple params = Tuple.of(project.getLabelVersionDbFormat(), projectId);
+
+        Promise<JsonObject> promise = Promise.promise();
+        runQuery(PortfolioDbQuery.getUpdateLabelList(), params)
+                .onComplete(DBUtils.handleResponse(
+                        result -> promise.complete(ReplyHandler.getOkReply()),
+                        promise::fail
+                ));
+
+        return promise.future();
+    }
+
+
+
 //    public Future<JsonObject> updateLabels(String projectID, JsonObject requestBody) {
 //        requestBody.put(ParamConfig.getProjectIdParam(), projectID);
 //

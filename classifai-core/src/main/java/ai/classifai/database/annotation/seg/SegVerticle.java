@@ -43,14 +43,13 @@ public class SegVerticle extends AnnotationVerticle
 {
     public void onMessage(Message<JsonObject> message)
     {
-//        if (!message.headers().contains(ParamConfig.getActionKeyword()))
-//        {
-//            log.error("No action header specified for message with headers {} and body {}",
-//                    message.headers(), message.body().encodePrettily());
-//
-//            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
-//            return;
-//        }
+        if (!message.headers().contains(ParamConfig.getActionKeyword()))
+        {
+            log.error("No action header specified for message with headers {} and body {}",
+                    message.headers(), message.body().encodePrettily());
+
+            message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
+        }
 //        String action = message.headers().get(ParamConfig.getActionKeyword());
 //
 //        if (action.equals(AnnotationQuery.getQueryData()))
@@ -85,7 +84,6 @@ public class SegVerticle extends AnnotationVerticle
 //        {
 //            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
 //        }
-        log.info("DEVEN: Removing event bus from SegVerticle");
     }
 
     public static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)

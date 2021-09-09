@@ -365,7 +365,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void configProjectLoaderFromDb()
     {
-        log.info("DEVEN: Start configProjectLoaderFromDb");
         portfolioDbPool.query(PortfolioDbQuery.getRetrieveAllProjects())
                 .execute()
                 .onComplete(DBUtils.handleResponse(
@@ -386,8 +385,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                     Map labelDict = ActionOps.getKeyWithArray(row.getString(10));
                                     project.setLabelListDict(labelDict);                                                    //label_project_version
-
-                                    log.info("DEVEN: configProjectLoaderFromDb: " + row.getString(1));
 
                                     ProjectLoader loader = ProjectLoader.builder()
                                             .projectId(row.getString(0))                                                   //project_id
@@ -665,7 +662,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbPool.getConnection(ar -> {
 
                 if (ar.succeeded()) {
-                    log.info("DEVEN: successStart");
                      portfolioDbPool.query(PortfolioDbQuery.getCreatePortfolioTable())
                             .execute()
                             .onComplete(DBUtils.handleResponse(

@@ -239,7 +239,7 @@ public class V1Endpoint extends EndpointBase
         context.request().bodyHandler(handler -> {
             JsonObject requestBody = handler.toJsonObject();
 
-            Future<JsonObject> future = portfolioDB.updateData(requestBody);
+            Future<JsonObject> future = portfolioDB.updateData(requestBody, projectID);
             ReplyHandler.sendResultRunSuccessSideEffect(context, future,
                     () -> updateLastModifiedDate(loader),
                     "Failure in updating database for " + type + " project: " + projectName);
@@ -257,36 +257,37 @@ public class V1Endpoint extends EndpointBase
         Future<JsonObject> future = portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat());
         future.onComplete(result -> {
             if(result.succeeded()) {
-                log.info("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName());
+                log.info("Databse update fail. Type: " + loader.getAnnotationType() +
+                        " Project: " + loader.getProjectName());
             }
         });
     }
 
 
-//    /***
-//     *
-//     * Update labels
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
-//     *
-//     */
-//    public void updateLabels(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(handlers -> {
-//            JsonObject requestBody = handlers.toJsonObject();
-//            Future<JsonObject> future = portfolioDB.updateLabels(projectID, requestBody);
-//            ReplyHandler.sendResult(context, future, "Fail to update labels: " + projectName);
-//        });
-//    }
-//
+    /***
+     *
+     * Update labels
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
+     *
+     */
+    public void updateLabels(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(handlers -> {
+            JsonObject requestBody = handlers.toJsonObject();
+            Future<JsonObject> future = portfolioDB.updateLabels(projectID);
+            ReplyHandler.sendResult(context, future, "Fail to update labels: " + projectName);
+        });
+    }
+
 //    /**
 //     * Delete project
 //     *
