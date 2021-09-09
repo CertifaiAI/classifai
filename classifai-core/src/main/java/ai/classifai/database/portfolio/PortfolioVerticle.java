@@ -26,6 +26,8 @@ import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.versioning.Annotation;
+import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
 import ai.classifai.loader.NameGenerator;
@@ -42,8 +44,10 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfraHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
+import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -57,8 +61,12 @@ import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -357,12 +365,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     public void configProjectLoaderFromDb()
     {
+        log.info("DEVEN: Start configProjectLoaderFromDb");
         portfolioDbPool.query(PortfolioDbQuery.getRetrieveAllProjects())
                 .execute()
                 .onComplete(DBUtils.handleResponse(
                         result -> {
                             if (result.size() == 0) {
-                                log.debug("No projects founds.");
+                                log.info("No projects founds.");
                             } else {
                                 for (Row row : result)
                                 {
@@ -377,6 +386,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
                                     Map labelDict = ActionOps.getKeyWithArray(row.getString(10));
                                     project.setLabelListDict(labelDict);                                                    //label_project_version
+
+                                    log.info("DEVEN: configProjectLoaderFromDb: " + row.getString(1));
 
                                     ProjectLoader loader = ProjectLoader.builder()
                                             .projectId(row.getString(0))                                                   //project_id
@@ -419,7 +430,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         message.replyAndRequest(response);
     }
 
-    private void getProjectMetadata(@NonNull List<JsonObject> result, @NonNull String projectId)
+    public static void getProjectMetadata(@NonNull List<JsonObject> result, @NonNull String projectId)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
@@ -543,7 +554,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     }
 
-    private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    public static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {
         return JDBCPool.pool(vertx, new JsonObject()
                 .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getPortfolioKey()))
@@ -562,6 +573,76 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
         ImageHandler.loadProjectRootPath(loader);
+    }
+
+    public static JsonObject queryData(String projectId, String uuid, @NonNull String annotationKey)
+    {
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
+        AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
+
+        Map<String, String> imgData = new HashMap<>();
+        String dataPath = "";
+
+        if(loader.isCloud())
+        {
+            try
+            {
+                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
+
+                //not checking orientation for on cloud version
+                imgData = ImageHandler.getThumbNail(img);
+            }
+            catch(Exception e)
+            {
+                log.debug("Unable to write Buffered Image.");
+            }
+
+        }
+        else
+        {
+            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
+
+            try
+            {
+                Mat imageMat  = Imgcodecs.imread(dataPath);
+
+                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
+
+                imgData = ImageHandler.getThumbNail(img);
+            }
+            catch(Exception e)
+            {
+                log.debug("Failure in reading image of path " + dataPath, e);
+            }
+        }
+
+        JsonObject response = ReplyHandler.getOkReply();
+
+        response.put(ParamConfig.getUuidParam(), uuid);
+        response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
+
+        response.put(ParamConfig.getImgPathParam(), dataPath);
+        response.put(annotationKey, version.getAnnotation());
+        response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
+        response.put(ParamConfig.getImgXParam(), version.getImgX());
+        response.put(ParamConfig.getImgYParam(), version.getImgY());
+        response.put(ParamConfig.getImgWParam(), version.getImgW());
+        response.put(ParamConfig.getImgHParam(), version.getImgH());
+        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
+        response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
+        response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
+        response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
+
+        return response;
+    }
+
+    public static String getAnnotationKey(ProjectLoader loader) {
+        if(loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal())) {
+            return ParamConfig.getBoundingBoxParam();
+        } else {
+            return ParamConfig.getSegmentationParam();
+        }
     }
 
     @Override
@@ -584,6 +665,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         portfolioDbPool.getConnection(ar -> {
 
                 if (ar.succeeded()) {
+                    log.info("DEVEN: successStart");
                      portfolioDbPool.query(PortfolioDbQuery.getCreatePortfolioTable())
                             .execute()
                             .onComplete(DBUtils.handleResponse(

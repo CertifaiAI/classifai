@@ -112,7 +112,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 ));
     }
 
-    private static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
+    public static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
@@ -208,7 +208,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                         result -> {
                             if(result.size() == 0)
                             {
-                                log.debug("Extract project annotation retrieve 0 rows. Project not found from project database");
+                                log.info("Extract project annotation retrieve 0 rows. Project not found from project database");
                             }
                             else
                             {
