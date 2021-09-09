@@ -33,6 +33,7 @@ import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -383,9 +384,12 @@ public class PortfolioDB {
 //
 
 
-    public Future<JsonObject> updateLabels(String projectId) {
+    public Future<JsonObject> updateLabels(String projectId, JsonObject requestBody) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        JsonArray newLabelListJson = new JsonArray(requestBody.getString(ParamConfig.getLabelListParam()));
         ProjectVersion project = loader.getProjectVersion();
+
+        PortfolioVerticle.updateLoaderLabelList(loader, project, newLabelListJson);
 
         Tuple params = Tuple.of(project.getLabelVersionDbFormat(), projectId);
 

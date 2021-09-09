@@ -248,7 +248,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     }
 
 
-    private void updateLoaderLabelList(ProjectLoader loader, ProjectVersion project, JsonArray newLabelListJson)
+    public static void updateLoaderLabelList(ProjectLoader loader, ProjectVersion project, JsonArray newLabelListJson)
     {
         List<String> newLabelList = new ArrayList<>();
 

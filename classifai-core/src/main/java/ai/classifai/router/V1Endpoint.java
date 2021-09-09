@@ -283,7 +283,7 @@ public class V1Endpoint extends EndpointBase
 
         context.request().bodyHandler(handlers -> {
             JsonObject requestBody = handlers.toJsonObject();
-            Future<JsonObject> future = portfolioDB.updateLabels(projectID);
+            Future<JsonObject> future = portfolioDB.updateLabels(projectID, requestBody);
             ReplyHandler.sendResult(context, future, "Fail to update labels: " + projectName);
         });
     }
