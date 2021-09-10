@@ -257,8 +257,7 @@ public class V1Endpoint extends EndpointBase
         Future<JsonObject> future = portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat());
         future.onComplete(result -> {
             if(result.failed()) {
-                log.info("Databse update fail. Type: " + loader.getAnnotationType() +
-                        " Project: " + loader.getProjectName());
+                log.info("Databse update fail. Type: " + loader.getAnnotationType() + " Project: " + loader.getProjectName());
             }
         });
     }
@@ -288,32 +287,32 @@ public class V1Endpoint extends EndpointBase
         });
     }
 
-//    /**
-//     * Delete project
-//     *
-//     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    public void deleteProject(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
-//
-//        Future<JsonObject> future = portfolioDB.deleteProjectFromPortfolioDb(projectID)
-//                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID, helper.getDbQuery(type)));
-//        ReplyHandler.sendResultRunSuccessSideEffect(context, future,
-//                () -> ProjectHandler.deleteProjectFromCache(projectID),
-//                errorMessage);
-//    }
+    /**
+     * Delete project
+     *
+     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    public void deleteProject(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
+
+        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
+
+        Future<JsonObject> future = portfolioDB.deleteProjectFromPortfolioDb(projectID)
+                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID));
+        ReplyHandler.sendResultRunSuccessSideEffect(context, future,
+                () -> ProjectHandler.deleteProjectFromCache(projectID),
+                errorMessage);
+    }
 
 }

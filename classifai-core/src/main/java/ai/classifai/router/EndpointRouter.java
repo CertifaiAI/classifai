@@ -121,8 +121,8 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
 
         router.get(projectV1Endpoint).handler(v1::loadProject);
-//
-//        router.delete(projectV1Endpoint).handler(v1::deleteProject);
+
+        router.delete(projectV1Endpoint).handler(v1::deleteProject);
 
         router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
 

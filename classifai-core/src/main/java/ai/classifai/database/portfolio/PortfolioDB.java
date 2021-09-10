@@ -168,7 +168,7 @@ public class PortfolioDB {
         Tuple params = Tuple.of(annotationType);
         Promise<JsonObject> promise = Promise.promise();
         runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), params)
-                .onComplete(DBUtils.handleResponse(
+                .map(DBUtils.handleResponse(
                         result -> {
                             List<JsonObject> projectData = new ArrayList<>();
                             for (Row row : result)
@@ -386,7 +386,7 @@ public class PortfolioDB {
 
     public Future<JsonObject> updateLabels(String projectId, JsonObject requestBody) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        JsonArray newLabelListJson = new JsonArray(requestBody.getString(ParamConfig.getLabelListParam()));
+        JsonArray newLabelListJson = requestBody.getJsonArray(ParamConfig.getLabelListParam());
         ProjectVersion project = loader.getProjectVersion();
 
         PortfolioVerticle.updateLoaderLabelList(loader, project, newLabelListJson);
@@ -403,14 +403,37 @@ public class PortfolioDB {
         return promise.future();
     }
 
-
-
 //    public Future<JsonObject> updateLabels(String projectID, JsonObject requestBody) {
 //        requestBody.put(ParamConfig.getProjectIdParam(), projectID);
 //
 //        return runQuery(requestBody, PortfolioDbQuery.getUpdateLabelList());
 //    }
-//
+
+    public Future<JsonObject> deleteProjectFromPortfolioDb(String projectID) {
+        Tuple params = Tuple.of(projectID);
+
+        Promise<JsonObject> promise = Promise.promise();
+        runQuery(PortfolioDbQuery.getDeleteProject(), params)
+                .onComplete(DBUtils.handleResponse(
+                        result -> promise.complete(ReplyHandler.getOkReply()),
+                        promise::fail
+                ));
+        return promise.future();
+    }
+
+    public Future<JsonObject> deleteProjectFromAnnotationDb(String projectId) {
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        Tuple params = Tuple.of(projectId);
+        Promise<JsonObject> promise = Promise.promise();
+        runQuery(AnnotationQuery.getDeleteProject(), params, AnnotationHandler.getJDBCPool(loader))
+                .onComplete(DBUtils.handleResponse(
+                        result -> promise.complete(ReplyHandler.getOkReply()),
+                        promise::fail
+                ));
+        return promise.future();
+    }
+
+
 //    public Future<JsonObject> deleteProjectFromPortfolioDb(String projectID) {
 //        JsonObject msg = new JsonObject()
 //                .put(ParamConfig.getProjectIdParam(), projectID);
