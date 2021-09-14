@@ -77,7 +77,7 @@ public class ReplyHandler {
         });
     }
 
-    public static void sendEmptyResult(RoutingContext context, Future<JsonObject> future, Runnable successSideEffect,
+    public static void sendEmptyResult(RoutingContext context, Future<?> future, Runnable successSideEffect,
                                   String errorMessage) {
         future.onComplete(result -> {
             if(result.succeeded()) {
@@ -111,11 +111,11 @@ public class ReplyHandler {
         });
     }
 
-    public static void sendResultRunFailSideEffect(RoutingContext context, Future<JsonObject> future,
+    public static void sendResultRunFailSideEffect(RoutingContext context, Future<?> future,
                                                    Runnable failSideEffect, String errorMessage) {
         future.onComplete(result -> {
             if(result.succeeded()) {
-                HTTPResponseHandler.configureOK(context, result.result());
+                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
             } else {
                 failSideEffect.run();
                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError(errorMessage));

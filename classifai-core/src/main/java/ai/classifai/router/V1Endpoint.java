@@ -26,7 +26,6 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -61,8 +60,11 @@ public class V1Endpoint extends EndpointBase
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectName, type));
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
-        Future<JsonObject> future = portfolioDB.getProjectMetadata(loader.getProjectId());
-        ReplyHandler.sendResult(context, future, "Failed to retrieve metadata for project " + projectName);
+        portfolioDB.getProjectMetadata(loader.getProjectId())
+                .onSuccess(result -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.getOkReply().put(ParamConfig.getContent(), result)))
+                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName)));
     }
 
     /**
@@ -74,8 +76,11 @@ public class V1Endpoint extends EndpointBase
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
-        Future<JsonObject> future = portfolioDB.getAllProjectsMeta(type.ordinal());
-        ReplyHandler.sendResult(context, future, "Failure in getting all the projects for " + type.name());
+        portfolioDB.getAllProjectsMeta(type.ordinal())
+                .onSuccess(result -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.getOkReply().put(ParamConfig.getContent(), result)))
+                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name())));
     }
 
     /**
@@ -112,8 +117,10 @@ public class V1Endpoint extends EndpointBase
             if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
             {
                 loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-                Future<JsonObject> future = portfolioDB.loadProject(loader.getProjectId());
-                ReplyHandler.sendEmptyResult(context, future, "Failed to load project " + projectName + ". Check validity of data points failed.");
+                portfolioDB.loadProject(loader.getProjectId())
+                        .onComplete(result -> HTTPResponseHandler.configureOK(context))
+                        .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                                ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed.")));
             }
             else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
             {
@@ -194,8 +201,10 @@ public class V1Endpoint extends EndpointBase
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        Future<JsonObject> future = portfolioDB.getThumbnail(projectID, uuid);
-        ReplyHandler.sendResult(context, future, "Fail retrieving thumbnail");
+        portfolioDB.getThumbnail(projectID, uuid)
+                .onSuccess(result -> HTTPResponseHandler.configureOK(context, result))
+                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Fail retrieving thumbnail")));
     }
 
     /***
@@ -213,8 +222,11 @@ public class V1Endpoint extends EndpointBase
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        Future<JsonObject> future = portfolioDB.getImageSource(projectID, uuid, projectName);
-        ReplyHandler.sendResult(context, future, "Fail getting image source");
+        portfolioDB.getImageSource(projectID, uuid, projectName)
+                .onSuccess(result -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.getOkReply().put(ParamConfig.getImgSrcParam(), result)))
+                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError("Fail getting image source")));
     }
 
     /***
@@ -239,10 +251,13 @@ public class V1Endpoint extends EndpointBase
         context.request().bodyHandler(handler -> {
             JsonObject requestBody = handler.toJsonObject();
 
-            Future<JsonObject> future = portfolioDB.updateData(requestBody, projectID);
-            ReplyHandler.sendResultRunSuccessSideEffect(context, future,
-                    () -> updateLastModifiedDate(loader),
-                    "Failure in updating database for " + type + " project: " + projectName);
+            portfolioDB.updateData(requestBody, projectID)
+                    .onSuccess(result -> {
+                        updateLastModifiedDate(loader);
+                        HTTPResponseHandler.configureOK(context);
+                    })
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Failure in updating database for " + type + " project: " + projectName)));
         });
     }
 
@@ -254,12 +269,8 @@ public class V1Endpoint extends EndpointBase
 
         version.setLastModifiedDate(new DateTime());
 
-        Future<JsonObject> future = portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat());
-        future.onComplete(result -> {
-            if(result.failed()) {
-                log.info("Databse update fail. Type: " + loader.getAnnotationType() + " Project: " + loader.getProjectName());
-            }
-        });
+        portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat())
+                .onFailure(cause -> log.info("Databse update fail. Type: " + loader.getAnnotationType() + " Project: " + loader.getProjectName()));
     }
 
 
@@ -282,8 +293,11 @@ public class V1Endpoint extends EndpointBase
 
         context.request().bodyHandler(handlers -> {
             JsonObject requestBody = handlers.toJsonObject();
-            Future<JsonObject> future = portfolioDB.updateLabels(projectID, requestBody);
-            ReplyHandler.sendResult(context, future, "Fail to update labels: " + projectName);
+
+            portfolioDB.updateLabels(projectID, requestBody)
+                    .onSuccess(result -> HTTPResponseHandler.configureOK(context))
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Fail to update labels: " + projectName)));
         });
     }
 
@@ -308,11 +322,15 @@ public class V1Endpoint extends EndpointBase
 
         String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
 
-        Future<JsonObject> future = portfolioDB.deleteProjectFromPortfolioDb(projectID)
-                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID));
-        ReplyHandler.sendResultRunSuccessSideEffect(context, future,
-                () -> ProjectHandler.deleteProjectFromCache(projectID),
-                errorMessage);
+
+        portfolioDB.deleteProjectFromPortfolioDb(projectID)
+                .compose(result -> portfolioDB.deleteProjectFromAnnotationDb(projectID))
+                .onSuccess(result -> {
+                    ProjectHandler.deleteProjectFromCache(projectID);
+                    HTTPResponseHandler.configureOK(context);
+                })
+                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                        ReplyHandler.reportUserDefinedError(errorMessage)));
     }
 
 }
