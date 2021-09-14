@@ -96,7 +96,7 @@ public class MainVerticle extends AbstractVerticle
             if (ar.succeeded())
             {
                 portfolioVerticle.configProjectLoaderFromDb();
-//                portfolioVerticle.buildProjectFromCLI();
+                portfolioVerticle.buildProjectFromCLI();
 
                 LogoLauncher.print();
 

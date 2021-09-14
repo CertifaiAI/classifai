@@ -17,7 +17,6 @@ package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
-import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
@@ -30,7 +29,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -50,40 +48,6 @@ public class SegVerticle extends AnnotationVerticle
 
             message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
         }
-//        String action = message.headers().get(ParamConfig.getActionKeyword());
-//
-//        if (action.equals(AnnotationQuery.getQueryData()))
-//        {
-//            this.queryData(message, ParamConfig.getSegmentationParam());
-//        }
-//        else if (action.equals(AnnotationQuery.getUpdateData()))
-//        {
-//            this.updateData(message, ParamConfig.getSegmentationParam());
-//        }
-//        else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
-//        {
-//            this.retrieveDataPath(message);
-//        }
-//        else if (action.equals(AnnotationQuery.getLoadValidProjectUuid()))
-//        {
-//            this.loadValidProjectUuid(message);
-//        }
-//        else if (action.equals(AnnotationQuery.getDeleteProject()))
-//        {
-//            this.deleteProject(message);
-//        }
-//        else if (action.equals(AnnotationQuery.getDeleteProjectData()))
-//        {
-//            this.deleteProjectData(message);
-//        }
-//        else if(action.equals(AnnotationQuery.getRenameProjectData()))
-//        {
-//            this.renameProjectData(message);
-//        }
-//        else
-//        {
-//            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
-//        }
     }
 
     public static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
