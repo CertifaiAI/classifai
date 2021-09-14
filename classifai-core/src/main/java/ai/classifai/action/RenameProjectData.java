@@ -15,22 +15,14 @@
  */
 package ai.classifai.action;
 
-import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.project.ProjectHandler;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.jdbcclient.JDBCPool;
-import io.vertx.sqlclient.Tuple;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,90 +34,28 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class RenameProjectData {
 
-    private enum RenameDataErrorCode {
+    public enum RenameDataErrorCode {
         RENAME_FAIL,
         FILENAME_EXIST,
         FILENAME_CONTAIN_ILLEGAL_CHAR,
         RENAME_SUCCESS
     }
 
-    private static ProjectLoader loader;
-    private static String dataUUID;
-    private static Annotation annotation;
+    private final ProjectLoader loader;
+    private Annotation annotation;
 
-    private RenameProjectData() {
-        throw new IllegalStateException("Utility class");
+    public RenameProjectData(ProjectLoader loader) {
+        this.loader = loader;
     }
 
-    public static void renameProjectData(JDBCPool jdbcPool, Message<JsonObject> message)
-    {
-        String projectId = message.body().getString(ParamConfig.getProjectIdParam());
-        loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        dataUUID = message.body().getString(ParamConfig.getUuidParam());
-        getAnnotationVersion();
-
-        String newDataFileName = message.body().getString(ParamConfig.getNewFileNameParam());
-        if(containIllegalChars(newDataFileName)) {
-            // Abort if filename contain illegal chars
-            String illegalCharMes = "Contain illegal character";
-            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_CONTAIN_ILLEGAL_CHAR.ordinal(), illegalCharMes));
-            return;
-        }
-
-        String oldDataFileName = getOldDataFileName();
-
-        String updatedFileName = modifyFileNameFromCache(newDataFileName);
-        File newDataPath = createNewDataPath(updatedFileName);
-
-        if(newDataPath.exists()) {
-            // Abort if name exists
-            String nameExistMes = "Name exists";
-            message.reply(reportRenameError(RenameDataErrorCode.FILENAME_EXIST.ordinal(), nameExistMes));
-            return;
-        }
-
-        Tuple params = Tuple.of(updatedFileName, dataUUID, projectId);
-
-        if(renameDataPath(newDataPath, oldDataFileName))
-        {
-            invokeJDBCPool(jdbcPool, message, params, newDataPath.toString());
-            updateAnnotationCache(updatedFileName);
-        }
-        else
-        {
-            String failRenameMes = "Fail to rename file";
-            message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), failRenameMes));
-        }
-
-    }
-
-    private static boolean containIllegalChars(String filename) {
+    public boolean containIllegalChars(String filename) {
         Pattern pattern = Pattern.compile("[ `&:;'?$~#@=*+%{}<>/\\[\\]|\"^]");
         Matcher matcher = pattern.matcher(filename);
 
         return matcher.find();
     }
 
-    private static void invokeJDBCPool(JDBCPool jdbcPool, Message<JsonObject> message, Tuple params, String newDataPath)
-    {
-        jdbcPool.preparedQuery(AnnotationQuery.getRenameProjectData())
-                .execute(params)
-                .onComplete(fetch -> {
-                    if(fetch.succeeded())
-                    {
-                        JsonObject response = ReplyHandler.getOkReply();
-                        response.put(ParamConfig.getImgPathParam(), newDataPath);
-                        message.replyAndRequest(response);
-                    }
-                    else
-                    {
-                        String queryErrorMes = "Fail to update filename in database";
-                        message.reply(reportRenameError(RenameDataErrorCode.RENAME_FAIL.ordinal(), queryErrorMes));
-                    }
-                });
-    }
-
-    private static boolean renameDataPath(File newDataPath, String oldDataFileName)
+    public boolean renameDataPath(File newDataPath, String oldDataFileName)
     {
         File oldDataPath = new File(oldDataFileName);
 
@@ -134,12 +64,12 @@ public final class RenameProjectData {
         return oldDataPath.renameTo(newDataPath);
     }
 
-    private static String getOldDataFileName()
+    public String getOldDataFileName()
     {
         return Paths.get(loader.getProjectPath().toString(), annotation.getImgPath()).toString();
     }
 
-    private static String modifyFileNameFromCache(String newFileName)
+    public String modifyFileNameFromCache(String newFileName)
     {
         String oldDataPath = annotation.getImgPath();
         // get only the filename after last slash before file extension
@@ -154,7 +84,7 @@ public final class RenameProjectData {
         return newDataPathModified;
     }
 
-    private static File createNewDataPath(String newDataFileName)
+    public File createNewDataPath(String newDataFileName)
     {
         File newDataPath = Paths.get(
                 loader.getProjectPath().toString(), newDataFileName).toFile();
@@ -163,13 +93,13 @@ public final class RenameProjectData {
         return newDataPath;
     }
 
-    private static void getAnnotationVersion()
+    public void getAnnotationVersion(String dataUUID)
     {
         Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
         annotation = uuidAnnotationDict.get(dataUUID);
     }
 
-    private static void updateAnnotationCache(String newImagePath)
+    public void updateAnnotationCache(String newImagePath, String dataUUID)
     {
         Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
 
@@ -180,7 +110,7 @@ public final class RenameProjectData {
 
     }
 
-    private static JsonObject reportRenameError(int errorKey, String errorMessage)
+    public JsonObject reportRenameError(int errorKey, String errorMessage)
     {
         log.info(errorMessage);
 

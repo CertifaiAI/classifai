@@ -58,73 +58,6 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
-//        if(!ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode(); //to align dark mode for windows
-//
-//        DbOps.configureDatabase();
-//
-//        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
-//
-//        Promise<String> portfolioDeployment = Promise.promise();
-//        vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
-//
-//        portfolioDeployment.future().compose(id_ -> {
-//
-//            Promise<String> bndBoxDeployment = Promise.promise();
-//            vertx.deployVerticle(boundingBoxVerticle, bndBoxDeployment);
-//            return bndBoxDeployment.future();
-//
-//        }).compose(id_ -> {
-//
-//            Promise<String> segDeployment = Promise.promise();
-//            vertx.deployVerticle(segVerticle, segDeployment);
-//            return segDeployment.future();
-//
-//        }).compose(id_ -> {
-//
-//            Promise<String> serverDeployment = Promise.promise();
-//            vertx.deployVerticle(serverVerticle, serverDeployment);
-//            return serverDeployment.future();
-//
-//        }).compose(id_ -> {
-//
-//            Promise<String> wasabiDeployment = Promise.promise();
-//            vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
-//            return wasabiDeployment.future();
-//
-//        }).onComplete(ar -> {
-//
-//            if (ar.succeeded())
-//            {
-//                portfolioVerticle.configProjectLoaderFromDb();
-////                portfolioVerticle.buildProjectFromCLI();
-//
-//                LogoLauncher.print();
-//
-//                log.info("Classifai started successfully");
-//                log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
-//
-//                //docker environment not enabling welcome launcher
-//                if (!ParamConfig.isDockerEnv())
-//                {
-//                    try
-//                    {
-//                        WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
-//                    }
-//                    catch (Exception e)
-//                    {
-//                        log.info("Welcome Launcher failed to launch: ", e);
-//                    }
-//                }
-//
-//                promise.complete();
-//
-//            }
-//            else
-//            {
-//                promise.fail(ar.cause());
-//            }
-//        });
-
         if(!ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode(); //to align dark mode for windows
 
         DbOps.configureDatabase();
@@ -152,11 +85,18 @@ public class MainVerticle extends AbstractVerticle
             vertx.deployVerticle(serverVerticle, serverDeployment);
             return serverDeployment.future();
 
+        }).compose(id_ -> {
+
+            Promise<String> wasabiDeployment = Promise.promise();
+            vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
+            return wasabiDeployment.future();
+
         }).onComplete(ar -> {
 
             if (ar.succeeded())
             {
                 portfolioVerticle.configProjectLoaderFromDb();
+//                portfolioVerticle.buildProjectFromCLI();
 
                 LogoLauncher.print();
 

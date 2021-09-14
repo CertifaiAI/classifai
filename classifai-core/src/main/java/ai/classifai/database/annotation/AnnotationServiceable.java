@@ -37,5 +37,4 @@ public interface AnnotationServiceable
 
     void deleteProject(Message<JsonObject> message);
 
-    void deleteProjectData(Message<JsonObject> message);
 }

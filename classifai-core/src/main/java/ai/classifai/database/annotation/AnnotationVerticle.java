@@ -16,8 +16,6 @@
 package ai.classifai.database.annotation;
 
 
-import ai.classifai.action.DeleteProjectData;
-import ai.classifai.action.RenameProjectData;
 import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.DBUtils;
 import ai.classifai.database.VerticleServiceable;
@@ -352,11 +350,6 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 .onComplete(DBUtils.handleEmptyResponse(message));
     }
 
-    public void deleteProjectData(Message<JsonObject> message)
-    {
-        DeleteProjectData.deleteProjectData(jdbcPool, message);
-    }
-
     public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
     {
         JsonObject requestBody = message.body();
@@ -475,10 +468,5 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
 
         message.replyAndRequest(response);
-    }
-
-    public void renameProjectData(Message<JsonObject> message)
-    {
-        RenameProjectData.renameProjectData(jdbcPool, message);
     }
 }
