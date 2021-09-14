@@ -17,7 +17,6 @@ package ai.classifai.database.annotation.seg;
 
 import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
-import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ErrorCodes;
@@ -48,45 +47,10 @@ public class SegVerticle extends AnnotationVerticle
                     message.headers(), message.body().encodePrettily());
 
             message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
-            return;
-        }
-        String action = message.headers().get(ParamConfig.getActionKeyword());
-
-        if (action.equals(AnnotationQuery.getQueryData()))
-        {
-            this.queryData(message, ParamConfig.getSegmentationParam());
-        }
-        else if (action.equals(AnnotationQuery.getUpdateData()))
-        {
-            this.updateData(message, ParamConfig.getSegmentationParam());
-        }
-        else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
-        {
-            this.retrieveDataPath(message);
-        }
-        else if (action.equals(AnnotationQuery.getLoadValidProjectUuid()))
-        {
-            this.loadValidProjectUuid(message);
-        }
-        else if (action.equals(AnnotationQuery.getDeleteProject()))
-        {
-            this.deleteProject(message);
-        }
-        else if (action.equals(AnnotationQuery.getDeleteProjectData()))
-        {
-            this.deleteProjectData(message);
-        }
-        else if(action.equals(AnnotationQuery.getRenameProjectData()))
-        {
-            this.renameProjectData(message);
-        }
-        else
-        {
-            log.error("SegVerticle query error. Action did not have an assigned function for handling.");
         }
     }
 
-    private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    public static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {
         return JDBCPool.pool(vertx, new JsonObject()
                 .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getSegKey()))

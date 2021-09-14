@@ -124,6 +124,7 @@ public class MainVerticle extends AbstractVerticle
                 promise.fail(ar.cause());
             }
         });
+
     }
 
     public static void closeVerticles()

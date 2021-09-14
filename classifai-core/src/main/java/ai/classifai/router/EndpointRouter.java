@@ -16,17 +16,20 @@
 package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.type.database.H2;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.jdbcclient.JDBCPool;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -72,14 +75,17 @@ public class EndpointRouter extends AbstractVerticle
 
     private void configureVersionVertx()
     {
+        H2 h2 = DbConfig.getH2();
+        JDBCPool portFolioPool = PortfolioVerticle.createJDBCPool(vertx, h2);
+
         v1.setVertx(vertx);
-        v1.setPortfolioDB(new PortfolioDB(vertx.eventBus()));
+        v1.setPortfolioDB(new PortfolioDB(portFolioPool));
 
         v2.setVertx(vertx);
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
         v2.setLabelFileSelector(labelFileSelector);
-        v2.setPortfolioDB(new PortfolioDB(vertx.eventBus()));
+        v2.setPortfolioDB(new PortfolioDB(portFolioPool));
 
         cloud.setVertx(vertx);
 

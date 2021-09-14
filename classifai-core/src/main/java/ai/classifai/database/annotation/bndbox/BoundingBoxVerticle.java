@@ -15,22 +15,21 @@
  */
 package ai.classifai.database.annotation.bndbox;
 
-import ai.classifai.database.DBUtils;
-import ai.classifai.database.DbConfig;
-import ai.classifai.database.annotation.AnnotationQuery;
-import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.message.ErrorCodes;
-import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.util.type.AnnotationType;
-import ai.classifai.util.type.database.H2;
-import ai.classifai.util.type.database.RelationalDb;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
-import io.vertx.jdbcclient.JDBCPool;
-import lombok.extern.slf4j.Slf4j;
+ import ai.classifai.database.DBUtils;
+ import ai.classifai.database.DbConfig;
+ import ai.classifai.database.annotation.AnnotationVerticle;
+ import ai.classifai.util.ParamConfig;
+ import ai.classifai.util.message.ErrorCodes;
+ import ai.classifai.util.type.AnnotationHandler;
+ import ai.classifai.util.type.AnnotationType;
+ import ai.classifai.util.type.database.H2;
+ import ai.classifai.util.type.database.RelationalDb;
+ import io.vertx.core.Promise;
+ import io.vertx.core.Vertx;
+ import io.vertx.core.eventbus.Message;
+ import io.vertx.core.json.JsonObject;
+ import io.vertx.jdbcclient.JDBCPool;
+ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Bounding Box Verticle
@@ -48,46 +47,10 @@ public class BoundingBoxVerticle extends AnnotationVerticle
                     message.headers(), message.body().encodePrettily());
 
             message.fail(ErrorCodes.NO_ACTION_SPECIFIED.ordinal(), "No keyword " + ParamConfig.getActionKeyword() + " specified");
-            return;
-        }
-
-        String action = message.headers().get(ParamConfig.getActionKeyword());
-
-        if (action.equals(AnnotationQuery.getQueryData()))
-        {
-            this.queryData(message, ParamConfig.getBoundingBoxParam());
-        }
-        else if (action.equals(AnnotationQuery.getUpdateData()))
-        {
-            this.updateData(message, ParamConfig.getBoundingBoxParam());
-        }
-        else if (action.equals(AnnotationQuery.getRetrieveDataPath()))
-        {
-            this.retrieveDataPath(message);
-        }
-        else if (action.equals(AnnotationQuery.getLoadValidProjectUuid()))
-        {
-            this.loadValidProjectUuid(message);
-        }
-        else if (action.equals(AnnotationQuery.getDeleteProject()))
-        {
-            this.deleteProject(message);
-        }
-        else if (action.equals(AnnotationQuery.getDeleteProjectData()))
-        {
-            this.deleteProjectData(message);
-        }
-        else if(action.equals(AnnotationQuery.getRenameProjectData()))
-        {
-            this.renameProjectData(message);
-        }
-        else
-        {
-            log.error("BoundingBox Verticle query error. Action did not have an assigned function for handling.");
         }
     }
 
-    private JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
+    public static JDBCPool createJDBCPool(Vertx vertx, RelationalDb db)
     {
         return JDBCPool.pool(vertx, new JsonObject()
                 .put("url", db.getUrlHeader() + DbConfig.getTableAbsPathDict().get(DbConfig.getBndBoxKey()))

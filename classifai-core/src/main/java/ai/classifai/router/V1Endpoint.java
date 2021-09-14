@@ -55,13 +55,10 @@ public class V1Endpoint extends EndpointBase
     public void getProjectMetadata(RoutingContext context)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-
         log.debug("Get metadata of project: " + projectName + " of annotation type: " + type.name());
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectName, type));
-
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         Future<JsonObject> future = portfolioDB.getProjectMetadata(loader.getProjectId());
@@ -115,7 +112,7 @@ public class V1Endpoint extends EndpointBase
             if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
             {
                 loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-                Future<JsonObject> future = portfolioDB.loadProject(loader.getProjectId(), helper.getDbQuery(type));
+                Future<JsonObject> future = portfolioDB.loadProject(loader.getProjectId());
                 ReplyHandler.sendEmptyResult(context, future, "Failed to load project " + projectName + ". Check validity of data points failed.");
             }
             else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
@@ -197,7 +194,7 @@ public class V1Endpoint extends EndpointBase
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        Future<JsonObject> future = portfolioDB.getThumbnail(projectID, helper.getDbQuery(type), uuid);
+        Future<JsonObject> future = portfolioDB.getThumbnail(projectID, uuid);
         ReplyHandler.sendResult(context, future, "Fail retrieving thumbnail");
     }
 
@@ -216,7 +213,7 @@ public class V1Endpoint extends EndpointBase
         String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
-        Future<JsonObject> future = portfolioDB.getImageSource(projectID, helper.getDbQuery(type), uuid, projectName);
+        Future<JsonObject> future = portfolioDB.getImageSource(projectID, uuid, projectName);
         ReplyHandler.sendResult(context, future, "Fail getting image source");
     }
 
@@ -242,7 +239,7 @@ public class V1Endpoint extends EndpointBase
         context.request().bodyHandler(handler -> {
             JsonObject requestBody = handler.toJsonObject();
 
-            Future<JsonObject> future = portfolioDB.updateData(projectID, helper.getDbQuery(type), requestBody);
+            Future<JsonObject> future = portfolioDB.updateData(requestBody, projectID);
             ReplyHandler.sendResultRunSuccessSideEffect(context, future,
                     () -> updateLastModifiedDate(loader),
                     "Failure in updating database for " + type + " project: " + projectName);
@@ -259,8 +256,8 @@ public class V1Endpoint extends EndpointBase
 
         Future<JsonObject> future = portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat());
         future.onComplete(result -> {
-            if(result.succeeded()) {
-                log.info("Failure in updating database for " + loader.getAnnotationType() + " project: " + loader.getProjectName());
+            if(result.failed()) {
+                log.info("Databse update fail. Type: " + loader.getAnnotationType() + " Project: " + loader.getProjectName());
             }
         });
     }
@@ -312,7 +309,7 @@ public class V1Endpoint extends EndpointBase
         String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
 
         Future<JsonObject> future = portfolioDB.deleteProjectFromPortfolioDb(projectID)
-                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID, helper.getDbQuery(type)));
+                .compose(response -> portfolioDB.deleteProjectFromAnnotationDb(projectID));
         ReplyHandler.sendResultRunSuccessSideEffect(context, future,
                 () -> ProjectHandler.deleteProjectFromCache(projectID),
                 errorMessage);

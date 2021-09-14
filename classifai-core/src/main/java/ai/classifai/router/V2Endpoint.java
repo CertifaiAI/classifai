@@ -119,8 +119,7 @@ public class V2Endpoint extends EndpointBase {
         context.request().bodyHandler(handler -> {
             JsonObject request = handler.toJsonObject();
             Boolean isStarred = Boolean.parseBoolean(request.getString(ParamConfig.getStatusParam()));
-
-            Future<JsonObject> future = portfolioDB.startProject(projectID, isStarred);
+            Future<JsonObject> future = portfolioDB.starProject(projectID, isStarred);
             ReplyHandler.sendResultRunSuccessSideEffect(context, future,
                     ()-> {
                         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
@@ -377,7 +376,7 @@ public class V2Endpoint extends EndpointBase {
                 context.request().getParam(ActionConfig.getExportTypeParam()));
         if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
 
-        Future<JsonObject> future = portfolioDB.exportProject(projectId, type.ordinal(), exportType.ordinal());
+        Future<JsonObject> future = portfolioDB.exportProject(projectId, exportType.ordinal());
         ReplyHandler.sendResultRunFailSideEffect(context, future,
                 () -> ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL),
                 "Export of project failed for " + projectName);
@@ -570,7 +569,6 @@ public class V2Endpoint extends EndpointBase {
 
             Future<JsonObject> future = portfolioDB.deleteProjectData(
                     projectID,
-                    helper.getDbQuery(type),
                     request.getJsonArray(ParamConfig.getUuidListParam()),
                     request.getJsonArray(ParamConfig.getImgPathListParam())
             );
@@ -604,7 +602,6 @@ public class V2Endpoint extends EndpointBase {
 
             Future<JsonObject> future = portfolioDB.renameData(
                     projectId,
-                    helper.getDbQuery(type),
                     request.getString(ParamConfig.getUuidParam()),
                     request.getString(ParamConfig.getNewFileNameParam())
             );
