@@ -614,9 +614,7 @@ public class V2Endpoint extends EndpointBase {
             portfolioDB.renameData(projectId, uuid, newFilename)
                     .onSuccess(result -> HTTPResponseHandler.configureOK(context,
                             ReplyHandler.getOkReply().put(ParamConfig.getImgPathParam(), result)))
-                    .onFailure(cause -> {
-                        HTTPResponseHandler.configureOK(context, new JsonObject(cause.getMessage()));
-                    });
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context, new JsonObject(cause.getMessage())));
         });
     }
 }

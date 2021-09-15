@@ -61,7 +61,7 @@ public class DeleteProjectData {
             return loader.getSanityUuidList();
         }
 
-        return null;
+        return loader.getSanityUuidList();
     }
 
 }
