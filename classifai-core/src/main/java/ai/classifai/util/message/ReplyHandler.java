@@ -67,7 +67,7 @@ public class ReplyHandler {
         return new JsonObject().put(MESSAGE_KEY, FAILED);
     }
 
-    public static void sendEmptyResult(RoutingContext context, Future<JsonObject> future, String errorMessage) {
+    public static void sendEmptyResult(RoutingContext context, Future<Void> future, String errorMessage) {
         future.onComplete(result -> {
             if(result.succeeded()) {
                 HTTPResponseHandler.configureOK(context);

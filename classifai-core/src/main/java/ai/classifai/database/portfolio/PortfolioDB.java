@@ -131,10 +131,9 @@ public class PortfolioDB {
                     try {
                         return DeleteProjectData.deleteProjectDataOnComplete(loader, deleteUUIDList, uuidImgPathList);
                     } catch (IOException e) {
-                        String errorMessage = "Fail to delete. IO exception occurs.";
-                        log.info(errorMessage);
+                        log.info("Fail to delete. IO exception occurs.");
                     }
-                    return null;
+                    return loader.getSanityUuidList();
                 });
     }
 
@@ -174,9 +173,9 @@ public class PortfolioDB {
                         return newDataPath.toString();
                     });
         }
-        else
-        {
-            String failRenameMes = "Fail to rename file";
+
+        String failRenameMes = "Fail to rename file";
+        if(!promise.future().isComplete()) {
             promise.fail(renameProjectData.reportRenameError(
                     RenameProjectData.RenameDataErrorCode.RENAME_FAIL.ordinal(), failRenameMes).toString());
         }

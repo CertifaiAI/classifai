@@ -26,6 +26,7 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -117,10 +118,9 @@ public class V1Endpoint extends EndpointBase
             if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
             {
                 loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-                portfolioDB.loadProject(loader.getProjectId())
-                        .onComplete(result -> HTTPResponseHandler.configureOK(context))
-                        .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-                                ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed.")));
+                Future<Void> future = portfolioDB.loadProject(loader.getProjectId());
+                ReplyHandler.sendEmptyResult(context, future,
+                        "Failed to load project " + projectName + ". Check validity of data points failed.");
             }
             else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
             {
@@ -294,10 +294,8 @@ public class V1Endpoint extends EndpointBase
         context.request().bodyHandler(handlers -> {
             JsonObject requestBody = handlers.toJsonObject();
 
-            portfolioDB.updateLabels(projectID, requestBody)
-                    .onSuccess(result -> HTTPResponseHandler.configureOK(context))
-                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-                            ReplyHandler.reportUserDefinedError("Fail to update labels: " + projectName)));
+            Future<Void> future = portfolioDB.updateLabels(projectID, requestBody);
+            ReplyHandler.sendEmptyResult(context, future, "Fail to update labels: " + projectName);
         });
     }
 

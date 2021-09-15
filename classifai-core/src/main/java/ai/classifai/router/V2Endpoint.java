@@ -36,6 +36,7 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -322,10 +323,8 @@ public class V2Endpoint extends EndpointBase {
 
         loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
-        portfolioDB.reloadProject(loader.getProjectId())
-                .onSuccess(result -> HTTPResponseHandler.configureOK(context))
-                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-                        ReplyHandler.reportUserDefinedError("Failed to reload project " + projectName)));
+        Future<Void> future = portfolioDB.reloadProject(loader.getProjectId());
+        ReplyHandler.sendEmptyResult(context, future, "Failed to reload project " + projectName);
     }
 
     /**
@@ -383,7 +382,7 @@ public class V2Endpoint extends EndpointBase {
         if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
 
         portfolioDB.exportProject(projectId, exportType.ordinal())
-                .onSuccess(result -> HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply()))
+                .onSuccess(result -> HTTPResponseHandler.configureOK(context))
                 .onFailure(cause -> {
                     ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
                     HTTPResponseHandler.configureOK(context,
@@ -615,8 +614,9 @@ public class V2Endpoint extends EndpointBase {
             portfolioDB.renameData(projectId, uuid, newFilename)
                     .onSuccess(result -> HTTPResponseHandler.configureOK(context,
                             ReplyHandler.getOkReply().put(ParamConfig.getImgPathParam(), result)))
-                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-                            ReplyHandler.reportUserDefinedError("Rename data fail")));
+                    .onFailure(cause -> {
+                        HTTPResponseHandler.configureOK(context, new JsonObject(cause.getMessage()));
+                    });
         });
     }
 }
