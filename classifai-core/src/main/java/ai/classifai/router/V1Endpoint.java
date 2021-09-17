@@ -26,6 +26,8 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -202,7 +204,15 @@ public class V1Endpoint extends EndpointBase
         String uuid = context.request().getParam(ParamConfig.getUuidParam());
 
         portfolioDB.getThumbnail(projectID, uuid)
-                .onSuccess(result -> HTTPResponseHandler.configureOK(context, result))
+                .onSuccess(result -> {
+                    ObjectMapper mp = new ObjectMapper();
+                    try {
+                        HTTPResponseHandler.configureOK(context, new JsonObject(mp.writeValueAsString(result)));
+                    } catch (JsonProcessingException e) {
+                        HTTPResponseHandler.configureOK(context,
+                                ReplyHandler.reportUserDefinedError("Error converting to JSON"));
+                    }
+                })
                 .onFailure(cause -> HTTPResponseHandler.configureOK(context,
                         ReplyHandler.reportUserDefinedError("Fail retrieving thumbnail")));
     }

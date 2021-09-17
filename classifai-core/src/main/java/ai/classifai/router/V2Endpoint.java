@@ -37,7 +37,6 @@ import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
@@ -574,8 +573,8 @@ public class V2Endpoint extends EndpointBase {
 
         context.request().bodyHandler(handler -> {
             JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(handler.toJson()));
-            JsonArray uuidListArray = request.getJsonArray(ParamConfig.getUuidListParam());
-            JsonArray uuidImgPathList = request.getJsonArray(ParamConfig.getImgPathListParam());
+            List<String> uuidListArray = ConversionHandler.jsonArray2StringList(request.getJsonArray(ParamConfig.getUuidListParam()));
+            List<String> uuidImgPathList = ConversionHandler.jsonArray2StringList(request.getJsonArray(ParamConfig.getImgPathListParam()));
 
             portfolioDB.deleteProjectData(projectID, uuidListArray, uuidImgPathList)
                     .onSuccess(result -> HTTPResponseHandler.configureOK(context,

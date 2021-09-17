@@ -25,6 +25,8 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.dto.ProjectMeta;
+import ai.classifai.dto.Thumbnail;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
@@ -35,7 +37,6 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -119,9 +120,8 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<List<String>> deleteProjectData(String projectId, JsonArray uuidListArray, JsonArray uuidImgPathList) {
+    public Future<List<String>> deleteProjectData(String projectId, List<String> deleteUUIDList, List<String> uuidImgPathList) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(uuidListArray);
         String uuidQueryParam = String.join(",", deleteUUIDList);
 
         Tuple params = Tuple.of(projectId, uuidQueryParam);
@@ -204,10 +204,10 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<List<JsonObject>> getProjectMetadata(String projectId) {
+    public Future<List<ProjectMeta>> getProjectMetadata(String projectId) {
 
-        Promise<List<JsonObject>> promise = Promise.promise();
-        List<JsonObject> result = new ArrayList<>();
+        Promise<List<ProjectMeta>> promise = Promise.promise();
+        List<ProjectMeta> result = new ArrayList<>();
 
         PortfolioVerticle.getProjectMetadata(result, projectId);
         promise.complete(result);
@@ -215,12 +215,12 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<List<JsonObject>> getAllProjectsMeta(int annotationType) {
+    public Future<List<ProjectMeta>> getAllProjectsMeta(int annotationType) {
         Tuple params = Tuple.of(annotationType);
 
         return runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), params)
                 .map(result -> {
-                    List<JsonObject> projectData = new ArrayList<>();
+                    List<ProjectMeta> projectData = new ArrayList<>();
                     for (Row row : result)
                     {
                         String projectName = row.getString(0);
@@ -269,8 +269,8 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> getThumbnail(String projectId, String uuid) {
-        Promise<JsonObject> promise = Promise.promise();
+    public Future<Thumbnail> getThumbnail(String projectId, String uuid) {
+        Promise<Thumbnail> promise = Promise.promise();
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         String annotationKey = PortfolioVerticle.getAnnotationKey(loader);
@@ -365,7 +365,7 @@ public class PortfolioDB {
 
     public Future<Void> updateLabels(String projectId, JsonObject requestBody) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        JsonArray newLabelListJson = requestBody.getJsonArray(ParamConfig.getLabelListParam());
+        List<String> newLabelListJson = ConversionHandler.jsonArray2StringList(requestBody.getJsonArray(ParamConfig.getLabelListParam()));
         ProjectVersion project = loader.getProjectVersion();
 
         PortfolioVerticle.updateLoaderLabelList(loader, project, newLabelListJson);

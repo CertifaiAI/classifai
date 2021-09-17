@@ -30,6 +30,8 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.ProjectMeta;
+import ai.classifai.dto.Thumbnail;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -52,7 +54,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -233,7 +234,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     public void updateLabelList(Message<JsonObject> message)
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
-        JsonArray newLabelListJson = new JsonArray(message.body().getString(ParamConfig.getLabelListParam()));
+        List<String> newLabelListJson = ConversionHandler.jsonArray2StringList(message.body().getJsonArray(ParamConfig.getLabelListParam()));
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         ProjectVersion project = loader.getProjectVersion();
@@ -248,13 +249,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     }
 
 
-    public static void updateLoaderLabelList(ProjectLoader loader, ProjectVersion project, JsonArray newLabelListJson)
+    public static void updateLoaderLabelList(ProjectLoader loader, ProjectVersion project, List<String> newLabelListJson)
     {
         List<String> newLabelList = new ArrayList<>();
 
-        for(Object label: newLabelListJson)
+        for(String label: newLabelListJson)
         {
-            String trimmedLabel = StringHandler.removeEndOfLineChar((String) label);
+            String trimmedLabel = StringHandler.removeEndOfLineChar(label);
 
             newLabelList.add(trimmedLabel);
         }
@@ -417,7 +418,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
 
-        List<JsonObject> result = new ArrayList<>();
+        List<ProjectMeta> result = new ArrayList<>();
 
         getProjectMetadata(result, projectId);
 
@@ -427,7 +428,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         message.replyAndRequest(response);
     }
 
-    public static void getProjectMetadata(@NonNull List<JsonObject> result, @NonNull String projectId)
+    public static void getProjectMetadata(@NonNull List<ProjectMeta> result, @NonNull String projectId)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
@@ -442,19 +443,20 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(projectPath);
 
-        result.add(new JsonObject()
-                .put(ParamConfig.getProjectNameParam(), loader.getProjectName())
-                .put(ParamConfig.getProjectPathParam(), loader.getProjectPath().getAbsolutePath())
-                .put(ParamConfig.getIsNewParam(), loader.getIsProjectNew())
-                .put(ParamConfig.getIsStarredParam(), loader.getIsProjectStarred())
-                .put(ParamConfig.getIsLoadedParam(), loader.getIsLoadedFrontEndToggle())
-                .put(ParamConfig.getIsCloudParam(), loader.isCloud())
-                .put(ParamConfig.getProjectInfraParam(), loader.getProjectInfra())
-                .put(ParamConfig.getCreatedDateParam(), currentVersion.getCreatedDate().toString())
-                .put(ParamConfig.getLastModifiedDate(), currentVersion.getLastModifiedDate().toString())
-                .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
-                .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
-                .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
+        result.add(new ProjectMeta(
+                loader.getProjectName(),
+                loader.getProjectPath().getAbsolutePath(),
+                loader.getIsProjectNew(),
+                loader.getIsProjectStarred(),
+                loader.getIsLoadedFrontEndToggle(),
+                loader.isCloud(),
+                loader.getProjectInfra(),
+                currentVersion.getCreatedDate().toString(),
+                currentVersion.getLastModifiedDate().toString(),
+                currentVersion.getVersionUuid(),
+                existingDataInDir.size(),
+                projectPath.exists()
+        ));
     }
 
     /**
@@ -470,7 +472,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
                         result -> {
-                            List<JsonObject> projectData = new ArrayList<>();
+                            List<ProjectMeta> projectData = new ArrayList<>();
 
                             for (Row row : result)
                             {
@@ -572,7 +574,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         ImageHandler.loadProjectRootPath(loader);
     }
 
-    public static JsonObject queryData(String projectId, String uuid, @NonNull String annotationKey)
+    public static Thumbnail queryData(String projectId, String uuid, @NonNull String annotationKey)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
@@ -614,24 +616,39 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             }
         }
 
-        JsonObject response = ReplyHandler.getOkReply();
 
-        response.put(ParamConfig.getUuidParam(), uuid);
-        response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
+//                JsonObject response = ReplyHandler.getOkReply();
+//
+//        response.put(ParamConfig.getUuidParam(), uuid);
+//        response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
+//
+//        response.put(ParamConfig.getImgPathParam(), dataPath);
+//        response.put(annotationKey, version.getAnnotation());
+//        response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
+//        response.put(ParamConfig.getImgXParam(), version.getImgX());
+//        response.put(ParamConfig.getImgYParam(), version.getImgY());
+//        response.put(ParamConfig.getImgWParam(), version.getImgW());
+//        response.put(ParamConfig.getImgHParam(), version.getImgH());
+//        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
+//        response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
+//        response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
+//        response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
 
-        response.put(ParamConfig.getImgPathParam(), dataPath);
-        response.put(annotationKey, version.getAnnotation());
-        response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-        response.put(ParamConfig.getImgXParam(), version.getImgX());
-        response.put(ParamConfig.getImgYParam(), version.getImgY());
-        response.put(ParamConfig.getImgWParam(), version.getImgW());
-        response.put(ParamConfig.getImgHParam(), version.getImgH());
-        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
-        response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
-        response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
-        response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
-
-        return response;
+        return new Thumbnail(
+                uuid,
+                loader.getProjectName(),
+                dataPath,
+                version.getAnnotation(),
+                Integer.parseInt(imgData.get(ParamConfig.getImgDepth())),
+                version.getImgX(),
+                version.getImgY(),
+                version.getImgW(),
+                version.getImgH(),
+                annotation.getFileSize(),
+                Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())),
+                Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())),
+                imgData.get(ParamConfig.getBase64Param())
+        );
     }
 
     public static String getAnnotationKey(ProjectLoader loader) {

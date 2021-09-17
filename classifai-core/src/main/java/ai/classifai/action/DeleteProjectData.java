@@ -17,8 +17,6 @@ package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.collection.ConversionHandler;
-import io.vertx.core.json.JsonArray;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -36,9 +34,9 @@ public class DeleteProjectData {
         throw new IllegalStateException("Utility class");
     }
 
-    public static List<String> deleteProjectDataOnComplete(ProjectLoader loader, List<String> deleteUUIDList, JsonArray deletedDataPath) throws IOException {
+    public static List<String> deleteProjectDataOnComplete(ProjectLoader loader, List<String> deleteUUIDList,
+                                                           List<String> deletedDataPathList) throws IOException {
         List<String> dbUUIDList = loader.getUuidListFromDb();
-        List<String> deletedDataPathList = ConversionHandler.jsonArray2StringList(deletedDataPath);
         if (dbUUIDList.removeAll(deleteUUIDList))
         {
             loader.setUuidListFromDb(dbUUIDList);
@@ -58,7 +56,6 @@ public class DeleteProjectData {
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
 
-            return loader.getSanityUuidList();
         }
 
         return loader.getSanityUuidList();
