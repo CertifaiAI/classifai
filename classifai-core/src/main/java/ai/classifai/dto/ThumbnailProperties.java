@@ -1,13 +1,14 @@
 package ai.classifai.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.vertx.core.json.JsonArray;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Data
-public class Thumbnail {
+public class ThumbnailProperties {
 
     @JsonProperty("uuid")
     String uuidParam;
@@ -19,7 +20,7 @@ public class Thumbnail {
     String imgPathParam;
 
     @JsonProperty("bnd_box")
-    JsonArray boundingBoxParam;
+    List<AnnotationPointProperties> boundingBoxParam;
 
     @JsonProperty("img_depth")
     Integer imgDepth;

@@ -25,8 +25,8 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.dto.ProjectMeta;
-import ai.classifai.dto.Thumbnail;
+import ai.classifai.dto.ProjectMetaProperties;
+import ai.classifai.dto.ThumbnailProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
@@ -204,10 +204,10 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<List<ProjectMeta>> getProjectMetadata(String projectId) {
+    public Future<List<ProjectMetaProperties>> getProjectMetadata(String projectId) {
 
-        Promise<List<ProjectMeta>> promise = Promise.promise();
-        List<ProjectMeta> result = new ArrayList<>();
+        Promise<List<ProjectMetaProperties>> promise = Promise.promise();
+        List<ProjectMetaProperties> result = new ArrayList<>();
 
         PortfolioVerticle.getProjectMetadata(result, projectId);
         promise.complete(result);
@@ -215,12 +215,12 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<List<ProjectMeta>> getAllProjectsMeta(int annotationType) {
+    public Future<List<ProjectMetaProperties>> getAllProjectsMeta(int annotationType) {
         Tuple params = Tuple.of(annotationType);
 
         return runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), params)
                 .map(result -> {
-                    List<ProjectMeta> projectData = new ArrayList<>();
+                    List<ProjectMetaProperties> projectData = new ArrayList<>();
                     for (Row row : result)
                     {
                         String projectName = row.getString(0);
@@ -269,8 +269,8 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<Thumbnail> getThumbnail(String projectId, String uuid) {
-        Promise<Thumbnail> promise = Promise.promise();
+    public Future<ThumbnailProperties> getThumbnail(String projectId, String uuid) {
+        Promise<ThumbnailProperties> promise = Promise.promise();
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         String annotationKey = PortfolioVerticle.getAnnotationKey(loader);

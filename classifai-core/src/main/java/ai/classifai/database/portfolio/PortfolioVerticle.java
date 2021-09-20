@@ -30,8 +30,10 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.dto.ProjectMeta;
-import ai.classifai.dto.Thumbnail;
+import ai.classifai.dto.AnnotationPointProperties;
+import ai.classifai.dto.DistanceToImageProperties;
+import ai.classifai.dto.ProjectMetaProperties;
+import ai.classifai.dto.ThumbnailProperties;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -418,7 +420,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         String projectId = message.body().getString(ParamConfig.getProjectIdParam());
 
-        List<ProjectMeta> result = new ArrayList<>();
+        List<ProjectMetaProperties> result = new ArrayList<>();
 
         getProjectMetadata(result, projectId);
 
@@ -428,7 +430,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         message.replyAndRequest(response);
     }
 
-    public static void getProjectMetadata(@NonNull List<ProjectMeta> result, @NonNull String projectId)
+    public static void getProjectMetadata(@NonNull List<ProjectMetaProperties> result, @NonNull String projectId)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
@@ -443,7 +445,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(projectPath);
 
-        result.add(new ProjectMeta(
+        result.add(new ProjectMetaProperties(
                 loader.getProjectName(),
                 loader.getProjectPath().getAbsolutePath(),
                 loader.getIsProjectNew(),
@@ -472,7 +474,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
                         result -> {
-                            List<ProjectMeta> projectData = new ArrayList<>();
+                            List<ProjectMetaProperties> projectData = new ArrayList<>();
 
                             for (Row row : result)
                             {
@@ -574,7 +576,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         ImageHandler.loadProjectRootPath(loader);
     }
 
-    public static Thumbnail queryData(String projectId, String uuid, @NonNull String annotationKey)
+    public static ThumbnailProperties queryData(String projectId, String uuid, @NonNull String annotationKey)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
@@ -616,29 +618,13 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             }
         }
 
+        List<AnnotationPointProperties> versionAnnotations = getAnnotations(version);
 
-//                JsonObject response = ReplyHandler.getOkReply();
-//
-//        response.put(ParamConfig.getUuidParam(), uuid);
-//        response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
-//
-//        response.put(ParamConfig.getImgPathParam(), dataPath);
-//        response.put(annotationKey, version.getAnnotation());
-//        response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-//        response.put(ParamConfig.getImgXParam(), version.getImgX());
-//        response.put(ParamConfig.getImgYParam(), version.getImgY());
-//        response.put(ParamConfig.getImgWParam(), version.getImgW());
-//        response.put(ParamConfig.getImgHParam(), version.getImgH());
-//        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
-//        response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
-//        response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
-//        response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
-
-        return new Thumbnail(
+        return new ThumbnailProperties(
                 uuid,
                 loader.getProjectName(),
                 dataPath,
-                version.getAnnotation(),
+                versionAnnotations,
                 Integer.parseInt(imgData.get(ParamConfig.getImgDepth())),
                 version.getImgX(),
                 version.getImgY(),
@@ -649,6 +635,38 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())),
                 imgData.get(ParamConfig.getBase64Param())
         );
+    }
+
+    private static List<AnnotationPointProperties> getAnnotations(AnnotationVersion version) {
+        List<AnnotationPointProperties> versionAnnotations = new ArrayList<>();
+
+        version.getAnnotation().forEach(arr -> {
+            JsonObject jsonAnnotation = (JsonObject) arr;
+            JsonObject jsonDistToImg = jsonAnnotation.getJsonObject("distancetoImg");
+
+            // Get distance to image
+            DistanceToImageProperties distanceToImg = new DistanceToImageProperties(
+                    jsonDistToImg.getInteger("x"),
+                    jsonDistToImg.getInteger("y")
+            );
+
+            // Get Annotation point
+            AnnotationPointProperties annotationPoint = new AnnotationPointProperties(
+                    jsonAnnotation.getInteger("x1"),
+                    jsonAnnotation.getInteger("y1"),
+                    jsonAnnotation.getInteger("x2"),
+                    jsonAnnotation.getInteger("y2"),
+                    jsonAnnotation.getInteger("lineWidth"),
+                    jsonAnnotation.getString("color"),
+                    distanceToImg,
+                    jsonAnnotation.getString("label"),
+                    jsonAnnotation.getString("id")
+            );
+
+            versionAnnotations.add(annotationPoint);
+        });
+
+        return versionAnnotations;
     }
 
     public static String getAnnotationKey(ProjectLoader loader) {

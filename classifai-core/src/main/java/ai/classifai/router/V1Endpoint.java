@@ -207,7 +207,9 @@ public class V1Endpoint extends EndpointBase
                 .onSuccess(result -> {
                     ObjectMapper mp = new ObjectMapper();
                     try {
-                        HTTPResponseHandler.configureOK(context, new JsonObject(mp.writeValueAsString(result)));
+                        String jsonString = mp.writeValueAsString(result);
+                        JsonObject response = new JsonObject(jsonString);
+                        HTTPResponseHandler.configureOK(context, response);
                     } catch (JsonProcessingException e) {
                         HTTPResponseHandler.configureOK(context,
                                 ReplyHandler.reportUserDefinedError("Error converting to JSON"));
