@@ -618,21 +618,27 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<AnnotationPointProperties> versionAnnotations = getAnnotations(version);
 
-        return new ThumbnailProperties(
-                uuid,
-                loader.getProjectName(),
-                dataPath,
-                versionAnnotations,
-                Integer.parseInt(imgData.get(ParamConfig.getImgDepth())),
-                version.getImgX(),
-                version.getImgY(),
-                version.getImgW(),
-                version.getImgH(),
-                annotation.getFileSize(),
-                Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())),
-                Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())),
-                imgData.get(ParamConfig.getBase64Param())
-        );
+        ThumbnailProperties thumbnailProperties =  new ThumbnailProperties();
+        thumbnailProperties.setUuidParam(uuid);
+        thumbnailProperties.setProjectNameParam(loader.getProjectName());
+        thumbnailProperties.setImgPathParam(dataPath);
+        thumbnailProperties.setImgDepth(Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
+        thumbnailProperties.setImgXParam(version.getImgX());
+        thumbnailProperties.setImgYParam(version.getImgY());
+        thumbnailProperties.setImgWParam(version.getImgW());
+        thumbnailProperties.setImgHParam(version.getImgH());
+        thumbnailProperties.setFileSizeParam(annotation.getFileSize());
+        thumbnailProperties.setImgOriWParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
+        thumbnailProperties.setImgOriHParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
+        thumbnailProperties.setImgThumbnailParam(imgData.get(ParamConfig.getBase64Param()));
+
+        if(annotationKey.equals(ParamConfig.getBoundingBoxParam())) {
+            thumbnailProperties.setBoundingBoxParam(versionAnnotations);
+        } else if(annotationKey.equals(ParamConfig.getSegmentationParam())) {
+            thumbnailProperties.setSegmentationParam(versionAnnotations);
+        }
+
+        return thumbnailProperties;
     }
 
     private static List<AnnotationPointProperties> getAnnotations(AnnotationVersion version) {

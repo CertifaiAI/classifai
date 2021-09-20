@@ -1,12 +1,13 @@
 package ai.classifai.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class ThumbnailProperties {
 
@@ -19,6 +20,11 @@ public class ThumbnailProperties {
     @JsonProperty("img_path")
     String imgPathParam;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("polygons")
+    List<AnnotationPointProperties> segmentationParam;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("bnd_box")
     List<AnnotationPointProperties> boundingBoxParam;
 

@@ -1,7 +1,6 @@
 package ai.classifai.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.vertx.core.json.JsonArray;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
