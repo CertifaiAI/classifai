@@ -25,6 +25,7 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.dto.ProjectConfigProperties;
 import ai.classifai.dto.ProjectMetaProperties;
 import ai.classifai.dto.ThumbnailProperties;
 import ai.classifai.loader.ProjectLoader;
@@ -105,7 +106,7 @@ public class PortfolioDB {
                                     .onComplete(annotationFetch -> {
                                         if (annotationFetch.succeeded())
                                         {
-                                            JsonObject configContent = ProjectExport.getConfigContent(result,
+                                            ProjectConfigProperties configContent = ProjectExport.getConfigContent(result,
                                                     annotationFetch.result());
                                             if(configContent == null) return;
 

@@ -16,8 +16,12 @@
 package ai.classifai.action.parser;
 
 import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.dto.AnnotationConfigProperties;
+import ai.classifai.dto.AnnotationPointProperties;
+import ai.classifai.dto.VersionConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
@@ -33,10 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -47,9 +48,9 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectParser
 {
-    public static void parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    public static HashMap<String, AnnotationConfigProperties> parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator)
     {
-        JsonObject content = new JsonObject();
+        HashMap<String, AnnotationConfigProperties> content = new HashMap<>();
 
         while(rowIterator.hasNext())
         {
@@ -61,21 +62,56 @@ public class ProjectParser
 
             String hash = Hash.getHash256String(new File(fullPath));
 
-            JsonObject annotationJsonObject = new JsonObject()
-                    .put(ParamConfig.getCheckSumParam(), hash)
-                    .put(ParamConfig.getImgPathParam(), imgPath)       //img_path
-                    .put(ParamConfig.getVersionListParam(), new JsonArray(row.getString(2)))   //version_list
-                    .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
-                    .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5))      //img_ori_h
-                    .put(ParamConfig.getFileSizeParam(), row.getInteger(6));
+//            JsonObject annotationJsonObject = new JsonObject()
+//                    .put(ParamConfig.getCheckSumParam(), hash)
+//                    .put(ParamConfig.getImgPathParam(), imgPath)       //img_path
+//                    .put(ParamConfig.getVersionListParam(), new JsonArray(row.getString(2)))   //version_list
+//                    .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
+//                    .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
+//                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5))      //img_ori_h
+//                    .put(ParamConfig.getFileSizeParam(), row.getInteger(6));
+
+            AnnotationConfigProperties config = new AnnotationConfigProperties(
+                    hash,
+                    imgPath,
+                    getVersionList(row.getString(2)),
+                    row.getInteger(3),
+                    row.getInteger(4),
+                    row.getInteger(5),
+                    row.getInteger(6)
+            );
 
             //uuid, version, content
-            content.put(row.getString(0), annotationJsonObject);
+            content.put(row.getString(0), config);
         }
 
-        jsonObject.put(ParamConfig.getProjectContentParam(), content);
+        return content;
 
+    }
+
+    private static List<VersionConfigProperties> getVersionList(String versionListString) {
+        JsonArray versionListArray = new JsonArray(versionListString);
+
+        List<VersionConfigProperties> config = new ArrayList<>();
+
+        for(int i=0; i < versionListArray.size(); ++i) {
+            JsonObject jsonAnnotation = versionListArray.getJsonObject(i);
+
+            VersionConfigProperties versionConfig = new VersionConfigProperties();
+            versionConfig.setVersionUuid(jsonAnnotation.getString(ParamConfig.getVersionUuidParam()));
+            JsonArray annotationConfigArray = jsonAnnotation.getJsonObject(ParamConfig.getAnnotationDataParam())
+                    .getJsonArray(ParamConfig.getAnnotationParam());
+            List<AnnotationPointProperties> annotationPoints = new ArrayList<>();
+            for(int j=0; j < annotationConfigArray.size(); ++j) {
+                JsonObject jsonAnnotationConfig = annotationConfigArray.getJsonObject(j);
+                annotationPoints.add(PortfolioVerticle.getAnnotations(jsonAnnotationConfig));
+            }
+            versionConfig.setAnnotationData(new HashMap<>() {{
+                put("annotation", annotationPoints);
+            }});
+        }
+
+        return config;
     }
 
     public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)

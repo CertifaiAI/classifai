@@ -19,6 +19,7 @@ import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
@@ -49,25 +50,40 @@ public class PortfolioParser
     /**
      * Extracting portfolio content and parse to JsonObject, preparing for saving
      * @param row
-     * @param jsonObject
      */
-    public static void parseOut(@NonNull Row row, @NonNull JsonObject jsonObject)
+    public static ProjectConfigProperties parseOut(@NonNull Row row)
     {
         String annotationName = AnnotationHandler.getType(row.getInteger(2)).name();
 
-        jsonObject.put(ParamConfig.getProjectIdParam(), row.getString(0));                                  //project_id
-        jsonObject.put(ParamConfig.getProjectNameParam(), row.getString(1));                                //project_name
-        jsonObject.put(ParamConfig.getAnnotationTypeParam(), annotationName.toLowerCase(Locale.ROOT));           //annotation_type (in string)
+//        jsonObject.put(ParamConfig.getProjectIdParam(), row.getString(0));                                  //project_id
+//        jsonObject.put(ParamConfig.getProjectNameParam(), row.getString(1));                                //project_name
+//        jsonObject.put(ParamConfig.getAnnotationTypeParam(), annotationName.toLowerCase(Locale.ROOT));           //annotation_type (in string)
+//
+//        jsonObject.put(ParamConfig.getProjectPathParam(), row.getString(3));                                //project_path
+//        jsonObject.put(ParamConfig.getIsNewParam(), row.getBoolean(4));                                     //is_new
+//        jsonObject.put(ParamConfig.getIsStarredParam(), row.getBoolean(5));                                 //is_starred
+//
+//        jsonObject.put(ParamConfig.getProjectInfraParam(), row.getString(6).toLowerCase());                 //project_infra
+//        jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(7));                             //current version
+//        jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(8));                             //project version
+//        jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(9));                            //uuid_version_list
+//        jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(10));                          //label_version_list
 
-        jsonObject.put(ParamConfig.getProjectPathParam(), row.getString(3));                                //project_path
-        jsonObject.put(ParamConfig.getIsNewParam(), row.getBoolean(4));                                     //is_new
-        jsonObject.put(ParamConfig.getIsStarredParam(), row.getBoolean(5));                                 //is_starred
+        ProjectConfigProperties config = new ProjectConfigProperties();
+        config.setProjectID(row.getString(0));
+        config.setProjectName(row.getString(1));
+        config.setAnnotationType(annotationName.toLowerCase(Locale.ROOT));
+        config.setProjectPath(row.getString(3));
+        config.setIsNew(row.getBoolean(4));
+        config.setIsStarred(row.getBoolean(5));
+        config.setProjectInfra(row.getString(6).toLowerCase());
+        config.setCurrentVersion(row.getString(7));
+        config.setProjectVersion(row.getString(8));
+        config.setUuidVersionList(row.getString(9));
+        config.setLabelVersionList(row.getString(10));
 
-        jsonObject.put(ParamConfig.getProjectInfraParam(), row.getString(6).toLowerCase());                 //project_infra
-        jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(7));                             //current version
-        jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(8));                             //project version
-        jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(9));                            //uuid_version_list
-        jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(10));                          //label_version_list
+        return config;
+
     }
 
     public static ProjectLoader parseIn(@NonNull JsonObject jsonObject)

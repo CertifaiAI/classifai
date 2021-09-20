@@ -30,10 +30,7 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.dto.AnnotationPointProperties;
-import ai.classifai.dto.DistanceToImageProperties;
-import ai.classifai.dto.ProjectMetaProperties;
-import ai.classifai.dto.ThumbnailProperties;
+import ai.classifai.dto.*;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -56,6 +53,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -301,7 +299,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private void exportProjectOnSuccess(RowSet<Row> projectRowSet, RowSet<Row> rowSet, ProjectLoader loader, int exportType)
     {
-        JsonObject configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
+        ProjectConfigProperties configContent = ProjectExport.getConfigContent(rowSet, projectRowSet);
         if(configContent == null) return;
 
         fileGenerator.run(loader, configContent, exportType);
@@ -642,31 +640,37 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         version.getAnnotation().forEach(arr -> {
             JsonObject jsonAnnotation = (JsonObject) arr;
-            JsonObject jsonDistToImg = jsonAnnotation.getJsonObject("distancetoImg");
-
-            // Get distance to image
-            DistanceToImageProperties distanceToImg = new DistanceToImageProperties(
-                    jsonDistToImg.getInteger("x"),
-                    jsonDistToImg.getInteger("y")
-            );
-
-            // Get Annotation point
-            AnnotationPointProperties annotationPoint = new AnnotationPointProperties(
-                    jsonAnnotation.getInteger("x1"),
-                    jsonAnnotation.getInteger("y1"),
-                    jsonAnnotation.getInteger("x2"),
-                    jsonAnnotation.getInteger("y2"),
-                    jsonAnnotation.getInteger("lineWidth"),
-                    jsonAnnotation.getString("color"),
-                    distanceToImg,
-                    jsonAnnotation.getString("label"),
-                    jsonAnnotation.getString("id")
-            );
-
-            versionAnnotations.add(annotationPoint);
+            versionAnnotations.add(getAnnotations(jsonAnnotation));
         });
 
         return versionAnnotations;
+    }
+
+    public static AnnotationPointProperties getAnnotations(JsonObject jsonAnnotation) {
+
+        JsonObject jsonDistToImg = jsonAnnotation.getJsonObject("distancetoImg");
+
+        // Get distance to image
+        DistanceToImageProperties distanceToImg = new DistanceToImageProperties(
+                jsonDistToImg.getInteger("x"),
+                jsonDistToImg.getInteger("y")
+        );
+
+        // Get Annotation point
+        AnnotationPointProperties annotationPoint = new AnnotationPointProperties(
+                jsonAnnotation.getInteger("x1"),
+                jsonAnnotation.getInteger("y1"),
+                jsonAnnotation.getInteger("x2"),
+                jsonAnnotation.getInteger("y2"),
+                jsonAnnotation.getInteger("lineWidth"),
+                jsonAnnotation.getString("color"),
+                distanceToImg,
+                jsonAnnotation.getString("label"),
+                jsonAnnotation.getString("id")
+        );
+
+        return annotationPoint;
+
     }
 
     public static String getAnnotationKey(ProjectLoader loader) {
