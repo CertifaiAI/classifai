@@ -4,7 +4,9 @@ import ai.classifai.util.project.ProjectInfra;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NonNull;
 
+@NonNull
 @AllArgsConstructor
 @Data
 public class ProjectMetaProperties {

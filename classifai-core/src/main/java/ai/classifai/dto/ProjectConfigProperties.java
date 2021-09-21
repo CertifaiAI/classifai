@@ -3,9 +3,11 @@ package ai.classifai.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.HashMap;
 
+@NonNull
 @NoArgsConstructor
 @Data
 public class ProjectConfigProperties {

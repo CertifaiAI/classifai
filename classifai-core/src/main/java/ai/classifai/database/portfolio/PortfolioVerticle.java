@@ -53,7 +53,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -616,29 +615,28 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             }
         }
 
-        List<AnnotationPointProperties> versionAnnotations = getAnnotations(version);
-
-        ThumbnailProperties thumbnailProperties =  new ThumbnailProperties();
-        thumbnailProperties.setUuidParam(uuid);
-        thumbnailProperties.setProjectNameParam(loader.getProjectName());
-        thumbnailProperties.setImgPathParam(dataPath);
-        thumbnailProperties.setImgDepth(Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-        thumbnailProperties.setImgXParam(version.getImgX());
-        thumbnailProperties.setImgYParam(version.getImgY());
-        thumbnailProperties.setImgWParam(version.getImgW());
-        thumbnailProperties.setImgHParam(version.getImgH());
-        thumbnailProperties.setFileSizeParam(annotation.getFileSize());
-        thumbnailProperties.setImgOriWParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
-        thumbnailProperties.setImgOriHParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
-        thumbnailProperties.setImgThumbnailParam(imgData.get(ParamConfig.getBase64Param()));
+        ThumbnailProperties thmbProps =  new ThumbnailProperties();
 
         if(annotationKey.equals(ParamConfig.getBoundingBoxParam())) {
-            thumbnailProperties.setBoundingBoxParam(versionAnnotations);
+            thmbProps.setBoundingBoxParam(getAnnotations(version));
         } else if(annotationKey.equals(ParamConfig.getSegmentationParam())) {
-            thumbnailProperties.setSegmentationParam(versionAnnotations);
+            thmbProps.setSegmentationParam(getAnnotations(version));
         }
 
-        return thumbnailProperties;
+        thmbProps.setUuidParam(uuid);
+        thmbProps.setProjectNameParam(loader.getProjectName());
+        thmbProps.setImgPathParam(dataPath);
+        thmbProps.setImgDepth(Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
+        thmbProps.setImgXParam(version.getImgX());
+        thmbProps.setImgYParam(version.getImgY());
+        thmbProps.setImgWParam(version.getImgW());
+        thmbProps.setImgHParam(version.getImgH());
+        thmbProps.setFileSizeParam(annotation.getFileSize());
+        thmbProps.setImgOriWParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
+        thmbProps.setImgOriHParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
+        thmbProps.setImgThumbnailParam(imgData.get(ParamConfig.getBase64Param()));
+
+        return thmbProps;
     }
 
     private static List<AnnotationPointProperties> getAnnotations(AnnotationVersion version) {
