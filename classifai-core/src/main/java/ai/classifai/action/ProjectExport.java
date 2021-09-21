@@ -31,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -162,7 +162,7 @@ public class ProjectExport
             return null;
         }
 
-        HashMap<String, AnnotationConfigProperties> configProperties =  ProjectParser.parseOut(
+        Map<String, AnnotationConfigProperties> configProperties =  ProjectParser.parseOut(
                 projectConfig.getProjectPath(), projectRowSet.iterator());
 
         projectConfig.setContent(configProperties);

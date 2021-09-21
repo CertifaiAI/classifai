@@ -48,7 +48,7 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectParser
 {
-    public static HashMap<String, AnnotationConfigProperties> parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator)
+    public static Map<String, AnnotationConfigProperties> parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator)
     {
         HashMap<String, AnnotationConfigProperties> content = new HashMap<>();
 
@@ -98,9 +98,9 @@ public class ProjectParser
                 JsonObject jsonAnnotationConfig = annotationConfigArray.getJsonObject(j);
                 annotationPoints.add(PortfolioVerticle.getAnnotations(jsonAnnotationConfig));
             }
-            versionConfig.setAnnotationData(new HashMap<>() {{
-                put("annotation", annotationPoints);
-            }});
+            HashMap<String, List<AnnotationPointProperties>> annotationData = new HashMap<>();
+            annotationData.put("annotation", annotationPoints);
+            versionConfig.setAnnotationData(annotationData);
         }
 
         return config;

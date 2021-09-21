@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
-import java.util.HashMap;
+import java.util.Map;
 
 @NonNull
 @Builder
@@ -54,5 +54,5 @@ public class ProjectConfigProperties {
     String labelVersionList;
 
     @JsonProperty
-    HashMap<String, AnnotationConfigProperties> content;
+    Map<String, AnnotationConfigProperties> content;
 }
