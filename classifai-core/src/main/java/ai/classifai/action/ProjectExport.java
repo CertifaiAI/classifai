@@ -17,7 +17,7 @@ package ai.classifai.action;
 
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
-import ai.classifai.dto.AnnotationConfigProperties;
+import ai.classifai.dto.ImageDataProperties;
 import ai.classifai.dto.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.data.ImageHandler;
@@ -162,7 +162,7 @@ public class ProjectExport
             return null;
         }
 
-        Map<String, AnnotationConfigProperties> configProperties =  ProjectParser.parseOut(
+        Map<String, ImageDataProperties> configProperties =  ProjectParser.parseOut(
                 projectConfig.getProjectPath(), projectRowSet.iterator());
 
         projectConfig.setContent(configProperties);

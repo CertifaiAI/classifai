@@ -54,5 +54,5 @@ public class ProjectConfigProperties {
     String labelVersionList;
 
     @JsonProperty
-    Map<String, AnnotationConfigProperties> content;
+    Map<String, ImageDataProperties> content;
 }

@@ -13,7 +13,7 @@ import java.util.List;
 public class ThumbnailProperties {
 
     @JsonProperty
-    int message = 1;
+    int message;
 
     @NonNull
     @JsonProperty("uuid")

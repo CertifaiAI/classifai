@@ -19,7 +19,8 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
-import ai.classifai.dto.AnnotationConfigProperties;
+import ai.classifai.dto.DataInfoProperties;
+import ai.classifai.dto.ImageDataProperties;
 import ai.classifai.dto.AnnotationPointProperties;
 import ai.classifai.dto.VersionConfigProperties;
 import ai.classifai.loader.ProjectLoader;
@@ -48,9 +49,9 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectParser
 {
-    public static Map<String, AnnotationConfigProperties> parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator)
+    public static Map<String, ImageDataProperties> parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator)
     {
-        HashMap<String, AnnotationConfigProperties> content = new HashMap<>();
+        HashMap<String, ImageDataProperties> content = new HashMap<>();
 
         while(rowIterator.hasNext())
         {
@@ -62,7 +63,7 @@ public class ProjectParser
 
             String hash = Hash.getHash256String(new File(fullPath));
 
-            AnnotationConfigProperties config = AnnotationConfigProperties.builder()
+            ImageDataProperties config = ImageDataProperties.builder()
                     .checksum(hash)
                     .imgPath(imgPath)
                     .versionList(getVersionList(row.getString(2)))
@@ -87,20 +88,28 @@ public class ProjectParser
 
         for(int i=0; i < versionListArray.size(); ++i) {
             JsonObject jsonAnnotation = versionListArray.getJsonObject(i);
-
-            VersionConfigProperties versionConfig = VersionConfigProperties.builder()
-                    .versionUuid(jsonAnnotation.getString(ParamConfig.getVersionUuidParam()))
-                    .build();
-            JsonArray annotationConfigArray = jsonAnnotation.getJsonObject(ParamConfig.getAnnotationDataParam())
-                    .getJsonArray(ParamConfig.getAnnotationParam());
+            JsonObject annotationConfig = jsonAnnotation.getJsonObject(ParamConfig.getAnnotationDataParam());
+            JsonArray annotationConfigArray = annotationConfig.getJsonArray(ParamConfig.getAnnotationParam());
             List<AnnotationPointProperties> annotationPoints = new ArrayList<>();
             for(int j=0; j < annotationConfigArray.size(); ++j) {
                 JsonObject jsonAnnotationConfig = annotationConfigArray.getJsonObject(j);
                 annotationPoints.add(PortfolioVerticle.getAnnotations(jsonAnnotationConfig));
             }
-            HashMap<String, List<AnnotationPointProperties>> annotationData = new HashMap<>();
-            annotationData.put("annotation", annotationPoints);
-            versionConfig.setAnnotationData(annotationData);
+
+            DataInfoProperties annotationData = DataInfoProperties.builder()
+                    .annotation(annotationPoints)
+                    .imgX(annotationConfig.getInteger(ParamConfig.getImgXParam()))
+                    .imgY(annotationConfig.getInteger(ParamConfig.getImgYParam()))
+                    .imgW(annotationConfig.getInteger(ParamConfig.getImgWParam()))
+                    .imgH(annotationConfig.getInteger(ParamConfig.getImgHParam()))
+                    .build();
+
+            VersionConfigProperties versionConfig = VersionConfigProperties.builder()
+                    .versionUuid(jsonAnnotation.getString(ParamConfig.getVersionUuidParam()))
+                    .annotationData(annotationData)
+                    .build();
+
+            config.add(versionConfig);
         }
 
         return config;

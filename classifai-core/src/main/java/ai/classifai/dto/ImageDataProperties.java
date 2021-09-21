@@ -10,7 +10,7 @@ import java.util.List;
 @NonNull
 @Builder
 @Data
-public class AnnotationConfigProperties {
+public class ImageDataProperties {
     @JsonProperty
     String checksum;
 

@@ -5,9 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
-import java.util.HashMap;
-import java.util.List;
-
 @NonNull
 @Builder
 @Data
@@ -16,5 +13,5 @@ public class VersionConfigProperties {
     String versionUuid;
 
     @JsonProperty("annotation_data")
-    HashMap<String, List<AnnotationPointProperties>> annotationData;
+    DataInfoProperties annotationData;
 }

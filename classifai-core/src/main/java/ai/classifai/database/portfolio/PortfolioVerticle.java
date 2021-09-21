@@ -580,7 +580,6 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
         AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
-
         Map<String, String> imgData = new HashMap<>();
         String dataPath = "";
 
@@ -618,6 +617,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         }
 
         ThumbnailProperties thmbProps = ThumbnailProperties.builder()
+                .message(1)
                 .uuidParam(uuid)
                 .projectNameParam(loader.getProjectName())
                 .imgPathParam(dataPath)
