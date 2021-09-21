@@ -62,24 +62,15 @@ public class ProjectParser
 
             String hash = Hash.getHash256String(new File(fullPath));
 
-//            JsonObject annotationJsonObject = new JsonObject()
-//                    .put(ParamConfig.getCheckSumParam(), hash)
-//                    .put(ParamConfig.getImgPathParam(), imgPath)       //img_path
-//                    .put(ParamConfig.getVersionListParam(), new JsonArray(row.getString(2)))   //version_list
-//                    .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
-//                    .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
-//                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5))      //img_ori_h
-//                    .put(ParamConfig.getFileSizeParam(), row.getInteger(6));
-
-            AnnotationConfigProperties config = new AnnotationConfigProperties(
-                    hash,
-                    imgPath,
-                    getVersionList(row.getString(2)),
-                    row.getInteger(3),
-                    row.getInteger(4),
-                    row.getInteger(5),
-                    row.getInteger(6)
-            );
+            AnnotationConfigProperties config = AnnotationConfigProperties.builder()
+                    .checksum(hash)
+                    .imgPath(imgPath)
+                    .versionList(getVersionList(row.getString(2)))
+                    .imgDepth(row.getInteger(3))
+                    .imgOriW(row.getInteger(4))
+                    .imgOriH(row.getInteger(5))
+                    .fileSize(row.getInteger(6))
+                    .build();
 
             //uuid, version, content
             content.put(row.getString(0), config);
@@ -97,8 +88,9 @@ public class ProjectParser
         for(int i=0; i < versionListArray.size(); ++i) {
             JsonObject jsonAnnotation = versionListArray.getJsonObject(i);
 
-            VersionConfigProperties versionConfig = new VersionConfigProperties();
-            versionConfig.setVersionUuid(jsonAnnotation.getString(ParamConfig.getVersionUuidParam()));
+            VersionConfigProperties versionConfig = VersionConfigProperties.builder()
+                    .versionUuid(jsonAnnotation.getString(ParamConfig.getVersionUuidParam()))
+                    .build();
             JsonArray annotationConfigArray = jsonAnnotation.getJsonObject(ParamConfig.getAnnotationDataParam())
                     .getJsonArray(ParamConfig.getAnnotationParam());
             List<AnnotationPointProperties> annotationPoints = new ArrayList<>();

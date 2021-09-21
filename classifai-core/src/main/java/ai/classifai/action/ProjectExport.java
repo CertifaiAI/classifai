@@ -20,12 +20,10 @@ import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.dto.AnnotationConfigProperties;
 import ai.classifai.dto.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.project.ProjectHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import lombok.*;
@@ -73,9 +71,9 @@ public class ProjectExport
             FileWriter file = new FileWriter(configPath);
 
             ObjectMapper mp = new ObjectMapper();
-            String jsonString = mp.writeValueAsString(configProperties);
+            String jsonString = mp.writerWithDefaultPrettyPrinter().writeValueAsString(configProperties);
 
-            file.write(new JsonObject(jsonString).encodePrettily());
+            file.write(jsonString);
 
             file.close();
 

@@ -1,12 +1,12 @@
 package ai.classifai.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
 @NonNull
-@AllArgsConstructor
+@Builder
 @Data
 public class AnnotationPointProperties {
     @JsonProperty

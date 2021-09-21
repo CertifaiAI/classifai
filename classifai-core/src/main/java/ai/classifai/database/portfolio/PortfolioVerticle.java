@@ -442,20 +442,22 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
         List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(projectPath);
 
-        result.add(new ProjectMetaProperties(
-                loader.getProjectName(),
-                loader.getProjectPath().getAbsolutePath(),
-                loader.getIsProjectNew(),
-                loader.getIsProjectStarred(),
-                loader.getIsLoadedFrontEndToggle(),
-                loader.isCloud(),
-                loader.getProjectInfra(),
-                currentVersion.getCreatedDate().toString(),
-                currentVersion.getLastModifiedDate().toString(),
-                currentVersion.getVersionUuid(),
-                existingDataInDir.size(),
-                projectPath.exists()
-        ));
+        result.add(ProjectMetaProperties.builder()
+                .projectName(loader.getProjectName())
+                .projectPath(loader.getProjectPath().getAbsolutePath())
+                .isNewParam(loader.getIsProjectNew())
+                .isStarredParam(loader.getIsProjectStarred())
+                .isLoadedParam(loader.getIsLoadedFrontEndToggle())
+                .isCloud(loader.isCloud())
+                .projectInfraParam(loader.getProjectInfra())
+                .createdDateParam(currentVersion.getCreatedDate().toString())
+                .lastModifiedDate(currentVersion.getLastModifiedDate().toString())
+                .currentVersionParam(currentVersion.getVersionUuid())
+                .totalUuidParam(existingDataInDir.size())
+                .isRootPathValidParam(projectPath.exists())
+                .build()
+        );
+
     }
 
     /**
@@ -615,26 +617,26 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
             }
         }
 
-        ThumbnailProperties thmbProps =  new ThumbnailProperties();
+        ThumbnailProperties thmbProps = ThumbnailProperties.builder()
+                .uuidParam(uuid)
+                .projectNameParam(loader.getProjectName())
+                .imgPathParam(dataPath)
+                .imgDepth(Integer.parseInt(imgData.get(ParamConfig.getImgDepth())))
+                .imgXParam(version.getImgX())
+                .imgYParam(version.getImgY())
+                .imgWParam(version.getImgW())
+                .imgHParam(version.getImgH())
+                .fileSizeParam(annotation.getFileSize())
+                .imgOriWParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())))
+                .imgOriHParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())))
+                .imgThumbnailParam(imgData.get(ParamConfig.getBase64Param()))
+                .build();
 
         if(annotationKey.equals(ParamConfig.getBoundingBoxParam())) {
             thmbProps.setBoundingBoxParam(getAnnotations(version));
         } else if(annotationKey.equals(ParamConfig.getSegmentationParam())) {
             thmbProps.setSegmentationParam(getAnnotations(version));
         }
-
-        thmbProps.setUuidParam(uuid);
-        thmbProps.setProjectNameParam(loader.getProjectName());
-        thmbProps.setImgPathParam(dataPath);
-        thmbProps.setImgDepth(Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-        thmbProps.setImgXParam(version.getImgX());
-        thmbProps.setImgYParam(version.getImgY());
-        thmbProps.setImgWParam(version.getImgW());
-        thmbProps.setImgHParam(version.getImgH());
-        thmbProps.setFileSizeParam(annotation.getFileSize());
-        thmbProps.setImgOriWParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
-        thmbProps.setImgOriHParam(Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
-        thmbProps.setImgThumbnailParam(imgData.get(ParamConfig.getBase64Param()));
 
         return thmbProps;
     }
@@ -655,25 +657,23 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         JsonObject jsonDistToImg = jsonAnnotation.getJsonObject("distancetoImg");
 
         // Get distance to image
-        DistanceToImageProperties distanceToImg = new DistanceToImageProperties(
-                jsonDistToImg.getInteger("x"),
-                jsonDistToImg.getInteger("y")
-        );
+        DistanceToImageProperties distanceToImg = DistanceToImageProperties.builder()
+                .x(jsonDistToImg.getInteger("x"))
+                .y(jsonDistToImg.getInteger("y"))
+                .build();
 
         // Get Annotation point
-        AnnotationPointProperties annotationPoint = new AnnotationPointProperties(
-                jsonAnnotation.getInteger("x1"),
-                jsonAnnotation.getInteger("y1"),
-                jsonAnnotation.getInteger("x2"),
-                jsonAnnotation.getInteger("y2"),
-                jsonAnnotation.getInteger("lineWidth"),
-                jsonAnnotation.getString("color"),
-                distanceToImg,
-                jsonAnnotation.getString("label"),
-                jsonAnnotation.getString("id")
-        );
-
-        return annotationPoint;
+        return AnnotationPointProperties.builder()
+                .x1(jsonAnnotation.getInteger("x1"))
+                .y1(jsonAnnotation.getInteger("y1"))
+                .x2(jsonAnnotation.getInteger("x2"))
+                .y2(jsonAnnotation.getInteger("y2"))
+                .lineWidth(jsonAnnotation.getInteger("lineWidth"))
+                .color(jsonAnnotation.getString("color"))
+                .distancetoImg(distanceToImg)
+                .label(jsonAnnotation.getString("label"))
+                .id(jsonAnnotation.getString("id"))
+                .build();
 
     }
 
