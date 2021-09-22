@@ -24,6 +24,7 @@ import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -142,20 +143,34 @@ public class ImageHandler {
         return result;
     }
 
-    public static Map<String, String> getThumbNail(BufferedImage image) throws IOException {
+    public static Map<String, String> getThumbNail(File imageFile)
+    {
+        int oriWidth = Objects.requireNonNull(ImageData.getImageData(imageFile)).getWidth();
+
+        int oriHeight = Objects.requireNonNull(ImageData.getImageData(imageFile)).getHeight();
+
+        int depth = Objects.requireNonNull(ImageData.getImageData(imageFile)).getDepth();
+
+        Mat imageMat  = Imgcodecs.imread(imageFile.getAbsolutePath());
+        BufferedImage image = ImageHandler.toBufferedImage(imageMat);
+
+        return getThumbNailAttributes(image, oriWidth, oriHeight, depth);
+    }
+
+    public static Map<String, String> getThumbNailFromCloud(BufferedImage image)
+    {
+        int oriWidth = image.getWidth();
+
+        int oriHeight = image.getHeight();
+
+        int depth = image.getColorModel().getNumComponents();
+
+        return getThumbNailAttributes(image, oriWidth, oriHeight, depth);
+    }
+
+    private static Map<String, String> getThumbNailAttributes(BufferedImage image, int oriWidth, int oriHeight, int depth)
+    {
         Map<String, String> imageData = new HashMap<>();
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
-        ImageData imgData = ImageData.getImageData(out.toByteArray());
-
-        int oriWidth = imgData.getWidth();
-
-        int oriHeight = imgData.getHeight();
-
-        int depth = imgData.getDepth();
-
-        image = rotateWithOrientation(image);
 
         Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
         Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -176,8 +191,8 @@ public class ImageHandler {
         g2d.dispose();
 
         imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
-        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(imgData.getHeight()));
-        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(imgData.getWidth()));
+        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
+        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
         imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
         return imageData;

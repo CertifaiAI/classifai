@@ -45,8 +45,6 @@ import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -484,7 +482,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
                 //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNailFromCloud(img);
             }
             catch(Exception e)
             {
@@ -498,11 +496,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
-                Mat imageMat  = Imgcodecs.imread(dataPath);
-
-                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
-
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNail(new File(dataPath));
             }
             catch(Exception e)
             {
