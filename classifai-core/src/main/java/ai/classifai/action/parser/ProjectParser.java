@@ -95,7 +95,7 @@ public class ProjectParser
                 JsonNode rootNode = mp.readTree(new StringReader(versionListArray.getJsonObject(i).toString()));
 
                 List<AnnotationPointProperties> annotationPoints = new ArrayList<>();
-                rootNode.path("annotation_data").path("annotation").forEach(node -> {
+                rootNode.path(ParamConfig.getAnnotationDataParam()).path(ParamConfig.getAnnotationParam()).forEach(node -> {
                     try {
                         annotationPoints.add(mp.readValue(node.toString(), AnnotationPointProperties.class));
                     } catch (JsonProcessingException e) {
@@ -105,14 +105,14 @@ public class ProjectParser
 
                 DataInfoProperties annotationData = DataInfoProperties.builder()
                         .annotation(annotationPoints)
-                        .imgX(rootNode.path("annotation_data").path("img_x").intValue())
-                        .imgY(rootNode.path("annotation_data").path("img_y").intValue())
-                        .imgW(rootNode.path("annotation_data").path("img_w").intValue())
-                        .imgH(rootNode.path("annotation_data").path("img_h").intValue())
+                        .imgX(rootNode.path(ParamConfig.getAnnotationDataParam()).path(ParamConfig.getImgXParam()).intValue())
+                        .imgY(rootNode.path(ParamConfig.getAnnotationDataParam()).path(ParamConfig.getImgYParam()).intValue())
+                        .imgW(rootNode.path(ParamConfig.getAnnotationDataParam()).path(ParamConfig.getImgWParam()).intValue())
+                        .imgH(rootNode.path(ParamConfig.getAnnotationDataParam()).path(ParamConfig.getImgHParam()).intValue())
                         .build();
 
                 VersionConfigProperties versionConfig = VersionConfigProperties.builder()
-                        .versionUuid(rootNode.path("version_uuid").textValue())
+                        .versionUuid(rootNode.path(ParamConfig.getVersionUuidParam()).textValue())
                         .annotationData(annotationData)
                         .build();
 
