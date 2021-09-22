@@ -1,15 +1,15 @@
 package ai.classifai.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 
 import java.util.Map;
 
-@NonNull
-@Builder
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@NonNull
 public class ProjectConfigProperties {
     @JsonProperty("tool")
     String toolName;

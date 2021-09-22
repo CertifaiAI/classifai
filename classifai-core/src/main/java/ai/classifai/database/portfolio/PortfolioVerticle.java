@@ -30,7 +30,10 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.dto.*;
+import ai.classifai.dto.AnnotationPointProperties;
+import ai.classifai.dto.ProjectConfigProperties;
+import ai.classifai.dto.ProjectMetaProperties;
+import ai.classifai.dto.ThumbnailProperties;
 import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -49,6 +52,8 @@ import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
 import ai.classifai.wasabis3.WasabiImageHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -643,38 +648,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
     private static List<AnnotationPointProperties> getAnnotations(AnnotationVersion version) {
         List<AnnotationPointProperties> versionAnnotations = new ArrayList<>();
+        ObjectMapper mp = new ObjectMapper();
 
         version.getAnnotation().forEach(arr -> {
-            JsonObject jsonAnnotation = (JsonObject) arr;
-            versionAnnotations.add(getAnnotations(jsonAnnotation));
+            try {
+                versionAnnotations.add(mp.readValue(arr.toString(), AnnotationPointProperties.class));
+            } catch (JsonProcessingException e) {
+                log.info("Fail convert to AnnotationPointProperties: " + e);
+            }
         });
 
         return versionAnnotations;
-    }
-
-    public static AnnotationPointProperties getAnnotations(JsonObject jsonAnnotation) {
-
-        JsonObject jsonDistToImg = jsonAnnotation.getJsonObject("distancetoImg");
-
-        // Get distance to image
-        DistanceToImageProperties distanceToImg = DistanceToImageProperties.builder()
-                .x(jsonDistToImg.getInteger("x"))
-                .y(jsonDistToImg.getInteger("y"))
-                .build();
-
-        // Get Annotation point
-        return AnnotationPointProperties.builder()
-                .x1(jsonAnnotation.getInteger("x1"))
-                .y1(jsonAnnotation.getInteger("y1"))
-                .x2(jsonAnnotation.getInteger("x2"))
-                .y2(jsonAnnotation.getInteger("y2"))
-                .lineWidth(jsonAnnotation.getInteger("lineWidth"))
-                .color(jsonAnnotation.getString("color"))
-                .distancetoImg(distanceToImg)
-                .label(jsonAnnotation.getString("label"))
-                .id(jsonAnnotation.getString("id"))
-                .build();
-
     }
 
     public static String getAnnotationKey(ProjectLoader loader) {

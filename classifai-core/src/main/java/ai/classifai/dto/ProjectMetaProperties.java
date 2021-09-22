@@ -2,13 +2,13 @@ package ai.classifai.dto;
 
 import ai.classifai.util.project.ProjectInfra;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 
-@NonNull
-@Builder
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@NonNull
 public class ProjectMetaProperties {
     @JsonProperty("project_name")
     String projectName;

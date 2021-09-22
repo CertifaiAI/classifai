@@ -16,17 +16,19 @@
 package ai.classifai.action.parser;
 
 import ai.classifai.database.annotation.AnnotationVerticle;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.dto.AnnotationPointProperties;
 import ai.classifai.dto.DataInfoProperties;
 import ai.classifai.dto.ImageDataProperties;
-import ai.classifai.dto.AnnotationPointProperties;
 import ai.classifai.dto.VersionConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.StringHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
@@ -37,6 +39,8 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -83,33 +87,40 @@ public class ProjectParser
 
     private static List<VersionConfigProperties> getVersionList(String versionListString) {
         JsonArray versionListArray = new JsonArray(versionListString);
-
         List<VersionConfigProperties> config = new ArrayList<>();
+        ObjectMapper mp = new ObjectMapper();
 
         for(int i=0; i < versionListArray.size(); ++i) {
-            JsonObject jsonAnnotation = versionListArray.getJsonObject(i);
-            JsonObject annotationConfig = jsonAnnotation.getJsonObject(ParamConfig.getAnnotationDataParam());
-            JsonArray annotationConfigArray = annotationConfig.getJsonArray(ParamConfig.getAnnotationParam());
-            List<AnnotationPointProperties> annotationPoints = new ArrayList<>();
-            for(int j=0; j < annotationConfigArray.size(); ++j) {
-                JsonObject jsonAnnotationConfig = annotationConfigArray.getJsonObject(j);
-                annotationPoints.add(PortfolioVerticle.getAnnotations(jsonAnnotationConfig));
+            try {
+                JsonNode rootNode = mp.readTree(new StringReader(versionListArray.getJsonObject(i).toString()));
+
+                List<AnnotationPointProperties> annotationPoints = new ArrayList<>();
+                rootNode.path("annotation_data").path("annotation").forEach(node -> {
+                    try {
+                        annotationPoints.add(mp.readValue(node.toString(), AnnotationPointProperties.class));
+                    } catch (JsonProcessingException e) {
+                        log.info("Fail to AnnotationPointProperties: " + e);
+                    }
+                });
+
+                DataInfoProperties annotationData = DataInfoProperties.builder()
+                        .annotation(annotationPoints)
+                        .imgX(rootNode.path("annotation_data").path("img_x").intValue())
+                        .imgY(rootNode.path("annotation_data").path("img_y").intValue())
+                        .imgW(rootNode.path("annotation_data").path("img_w").intValue())
+                        .imgH(rootNode.path("annotation_data").path("img_h").intValue())
+                        .build();
+
+                VersionConfigProperties versionConfig = VersionConfigProperties.builder()
+                        .versionUuid(rootNode.path("version_uuid").textValue())
+                        .annotationData(annotationData)
+                        .build();
+
+                config.add(versionConfig);
+
+            } catch (IOException e) {
+                log.info("Fail to convert string to object: " + e);
             }
-
-            DataInfoProperties annotationData = DataInfoProperties.builder()
-                    .annotation(annotationPoints)
-                    .imgX(annotationConfig.getInteger(ParamConfig.getImgXParam()))
-                    .imgY(annotationConfig.getInteger(ParamConfig.getImgYParam()))
-                    .imgW(annotationConfig.getInteger(ParamConfig.getImgWParam()))
-                    .imgH(annotationConfig.getInteger(ParamConfig.getImgHParam()))
-                    .build();
-
-            VersionConfigProperties versionConfig = VersionConfigProperties.builder()
-                    .versionUuid(jsonAnnotation.getString(ParamConfig.getVersionUuidParam()))
-                    .annotationData(annotationData)
-                    .build();
-
-            config.add(versionConfig);
         }
 
         return config;
