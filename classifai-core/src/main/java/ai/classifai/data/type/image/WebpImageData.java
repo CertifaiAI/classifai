@@ -30,6 +30,7 @@ import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
  */
 @Slf4j
 public class WebpImageData extends ImageData{
+    private final int undefinedColorSpace = 0;
 
     protected WebpImageData(Metadata metadata)
     {
@@ -63,7 +64,7 @@ public class WebpImageData extends ImageData{
     {
         // Webp does not have EXIF COLOR SPACE TAG
         log.debug("Color space of Webp image is not detected");
-        return 0;
+        return undefinedColorSpace;
     }
 
     @Override
