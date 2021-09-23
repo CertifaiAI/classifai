@@ -30,7 +30,7 @@ import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
  */
 @Slf4j
 public class WebpImageData extends ImageData{
-    private final int undefinedColorSpace = 0;
+    private static final int undefinedColorSpace = 0;
 
     protected WebpImageData(Metadata metadata)
     {
