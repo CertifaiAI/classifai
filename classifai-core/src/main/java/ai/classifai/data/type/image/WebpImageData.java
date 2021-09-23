@@ -18,19 +18,19 @@ package ai.classifai.data.type.image;
 
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.webp.WebpDirectory;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.drew.metadata.webp.WebpDirectory.TAG_IS_ANIMATION;
-import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COLOR_SPACE;
 
 /**
  * Provides metadata of webp images
  *
  * @author ken479
  */
-
+@Slf4j
 public class WebpImageData extends ImageData{
+    private static final int undefinedColorSpace = 0;
 
     protected WebpImageData(Metadata metadata)
     {
@@ -62,13 +62,9 @@ public class WebpImageData extends ImageData{
     @Override
     public int getDepth()
     {
-        try {
-            int colorSpace = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class).getInt(TAG_COLOR_SPACE);
-            if (colorSpace == 0) return 1;
-        } catch (MetadataException e) {
-            logMetadataError();
-        }
-        return 3;
+        // Webp does not have EXIF COLOR SPACE TAG
+        log.debug("Color space of Webp image is not detected");
+        return undefinedColorSpace;
     }
 
     @Override
