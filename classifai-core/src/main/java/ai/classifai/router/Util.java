@@ -33,16 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Util {
 
-    public boolean checkIfProjectNull(RoutingContext context, Object project, @NonNull String projectName)
+    public boolean checkIfProjectNull(Object project)
     {
-        if(project == null)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project not found: " + projectName));
-
-            return true;
-        }
-
-        return false;
+        return project == null;
     }
 
     public void checkIfDockerEnv(RoutingContext context)

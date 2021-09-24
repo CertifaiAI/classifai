@@ -100,6 +100,7 @@
         <classifai.release.name>dev</classifai.release.name>
         <opencv.version>4.5.1-2</opencv.version>
         <jackson.version>2.12.3</jackson.version>
+        <version.com.zandero.rest.vertx>1.0.5</version.com.zandero.rest.vertx>
     </properties>
 
     <dependencyManagement>
@@ -268,6 +269,11 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zandero</groupId>
+                <artifactId>rest.vertx</artifactId>
+                <version>${version.com.zandero.rest.vertx}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
