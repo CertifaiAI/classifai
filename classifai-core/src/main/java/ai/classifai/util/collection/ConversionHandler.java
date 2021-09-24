@@ -15,6 +15,9 @@
  */
 package ai.classifai.util.collection;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -296,4 +299,16 @@ public class ConversionHandler
         }
         return jsonOutput;
     }
+
+    public static <T> T strToObj(String versionListString) {
+        ObjectMapper mp = new ObjectMapper();
+
+        try {
+            return mp.readValue(versionListString, new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            log.info("Convert to object fail\n" + e);
+            return null;
+        }
+    }
+
 }
