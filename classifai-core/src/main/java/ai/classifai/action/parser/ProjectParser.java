@@ -88,7 +88,7 @@ public class ProjectParser
             return mp.readValue(versionListString, new TypeReference<List<VersionConfigProperties>>() {});
         } catch (JsonProcessingException e) {
             log.info("Convert to object fail\n" + e);
-            return null;
+            return Collections.emptyList();
         }
     }
 
