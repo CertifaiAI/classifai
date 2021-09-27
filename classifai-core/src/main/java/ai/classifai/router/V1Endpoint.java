@@ -155,11 +155,12 @@ public class V1Endpoint extends EndpointBase
      * Example:
      * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
      */
-    public Future<ActionStatus> loadProjectStatus(RoutingContext context)
+    @GET
+    @Path("/{annotation_type}/projects/{project_name}/loadingstatus")
+    public Future<ActionStatus> loadProjectStatus(@PathParam("annotation_type") String annotationType,
+                                                  @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-
-        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
 
         ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
 
