@@ -17,6 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.ProjectMetaProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
@@ -27,8 +28,6 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
@@ -40,7 +39,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -50,6 +51,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Path("/")
+@Produces(MediaType.APPLICATION_JSON)
 public class V1Endpoint extends EndpointBase
 {
     @Setter
@@ -63,31 +65,20 @@ public class V1Endpoint extends EndpointBase
      */
     @GET
     @Path("/{annotation_type}/projects/{project_name}/meta")
-    @Produces("application/json")
-    public ActionStatus getProjectMetadata(@PathParam("annotation_type") String annotationType,
-                                           @PathParam("annotation_type") String projectName)
+    public Future<ActionStatus> getProjectMetadata(@PathParam("annotation_type") String annotationType,
+                                           @PathParam("project_name") String projectName)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        log.debug("Get metadata of project: " + projectName + " of annotation type: " + type.name());
+        log.info("Get metadata of project: " + projectName + " of annotation type: " + type.name());
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectName, type));
         if(helper.checkIfProjectNull(loader)) {
-            return ActionStatus.failedWithMessage("Null Loader");
+            return HTTPResponseHandler.nullFailResponse();
         }
 
-//        portfolioDB.getProjectMetadata(loader.getProjectId())
-//                .onSuccess(result -> HTTPResponseHandler.configureOK(context,
-//                        ReplyHandler.getOkReply().put(ParamConfig.getContent(), result)))
-//                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-//                        ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName)));
-
-        Promise<ActionStatus> statusPromise = Promise.promise();
-        portfolioDB.getProjectMetadata(loader.getProjectId())
-                .onSuccess(result -> statusPromise.complete(ActionStatus.okWithResponse(result)))
-                .onFailure(cause -> statusPromise.complete(
-                        ActionStatus.failedWithMessage("Failed to retrieve metadata for project " + projectName)));
-
-        return statusPromise.future().result();
+        return portfolioDB.getProjectMetadata(loader.getProjectId())
+                .map(ActionStatus::okWithResponse)
+                .otherwise(cause -> ActionStatus.failedWithMessage("Failed to retrieve metadata for project " + projectName));
     }
 
     /**
@@ -97,18 +88,13 @@ public class V1Endpoint extends EndpointBase
      */
     @GET
     @Path("/{annotation_type}/projects/meta")
-    @Produces("application/json")
-    public ActionStatus getAllProjectsMeta(@PathParam("annotation_type") String annotation_type)
+    public Future<ActionStatus> getAllProjectsMeta(@PathParam("annotation_type") String annotation_type)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotation_type);
 
-        Promise<ActionStatus> statusPromise = Promise.promise();
-        portfolioDB.getAllProjectsMeta(type.ordinal())
-                .onSuccess(result -> statusPromise.complete(ActionStatus.okWithResponse(result)))
-                .onFailure(cause -> statusPromise.complete(
-                        ActionStatus.failedWithMessage("Failure in getting all the projects for " + type.name())));
-
-        return statusPromise.future().result();
+        return portfolioDB.getAllProjectsMeta(type.ordinal())
+                .map(ActionStatus::okWithResponse)
+                .otherwise(cause -> ActionStatus.failedWithMessage("Failure in getting all the projects for " + type.name()));
     }
 
 //    /**
@@ -159,61 +145,63 @@ public class V1Endpoint extends EndpointBase
 //            }
 //        }
 //    }
-//
-//
-//    /**
-//     * Get status of loading a project
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
-//     */
-//    public void loadProjectStatus(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if (helper.checkIfProjectNull(context, projectLoader, projectName)) return;
-//
-//        ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
-//
-//        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
-//        {
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
-//
-//            jsonObject.put(ParamConfig.getProgressMetadata(), projectLoader.getProgress());
-//
-//            HTTPResponseHandler.configureOK(context, jsonObject);
-//
-//        } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
-//
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
-//
-//            // Remove empty string from label list
-//            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
-//
-//            jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-//            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
-//
-//            HTTPResponseHandler.configureOK(context, jsonObject);
-//
-//        }
-//        else if (projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
-//        {
-//            JsonObject jsonObject = new JsonObject();
-//            jsonObject.put(ReplyHandler.getMessageKey(), ProjectLoaderStatus.ERROR.ordinal());
-//            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
-//
-//            HTTPResponseHandler.configureOK(context, jsonObject);
-//        }
-//    }
-//
+
+
+    /**
+     * Get status of loading a project
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
+     */
+    public Future<ActionStatus> loadProjectStatus(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if (helper.checkIfProjectNull(projectLoader)) {
+            return HTTPResponseHandler.nullFailResponse();
+        }
+
+        ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
+
+        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
+        {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
+
+            jsonObject.put(ParamConfig.getProgressMetadata(), projectLoader.getProgress());
+
+            HTTPResponseHandler.configureOK(context, jsonObject);
+
+        } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
+
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
+
+            // Remove empty string from label list
+            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
+
+            jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
+            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
+
+            HTTPResponseHandler.configureOK(context, jsonObject);
+
+        }
+        else if (projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
+        {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(ReplyHandler.getMessageKey(), ProjectLoaderStatus.ERROR.ordinal());
+            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
+
+            HTTPResponseHandler.configureOK(context, jsonObject);
+        }
+    }
+
 //    /**
 //     * Retrieve thumbnail with metadata
 //     *

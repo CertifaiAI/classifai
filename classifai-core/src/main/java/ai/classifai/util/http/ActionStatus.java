@@ -2,7 +2,6 @@ package ai.classifai.util.http;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 public interface ActionStatus {
 
@@ -12,6 +11,10 @@ public interface ActionStatus {
 
     static ActionStatus okWithResponse(Object object){
         return new ActionSucceededWithMessage(object);
+    }
+
+    static ActionStatus failDefault() {
+        return new ActionFailDefault();
     }
 
     static ActionStatus failedWithMessage(String msg){
@@ -28,7 +31,13 @@ class ActionSucceeded implements ActionStatus {
 @AllArgsConstructor
 class ActionSucceededWithMessage implements ActionStatus {
     private final int message = 1;
-    private Object object;
+    private Object content;
+}
+
+@Data
+class ActionFailDefault implements ActionStatus {
+    private final int message = 0;
+    private final String errorMessage = "Endpoint fail";
 }
 
 @Data

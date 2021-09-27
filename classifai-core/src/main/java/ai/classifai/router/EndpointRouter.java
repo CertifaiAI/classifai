@@ -175,6 +175,9 @@ public class EndpointRouter extends AbstractVerticle
 
         Router router = RestRouter.register(vertx, v1, v2);
 
+        router.route().handler(this::addNoCacheHeader);
+        router.route().handler(StaticHandler.create());
+
         vertx.createHttpServer()
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
