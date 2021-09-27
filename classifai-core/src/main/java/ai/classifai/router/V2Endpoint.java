@@ -119,13 +119,14 @@ public class V2Endpoint extends EndpointBase {
         context.request().bodyHandler(handler -> {
             JsonObject request = handler.toJsonObject();
             Boolean isStarred = Boolean.parseBoolean(request.getString(ParamConfig.getStatusParam()));
-            Future<JsonObject> future = portfolioDB.starProject(projectID, isStarred);
-            ReplyHandler.sendResultRunSuccessSideEffect(context, future,
-                    ()-> {
+            portfolioDB.starProject(projectID, isStarred)
+                    .onSuccess(result -> {
                         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
                         loader.setIsProjectStarred(isStarred);
-                    },
-                    "Star project fail");
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
+                    })
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Star project fail")));
         });
     }
 
@@ -283,12 +284,15 @@ public class V2Endpoint extends EndpointBase {
 
         if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
-            Future<JsonObject> future = portfolioDB.renameProject(loader.getProjectId(), newProjectName);
-            ReplyHandler.sendEmptyResult(context, future, () -> {
-                loader.setProjectName(newProjectName);
-                ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-                log.debug("Rename to " + newProjectName + " success.");
-            }, "Failed to rename project " + projectName);
+            portfolioDB.renameProject(loader.getProjectId(), newProjectName)
+                    .onSuccess(result -> {
+                        loader.setProjectName(newProjectName);
+                        ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+                        log.debug("Rename to " + newProjectName + " success.");
+                        HTTPResponseHandler.configureOK(context);
+                    })
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Failed to rename project " + projectName)));
         }
         else
         {
@@ -318,7 +322,7 @@ public class V2Endpoint extends EndpointBase {
 
         loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
-        Future<JsonObject> future = portfolioDB.reloadProject(loader.getProjectId());
+        Future<Void> future = portfolioDB.reloadProject(loader.getProjectId());
         ReplyHandler.sendEmptyResult(context, future, "Failed to reload project " + projectName);
     }
 
@@ -376,10 +380,13 @@ public class V2Endpoint extends EndpointBase {
                 context.request().getParam(ActionConfig.getExportTypeParam()));
         if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) return;
 
-        Future<JsonObject> future = portfolioDB.exportProject(projectId, exportType.ordinal());
-        ReplyHandler.sendResultRunFailSideEffect(context, future,
-                () -> ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL),
-                "Export of project failed for " + projectName);
+        portfolioDB.exportProject(projectId, exportType.ordinal())
+                .onSuccess(result -> HTTPResponseHandler.configureOK(context))
+                .onFailure(cause -> {
+                    ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
+                    HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Export of project failed for " + projectName));
+                });
     }
 
     /**
@@ -566,13 +573,14 @@ public class V2Endpoint extends EndpointBase {
 
         context.request().bodyHandler(handler -> {
             JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(handler.toJson()));
+            List<String> uuidListArray = ConversionHandler.jsonArray2StringList(request.getJsonArray(ParamConfig.getUuidListParam()));
+            List<String> uuidImgPathList = ConversionHandler.jsonArray2StringList(request.getJsonArray(ParamConfig.getImgPathListParam()));
 
-            Future<JsonObject> future = portfolioDB.deleteProjectData(
-                    projectID,
-                    request.getJsonArray(ParamConfig.getUuidListParam()),
-                    request.getJsonArray(ParamConfig.getImgPathListParam())
-            );
-            ReplyHandler.sendResult(context, future, "Delete project data fail.");
+            portfolioDB.deleteProjectData(projectID, uuidListArray, uuidImgPathList)
+                    .onSuccess(result -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.getOkReply().put(ParamConfig.getUuidListParam(), result)))
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.reportUserDefinedError("Delete project data fail")));
         });
     }
 
@@ -599,14 +607,13 @@ public class V2Endpoint extends EndpointBase {
 
         context.request().bodyHandler(handler -> {
             JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(handler.toJson()));
+            String uuid = request.getString(ParamConfig.getUuidParam());
+            String newFilename = request.getString(ParamConfig.getNewFileNameParam());
 
-            Future<JsonObject> future = portfolioDB.renameData(
-                    projectId,
-                    request.getString(ParamConfig.getUuidParam()),
-                    request.getString(ParamConfig.getNewFileNameParam())
-            );
-
-            ReplyHandler.sendResult(context, future, "Rename data fail");
+            portfolioDB.renameData(projectId, uuid, newFilename)
+                    .onSuccess(result -> HTTPResponseHandler.configureOK(context,
+                            ReplyHandler.getOkReply().put(ParamConfig.getImgPathParam(), result)))
+                    .onFailure(cause -> HTTPResponseHandler.configureOK(context, new JsonObject(cause.getMessage())));
         });
     }
 }

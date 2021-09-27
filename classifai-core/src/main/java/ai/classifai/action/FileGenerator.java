@@ -15,6 +15,7 @@
  */
 package ai.classifai.action;
 
+import ai.classifai.dto.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import io.vertx.core.json.JsonObject;
 import lombok.NonNull;
@@ -31,7 +32,7 @@ import java.io.IOException;
 @Slf4j
 public class FileGenerator {
 
-    public void run(@NonNull ProjectLoader loader, @NonNull JsonObject configContent, @NonNull int exportType) {
+    public void run(@NonNull ProjectLoader loader, @NonNull ProjectConfigProperties configContent, @NonNull int exportType) {
         EventQueue.invokeLater(() -> {
             String exportPath = null;
             if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())

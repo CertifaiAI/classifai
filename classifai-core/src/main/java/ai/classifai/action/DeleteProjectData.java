@@ -17,11 +17,6 @@ package ai.classifai.action;
 
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
-import ai.classifai.util.message.ReplyHandler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -39,9 +34,9 @@ public class DeleteProjectData {
         throw new IllegalStateException("Utility class");
     }
 
-    public static JsonObject deleteProjectDataOnComplete(ProjectLoader loader, List<String> deleteUUIDList, JsonArray deletedDataPath) throws IOException {
+    public static List<String> deleteProjectDataOnComplete(ProjectLoader loader, List<String> deleteUUIDList,
+                                                           List<String> deletedDataPathList) throws IOException {
         List<String> dbUUIDList = loader.getUuidListFromDb();
-        List<String> deletedDataPathList = ConversionHandler.jsonArray2StringList(deletedDataPath);
         if (dbUUIDList.removeAll(deleteUUIDList))
         {
             loader.setUuidListFromDb(dbUUIDList);
@@ -61,14 +56,9 @@ public class DeleteProjectData {
             //update Portfolio Verticle
             PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
 
-            JsonObject response = ReplyHandler.getOkReply();
-            response.put(ParamConfig.getUuidListParam(), loader.getSanityUuidList());
-
-            return response;
         }
 
-        return ReplyHandler.reportUserDefinedError(
-                "Failed to remove uuid from Portfolio Verticle. Project not expected to work fine");
+        return loader.getSanityUuidList();
     }
 
 }

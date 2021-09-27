@@ -79,4 +79,7 @@ public class DBUtils {
         };
     }
 
+    public static Void toVoid(Object object) {
+        return null;
+    }
 }

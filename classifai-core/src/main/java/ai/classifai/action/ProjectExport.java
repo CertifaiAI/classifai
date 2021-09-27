@@ -17,12 +17,13 @@ package ai.classifai.action;
 
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
+import ai.classifai.dto.ImageDataProperties;
+import ai.classifai.dto.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.project.ProjectHandler;
-import io.vertx.core.json.JsonObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import lombok.*;
@@ -31,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -57,15 +59,7 @@ public class ProjectExport
     @Getter @Setter
     private static String exportPath = "";
 
-    public static JsonObject getConfigSkeletonStructure()
-    {
-        return new JsonObject()
-                .put(ActionConfig.getToolParam(), ActionConfig.getToolName())
-                .put(ActionConfig.getToolVersionParam(), ActionConfig.getToolVersion())
-                .put(ActionConfig.getUpdatedDateParam(), new DateTime().toString());
-    }
-
-    public static String exportToFile(@NonNull String projectId, @NonNull JsonObject jsonObject)
+    public static String exportToFile(@NonNull String projectId, @NonNull ProjectConfigProperties configProperties)
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
@@ -76,7 +70,10 @@ public class ProjectExport
         {
             FileWriter file = new FileWriter(configPath);
 
-            file.write(jsonObject.encodePrettily());
+            ObjectMapper mp = new ObjectMapper();
+            String jsonString = mp.writerWithDefaultPrettyPrinter().writeValueAsString(configProperties);
+
+            file.write(jsonString);
 
             file.close();
 
@@ -90,7 +87,7 @@ public class ProjectExport
         return configPath;
     }
 
-    public static String exportToFileWithData(ProjectLoader loader, String projectId, JsonObject configContent) throws IOException
+    public static String exportToFileWithData(ProjectLoader loader, String projectId, ProjectConfigProperties configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
         File zipFile = Paths.get(loader.getProjectPath().getAbsolutePath(), loader.getProjectName() + ".zip").toFile();
@@ -146,7 +143,7 @@ public class ProjectExport
         }
     }
 
-    public static JsonObject getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
+    public static ProjectConfigProperties getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
     {
         if(rowSet.size() == 0)
         {
@@ -154,8 +151,10 @@ public class ProjectExport
             return null;
         }
 
-        JsonObject configContent = getConfigSkeletonStructure();
-        PortfolioParser.parseOut(rowSet.iterator().next(), configContent);
+        ProjectConfigProperties projectConfig = PortfolioParser.parseOut(rowSet.iterator().next());
+        projectConfig.setToolName(ActionConfig.getToolName());
+        projectConfig.setToolVersion(ActionConfig.getToolVersion());
+        projectConfig.setUpdateDate(new DateTime().toString());
 
         if(projectRowSet.size() == 0)
         {
@@ -163,11 +162,12 @@ public class ProjectExport
             return null;
         }
 
-        ProjectParser.parseOut(
-                configContent.getString(ParamConfig.getProjectPathParam()),
-                projectRowSet.iterator(), configContent);
+        Map<String, ImageDataProperties> configProperties =  ProjectParser.parseOut(
+                projectConfig.getProjectPath(), projectRowSet.iterator());
 
-        return configContent;
+        projectConfig.setContent(configProperties);
+
+        return projectConfig;
     }
 
     public static ActionConfig.ExportType getExportType(String exportType)

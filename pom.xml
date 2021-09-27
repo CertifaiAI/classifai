@@ -99,6 +99,7 @@
         <classifai.release.version>2.0.0-alpha2</classifai.release.version>
         <classifai.release.name>dev</classifai.release.name>
         <opencv.version>4.5.1-2</opencv.version>
+        <jackson.version>2.12.3</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -262,6 +263,11 @@
                 <groupId>org.openpnp</groupId>
                 <artifactId>opencv</artifactId>
                 <version>${opencv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

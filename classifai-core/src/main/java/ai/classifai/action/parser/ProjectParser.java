@@ -18,10 +18,15 @@ package ai.classifai.action.parser;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.dto.ImageDataProperties;
+import ai.classifai.dto.VersionConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.Hash;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.StringHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
@@ -33,10 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -47,9 +49,9 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectParser
 {
-    public static void parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator, @NonNull JsonObject jsonObject)
+    public static Map<String, ImageDataProperties> parseOut(@NonNull String projectPath, @NonNull RowIterator<Row> rowIterator)
     {
-        JsonObject content = new JsonObject();
+        HashMap<String, ImageDataProperties> content = new HashMap<>();
 
         while(rowIterator.hasNext())
         {
@@ -61,21 +63,33 @@ public class ProjectParser
 
             String hash = Hash.getHash256String(new File(fullPath));
 
-            JsonObject annotationJsonObject = new JsonObject()
-                    .put(ParamConfig.getCheckSumParam(), hash)
-                    .put(ParamConfig.getImgPathParam(), imgPath)       //img_path
-                    .put(ParamConfig.getVersionListParam(), new JsonArray(row.getString(2)))   //version_list
-                    .put(ParamConfig.getImgDepth(), row.getInteger(3))          //img_depth
-                    .put(ParamConfig.getImgOriWParam(), row.getInteger(4))      //img_ori_w
-                    .put(ParamConfig.getImgOriHParam(), row.getInteger(5))      //img_ori_h
-                    .put(ParamConfig.getFileSizeParam(), row.getInteger(6));
+            ImageDataProperties config = ImageDataProperties.builder()
+                    .checksum(hash)
+                    .imgPath(imgPath)
+                    .versionList(getVersionList(row.getString(2)))
+                    .imgDepth(row.getInteger(3))
+                    .imgOriW(row.getInteger(4))
+                    .imgOriH(row.getInteger(5))
+                    .fileSize(row.getInteger(6))
+                    .build();
 
             //uuid, version, content
-            content.put(row.getString(0), annotationJsonObject);
+            content.put(row.getString(0), config);
         }
 
-        jsonObject.put(ParamConfig.getProjectContentParam(), content);
+        return content;
 
+    }
+
+    private static List<VersionConfigProperties> getVersionList(String versionListString) {
+        ObjectMapper mp = new ObjectMapper();
+
+        try {
+            return mp.readValue(versionListString, new TypeReference<List<VersionConfigProperties>>() {});
+        } catch (JsonProcessingException e) {
+            log.info("Convert to object fail\n" + e);
+            return Collections.emptyList();
+        }
     }
 
     public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)

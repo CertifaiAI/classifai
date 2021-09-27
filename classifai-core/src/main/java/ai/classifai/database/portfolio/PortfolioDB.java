@@ -25,6 +25,9 @@ import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.dto.ProjectConfigProperties;
+import ai.classifai.dto.ProjectMetaProperties;
+import ai.classifai.dto.ThumbnailProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
@@ -35,7 +38,6 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -82,21 +84,16 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> renameProject(String projectId, String newProjectName) {
+    public Future<Void> renameProject(String projectId, String newProjectName) {
         Tuple params = Tuple.of(newProjectName, projectId);
 
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(PortfolioDbQuery.getRenameProject(), params)
-                .onComplete(DBUtils.handleResponse(
-                        result -> promise.complete(ReplyHandler.getOkReply()),
-                        promise::fail
-                ));
-        return promise.future();
+        return runQuery(PortfolioDbQuery.getRenameProject(), params)
+                .map(DBUtils::toVoid);
     }
 
-    public Future<JsonObject> exportProject(String projectId, int exportType) {
+    public Future<Void> exportProject(String projectId, int exportType) {
         Tuple params = Tuple.of(projectId);
-        Promise<JsonObject> promise = Promise.promise();
+        Promise<Void> promise = Promise.promise();
         runQuery(PortfolioDbQuery.getExportProject(), params)
                 .onComplete(DBUtils.handleResponse(
                         result -> {
@@ -109,14 +106,14 @@ public class PortfolioDB {
                                     .onComplete(annotationFetch -> {
                                         if (annotationFetch.succeeded())
                                         {
-                                            JsonObject configContent = ProjectExport.getConfigContent(result,
+                                            ProjectConfigProperties configContent = ProjectExport.getConfigContent(result,
                                                     annotationFetch.result());
                                             if(configContent == null) return;
 
                                             fileGenerator.run(loader, configContent, exportType);
                                         }
                                     });
-                            promise.complete(ReplyHandler.getOkReply());
+                            promise.complete();
                         },
                         cause -> ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL)
                 ));
@@ -124,40 +121,30 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> deleteProjectData(String projectId, JsonArray uuidListArray, JsonArray uuidImgPathList) {
+    public Future<List<String>> deleteProjectData(String projectId, List<String> deleteUUIDList, List<String> uuidImgPathList) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(uuidListArray);
         String uuidQueryParam = String.join(",", deleteUUIDList);
 
         Tuple params = Tuple.of(projectId, uuidQueryParam);
-        Promise<JsonObject> promise = Promise.promise();
 
-        runQuery(AnnotationQuery.getDeleteProjectData(), params, AnnotationHandler.getJDBCPool(loader))
-                .onComplete(DBUtils.handleResponse(
-                        result -> {
-                            try {
-                                JsonObject response = DeleteProjectData.deleteProjectDataOnComplete(
-                                        loader, deleteUUIDList, uuidImgPathList);
-                                promise.complete(response);
-                            } catch (IOException e) {
-                                String errorMessage = "Fail to delete. IO exception occurs.";
-                                log.info(errorMessage);
-                                promise.fail(errorMessage);
-                            }
-                        },
-                        cause -> promise.fail("Delete project data fail")
-                ));
-
-        return promise.future();
+        return runQuery(AnnotationQuery.getDeleteProjectData(), params, AnnotationHandler.getJDBCPool(loader))
+                .map(result -> {
+                    try {
+                        return DeleteProjectData.deleteProjectDataOnComplete(loader, deleteUUIDList, uuidImgPathList);
+                    } catch (IOException e) {
+                        log.info("Fail to delete. IO exception occurs.");
+                    }
+                    return loader.getSanityUuidList();
+                });
     }
 
-    public Future<JsonObject> renameData(String projectId, String uuid, String newFilename) {
+    public Future<String> renameData(String projectId, String uuid, String newFilename) {
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         RenameProjectData renameProjectData = new RenameProjectData(loader);
         renameProjectData.getAnnotationVersion(uuid);
 
-        Promise<JsonObject> promise = Promise.promise();
+        Promise<String> promise = Promise.promise();
 
         if(renameProjectData.containIllegalChars(newFilename)) {
             // Abort if filename contain illegal chars
@@ -180,24 +167,16 @@ public class PortfolioDB {
 
         if(renameProjectData.renameDataPath(newDataPath, renameProjectData.getOldDataFileName()))
         {
-            runQuery(AnnotationQuery.getRenameProjectData(), params, AnnotationHandler.getJDBCPool(loader))
-                    .onComplete(DBUtils.handleResponse(
-                            result -> {
-                                JsonObject response = ReplyHandler.getOkReply();
-                                response.put(ParamConfig.getImgPathParam(), newDataPath.toString());
-                                promise.complete(response);
-                            },
-                            cause -> {
-                                String queryErrorMes = "Fail to update filename in database";
-                                promise.fail(renameProjectData.reportRenameError(
-                                        RenameProjectData.RenameDataErrorCode.RENAME_FAIL.ordinal(), queryErrorMes).toString());
-                            }
-                    ));
-            renameProjectData.updateAnnotationCache(updatedFileName, uuid);
+
+            return runQuery(AnnotationQuery.getRenameProjectData(), params, AnnotationHandler.getJDBCPool(loader))
+                    .map(result -> {
+                        renameProjectData.updateAnnotationCache(updatedFileName, uuid);
+                        return newDataPath.toString();
+                    });
         }
-        else
-        {
-            String failRenameMes = "Fail to rename file";
+
+        String failRenameMes = "Fail to rename file";
+        if(!promise.future().isComplete()) {
             promise.fail(renameProjectData.reportRenameError(
                     RenameProjectData.RenameDataErrorCode.RENAME_FAIL.ordinal(), failRenameMes).toString());
         }
@@ -205,24 +184,20 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> starProject(String projectId, Boolean isStarred) {
+    public Future<Void> starProject(String projectId, Boolean isStarred) {
         Tuple params = Tuple.of(isStarred, projectId);
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(PortfolioDbQuery.getStarProject(), params)
-                .onComplete(DBUtils.handleResponse(
-                        result -> promise.complete(ReplyHandler.getOkReply()),
-                        promise::fail
-                ));
-        return promise.future();
+
+        return runQuery(PortfolioDbQuery.getStarProject(), params)
+                .map(DBUtils::toVoid);
     }
 
-    public Future<JsonObject> reloadProject(String projectId) {
+    public Future<Void> reloadProject(String projectId) {
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        Promise<JsonObject> promise = Promise.promise();
+        Promise<Void> promise = Promise.promise();
 
         if(ImageHandler.loadProjectRootPath(loader)) {
-             promise.complete(ReplyHandler.getOkReply());
+            promise.complete();
         } else {
             promise.fail(ReplyHandler.getFailedReply().toString());
         }
@@ -230,43 +205,35 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> getProjectMetadata(String projectId) {
+    public Future<List<ProjectMetaProperties>> getProjectMetadata(String projectId) {
 
-        Promise<JsonObject> promise = Promise.promise();
-        List<JsonObject> result = new ArrayList<>();
+        Promise<List<ProjectMetaProperties>> promise = Promise.promise();
+        List<ProjectMetaProperties> result = new ArrayList<>();
 
         PortfolioVerticle.getProjectMetadata(result, projectId);
-        JsonObject response = ReplyHandler.getOkReply()
-                .put(ParamConfig.getContent(), result);
-        promise.complete(response);
+        promise.complete(result);
 
         return promise.future();
     }
 
-    public Future<JsonObject> getAllProjectsMeta(int annotationType) {
+    public Future<List<ProjectMetaProperties>> getAllProjectsMeta(int annotationType) {
         Tuple params = Tuple.of(annotationType);
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), params)
-                .onComplete(DBUtils.handleResponse(
-                        result -> {
-                            List<JsonObject> projectData = new ArrayList<>();
-                            for (Row row : result)
-                            {
-                                String projectName = row.getString(0);
-                                PortfolioVerticle.getProjectMetadata(projectData,
-                                        ProjectHandler.getProjectId(projectName, annotationType));
-                            }
-                            JsonObject response = ReplyHandler.getOkReply()
-                                    .put(ParamConfig.getContent(), projectData);
-                            promise.complete(response);
-                        },
-                        promise::fail
-                ));
-        return promise.future();
+
+        return runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), params)
+                .map(result -> {
+                    List<ProjectMetaProperties> projectData = new ArrayList<>();
+                    for (Row row : result)
+                    {
+                        String projectName = row.getString(0);
+                        PortfolioVerticle.getProjectMetadata(projectData,
+                                ProjectHandler.getProjectId(projectName, annotationType));
+                    }
+                    return projectData;
+                });
     }
 
-    public Future<JsonObject> loadProject(String projectId) {
-        Promise<JsonObject> promise = Promise.promise();
+    public Future<Void> loadProject(String projectId) {
+        Promise<Void> promise = Promise.promise();
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         List<String> oriUUIDList = loader.getUuidListFromDb();
@@ -294,7 +261,7 @@ public class PortfolioDB {
                                 }
                                 loader.updateDBLoadingProgress(currentLength);
                                 if(!promise.future().isComplete()) {
-                                    promise.complete(ReplyHandler.getOkReply());
+                                    promise.complete();
                                 }
                             },
                             promise::fail
@@ -303,8 +270,8 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> getThumbnail(String projectId, String uuid) {
-        Promise<JsonObject> promise = Promise.promise();
+    public Future<ThumbnailProperties> getThumbnail(String projectId, String uuid) {
+        Promise<ThumbnailProperties> promise = Promise.promise();
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
 
         String annotationKey = PortfolioVerticle.getAnnotationKey(loader);
@@ -314,37 +281,33 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> getImageSource(String projectId, String uuid, String projectName) {
+    public Future<String> getImageSource(String projectId, String uuid, String projectName) {
         Tuple params = Tuple.of(uuid, projectId);
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(AnnotationQuery.getRetrieveDataPath(), params, AnnotationHandler.getJDBCPool(loader))
-                .onComplete(DBUtils.handleResponse(
-                        result -> {
-                            if (result.size() == 0) {
-                                promise.fail("Failure to retrieve data path for " + projectName + " with uuid " + uuid);
-                            } else {
-                                JsonObject response = ReplyHandler.getOkReply();
-                                Row row = result.iterator().next();
-                                String dataPath = row.getString(0);
 
-                                if(loader.isCloud()) {
-                                    response.put(ParamConfig.getImgSrcParam(),
-                                            WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
-                                } else {
-                                    File fileImgPath = AnnotationVerticle.getDataFullPath(projectId, dataPath);
-                                    response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
-                                }
-                                promise.complete(response);
-                            }
-                        },
-                        promise::fail
-                ));
-        return promise.future();
+        return runQuery(AnnotationQuery.getRetrieveDataPath(), params, AnnotationHandler.getJDBCPool(loader))
+                .map(result -> {
+                    if(result.size() != 0) {
+                        String imageStr;
+                        Row row = result.iterator().next();
+                        String dataPath = row.getString(0);
+
+                        if(loader.isCloud()) {
+                            imageStr = WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath);
+                        } else {
+                            File fileImgPath = AnnotationVerticle.getDataFullPath(projectId, dataPath);
+                            imageStr = ImageHandler.encodeFileToBase64Binary(fileImgPath);
+                        }
+                        return imageStr;
+                    }
+
+                    log.info("Failure to retrieve data path for " + projectName + " with uuid " + uuid);
+                    return null;
+                });
     }
 
-    public Future<JsonObject> updateData(JsonObject requestBody, String projectId) {
-        Promise<JsonObject> promise = Promise.promise();
+    public Future<Void> updateData(JsonObject requestBody, String projectId) {
+        Promise<Void> promise = Promise.promise();
         try
         {
             String uuid = requestBody.getString(ParamConfig.getUuidParam());
@@ -381,11 +344,8 @@ public class PortfolioDB {
                     uuid,
                     projectId);
 
-            runQuery(AnnotationQuery.getUpdateData(), params, AnnotationHandler.getJDBCPool(loader))
-                    .onComplete(DBUtils.handleResponse(
-                            result -> promise.complete(ReplyHandler.getOkReply()),
-                            promise::fail
-                    ));
+            return runQuery(AnnotationQuery.getUpdateData(), params, AnnotationHandler.getJDBCPool(loader))
+                    .map(DBUtils::toVoid);
         }
         catch (Exception e)
         {
@@ -396,62 +356,39 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> updateLastModifiedDate(String projectId, String dbFormat) {
+    public Future<Void> updateLastModifiedDate(String projectId, String dbFormat) {
 
         Tuple params = Tuple.of(dbFormat, projectId);
 
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(PortfolioDbQuery.getUpdateLastModifiedDate(), params)
-                .onComplete(DBUtils.handleResponse(
-                   result -> promise.complete(ReplyHandler.getOkReply()),
-                   cause -> {
-                       log.info(cause.getMessage());
-                       promise.fail(cause);
-                   }
-                ));
-        return promise.future();
+        return runQuery(PortfolioDbQuery.getUpdateLastModifiedDate(), params)
+                .map(DBUtils::toVoid);
     }
 
-    public Future<JsonObject> updateLabels(String projectId, JsonObject requestBody) {
+    public Future<Void> updateLabels(String projectId, JsonObject requestBody) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        JsonArray newLabelListJson = requestBody.getJsonArray(ParamConfig.getLabelListParam());
+        List<String> newLabelListJson = ConversionHandler.jsonArray2StringList(requestBody.getJsonArray(ParamConfig.getLabelListParam()));
         ProjectVersion project = loader.getProjectVersion();
 
         PortfolioVerticle.updateLoaderLabelList(loader, project, newLabelListJson);
 
         Tuple params = Tuple.of(project.getLabelVersionDbFormat(), projectId);
 
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(PortfolioDbQuery.getUpdateLabelList(), params)
-                .onComplete(DBUtils.handleResponse(
-                        result -> promise.complete(ReplyHandler.getOkReply()),
-                        promise::fail
-                ));
-
-        return promise.future();
+        return runQuery(PortfolioDbQuery.getUpdateLabelList(), params)
+                .map(DBUtils::toVoid);
     }
 
-    public Future<JsonObject> deleteProjectFromPortfolioDb(String projectID) {
+    public Future<Void> deleteProjectFromPortfolioDb(String projectID) {
         Tuple params = Tuple.of(projectID);
 
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(PortfolioDbQuery.getDeleteProject(), params)
-                .onComplete(DBUtils.handleResponse(
-                        result -> promise.complete(ReplyHandler.getOkReply()),
-                        promise::fail
-                ));
-        return promise.future();
+        return runQuery(PortfolioDbQuery.getDeleteProject(), params)
+                .map(DBUtils::toVoid);
     }
 
-    public Future<JsonObject> deleteProjectFromAnnotationDb(String projectId) {
+    public Future<Void> deleteProjectFromAnnotationDb(String projectId) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         Tuple params = Tuple.of(projectId);
-        Promise<JsonObject> promise = Promise.promise();
-        runQuery(AnnotationQuery.getDeleteProject(), params, AnnotationHandler.getJDBCPool(loader))
-                .onComplete(DBUtils.handleResponse(
-                        result -> promise.complete(ReplyHandler.getOkReply()),
-                        promise::fail
-                ));
-        return promise.future();
+
+        return runQuery(AnnotationQuery.getDeleteProject(), params, AnnotationHandler.getJDBCPool(loader))
+                .map(DBUtils::toVoid);
     }
 }
