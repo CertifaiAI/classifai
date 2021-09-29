@@ -1,34 +1,15 @@
-/*
- * Copyright (c) 2021 CertifAI Sdn. Bhd.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-package ai.classifai.router;
+package ai.classifai.router.endpoint;
 
-import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
-import ai.classifai.action.ProjectExport;
-import ai.classifai.action.rename.RenameProjectData;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.api.reader.CreateProjectReader;
-import ai.classifai.dto.api.reader.DeleteProjectDataReader;
 import ai.classifai.dto.api.reader.ProjectStatusReader;
-import ai.classifai.dto.api.reader.RenameDataReader;
 import ai.classifai.dto.api.reader.body.CreateProjectBody;
-import ai.classifai.dto.api.reader.body.DeleteProjectDataBody;
 import ai.classifai.dto.api.reader.body.ProjectStatusBody;
-import ai.classifai.dto.api.reader.body.RenameDataBody;
-import ai.classifai.dto.api.response.*;
+import ai.classifai.dto.api.response.FileSysStatusResponse;
+import ai.classifai.dto.api.response.LoadingStatusResponse;
+import ai.classifai.dto.api.response.ReloadProjectStatus;
+import ai.classifai.dto.api.response.SelectionStatusResponse;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.project.LabelFileSelector;
@@ -55,85 +36,22 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Classifai v2 endpoints
+ * Classifai v1 endpoints
  *
  * @author devenyantis
  */
 @Slf4j
-public class V2Endpoint extends EndpointBase {
-
-    @Setter private ProjectFolderSelector projectFolderSelector = null;
-    @Setter private ProjectImportSelector projectImporter = null;
-
-    @Setter private LabelFileSelector labelFileSelector = null;
+public class ProjectEndpoint {
 
     @Setter private PortfolioDB portfolioDB;
-
-    /***
-     * change is_load state of a project to false
-     *
-     * PUT http://localhost:{port}/:annotation_type/projects/:project_name
-     */
-    @PUT
-    @Path("/{annotation_type}/projects/{project_name}")
-    @RequestReader(ProjectStatusReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ActionStatus closeProjectState(@PathParam("annotation_type") String annotationType,
-                                          @PathParam("project_name") String projectName,
-                                          ProjectStatusBody requestBody)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(helper.checkIfProjectNull(projectID)) {
-            return ActionStatus.failDefault();
-        }
-
-        if(requestBody.getStatus().equals("closed"))
-        {
-            Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID)).setIsLoadedFrontEndToggle(Boolean.FALSE);
-        }
-        else
-        {
-            throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
-        }
-
-        return ActionStatus.ok();
-    }
-
-    /***
-     * Star a project
-     *
-     * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
-     */
-    @PUT
-    @Path("/{annotation_type}/projects/{project_name}/star")
-    @RequestReader(ProjectStatusReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Future<ActionStatus> starProject(@PathParam("annotation_type") String annotationType,
-                                            @PathParam("project_name") String projectName,
-                                            ProjectStatusBody requestBody)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(helper.checkIfProjectNull(projectID)) {
-            return HTTPResponseHandler.nullProjectResponse();
-        }
-
-        Boolean isStarred = Boolean.parseBoolean(requestBody.getStatus());
-        return portfolioDB.starProject(projectID, isStarred)
-                .map(result -> {
-                    ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-                    loader.setIsProjectStarred(isStarred);
-                    return ActionStatus.ok();
-                })
-                .otherwise(ActionStatus.failedWithMessage("Star project fail"));
-    }
+    @Setter private ProjectImportSelector projectImporter = null;
+    @Setter private ProjectFolderSelector projectFolderSelector = null;
+    @Setter private LabelFileSelector labelFileSelector = null;
 
     /**
      * Create new project
@@ -241,6 +159,13 @@ public class V2Endpoint extends EndpointBase {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
+        if(loader == null) {
+            return FileSysStatusResponse.builder()
+                    .message(ReplyHandler.getFAILED())
+                    .errorMessage("Project not exist: " + projectName)
+                    .build();
+        }
+
         FileSystemStatus status = loader.getFileSystemStatus();
 
         FileSysStatusResponse response = FileSysStatusResponse.builder()
@@ -275,7 +200,7 @@ public class V2Endpoint extends EndpointBase {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(helper.checkIfProjectNull(loader)) {
+        if(loader == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
@@ -318,7 +243,7 @@ public class V2Endpoint extends EndpointBase {
 
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(helper.checkIfProjectNull(loader)) {
+        if(loader == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
@@ -346,7 +271,7 @@ public class V2Endpoint extends EndpointBase {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(helper.checkIfProjectNull(loader)) {
+        if(loader == null) {
             return ReloadProjectStatus.builder()
                     .message(ReplyHandler.getFAILED())
                     .errorMessage("Project not exist")
@@ -375,95 +300,211 @@ public class V2Endpoint extends EndpointBase {
         return response;
     }
 
-    /***
-     * export a project to configuration file
+    /**
+     * Load existing project from the bounding box database
      *
-     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/export/:export_type
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld
+     *
      */
-    @PUT
-    @Path("/v2/{annotation_type}/projects/{project_name}/export/{export_type}")
+    @GET
+    @Path("/{annotation_type}/projects/{project_name}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Future<ActionStatus> exportProject(@PathParam("annotation_type") String annotationType,
-                                              @PathParam("project_name") String projectName,
-                                              @PathParam("export_type") String exportTypeVar)
+    public Future<ActionStatus> loadProject(@PathParam("annotation_type") String annotationType,
+                                            @PathParam("project_name") String projectName)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
 
-        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        Promise<ActionStatus> promise = Promise.promise();
 
-        if(helper.checkIfProjectNull(projectId)) {
+        if(loader == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
-        ActionConfig.ExportType exportType = ProjectExport.getExportType(exportTypeVar);
-        if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) {
+        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
+
+        if(loader.isCloud())
+        {
+            //FIXME
+            promise.complete(ActionStatus.ok());
+        }
+        else
+        {
+            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
+
+            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
+            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
+            {
+                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
+                return portfolioDB.loadProject(loader.getProjectId())
+                        .map(ActionStatus.ok())
+                        .otherwise(ActionStatus.failedWithMessage("Failed to load project " + projectName + ". Check validity of data points failed."));
+            }
+            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
+            {
+                promise.complete(ActionStatus.failedWithMessage("Loading project is in progress in the backend. Did not reinitiated."));
+            }
+            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
+            {
+                promise.complete(ActionStatus.failedWithMessage("LoaderStatus with error message when loading project " + projectName + " .Loading project aborted."));
+            }
+        }
+
+        return promise.future();
+    }
+
+
+    /**
+     * Get status of loading a project
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/loadingstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
+     */
+    @GET
+    @Path("/{annotation_type}/projects/{project_name}/loadingstatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    public LoadingStatusResponse loadProjectStatus(@PathParam("annotation_type") String annotationType,
+                                                   @PathParam("project_name") String projectName)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if (projectLoader == null) {
+            return LoadingStatusResponse.builder()
+                    .message(ProjectLoaderStatus.ERROR.ordinal())
+                    .errorMessage("Project not exist")
+                    .build();
+        }
+
+        ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
+
+        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING)) {
+            return LoadingStatusResponse.builder()
+                    .message(projectLoaderStatus.ordinal())
+                    .progress(projectLoader.getProgress())
+                    .build();
+
+        } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
+
+            // Remove empty string from label list
+            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
+
+            // Remove empty string from label list
+            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
+
+            return LoadingStatusResponse.builder()
+                    .message(projectLoaderStatus.ordinal())
+                    .labelList(projectLoader.getLabelList())
+                    .sanityUuidList(projectLoader.getSanityUuidList())
+                    .build();
+
+        }
+
+        return LoadingStatusResponse.builder()
+                .message(ProjectLoaderStatus.ERROR.ordinal())
+                .errorMessage("Loading failed. LoaderStatus error for project " + projectName)
+                .build();
+
+    }
+
+    /**
+     * Delete project
+     *
+     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    @DELETE
+    @Path("/{annotation_type}/projects/{project_name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ActionStatus> deleteProject(@PathParam("annotation_type") String annotationType,
+                                              @PathParam("project_name") String projectName)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        if(projectID == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
-        return portfolioDB.exportProject(projectId, exportType.ordinal())
-                .map(ActionStatus.ok())
-                .otherwise(cause -> {
-                    ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
-                    return ActionStatus.failedWithMessage("Export of project failed for " + projectName);
-                });
+        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
+
+        return portfolioDB.deleteProjectFromPortfolioDb(projectID)
+                .compose(result -> portfolioDB.deleteProjectFromAnnotationDb(projectID))
+                .map(result -> {
+                    ProjectHandler.deleteProjectFromCache(projectID);
+                    return ActionStatus.ok();
+                })
+                .onFailure(cause -> ActionStatus.failedWithMessage(errorMessage));
     }
 
-    /**
-     * Get export project status
-     * GET http://localhost:{port}/v2/:annotation_type/projects/exportstatus
+    /***
+     * change is_load state of a project to false
      *
-     * Example:
-     * GET http://localhost:{port}/v2/bndbox/projects/exportstatus
-     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name
      */
-    @GET
-    @Path("/v2/{annotation_type}/projects/exportstatus")
+    @PUT
+    @Path("/{annotation_type}/projects/{project_name}")
+    @RequestReader(ProjectStatusReader.class)
     @Produces(MediaType.APPLICATION_JSON)
-    public ExportStatusResponse getExportStatus()
+    public ActionStatus closeProjectState(@PathParam("annotation_type") String annotationType,
+                                          @PathParam("project_name") String projectName,
+                                          ProjectStatusBody requestBody)
     {
-        ProjectExport.ProjectExportStatus exportStatus = ProjectExport.getExportStatus();
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        ExportStatusResponse response = ExportStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
-                .exportStatus(exportStatus.ordinal())
-                .exportStatusMessage(exportStatus.name())
-                .build();
-
-        if(exportStatus.equals(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS))
-        {
-            response.setProjectConfigPath(ProjectExport.getExportPath());
+        if(projectID == null) {
+            return ActionStatus.failDefault();
         }
 
-       return response;
+        if(requestBody.getStatus().equals("closed"))
+        {
+            Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID)).setIsLoadedFrontEndToggle(Boolean.FALSE);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
+        }
+
+        return ActionStatus.ok();
     }
 
-    /**
-     * Get import project status
-     * GET http://localhost:{port}/v2/:annotation_type/projects/c
+    /***
+     * Star a project
      *
-     * Example:
-     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
-     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
      */
-    @GET
-    @Path("/v2/{annotation_type}/projects/importstatus")
+    @PUT
+    @Path("/{annotation_type}/projects/{project_name}/star")
+    @RequestReader(ProjectStatusReader.class)
     @Produces(MediaType.APPLICATION_JSON)
-    public FileSysStatusResponse getImportStatus()
+    public Future<ActionStatus> starProject(@PathParam("annotation_type") String annotationType,
+                                            @PathParam("project_name") String projectName,
+                                            ProjectStatusBody requestBody)
     {
-        FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
 
-        FileSysStatusResponse response = FileSysStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
-                .fileSystemStatus(fileSysStatus.ordinal())
-                .fileSystemMessage(fileSysStatus.name())
-                .build();
-
-        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
-        {
-            response.setProjectName(ProjectImportSelector.getProjectName());
+        if(projectID == null) {
+            return HTTPResponseHandler.nullProjectResponse();
         }
 
-        return response;
+        Boolean isStarred = Boolean.parseBoolean(requestBody.getStatus());
+        return portfolioDB.starProject(projectID, isStarred)
+                .map(result -> {
+                    ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+                    loader.setIsProjectStarred(isStarred);
+                    return ActionStatus.ok();
+                })
+                .otherwise(ActionStatus.failedWithMessage("Star project fail"));
     }
 
     /**
@@ -591,79 +632,31 @@ public class V2Endpoint extends EndpointBase {
     }
 
     /**
-     * Load data based on uuid
-     * DELETE http://localhost:{port}/v2/:annotation_type/projects/:project_name/uuids
-     *
-     * json payload = {
-     *      "uuid_list": ["d99fed36-4eb5-4572-b2c7-ca8d4136e692", "d99fed36-4eb5-4572-b2c7-ca8d4136d2d3f"],
-     *      "img_path_list": [
-     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\12.jpg",
-     *              "C:\Users\Deven.Yantis\Desktop\classifai-car-images\1.jpg"
-     *       ]
-     *  }
+     * Get import project status
+     * GET http://localhost:{port}/v2/:annotation_type/projects/c
      *
      * Example:
-     * DELETE http://localhost:{port}/v2/bndbox/projects/helloworld/uuids
+     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
+     *
      */
-    @DELETE
-    @Path("/v2/{annotation_type}/projects/{project_name}/uuids")
-    @RequestReader(DeleteProjectDataReader.class)
+    @GET
+    @Path("/v2/{annotation_type}/projects/importstatus")
     @Produces(MediaType.APPLICATION_JSON)
-    public Future<DeleteProjectDataResponse> deleteProjectData(@PathParam("annotation_type") String annotationType,
-                                                               @PathParam("project_name") String projectName,
-                                                               DeleteProjectDataBody requestBody)
+    public FileSysStatusResponse getImportStatus()
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
 
-        if(helper.checkIfProjectNull(projectID)) {
-            return Future.succeededFuture(DeleteProjectDataResponse.builder()
-                    .message(ReplyHandler.getFAILED())
-                    .errorMessage("Project not exist")
-                    .build());
+        FileSysStatusResponse response = FileSysStatusResponse.builder()
+                .message(ReplyHandler.getSUCCESSFUL())
+                .fileSystemStatus(fileSysStatus.ordinal())
+                .fileSystemMessage(fileSysStatus.name())
+                .build();
+
+        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            response.setProjectName(ProjectImportSelector.getProjectName());
         }
 
-        return portfolioDB.deleteProjectData(projectID, requestBody.getUuidList(), requestBody.getImgPathList())
-                .map(result -> DeleteProjectDataResponse.builder()
-                        .message(ReplyHandler.getSUCCESSFUL())
-                        .uuidList(result)
-                        .build())
-                .otherwise(DeleteProjectDataResponse.builder()
-                        .message(ReplyHandler.getFAILED())
-                        .errorMessage("Delete project data fail")
-                        .build());
-
-    }
-
-    /**
-     * Rename data filename
-     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/imgsrc/rename
-     *
-     * Example:
-     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/imgsrc/rename
-     *
-     * json payload = {
-     *      "uuid" : "f592a6e2-53f8-4730-930c-8357d191de48"
-     *      "new_fname" : "new_7.jpg"
-     * }
-     *
-     */
-    @PUT
-    @Path("/v2/{annotation_type}/projects/{project_name}/imgsrc/rename")
-    @RequestReader(RenameDataReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Future<RenameDataResponse> renameData(@PathParam("annotation_type") String annotationType,
-                                                 @PathParam("project_name") String projectName,
-                                                 RenameDataBody requestBody)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        return portfolioDB.renameData(projectId, requestBody.getUuid(), requestBody.getNewFilename())
-                .map(result -> RenameDataResponse.builder()
-                        .message(ReplyHandler.getSUCCESSFUL())
-                        .imgPath(result)
-                        .build())
-                .otherwise(cause -> RenameProjectData.reportRenameError(cause.getMessage()));
+        return response;
     }
 }

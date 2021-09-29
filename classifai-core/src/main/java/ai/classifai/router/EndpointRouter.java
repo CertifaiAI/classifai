@@ -19,6 +19,7 @@ import ai.classifai.action.FileGenerator;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.router.endpoint.*;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
@@ -47,8 +48,12 @@ public class EndpointRouter extends AbstractVerticle
     private LabelFileSelector labelFileSelector;
     private FileGenerator fileGenerator;
 
-    V1Endpoint v1 = new V1Endpoint();
-    V2Endpoint v2 = new V2Endpoint();
+    OperationEndpoint operationEndpoint = new OperationEndpoint();
+    ImageEndpoint imageEndpoint = new ImageEndpoint();
+    ProjectEndpoint projectEndpoint = new ProjectEndpoint();
+    ProjectMetadataEndpoint projectMetadataEndpoint = new ProjectMetadataEndpoint();
+    DataEndpoint dataEndpoint = new DataEndpoint();
+    ExportProjectEndpoint exportProjectEndpoint = new ExportProjectEndpoint();
 
     CloudEndpoint cloud = new CloudEndpoint();
 
@@ -78,15 +83,18 @@ public class EndpointRouter extends AbstractVerticle
     {
         H2 h2 = DbConfig.getH2();
         JDBCPool portFolioPool = PortfolioVerticle.createJDBCPool(vertx, h2);
+        PortfolioDB portfolioDB = new PortfolioDB(portFolioPool);
 
-        v1.setVertx(vertx);
-        v1.setPortfolioDB(new PortfolioDB(portFolioPool));
+        operationEndpoint.setPortfolioDB(portfolioDB);
+        imageEndpoint.setPortfolioDB(portfolioDB);
+        projectEndpoint.setPortfolioDB(portfolioDB);
+        projectMetadataEndpoint.setPortfolioDB(portfolioDB);
+        dataEndpoint.setPortfolioDB(portfolioDB);
+        exportProjectEndpoint.setPortfolioDB(portfolioDB);
 
-        v2.setVertx(vertx);
-        v2.setProjectFolderSelector(projectFolderSelector);
-        v2.setProjectImporter(projectImporter);
-        v2.setLabelFileSelector(labelFileSelector);
-        v2.setPortfolioDB(new PortfolioDB(portFolioPool));
+        projectEndpoint.setProjectImporter(projectImporter);
+        projectEndpoint.setProjectFolderSelector(projectFolderSelector);
+        projectEndpoint.setLabelFileSelector(labelFileSelector);
 
         cloud.setVertx(vertx);
 
@@ -102,7 +110,9 @@ public class EndpointRouter extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
-        Router router = RestRouter.register(vertx, v1, v2);
+        Router router = RestRouter.register(vertx,
+                projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
+                imageEndpoint, projectEndpoint, dataEndpoint);
 
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());

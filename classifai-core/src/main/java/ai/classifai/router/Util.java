@@ -19,10 +19,8 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.ext.web.RoutingContext;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -33,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Util {
 
-    public boolean checkIfProjectNull(Object project)
+    public static boolean checkIfProjectNull(Object project)
     {
         return project == null;
     }
