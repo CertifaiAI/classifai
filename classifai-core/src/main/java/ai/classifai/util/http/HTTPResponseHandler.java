@@ -17,12 +17,8 @@ package ai.classifai.util.http;
 
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
 
 /**

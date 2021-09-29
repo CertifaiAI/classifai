@@ -30,20 +30,20 @@ class ActionSucceeded implements ActionStatus {
 @Data
 @AllArgsConstructor
 class ActionSucceededWithMessage implements ActionStatus {
-    private final int message = 1;
+    private static final int message = 1;
     private Object content;
 }
 
 @Data
 class ActionFailDefault implements ActionStatus {
-    private final int message = 0;
-    private final String errorMessage = "Endpoint fail";
+    private static final int message = 0;
+    private static final String errorMessage = "Endpoint fail";
 }
 
 @Data
 @AllArgsConstructor
 class ActionFailed implements ActionStatus {
-    private final int message = 0;
-    private final int errorCode = 1;
+    private static final int message = 0;
+    private static final int errorCode = 1;
     private final String errorMessage;
 }
