@@ -19,6 +19,7 @@ import ai.classifai.util.http.HTTPResponseHandler;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -33,8 +34,8 @@ public class ReplyHandler {
     private static final String ERROR_MESSAGE = "error_message";
 
     private static final String MESSAGE_KEY = "message";
-    private static final Integer SUCCESSFUL = 1;
-    private static final Integer FAILED = 0;
+    @Getter private static final Integer SUCCESSFUL = 1;
+    @Getter private static final Integer FAILED = 0;
 
     public static String getErrorCodeKey() {return ERROR_CODE; }
 

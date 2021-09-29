@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.dto;
+package ai.classifai.dto.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

@@ -15,9 +15,8 @@
  */
 package ai.classifai.action;
 
-import ai.classifai.dto.ProjectConfigProperties;
+import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
-import io.vertx.core.json.JsonObject;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 

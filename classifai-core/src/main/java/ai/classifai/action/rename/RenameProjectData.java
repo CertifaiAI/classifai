@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.action;
+package ai.classifai.action.rename;
 
 import ai.classifai.database.versioning.Annotation;
+import ai.classifai.dto.api.response.RenameDataResponse;
 import ai.classifai.loader.ProjectLoader;
-import io.vertx.core.json.JsonObject;
+import ai.classifai.util.message.ReplyHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -33,13 +34,6 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public final class RenameProjectData {
-
-    public enum RenameDataErrorCode {
-        RENAME_FAIL,
-        FILENAME_EXIST,
-        FILENAME_CONTAIN_ILLEGAL_CHAR,
-        RENAME_SUCCESS
-    }
 
     private final ProjectLoader loader;
     private Annotation annotation;
@@ -110,12 +104,14 @@ public final class RenameProjectData {
 
     }
 
-    public JsonObject reportRenameError(int errorKey, String errorMessage)
+    public static RenameDataResponse reportRenameError(String errorKeyStr)
     {
-        log.info(errorMessage);
+        RenameDataErrorCode errorKey = RenameDataErrorCode.valueOf(errorKeyStr);
 
-        return new JsonObject().put("message", 0)
-                .put("error_code", errorKey)
-                .put("error_message", errorMessage);
+        return RenameDataResponse.builder()
+                .message(ReplyHandler.getFAILED())
+                .errorCode(errorKey.ordinal())
+                .errorMessage(errorKey.getErrorMessage())
+                .build();
     }
 }

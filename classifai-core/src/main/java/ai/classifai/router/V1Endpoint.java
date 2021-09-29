@@ -17,10 +17,14 @@ package ai.classifai.router;
 
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.dto.ProjectMetaProperties;
+import ai.classifai.dto.api.reader.DataUpdateReader;
+import ai.classifai.dto.api.reader.LabelListReader;
+import ai.classifai.dto.api.reader.body.LabelListBody;
+import ai.classifai.dto.api.response.ImageSourceResponse;
+import ai.classifai.dto.api.response.LoadingStatusResponse;
+import ai.classifai.dto.data.ThumbnailProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -28,20 +32,15 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
+import com.zandero.rest.annotation.RequestReader;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -50,8 +49,7 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
-@Path("/")
-@Produces(MediaType.APPLICATION_JSON)
+@Path("/{annotation_type}/projects")
 public class V1Endpoint extends EndpointBase
 {
     @Setter
@@ -64,16 +62,17 @@ public class V1Endpoint extends EndpointBase
      *
      */
     @GET
-    @Path("/{annotation_type}/projects/{project_name}/meta")
+    @Path("/{project_name}/meta")
+    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> getProjectMetadata(@PathParam("annotation_type") String annotationType,
-                                           @PathParam("project_name") String projectName)
+                                                   @PathParam("project_name") String projectName)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
         log.info("Get metadata of project: " + projectName + " of annotation type: " + type.name());
 
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectName, type));
         if(helper.checkIfProjectNull(loader)) {
-            return HTTPResponseHandler.nullFailResponse();
+            return HTTPResponseHandler.nullProjectResponse();
         }
 
         return portfolioDB.getProjectMetadata(loader.getProjectId())
@@ -87,64 +86,72 @@ public class V1Endpoint extends EndpointBase
      *
      */
     @GET
-    @Path("/{annotation_type}/projects/meta")
-    public Future<ActionStatus> getAllProjectsMeta(@PathParam("annotation_type") String annotation_type)
+    @Path("/meta")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ActionStatus> getAllProjectsMeta(@PathParam("annotation_type") String annotationType)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotation_type);
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
 
         return portfolioDB.getAllProjectsMeta(type.ordinal())
                 .map(ActionStatus::okWithResponse)
                 .otherwise(cause -> ActionStatus.failedWithMessage("Failure in getting all the projects for " + type.name()));
     }
 
-//    /**
-//     * Load existing project from the bounding box database
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name
-//     *
-//     * Example:
-//     * GET http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    public void loadProject(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-//
-//        if(helper.checkIfProjectNull(context, loader, projectName)) return;
-//
-//        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
-//
-//        if(loader.isCloud())
-//        {
-//            //FIXME
-//            HTTPResponseHandler.configureOK(context);
-//        }
-//        else
-//        {
-//            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
-//
-//            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-//            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
-//            {
-//                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-//                Future<Void> future = portfolioDB.loadProject(loader.getProjectId());
-//                ReplyHandler.sendEmptyResult(context, future,
-//                        "Failed to load project " + projectName + ". Check validity of data points failed.");
-//            }
-//            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Loading project is in progress in the backend. Did not reinitiated."));
-//            }
-//            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
-//            {
-//                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("LoaderStatus with error message when loading project " + projectName + ".Loading project aborted. "));
-//            }
-//        }
-//    }
+    /**
+     * Load existing project from the bounding box database
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * GET http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    @GET
+    @Path("/{project_name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ActionStatus> loadProject(@PathParam("annotation_type") String annotationType,
+                                            @PathParam("project_name") String projectName)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        Promise<ActionStatus> promise = Promise.promise();
+
+        if(helper.checkIfProjectNull(loader)) {
+            return HTTPResponseHandler.nullProjectResponse();
+        }
+
+        loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
+
+        if(loader.isCloud())
+        {
+            //FIXME
+            promise.complete(ActionStatus.ok());
+        }
+        else
+        {
+            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
+
+            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
+            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
+            {
+                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
+                return portfolioDB.loadProject(loader.getProjectId())
+                        .map(ActionStatus.ok())
+                        .otherwise(ActionStatus.failedWithMessage("Failed to load project " + projectName + ". Check validity of data points failed."));
+            }
+            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
+            {
+                promise.complete(ActionStatus.failedWithMessage("Loading project is in progress in the backend. Did not reinitiated."));
+            }
+            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
+            {
+                promise.complete(ActionStatus.failedWithMessage("LoaderStatus with error message when loading project " + projectName + " .Loading project aborted."));
+            }
+        }
+
+        return promise.future();
+    }
 
 
     /**
@@ -156,205 +163,205 @@ public class V1Endpoint extends EndpointBase
      * GET http://localhost:{port}/seg/projects/helloworld/loadingstatus
      */
     @GET
-    @Path("/{annotation_type}/projects/{project_name}/loadingstatus")
-    public Future<ActionStatus> loadProjectStatus(@PathParam("annotation_type") String annotationType,
-                                                  @PathParam("project_name") String projectName)
+    @Path("/{project_name}/loadingstatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    public LoadingStatusResponse loadProjectStatus(@PathParam("annotation_type") String annotationType,
+                                                           @PathParam("project_name") String projectName)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-
         ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
 
         if (helper.checkIfProjectNull(projectLoader)) {
-            return HTTPResponseHandler.nullFailResponse();
+            return LoadingStatusResponse.builder()
+                    .message(ProjectLoaderStatus.ERROR.ordinal())
+                    .errorMessage("Project not exist")
+                    .build();
         }
 
         ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
 
-        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
-        {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
-
-            jsonObject.put(ParamConfig.getProgressMetadata(), projectLoader.getProgress());
-
-            HTTPResponseHandler.configureOK(context, jsonObject);
+        if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING)) {
+            return LoadingStatusResponse.builder()
+                    .message(projectLoaderStatus.ordinal())
+                    .progress(projectLoader.getProgress())
+                    .build();
 
         } else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
-
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), projectLoaderStatus.ordinal());
 
             // Remove empty string from label list
             projectLoader.getLabelList().removeAll(Collections.singletonList(""));
 
-            jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
-            jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
+            // Remove empty string from label list
+            projectLoader.getLabelList().removeAll(Collections.singletonList(""));
 
-            HTTPResponseHandler.configureOK(context, jsonObject);
+            return LoadingStatusResponse.builder()
+                    .message(projectLoaderStatus.ordinal())
+                    .labelList(projectLoader.getLabelList())
+                    .sanityUuidList(projectLoader.getSanityUuidList())
+                    .build();
 
         }
-        else if (projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
-        {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.put(ReplyHandler.getMessageKey(), ProjectLoaderStatus.ERROR.ordinal());
-            jsonObject.put(ReplyHandler.getErrorMesageKey(), "Loading failed. LoaderStatus error for project " + projectName);
 
-            HTTPResponseHandler.configureOK(context, jsonObject);
-        }
+        return LoadingStatusResponse.builder()
+                .message(ProjectLoaderStatus.ERROR.ordinal())
+                .errorMessage("Loading failed. LoaderStatus error for project " + projectName)
+                .build();
+
     }
 
-//    /**
-//     * Retrieve thumbnail with metadata
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
-//     *
-//     */
-//    public void getThumbnail(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        portfolioDB.getThumbnail(projectID, uuid)
-//                .onSuccess(result -> {
-//                    ObjectMapper mp = new ObjectMapper();
-//                    try {
-//                        String jsonString = mp.writeValueAsString(result);
-//                        JsonObject response = new JsonObject(jsonString);
-//                        HTTPResponseHandler.configureOK(context, response);
-//                    } catch (JsonProcessingException e) {
-//                        HTTPResponseHandler.configureOK(context,
-//                                ReplyHandler.reportUserDefinedError("Error converting to JSON"));
-//                    }
-//                })
-//                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-//                        ReplyHandler.reportUserDefinedError("Fail retrieving thumbnail")));
-//    }
-//
-//    /***
-//     *
-//     * Get Image Source
-//     *
-//     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
-//     *
-//     */
-//    public void getImageSource(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//        String uuid = context.request().getParam(ParamConfig.getUuidParam());
-//
-//        portfolioDB.getImageSource(projectID, uuid, projectName)
-//                .onSuccess(result -> HTTPResponseHandler.configureOK(context,
-//                        ReplyHandler.getOkReply().put(ParamConfig.getImgSrcParam(), result)))
-//                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-//                        ReplyHandler.reportUserDefinedError("Fail getting image source")));
-//    }
-//
-//    /***
-//     *
-//     * Update labelling information
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
-//     *
-//     */
-//    public void updateData(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(handler -> {
-//            JsonObject requestBody = handler.toJsonObject();
-//
-//            portfolioDB.updateData(requestBody, projectID)
-//                    .onSuccess(result -> {
-//                        updateLastModifiedDate(loader);
-//                        HTTPResponseHandler.configureOK(context);
-//                    })
-//                    .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-//                            ReplyHandler.reportUserDefinedError("Failure in updating database for " + type + " project: " + projectName)));
-//        });
-//    }
-//
-//    private void updateLastModifiedDate(ProjectLoader loader)
-//    {
-//        String projectID = loader.getProjectId();
-//
-//        Version version = loader.getProjectVersion().getCurrentVersion();
-//
-//        version.setLastModifiedDate(new DateTime());
-//
-//        portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat())
-//                .onFailure(cause -> log.info("Databse update fail. Type: " + loader.getAnnotationType() + " Project: " + loader.getProjectName()));
-//    }
-//
-//
-//    /***
-//     *
-//     * Update labels
-//     *
-//     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
-//     *
-//     */
-//    public void updateLabels(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        context.request().bodyHandler(handlers -> {
-//            JsonObject requestBody = handlers.toJsonObject();
-//
-//            Future<Void> future = portfolioDB.updateLabels(projectID, requestBody);
-//            ReplyHandler.sendEmptyResult(context, future, "Fail to update labels: " + projectName);
-//        });
-//    }
-//
-//    /**
-//     * Delete project
-//     *
-//     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
-//     *
-//     * Example:
-//     * DELETE http://localhost:{port}/bndbox/projects/helloworld
-//     *
-//     */
-//    public void deleteProject(RoutingContext context)
-//    {
-//        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
-//
-//        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
-//
-//        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-//
-//        if(helper.checkIfProjectNull(context, projectID, projectName)) return;
-//
-//        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
-//
-//
-//        portfolioDB.deleteProjectFromPortfolioDb(projectID)
-//                .compose(result -> portfolioDB.deleteProjectFromAnnotationDb(projectID))
-//                .onSuccess(result -> {
-//                    ProjectHandler.deleteProjectFromCache(projectID);
-//                    HTTPResponseHandler.configureOK(context);
-//                })
-//                .onFailure(cause -> HTTPResponseHandler.configureOK(context,
-//                        ReplyHandler.reportUserDefinedError(errorMessage)));
-//    }
+    /**
+     * Retrieve thumbnail with metadata
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail
+     *
+     */
+    @GET
+    @Path("/{project_name}/uuid/{uuid}/thumbnail")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ThumbnailProperties> getThumbnail(@PathParam("annotation_type") String annotationType,
+                                                    @PathParam("project_name") String projectName ,
+                                                    @PathParam("uuid") String uuid)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        return portfolioDB.getThumbnail(projectID, uuid);
+    }
+
+    /***
+     *
+     * Get Image Source
+     *
+     * GET http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc
+     *
+     */
+    @GET
+    @Path("/{project_name}/uuid/{uuid}/imgsrc")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ImageSourceResponse> getImageSource(@PathParam("annotation_type") String annotationType,
+                                                      @PathParam("project_name") String projectName,
+                                                      @PathParam("uuid") String uuid)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        return portfolioDB.getImageSource(projectID, uuid, projectName)
+                .map(result -> ImageSourceResponse.builder()
+                        .message(ReplyHandler.getSUCCESSFUL())
+                        .imgSrc(result)
+                        .build())
+                .otherwise(ImageSourceResponse.builder()
+                        .message(ReplyHandler.getFAILED())
+                        .errorMessage("Fail getting image source")
+                        .build());
+    }
+
+    /***
+     *
+     * Update labelling information
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/uuid/:uuid/update
+     *
+     */
+    @PUT
+    @Path("/{project_name}/uuid/{uuid}/update")
+    @RequestReader(DataUpdateReader.class)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ActionStatus> updateData(@PathParam("annotation_type") String annotationType,
+                                           @PathParam("project_name") String projectName,
+                                           @PathParam("uuid") String uuid,
+                                           ThumbnailProperties requestBody)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+
+        if(helper.checkIfProjectNull(projectID)) {
+            return HTTPResponseHandler.nullProjectResponse();
+        }
+
+        return portfolioDB.updateData(requestBody, projectID)
+                .map(result -> {
+                    updateLastModifiedDate(loader);
+                    return ActionStatus.ok();
+                })
+                .otherwise(ActionStatus.failedWithMessage("Failure in updating database for " + type + " project: " + projectName));
+    }
+
+    private void updateLastModifiedDate(ProjectLoader loader)
+    {
+        String projectID = loader.getProjectId();
+
+        Version version = loader.getProjectVersion().getCurrentVersion();
+
+        version.setLastModifiedDate(new DateTime());
+
+        portfolioDB.updateLastModifiedDate(projectID, version.getDbFormat())
+                .onFailure(cause -> log.info("Databse update fail. Type: " + loader.getAnnotationType() + " Project: " + loader.getProjectName()));
+    }
+
+
+    /***
+     *
+     * Update labels
+     *
+     * PUT http://localhost:{port}/:annotation_type/projects/:project_name/newlabels
+     *
+     */
+    @PUT
+    @Path("/{project_name}/newlabels")
+    @RequestReader(LabelListReader.class)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ActionStatus> updateLabels(@PathParam("annotation_type") String annotationType,
+                                             @PathParam("project_name") String projectName,
+                                             LabelListBody requestBody)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        if(helper.checkIfProjectNull(projectID)) {
+            return HTTPResponseHandler.nullProjectResponse();
+        };
+
+        return portfolioDB.updateLabels(projectID, requestBody.getLabelList())
+                .map(ActionStatus.ok())
+                .otherwise(ActionStatus.failedWithMessage("Fail to update labels: " + projectName));
+    }
+
+
+    /**
+     * Delete project
+     *
+     * DELETE http://localhost:{port}/:annotation_type/projects/:project_name
+     *
+     * Example:
+     * DELETE http://localhost:{port}/bndbox/projects/helloworld
+     *
+     */
+    @DELETE
+    @Path("/{project_name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Future<ActionStatus> deleteProject(@PathParam("annotation_type") String annotationType,
+                                              @PathParam("project_name") String projectName)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+
+        if(helper.checkIfProjectNull(projectID)) {
+            return HTTPResponseHandler.nullProjectResponse();
+        }
+
+        String errorMessage = "Failure in delete project name: " + projectName + " for " + type.name();
+
+        return portfolioDB.deleteProjectFromPortfolioDb(projectID)
+                .compose(result -> portfolioDB.deleteProjectFromAnnotationDb(projectID))
+                .map(result -> {
+                    ProjectHandler.deleteProjectFromCache(projectID);
+                    return ActionStatus.ok();
+                })
+                .onFailure(cause -> ActionStatus.failedWithMessage(errorMessage));
+    }
 
 }
