@@ -24,7 +24,7 @@ public interface ActionStatus {
 
 @Data
 class ActionSucceeded implements ActionStatus {
-    private final int message = 1;
+    private static final int message = 1;
 }
 
 @Data
