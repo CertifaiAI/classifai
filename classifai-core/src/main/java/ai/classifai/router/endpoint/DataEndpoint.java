@@ -2,23 +2,22 @@ package ai.classifai.router.endpoint;
 
 import ai.classifai.action.rename.RenameProjectData;
 import ai.classifai.database.portfolio.PortfolioDB;
-import ai.classifai.dto.api.reader.DeleteProjectDataReader;
-import ai.classifai.dto.api.reader.RenameDataReader;
-import ai.classifai.dto.api.reader.body.DeleteProjectDataBody;
-import ai.classifai.dto.api.reader.body.RenameDataBody;
+import ai.classifai.dto.api.body.DeleteProjectDataBody;
+import ai.classifai.dto.api.body.RenameDataBody;
 import ai.classifai.dto.api.response.DeleteProjectDataResponse;
 import ai.classifai.dto.api.response.RenameDataResponse;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import com.zandero.rest.annotation.RequestReader;
 import io.vertx.core.Future;
 import lombok.Setter;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class DataEndpoint {
 
     @Setter
@@ -41,8 +40,6 @@ public class DataEndpoint {
      */
     @DELETE
     @Path("/v2/{annotation_type}/projects/{project_name}/uuids")
-    @RequestReader(DeleteProjectDataReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<DeleteProjectDataResponse> deleteProjectData(@PathParam("annotation_type") String annotationType,
                                                                @PathParam("project_name") String projectName,
                                                                DeleteProjectDataBody requestBody)
@@ -52,18 +49,18 @@ public class DataEndpoint {
 
         if(projectID == null) {
             return Future.succeededFuture(DeleteProjectDataResponse.builder()
-                    .message(ReplyHandler.getFAILED())
+                    .message(ReplyHandler.FAILED)
                     .errorMessage("Project not exist")
                     .build());
         }
 
         return portfolioDB.deleteProjectData(projectID, requestBody.getUuidList(), requestBody.getImgPathList())
                 .map(result -> DeleteProjectDataResponse.builder()
-                        .message(ReplyHandler.getSUCCESSFUL())
+                        .message(ReplyHandler.SUCCESSFUL)
                         .uuidList(result)
                         .build())
                 .otherwise(DeleteProjectDataResponse.builder()
-                        .message(ReplyHandler.getFAILED())
+                        .message(ReplyHandler.FAILED)
                         .errorMessage("Delete project data fail")
                         .build());
 
@@ -84,7 +81,6 @@ public class DataEndpoint {
      */
     @PUT
     @Path("/v2/{annotation_type}/projects/{project_name}/imgsrc/rename")
-    @RequestReader(RenameDataReader.class)
     @Produces(MediaType.APPLICATION_JSON)
     public Future<RenameDataResponse> renameData(@PathParam("annotation_type") String annotationType,
                                                  @PathParam("project_name") String projectName,
@@ -95,7 +91,7 @@ public class DataEndpoint {
 
         return portfolioDB.renameData(projectId, requestBody.getUuid(), requestBody.getNewFilename())
                 .map(result -> RenameDataResponse.builder()
-                        .message(ReplyHandler.getSUCCESSFUL())
+                        .message(ReplyHandler.SUCCESSFUL)
                         .imgPath(result)
                         .build())
                 .otherwise(cause -> RenameProjectData.reportRenameError(cause.getMessage()));

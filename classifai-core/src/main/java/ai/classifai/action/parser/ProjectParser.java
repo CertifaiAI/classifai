@@ -37,9 +37,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /***
@@ -63,14 +61,7 @@ public class ProjectParser
 
             String fullPath = Paths.get(projectPath, imgPath).toString();
 
-            String hash = null;
-            try {
-                hash = Hash.getHash256String(new File(fullPath));
-            } catch (IOException e) {
-                log.info("IOException for :" + fullPath + "\n" + e);
-            } catch (NoSuchAlgorithmException e) {
-                log.info(String.valueOf(e));
-            }
+            String hash = Hash.getHash256String(new File(fullPath));
 
             ImageDataProperties config = ImageDataProperties.builder()
                     .checksum(hash)
@@ -121,15 +112,7 @@ public class ProjectParser
             // Only proceed to uploading image if image exists. Else skip
             if(fullPath.exists())
             {
-                String currentHash = null;
-                try {
-                    currentHash = Hash.getHash256String(fullPath);
-                } catch (IOException e) {
-                    log.info("IOException for :" + fullPath + "\n" + e);
-                } catch (NoSuchAlgorithmException e) {
-                    log.info(String.valueOf(e));
-                }
-
+                String currentHash = Hash.getHash256String(fullPath);
                 String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
 
                 if(fileHash.equals(currentHash))

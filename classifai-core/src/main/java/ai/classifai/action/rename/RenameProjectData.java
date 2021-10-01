@@ -109,7 +109,7 @@ public final class RenameProjectData {
         RenameDataErrorCode errorKey = RenameDataErrorCode.valueOf(errorKeyStr);
 
         return RenameDataResponse.builder()
-                .message(ReplyHandler.getFAILED())
+                .message(ReplyHandler.FAILED)
                 .errorCode(errorKey.ordinal())
                 .errorMessage(errorKey.getErrorMessage())
                 .build();

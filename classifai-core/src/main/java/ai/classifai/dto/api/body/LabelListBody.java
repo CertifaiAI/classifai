@@ -1,4 +1,4 @@
-package ai.classifai.dto.api.reader.body;
+package ai.classifai.dto.api.body;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

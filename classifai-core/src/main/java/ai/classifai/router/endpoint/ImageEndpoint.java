@@ -11,14 +11,12 @@ import io.vertx.core.Future;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Slf4j
-@Path("/{annotation_type}/projects")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class ImageEndpoint {
 
     @Setter
@@ -31,8 +29,7 @@ public class ImageEndpoint {
      *
      */
     @GET
-    @Path("/{project_name}/uuid/{uuid}/thumbnail")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{annotation_type}/projects/{project_name}/uuid/{uuid}/thumbnail")
     public Future<ThumbnailProperties> getThumbnail(@PathParam("annotation_type") String annotationType,
                                                     @PathParam("project_name") String projectName ,
                                                     @PathParam("uuid") String uuid)
@@ -51,8 +48,7 @@ public class ImageEndpoint {
      *
      */
     @GET
-    @Path("/{project_name}/uuid/{uuid}/imgsrc")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{annotation_type}/projects/{project_name}/uuid/{uuid}/imgsrc")
     public Future<ImageSourceResponse> getImageSource(@PathParam("annotation_type") String annotationType,
                                                       @PathParam("project_name") String projectName,
                                                       @PathParam("uuid") String uuid)
@@ -62,11 +58,11 @@ public class ImageEndpoint {
 
         return portfolioDB.getImageSource(projectID, uuid, projectName)
                 .map(result -> ImageSourceResponse.builder()
-                        .message(ReplyHandler.getSUCCESSFUL())
+                        .message(ReplyHandler.SUCCESSFUL)
                         .imgSrc(result)
                         .build())
                 .otherwise(ImageSourceResponse.builder()
-                        .message(ReplyHandler.getFAILED())
+                        .message(ReplyHandler.FAILED)
                         .errorMessage("Fail getting image source")
                         .build());
     }

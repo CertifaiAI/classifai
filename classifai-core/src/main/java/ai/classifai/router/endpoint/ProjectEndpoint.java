@@ -2,10 +2,8 @@ package ai.classifai.router.endpoint;
 
 import ai.classifai.action.LabelListImport;
 import ai.classifai.database.portfolio.PortfolioDB;
-import ai.classifai.dto.api.reader.CreateProjectReader;
-import ai.classifai.dto.api.reader.ProjectStatusReader;
-import ai.classifai.dto.api.reader.body.CreateProjectBody;
-import ai.classifai.dto.api.reader.body.ProjectStatusBody;
+import ai.classifai.dto.api.body.CreateProjectBody;
+import ai.classifai.dto.api.body.ProjectStatusBody;
 import ai.classifai.dto.api.response.FileSysStatusResponse;
 import ai.classifai.dto.api.response.LoadingStatusResponse;
 import ai.classifai.dto.api.response.ReloadProjectStatus;
@@ -26,7 +24,6 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import com.zandero.rest.annotation.RequestReader;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import lombok.Setter;
@@ -46,6 +43,8 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class ProjectEndpoint {
 
     @Setter private PortfolioDB portfolioDB;
@@ -74,8 +73,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/v2/projects")
-    @RequestReader(CreateProjectReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> createProject(CreateProjectBody requestBody)
     {
         Promise<ActionStatus> promise = Promise.promise();
@@ -143,6 +140,34 @@ public class ProjectEndpoint {
     }
 
     /**
+     * Get import project status
+     * GET http://localhost:{port}/v2/:annotation_type/projects/importstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
+     *
+     */
+    @GET
+    @Path("/v2/{annotation_type}/projects/importstatus")
+    public FileSysStatusResponse getImportStatus()
+    {
+        FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
+
+        FileSysStatusResponse response = FileSysStatusResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .fileSystemStatus(fileSysStatus.ordinal())
+                .fileSystemMessage(fileSysStatus.name())
+                .build();
+
+        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            response.setProjectName(ProjectImportSelector.getProjectName());
+        }
+
+        return response;
+    }
+
+    /**
      * Create new project status
      * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name
      *
@@ -151,7 +176,6 @@ public class ProjectEndpoint {
      */
     @GET
     @Path("/v2/{annotation_type}/projects/{project_name}")
-    @Produces(MediaType.APPLICATION_JSON)
     public FileSysStatusResponse createProjectStatus(@PathParam("annotation_type") String annotationType,
                                                      @PathParam("project_name") String projectName)
     {
@@ -161,7 +185,7 @@ public class ProjectEndpoint {
 
         if(loader == null) {
             return FileSysStatusResponse.builder()
-                    .message(ReplyHandler.getFAILED())
+                    .message(ReplyHandler.FAILED)
                     .errorMessage("Project not exist: " + projectName)
                     .build();
         }
@@ -169,7 +193,7 @@ public class ProjectEndpoint {
         FileSystemStatus status = loader.getFileSystemStatus();
 
         FileSysStatusResponse response = FileSysStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
+                .message(ReplyHandler.SUCCESSFUL)
                 .fileSystemStatus(status.ordinal())
                 .fileSystemMessage(status.name())
                 .build();
@@ -192,7 +216,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/v2/{annotation_type}/projects/{project_name}/rename/{new_project_name}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> renameProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName,
                                               @PathParam("new_project_name") String newProjectName)
@@ -233,7 +256,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/v2/{annotation_type}/projects/{project_name}/reload")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> reloadProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName)
     {
@@ -264,7 +286,6 @@ public class ProjectEndpoint {
      */
     @GET
     @Path("/v2/{annotation_type}/projects/{project_name}/reloadstatus")
-    @Produces(MediaType.APPLICATION_JSON)
     public ReloadProjectStatus reloadProjectStatus(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
@@ -273,7 +294,7 @@ public class ProjectEndpoint {
 
         if(loader == null) {
             return ReloadProjectStatus.builder()
-                    .message(ReplyHandler.getFAILED())
+                    .message(ReplyHandler.FAILED)
                     .errorMessage("Project not exist")
                     .build();
         }
@@ -281,7 +302,7 @@ public class ProjectEndpoint {
         FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
 
         ReloadProjectStatus response = ReloadProjectStatus.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
+                .message(ReplyHandler.SUCCESSFUL)
                 .fileSystemStatus(fileSysStatus.ordinal())
                 .fileSystemMessage(fileSysStatus.name())
                 .build();
@@ -311,7 +332,6 @@ public class ProjectEndpoint {
      */
     @GET
     @Path("/{annotation_type}/projects/{project_name}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> loadProject(@PathParam("annotation_type") String annotationType,
                                             @PathParam("project_name") String projectName)
     {
@@ -367,7 +387,6 @@ public class ProjectEndpoint {
      */
     @GET
     @Path("/{annotation_type}/projects/{project_name}/loadingstatus")
-    @Produces(MediaType.APPLICATION_JSON)
     public LoadingStatusResponse loadProjectStatus(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
@@ -423,7 +442,6 @@ public class ProjectEndpoint {
      */
     @DELETE
     @Path("/{annotation_type}/projects/{project_name}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> deleteProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName)
     {
@@ -452,8 +470,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/{annotation_type}/projects/{project_name}")
-    @RequestReader(ProjectStatusReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
     public ActionStatus closeProjectState(@PathParam("annotation_type") String annotationType,
                                           @PathParam("project_name") String projectName,
                                           ProjectStatusBody requestBody)
@@ -484,8 +500,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/{annotation_type}/projects/{project_name}/star")
-    @RequestReader(ProjectStatusReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> starProject(@PathParam("annotation_type") String annotationType,
                                             @PathParam("project_name") String projectName,
                                             ProjectStatusBody requestBody)
@@ -516,7 +530,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/v2/labelfiles")
-    @Produces(MediaType.APPLICATION_JSON)
     public ActionStatus selectLabelFile()
     {
         if(!labelFileSelector.isWindowOpen())
@@ -537,13 +550,12 @@ public class ProjectEndpoint {
      */
     @GET
     @Path("/v2/labelfiles")
-    @Produces(MediaType.APPLICATION_JSON)
     public SelectionStatusResponse selectLabelFileStatus()
     {
         SelectionWindowStatus status = labelFileSelector.getWindowStatus();
 
         SelectionStatusResponse response = SelectionStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
+                .message(ReplyHandler.SUCCESSFUL)
                 .windowStatus(status.ordinal())
                 .windowMessage(status.name())
                 .build();
@@ -566,7 +578,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/v2/folders")
-    @Produces(MediaType.APPLICATION_JSON)
     public ActionStatus selectProjectFolder()
     {
         if(!projectFolderSelector.isWindowOpen())
@@ -586,7 +597,6 @@ public class ProjectEndpoint {
      */
     @PUT
     @Path("/v2/close")
-    @Produces(MediaType.APPLICATION_JSON)
     public ActionStatus closeClassifai()
     {
         //terminate after 1 seconds
@@ -612,13 +622,12 @@ public class ProjectEndpoint {
      */
     @GET
     @Path("/v2/folders")
-    @Produces(MediaType.APPLICATION_JSON)
     public SelectionStatusResponse selectProjectFolderStatus()
     {
         SelectionWindowStatus status = projectFolderSelector.getWindowStatus();
 
         SelectionStatusResponse response = SelectionStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
+                .message(ReplyHandler.SUCCESSFUL)
                 .windowStatus(status.ordinal())
                 .windowMessage(status.name())
                 .build();
@@ -626,35 +635,6 @@ public class ProjectEndpoint {
         if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
         {
             response.setProjectPath(projectFolderSelector.getProjectFolderPath());
-        }
-
-        return response;
-    }
-
-    /**
-     * Get import project status
-     * GET http://localhost:{port}/v2/:annotation_type/projects/c
-     *
-     * Example:
-     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
-     *
-     */
-    @GET
-    @Path("/v2/{annotation_type}/projects/importstatus")
-    @Produces(MediaType.APPLICATION_JSON)
-    public FileSysStatusResponse getImportStatus()
-    {
-        FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
-
-        FileSysStatusResponse response = FileSysStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
-                .fileSystemStatus(fileSysStatus.ordinal())
-                .fileSystemMessage(fileSysStatus.name())
-                .build();
-
-        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
-        {
-            response.setProjectName(ProjectImportSelector.getProjectName());
         }
 
         return response;

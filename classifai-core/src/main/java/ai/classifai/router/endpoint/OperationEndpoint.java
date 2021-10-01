@@ -17,9 +17,7 @@ package ai.classifai.router.endpoint;
 
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.versioning.Version;
-import ai.classifai.dto.api.reader.DataUpdateReader;
-import ai.classifai.dto.api.reader.LabelListReader;
-import ai.classifai.dto.api.reader.body.LabelListBody;
+import ai.classifai.dto.api.body.LabelListBody;
 import ai.classifai.dto.data.ThumbnailProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.datetime.DateTime;
@@ -28,15 +26,11 @@ import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
-import com.zandero.rest.annotation.RequestReader;
 import io.vertx.core.Future;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Objects;
 
@@ -46,7 +40,8 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
-@Path("/{annotation_type}/projects")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class OperationEndpoint {
     @Setter
     private PortfolioDB portfolioDB;
@@ -59,9 +54,7 @@ public class OperationEndpoint {
      *
      */
     @PUT
-    @Path("/{project_name}/uuid/{uuid}/update")
-    @RequestReader(DataUpdateReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{annotation_type}/projects/{project_name}/uuid/{uuid}/update")
     public Future<ActionStatus> updateData(@PathParam("annotation_type") String annotationType,
                                            @PathParam("project_name") String projectName,
                                            @PathParam("uuid") String uuid,
@@ -106,9 +99,7 @@ public class OperationEndpoint {
      *
      */
     @PUT
-    @Path("/{project_name}/newlabels")
-    @RequestReader(LabelListReader.class)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{annotation_type}/projects/{project_name}/newlabels")
     public Future<ActionStatus> updateLabels(@PathParam("annotation_type") String annotationType,
                                              @PathParam("project_name") String projectName,
                                              LabelListBody requestBody)

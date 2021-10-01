@@ -11,13 +11,12 @@ import io.vertx.core.Future;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Slf4j
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class ProjectMetadataEndpoint {
     @Setter
     private PortfolioDB portfolioDB;
@@ -30,7 +29,6 @@ public class ProjectMetadataEndpoint {
      */
     @GET
     @Path("/{annotation_type}/projects/{project_name}/meta")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> getProjectMetadata(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
@@ -54,7 +52,6 @@ public class ProjectMetadataEndpoint {
      */
     @GET
     @Path("/{annotation_type}/projects/meta")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> getAllProjectsMeta(@PathParam("annotation_type") String annotationType)
     {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);

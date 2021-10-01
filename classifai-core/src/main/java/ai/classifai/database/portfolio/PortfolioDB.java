@@ -309,16 +309,10 @@ public class PortfolioDB {
             ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
             Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
-            Integer imgDepth = requestBody.getImgDepth();
-            annotation.setImgDepth(imgDepth);
-
-            Integer imgOriW = requestBody.getImgOriWParam();
-            annotation.setImgOriW(imgOriW);
-
-            Integer imgOriH = requestBody.getImgOriHParam();
-            annotation.setImgOriH(imgOriH);
-            Integer fileSize = requestBody.getFileSizeParam();
-            annotation.setFileSize(fileSize);
+            annotation.setImgDepth(requestBody.getImgDepth());
+            annotation.setImgOriW(requestBody.getImgOriWParam());
+            annotation.setImgOriH(requestBody.getImgOriHParam());
+            annotation.setFileSize(requestBody.getFileSizeParam());
 
             String currentVersionUuid = loader.getCurrentVersionUuid();
 
@@ -336,10 +330,10 @@ public class PortfolioDB {
             version.setImgH(requestBody.getImgHParam());
 
             Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
-                    imgDepth,
-                    imgOriW,
-                    imgOriH,
-                    fileSize,
+                    requestBody.getImgDepth(),
+                    requestBody.getImgOriWParam(),
+                    requestBody.getImgOriHParam(),
+                    requestBody.getFileSizeParam(),
                     uuid,
                     projectId);
 

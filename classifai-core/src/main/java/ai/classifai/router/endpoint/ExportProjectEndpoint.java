@@ -38,6 +38,8 @@ import javax.ws.rs.core.MediaType;
  * @author devenyantis
  */
 @Slf4j
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class ExportProjectEndpoint {
 
     @Setter private PortfolioDB portfolioDB;
@@ -49,7 +51,6 @@ public class ExportProjectEndpoint {
      */
     @PUT
     @Path("/v2/{annotation_type}/projects/{project_name}/export/{export_type}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Future<ActionStatus> exportProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName,
                                               @PathParam("export_type") String exportTypeVar)
@@ -85,13 +86,12 @@ public class ExportProjectEndpoint {
      */
     @GET
     @Path("/v2/{annotation_type}/projects/exportstatus")
-    @Produces(MediaType.APPLICATION_JSON)
     public ExportStatusResponse getExportStatus()
     {
         ProjectExport.ProjectExportStatus exportStatus = ProjectExport.getExportStatus();
 
         ExportStatusResponse response = ExportStatusResponse.builder()
-                .message(ReplyHandler.getSUCCESSFUL())
+                .message(ReplyHandler.SUCCESSFUL)
                 .exportStatus(exportStatus.ordinal())
                 .exportStatusMessage(exportStatus.name())
                 .build();
