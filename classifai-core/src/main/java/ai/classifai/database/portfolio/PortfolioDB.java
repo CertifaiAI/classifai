@@ -38,7 +38,6 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -319,9 +318,9 @@ public class PortfolioDB {
             AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
 
             if(PortfolioVerticle.getAnnotationKey(loader).equals(ParamConfig.getBoundingBoxParam())) {
-                version.setAnnotation(new JsonArray(requestBody.getBoundingBoxParam()));
+                version.setAnnotation(requestBody.getBoundingBoxParam());
             } else if(PortfolioVerticle.getAnnotationKey(loader).equals(ParamConfig.getSegmentationParam())) {
-                version.setAnnotation(new JsonArray(requestBody.getSegmentationParam()));
+                version.setAnnotation(requestBody.getSegmentationParam());
             }
 
             version.setImgX(requestBody.getImgXParam());

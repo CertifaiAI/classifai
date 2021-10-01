@@ -97,8 +97,6 @@ public class EndpointRouter extends AbstractVerticle
         projectEndpoint.setLabelFileSelector(labelFileSelector);
 
         cloud.setVertx(vertx);
-
-        PortfolioVerticle.setFileGenerator(fileGenerator);
     }
 
     private void addNoCacheHeader(RoutingContext ctx)

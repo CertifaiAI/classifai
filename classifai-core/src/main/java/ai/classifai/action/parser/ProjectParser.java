@@ -18,6 +18,7 @@ package ai.classifai.action.parser;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ImageDataProperties;
 import ai.classifai.dto.data.VersionConfigProperties;
 import ai.classifai.loader.ProjectLoader;
@@ -144,14 +145,20 @@ public class ProjectParser
     public static Map<String, AnnotationVersion> buildAnnotationDict(JsonArray jsonVersionList)
     {
         Map<String, AnnotationVersion> annotationDict = new HashMap<>();
+        ObjectMapper mp = new ObjectMapper();
 
         for (Object obj : jsonVersionList)
         {
             JsonObject jsonVersion = (JsonObject) obj;
 
             String version = jsonVersion.getString(ParamConfig.getVersionUuidParam());
-
-            AnnotationVersion annotationVersion = new AnnotationVersion((jsonVersion.getJsonObject(ParamConfig.getAnnotationDataParam())));
+            DataInfoProperties dataInfoProperties = null;
+            try {
+                dataInfoProperties = mp.readValue(jsonVersion.getJsonObject(ParamConfig.getAnnotationDataParam()).toString(), new TypeReference<DataInfoProperties>() {});
+            } catch (JsonProcessingException e) {
+                log.info("Fail to convert data properties. \n" + e);
+            }
+            AnnotationVersion annotationVersion = new AnnotationVersion(dataInfoProperties);
 
             annotationDict.put(version, annotationVersion);
         }
