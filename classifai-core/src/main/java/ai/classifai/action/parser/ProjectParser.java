@@ -152,15 +152,13 @@ public class ProjectParser
             JsonObject jsonVersion = (JsonObject) obj;
 
             String version = jsonVersion.getString(ParamConfig.getVersionUuidParam());
-            DataInfoProperties dataInfoProperties = null;
             try {
-                dataInfoProperties = mp.readValue(jsonVersion.getJsonObject(ParamConfig.getAnnotationDataParam()).toString(), new TypeReference<DataInfoProperties>() {});
+                AnnotationVersion annotationVersion = new AnnotationVersion(mp.readValue(jsonVersion.getJsonObject(
+                        ParamConfig.getAnnotationDataParam()).toString(), new TypeReference<DataInfoProperties>() {}));
+                annotationDict.put(version, annotationVersion);
             } catch (JsonProcessingException e) {
                 log.info("Fail to convert data properties. \n" + e);
             }
-            AnnotationVersion annotationVersion = new AnnotationVersion(dataInfoProperties);
-
-            annotationDict.put(version, annotationVersion);
         }
 
         return annotationDict;
