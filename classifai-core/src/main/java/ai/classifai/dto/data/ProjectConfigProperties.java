@@ -1,4 +1,4 @@
-package ai.classifai.dto;
+package ai.classifai.dto.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

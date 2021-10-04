@@ -124,6 +124,10 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.zandero</groupId>
+            <artifactId>rest.vertx</artifactId>
+        </dependency>
     </dependencies>
 
 

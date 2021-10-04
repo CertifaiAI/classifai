@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.dto;
+package ai.classifai.dto.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -23,10 +23,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @NonNull
-public class DistanceToImageProperties {
-    @JsonProperty
-    Integer x;
+public class VersionConfigProperties {
+    @JsonProperty("version_uuid")
+    String versionUuid;
 
-    @JsonProperty
-    Integer y;
+    @JsonProperty("annotation_data")
+    DataInfoProperties annotationData;
 }

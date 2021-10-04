@@ -18,19 +18,19 @@ package ai.classifai.database.portfolio;
 import ai.classifai.action.DeleteProjectData;
 import ai.classifai.action.FileGenerator;
 import ai.classifai.action.ProjectExport;
-import ai.classifai.action.RenameProjectData;
+import ai.classifai.action.rename.RenameDataErrorCode;
+import ai.classifai.action.rename.RenameProjectData;
 import ai.classifai.database.DBUtils;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.dto.ProjectConfigProperties;
-import ai.classifai.dto.ProjectMetaProperties;
-import ai.classifai.dto.ThumbnailProperties;
+import ai.classifai.dto.data.DataInfoProperties;
+import ai.classifai.dto.data.ProjectConfigProperties;
+import ai.classifai.dto.data.ProjectMetaProperties;
+import ai.classifai.dto.data.ThumbnailProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -38,11 +38,11 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -148,9 +148,7 @@ public class PortfolioDB {
 
         if(renameProjectData.containIllegalChars(newFilename)) {
             // Abort if filename contain illegal chars
-            String illegalCharMes = "Contain illegal character";
-            promise.fail(renameProjectData.reportRenameError(
-                    RenameProjectData.RenameDataErrorCode.FILENAME_CONTAIN_ILLEGAL_CHAR.ordinal(), illegalCharMes).toString());
+            promise.fail(RenameDataErrorCode.FILENAME_CONTAIN_ILLEGAL_CHAR.toString());
         }
 
         String updatedFileName = renameProjectData.modifyFileNameFromCache(newFilename);
@@ -158,16 +156,13 @@ public class PortfolioDB {
 
         if(newDataPath.exists()) {
             // Abort if name exists
-            String nameExistMes = "Name exists";
-            promise.fail(renameProjectData.reportRenameError(
-                    RenameProjectData.RenameDataErrorCode.FILENAME_EXIST.ordinal(), nameExistMes).toString());
+            promise.fail(RenameDataErrorCode.FILENAME_EXIST.toString());
         }
 
         Tuple params = Tuple.of(updatedFileName, uuid, projectId);
 
         if(renameProjectData.renameDataPath(newDataPath, renameProjectData.getOldDataFileName()))
         {
-
             return runQuery(AnnotationQuery.getRenameProjectData(), params, AnnotationHandler.getJDBCPool(loader))
                     .map(result -> {
                         renameProjectData.updateAnnotationCache(updatedFileName, uuid);
@@ -175,10 +170,8 @@ public class PortfolioDB {
                     });
         }
 
-        String failRenameMes = "Fail to rename file";
         if(!promise.future().isComplete()) {
-            promise.fail(renameProjectData.reportRenameError(
-                    RenameProjectData.RenameDataErrorCode.RENAME_FAIL.ordinal(), failRenameMes).toString());
+            promise.fail(RenameDataErrorCode.RENAME_FAIL.toString());
         }
 
         return promise.future();
@@ -306,41 +299,40 @@ public class PortfolioDB {
                 });
     }
 
-    public Future<Void> updateData(JsonObject requestBody, String projectId) {
+    public Future<Void> updateData(ThumbnailProperties requestBody, String projectId) {
         Promise<Void> promise = Promise.promise();
         try
         {
-            String uuid = requestBody.getString(ParamConfig.getUuidParam());
+            String uuid = requestBody.getUuidParam();
 
             ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
             Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
 
-            Integer imgDepth = requestBody.getInteger(ParamConfig.getImgDepth());
-            annotation.setImgDepth(imgDepth);
-
-            Integer imgOriW = requestBody.getInteger(ParamConfig.getImgOriWParam());
-            annotation.setImgOriW(imgOriW);
-
-            Integer imgOriH = requestBody.getInteger(ParamConfig.getImgOriHParam());
-            annotation.setImgOriH(imgOriH);
-            Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
-            annotation.setFileSize(fileSize);
+            annotation.setImgDepth(requestBody.getImgDepth());
+            annotation.setImgOriW(requestBody.getImgOriWParam());
+            annotation.setImgOriH(requestBody.getImgOriHParam());
+            annotation.setFileSize(requestBody.getFileSizeParam());
 
             String currentVersionUuid = loader.getCurrentVersionUuid();
 
-            AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
+            DataInfoProperties version = annotation.getAnnotationDict().get(currentVersionUuid);
 
-            version.setAnnotation(requestBody.getJsonArray(PortfolioVerticle.getAnnotationKey(loader)));
-            version.setImgX(requestBody.getInteger(ParamConfig.getImgXParam()));
-            version.setImgY(requestBody.getInteger(ParamConfig.getImgYParam()));
-            version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));
-            version.setImgH(requestBody.getInteger(ParamConfig.getImgHParam()));
+            if(PortfolioVerticle.getAnnotationKey(loader).equals(ParamConfig.getBoundingBoxParam())) {
+                version.setAnnotation(requestBody.getBoundingBoxParam());
+            } else if(PortfolioVerticle.getAnnotationKey(loader).equals(ParamConfig.getSegmentationParam())) {
+                version.setAnnotation(requestBody.getSegmentationParam());
+            }
+
+            version.setImgX(requestBody.getImgXParam());
+            version.setImgY(requestBody.getImgYParam());
+            version.setImgW(requestBody.getImgWParam());
+            version.setImgH(requestBody.getImgHParam());
 
             Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
-                    imgDepth,
-                    imgOriW,
-                    imgOriH,
-                    fileSize,
+                    requestBody.getImgDepth(),
+                    requestBody.getImgOriWParam(),
+                    requestBody.getImgOriHParam(),
+                    requestBody.getFileSizeParam(),
                     uuid,
                     projectId);
 
@@ -364,12 +356,11 @@ public class PortfolioDB {
                 .map(DBUtils::toVoid);
     }
 
-    public Future<Void> updateLabels(String projectId, JsonObject requestBody) {
+    public Future<Void> updateLabels(String projectId, @NonNull List<String> labelList) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-        List<String> newLabelListJson = ConversionHandler.jsonArray2StringList(requestBody.getJsonArray(ParamConfig.getLabelListParam()));
         ProjectVersion project = loader.getProjectVersion();
 
-        PortfolioVerticle.updateLoaderLabelList(loader, project, newLabelListJson);
+        PortfolioVerticle.updateLoaderLabelList(loader, project, labelList);
 
         Tuple params = Tuple.of(project.getLabelVersionDbFormat(), projectId);
 

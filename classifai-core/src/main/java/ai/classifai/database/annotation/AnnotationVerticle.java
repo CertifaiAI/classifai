@@ -21,7 +21,7 @@ import ai.classifai.database.DBUtils;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
@@ -31,7 +31,6 @@ import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -42,13 +41,9 @@ import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,56 +54,9 @@ import java.util.Objects;
  * @author codenamewei
  */
 @Slf4j
-public abstract class AnnotationVerticle extends AbstractVerticle implements VerticleServiceable, AnnotationServiceable
+public abstract class AnnotationVerticle extends AbstractVerticle implements VerticleServiceable
 {
     @Getter protected JDBCPool jdbcPool;
-
-    public void retrieveDataPath(Message<JsonObject> message)
-    {
-        String projectID = message.body().getString(ParamConfig.getProjectIdParam());
-        String uuid = message.body().getString(ParamConfig.getUuidParam());
-
-        Tuple params = Tuple.of(uuid, projectID);
-
-        jdbcPool.preparedQuery(AnnotationQuery.getRetrieveDataPath())
-                .execute(params)
-                .onComplete(DBUtils.handleResponse(
-                        message,
-                        result -> {
-
-                            if (result.size() == 0)
-                            {
-                                String projectName = message.body().getString(ParamConfig.getProjectNameParam());
-                                String userDefinedMessage = "Failure in data path retrieval for project " + projectName + " with uuid " + uuid;
-                                message.replyAndRequest(ReplyHandler.reportUserDefinedError(userDefinedMessage));
-                            }
-                            else
-                            {
-                                JsonObject response = ReplyHandler.getOkReply();
-
-                                Row row = result.iterator().next();
-
-                                String dataPath = row.getString(0);
-
-                                ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-
-                                if(loader.isCloud())
-                                {
-                                    response.put(ParamConfig.getImgSrcParam(), WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
-                                }
-                                else
-                                {
-                                    File fileImgPath = getDataFullPath(projectID, dataPath);
-
-                                    response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
-                                }
-
-                                message.replyAndRequest(response);
-
-                            }
-                        }
-                ));
-    }
 
     public static File getDataFullPath(@NonNull String projectId, @NonNull String dataSubPath)
     {
@@ -215,7 +163,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
                                     if (loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath))) {
-                                        Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
+                                        Map<String, DataInfoProperties> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
 
                                         Annotation annotation = Annotation.builder()
                                                 .uuid(row.getString(0))         //uuid
@@ -348,125 +296,5 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         jdbcPool.preparedQuery(AnnotationQuery.getDeleteProject())
                 .execute(params)
                 .onComplete(DBUtils.handleEmptyResponse(message));
-    }
-
-    public void updateData(Message<JsonObject> message, @NonNull String annotationKey)
-    {
-        JsonObject requestBody = message.body();
-
-        try
-        {
-            String projectId = requestBody.getString(ParamConfig.getProjectIdParam());
-            String uuid = requestBody.getString(ParamConfig.getUuidParam());
-
-            ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-            Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
-
-            Integer imgDepth = requestBody.getInteger(ParamConfig.getImgDepth());
-            annotation.setImgDepth(imgDepth);
-
-            Integer imgOriW = requestBody.getInteger(ParamConfig.getImgOriWParam());
-            annotation.setImgOriW(imgOriW);
-
-            Integer imgOriH = requestBody.getInteger(ParamConfig.getImgOriHParam());
-            annotation.setImgOriH(imgOriH);
-
-            Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
-            annotation.setFileSize(fileSize);
-
-            String currentVersionUuid = loader.getCurrentVersionUuid();
-
-            AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
-
-            version.setAnnotation(requestBody.getJsonArray(annotationKey));
-            version.setImgX(requestBody.getInteger(ParamConfig.getImgXParam()));
-            version.setImgY(requestBody.getInteger(ParamConfig.getImgYParam()));
-            version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));
-            version.setImgH(requestBody.getInteger(ParamConfig.getImgHParam()));
-
-            Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
-                                    imgDepth,
-                                    imgOriW,
-                                    imgOriH,
-                                    fileSize,
-                                    uuid,
-                                    projectId);
-
-            jdbcPool.preparedQuery(AnnotationQuery.getUpdateData())
-                    .execute(params)
-                    .onComplete(DBUtils.handleEmptyResponse(message));
-        }
-        catch (Exception e)
-        {
-            String messageInfo = "Error occur when updating data, " + e;
-            message.replyAndRequest(ReplyHandler.reportBadParamError(messageInfo));
-        }
-    }
-
-    public void queryData(Message<JsonObject> message, @NonNull String annotationKey)
-    {
-        String projectId =  message.body().getString(ParamConfig.getProjectIdParam());
-        String uuid = message.body().getString(ParamConfig.getUuidParam());
-
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-
-        Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
-
-        AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
-
-        Map<String, String> imgData = new HashMap<>();
-        String dataPath = "";
-
-        if(loader.isCloud())
-        {
-            try
-            {
-                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
-
-                //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNail(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Unable to write Buffered Image.");
-            }
-
-        }
-        else
-        {
-            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
-
-            try
-            {
-                Mat imageMat  = Imgcodecs.imread(dataPath);
-
-                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
-
-                imgData = ImageHandler.getThumbNail(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Failure in reading image of path " + dataPath, e);
-            }
-        }
-
-        JsonObject response = ReplyHandler.getOkReply();
-
-        response.put(ParamConfig.getUuidParam(), uuid);
-        response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
-
-        response.put(ParamConfig.getImgPathParam(), dataPath);
-        response.put(annotationKey, version.getAnnotation());
-        response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
-        response.put(ParamConfig.getImgXParam(), version.getImgX());
-        response.put(ParamConfig.getImgYParam(), version.getImgY());
-        response.put(ParamConfig.getImgWParam(), version.getImgW());
-        response.put(ParamConfig.getImgHParam(), version.getImgH());
-        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
-        response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
-        response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
-        response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
-
-        message.replyAndRequest(response);
     }
 }
