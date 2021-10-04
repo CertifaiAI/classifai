@@ -23,9 +23,9 @@ import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
 import ai.classifai.dto.data.ThumbnailProperties;
 import ai.classifai.loader.NameGenerator;
@@ -328,7 +328,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
     {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
-        AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
+        DataInfoProperties version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
         Map<String, String> imgData = new HashMap<>();
         String dataPath = "";
 

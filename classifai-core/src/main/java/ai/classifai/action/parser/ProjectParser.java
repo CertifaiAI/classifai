@@ -17,7 +17,6 @@ package ai.classifai.action.parser;
 
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ImageDataProperties;
 import ai.classifai.dto.data.VersionConfigProperties;
@@ -40,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /***
  * Parsing Project Table in and out classifai with configuration file
@@ -141,39 +141,33 @@ public class ProjectParser
         }
     }
 
-    //version of a project <> AnnotationVersion
-    public static Map<String, AnnotationVersion> buildAnnotationDict(JsonArray jsonVersionList)
+    //version of a project <> DataInfoProperties
+    public static Map<String, DataInfoProperties> buildAnnotationDict(JsonArray jsonVersionList)
     {
-        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
         ObjectMapper mp = new ObjectMapper();
 
-        for (Object obj : jsonVersionList)
-        {
-            JsonObject jsonVersion = (JsonObject) obj;
-
-            String version = jsonVersion.getString(ParamConfig.getVersionUuidParam());
-            try {
-                AnnotationVersion annotationVersion = new AnnotationVersion(mp.readValue(jsonVersion.getJsonObject(
-                        ParamConfig.getAnnotationDataParam()).toString(), new TypeReference<DataInfoProperties>() {}));
-                annotationDict.put(version, annotationVersion);
-            } catch (JsonProcessingException e) {
-                log.info("Fail to convert data properties. \n" + e);
-            }
+        try {
+            List<VersionConfigProperties> versionConfigProperties = mp.readValue(jsonVersionList.toString(), new TypeReference<>() {});
+            return versionConfigProperties.stream().collect(Collectors.toMap(
+                    VersionConfigProperties::getVersionUuid,
+                    VersionConfigProperties::getAnnotationData
+            ));
+        } catch (JsonProcessingException e) {
+            log.info("Converting to annotationDict fail", e);
+            return Map.of();
         }
-
-        return annotationDict;
     }
 
     //build empty annotationDict
-    public static Map<String, AnnotationVersion> buildAnnotationDict(@NonNull ProjectLoader loader)
+    public static Map<String, DataInfoProperties> buildAnnotationDict(@NonNull ProjectLoader loader)
     {
-        Map<String, AnnotationVersion> annotationDict = new HashMap<>();
+        Map<String, DataInfoProperties> annotationDict = new HashMap<>();
 
         Set<String> versionUuidList = loader.getProjectVersion().getVersionUuidDict().keySet();
 
         for(String versionUuid : versionUuidList)
         {
-            annotationDict.put(versionUuid, new AnnotationVersion());
+            annotationDict.put(versionUuid, new DataInfoProperties());
         }
 
         return annotationDict;

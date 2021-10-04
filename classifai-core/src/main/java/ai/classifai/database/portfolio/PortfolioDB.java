@@ -24,8 +24,8 @@ import ai.classifai.database.DBUtils;
 import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.AnnotationVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
 import ai.classifai.dto.data.ThumbnailProperties;
@@ -315,7 +315,7 @@ public class PortfolioDB {
 
             String currentVersionUuid = loader.getCurrentVersionUuid();
 
-            AnnotationVersion version = annotation.getAnnotationDict().get(currentVersionUuid);
+            DataInfoProperties version = annotation.getAnnotationDict().get(currentVersionUuid);
 
             if(PortfolioVerticle.getAnnotationKey(loader).equals(ParamConfig.getBoundingBoxParam())) {
                 version.setAnnotation(requestBody.getBoundingBoxParam());

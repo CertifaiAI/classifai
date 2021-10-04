@@ -21,7 +21,7 @@ import ai.classifai.database.DBUtils;
 import ai.classifai.database.VerticleServiceable;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.database.versioning.AnnotationVersion;
+import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
@@ -163,7 +163,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
                                     if (loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath))) {
-                                        Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
+                                        Map<String, DataInfoProperties> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
 
                                         Annotation annotation = Annotation.builder()
                                                 .uuid(row.getString(0))         //uuid

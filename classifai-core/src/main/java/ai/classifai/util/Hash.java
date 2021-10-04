@@ -53,7 +53,7 @@ public class Hash
 
             return Base64.getEncoder().encodeToString(hash);
         } catch (Exception e) {
-            log.info("Error getting hash. \n" + e);
+            log.info("Fail to get hash", e);
         }
         return null;
     }
