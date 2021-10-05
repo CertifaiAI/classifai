@@ -40,7 +40,7 @@ public class SelectionWindow {
     @Getter @Setter
     protected SelectionWindowStatus windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
 
-    private static JFrame frame = initFrame();
+    private static final JFrame frame = initFrame();
 
     public boolean isWindowOpen()
     {

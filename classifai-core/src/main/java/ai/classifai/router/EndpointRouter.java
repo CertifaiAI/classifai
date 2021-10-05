@@ -15,7 +15,6 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.action.FileGenerator;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.portfolio.PortfolioVerticle;
@@ -46,16 +45,14 @@ public class EndpointRouter extends AbstractVerticle
     private ProjectImportSelector projectImporter;
 
     private LabelFileSelector labelFileSelector;
-    private FileGenerator fileGenerator;
 
-    OperationEndpoint operationEndpoint = new OperationEndpoint();
-    ImageEndpoint imageEndpoint = new ImageEndpoint();
-    ProjectEndpoint projectEndpoint = new ProjectEndpoint();
-    ProjectMetadataEndpoint projectMetadataEndpoint = new ProjectMetadataEndpoint();
-    DataEndpoint dataEndpoint = new DataEndpoint();
-    ExportProjectEndpoint exportProjectEndpoint = new ExportProjectEndpoint();
-
-    CloudEndpoint cloud = new CloudEndpoint();
+    OperationEndpoint operationEndpoint;
+    ImageEndpoint imageEndpoint;
+    ProjectEndpoint projectEndpoint;
+    ProjectMetadataEndpoint projectMetadataEndpoint;
+    DataEndpoint dataEndpoint;
+    ExportProjectEndpoint exportProjectEndpoint;
+    CloudEndpoint cloud;
 
     public EndpointRouter()
     {
@@ -67,9 +64,6 @@ public class EndpointRouter extends AbstractVerticle
 
         Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
         labelFileImport.start();
-
-        Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
-        threadZipFileGenerator.start();
     }
 
     @Override
@@ -85,18 +79,36 @@ public class EndpointRouter extends AbstractVerticle
         JDBCPool portFolioPool = PortfolioVerticle.createJDBCPool(vertx, h2);
         PortfolioDB portfolioDB = new PortfolioDB(portFolioPool);
 
-        operationEndpoint.setPortfolioDB(portfolioDB);
-        imageEndpoint.setPortfolioDB(portfolioDB);
-        projectEndpoint.setPortfolioDB(portfolioDB);
-        projectMetadataEndpoint.setPortfolioDB(portfolioDB);
-        dataEndpoint.setPortfolioDB(portfolioDB);
-        exportProjectEndpoint.setPortfolioDB(portfolioDB);
+        this.operationEndpoint = OperationEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .build();
 
-        projectEndpoint.setProjectImporter(projectImporter);
-        projectEndpoint.setProjectFolderSelector(projectFolderSelector);
-        projectEndpoint.setLabelFileSelector(labelFileSelector);
+        this.imageEndpoint = ImageEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .build();
 
-        cloud.setVertx(vertx);
+        this.projectEndpoint = ProjectEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .projectImporter(projectImporter)
+                .projectFolderSelector(projectFolderSelector)
+                .labelFileSelector(labelFileSelector)
+                .build();
+
+        this.projectMetadataEndpoint = ProjectMetadataEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .build();
+
+        this.dataEndpoint = DataEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .build();
+
+        this.exportProjectEndpoint = ExportProjectEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .build();
+
+        this.cloud = CloudEndpoint.builder()
+                .vertx(vertx)
+                .build();
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
@@ -108,6 +120,7 @@ public class EndpointRouter extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
+        configureVersionVertx();
         Router router = RestRouter.register(vertx,
                 projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
                 imageEndpoint, projectEndpoint, dataEndpoint);
@@ -122,7 +135,6 @@ public class EndpointRouter extends AbstractVerticle
 
                     if (r.succeeded())
                     {
-                        configureVersionVertx();
                         promise.complete();
                     }
                     else {

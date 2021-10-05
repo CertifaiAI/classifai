@@ -26,7 +26,7 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import lombok.Setter;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -43,14 +43,15 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
+@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectEndpoint {
 
-    @Setter private PortfolioDB portfolioDB;
-    @Setter private ProjectImportSelector projectImporter = null;
-    @Setter private ProjectFolderSelector projectFolderSelector = null;
-    @Setter private LabelFileSelector labelFileSelector = null;
+    private PortfolioDB portfolioDB;
+    private ProjectImportSelector projectImporter;
+    private ProjectFolderSelector projectFolderSelector;
+    private LabelFileSelector labelFileSelector;
 
     /**
      * Create new project

@@ -10,13 +10,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Builder;
 
-@NoArgsConstructor
+@Builder
 public class CloudEndpoint
 {
-    @Setter private Vertx vertx = null;
+    private Vertx vertx;
 
     /**
      * PUT http://localhost:{port}/v2/:annotation_type/wasabi/newproject/:project_name
