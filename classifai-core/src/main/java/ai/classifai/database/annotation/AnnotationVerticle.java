@@ -33,7 +33,6 @@ import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -163,7 +162,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
                                     if (loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath))) {
-                                        Map<String, DataInfoProperties> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
+                                        Map<String, DataInfoProperties> annotationDict = ProjectParser.buildAnnotationDict(row.getString(2));
 
                                         Annotation annotation = Annotation.builder()
                                                 .uuid(row.getString(0))         //uuid

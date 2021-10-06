@@ -3,10 +3,8 @@ package ai.classifai.router.endpoint;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.api.body.CreateProjectBody;
-import ai.classifai.dto.api.body.ProjectStatusBody;
 import ai.classifai.dto.api.response.FileSysStatusResponse;
 import ai.classifai.dto.api.response.LoadingStatusResponse;
-import ai.classifai.dto.api.response.ReloadProjectStatus;
 import ai.classifai.dto.api.response.SelectionStatusResponse;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
@@ -35,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Classifai v1 endpoints
@@ -107,6 +104,34 @@ public class ProjectEndpoint {
         return promise.future();
     }
 
+    /**
+     * Get import project status
+     * GET http://localhost:{port}/v2/:annotation_type/projects/importstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
+     *
+     */
+    @GET
+    @Path("/v2/{annotation_type}/projects/importstatus")
+    public FileSysStatusResponse getImportStatus()
+    {
+        FileSystemStatus fileSysStatus = projectImporter.getImportFileSystemStatus();
+
+        FileSysStatusResponse response = FileSysStatusResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .fileSystemStatus(fileSysStatus.ordinal())
+                .fileSystemMessage(fileSysStatus.name())
+                .build();
+
+        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            response.setProjectName(projectImporter.getProjectName());
+        }
+
+        return response;
+    }
+
     protected ActionStatus createRawProject(CreateProjectBody requestBody) throws IOException {
         String projectName = requestBody.getProjectName();
 
@@ -138,34 +163,6 @@ public class ProjectEndpoint {
         }
 
         return ActionStatus.failedWithMessage("Project name exist: " + projectName);
-    }
-
-    /**
-     * Get import project status
-     * GET http://localhost:{port}/v2/:annotation_type/projects/importstatus
-     *
-     * Example:
-     * GET http://localhost:{port}/v2/bndbox/projects/importstatus
-     *
-     */
-    @GET
-    @Path("/v2/{annotation_type}/projects/importstatus")
-    public FileSysStatusResponse getImportStatus()
-    {
-        FileSystemStatus fileSysStatus = ProjectImportSelector.getImportFileSystemStatus();
-
-        FileSysStatusResponse response = FileSysStatusResponse.builder()
-                .message(ReplyHandler.SUCCESSFUL)
-                .fileSystemStatus(fileSysStatus.ordinal())
-                .fileSystemMessage(fileSysStatus.name())
-                .build();
-
-        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
-        {
-            response.setProjectName(ProjectImportSelector.getProjectName());
-        }
-
-        return response;
     }
 
     /**
@@ -201,121 +198,6 @@ public class ProjectEndpoint {
 
         if (status.equals(FileSystemStatus.DATABASE_UPDATED))
         {
-            response.setUnsupportedImageList(loader.getUnsupportedImageList());
-        }
-
-        return response;
-    }
-
-    /**
-     * Rename project
-     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/rename/:new_project_name
-     *
-     * Example:
-     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/rename/helloworldnewname
-     *
-     */
-    @PUT
-    @Path("/v2/{annotation_type}/projects/{project_name}/rename/{new_project_name}")
-    public Future<ActionStatus> renameProject(@PathParam("annotation_type") String annotationType,
-                                              @PathParam("project_name") String projectName,
-                                              @PathParam("new_project_name") String newProjectName)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(loader == null) {
-            return HTTPResponseHandler.nullProjectResponse();
-        }
-
-        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
-        {
-            return portfolioDB.renameProject(loader.getProjectId(), newProjectName)
-                    .map(result -> {
-                        loader.setProjectName(newProjectName);
-                        ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
-                        log.debug("Rename to " + newProjectName + " success.");
-
-                        return ActionStatus.ok();
-                    })
-                    .otherwise(ActionStatus.failedWithMessage("Failed to rename project " + projectName));
-        }
-
-        Promise<ActionStatus> promise = Promise.promise();
-        promise.complete(ActionStatus.ok());
-
-        return promise.future();
-    }
-
-    /**
-     * Reload v2 project
-     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/reload
-     *
-     * Example:
-     * PUT http://localhost:{port}/v2/bndbox/projects/helloworld/reload
-     *
-     */
-    @PUT
-    @Path("/v2/{annotation_type}/projects/{project_name}/reload")
-    public Future<ActionStatus> reloadProject(@PathParam("annotation_type") String annotationType,
-                                              @PathParam("project_name") String projectName)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-
-        log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
-
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(loader == null) {
-            return HTTPResponseHandler.nullProjectResponse();
-        }
-
-        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
-
-        return portfolioDB.reloadProject(loader.getProjectId())
-                .map(ActionStatus.ok())
-                .otherwise(ActionStatus.failedWithMessage("Failed to reload project " + projectName));
-    }
-
-    /**
-     * Get load status of project
-     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/reloadstatus
-     *
-     * Example:
-     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/reloadstatus
-     *
-     */
-    @GET
-    @Path("/v2/{annotation_type}/projects/{project_name}/reloadstatus")
-    public ReloadProjectStatus reloadProjectStatus(@PathParam("annotation_type") String annotationType,
-                                                   @PathParam("project_name") String projectName)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
-
-        if(loader == null) {
-            return ReloadProjectStatus.builder()
-                    .message(ReplyHandler.FAILED)
-                    .errorMessage("Project not exist")
-                    .build();
-        }
-
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
-
-        ReloadProjectStatus response = ReloadProjectStatus.builder()
-                .message(ReplyHandler.SUCCESSFUL)
-                .fileSystemStatus(fileSysStatus.ordinal())
-                .fileSystemMessage(fileSysStatus.name())
-                .build();
-
-        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
-        {
-            response.setProgress(loader.getProgressUpdate());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
-        {
-            response.setUuidAddList(loader.getReloadAdditionList());
-            response.setUuidDeleteList(loader.getReloadDeletionList());
             response.setUnsupportedImageList(loader.getUnsupportedImageList());
         }
 
@@ -464,64 +346,6 @@ public class ProjectEndpoint {
                 .onFailure(cause -> ActionStatus.failedWithMessage(errorMessage));
     }
 
-    /***
-     * change is_load state of a project to false
-     *
-     * PUT http://localhost:{port}/:annotation_type/projects/:project_name
-     */
-    @PUT
-    @Path("/{annotation_type}/projects/{project_name}")
-    public ActionStatus closeProjectState(@PathParam("annotation_type") String annotationType,
-                                          @PathParam("project_name") String projectName,
-                                          ProjectStatusBody requestBody)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(projectID == null) {
-            return ActionStatus.failDefault();
-        }
-
-        if(requestBody.getStatus().equals("closed"))
-        {
-            Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID)).setIsLoadedFrontEndToggle(Boolean.FALSE);
-        }
-        else
-        {
-            throw new IllegalArgumentException("Request payload failed to satisfied the status of {\"status\": \"closed\"} for " + projectName + ". ");
-        }
-
-        return ActionStatus.ok();
-    }
-
-    /***
-     * Star a project
-     *
-     * PUT http://localhost:{port}/:annotation_type/projects/:projectname/star
-     */
-    @PUT
-    @Path("/{annotation_type}/projects/{project_name}/star")
-    public Future<ActionStatus> starProject(@PathParam("annotation_type") String annotationType,
-                                            @PathParam("project_name") String projectName,
-                                            ProjectStatusBody requestBody)
-    {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
-
-        if(projectID == null) {
-            return HTTPResponseHandler.nullProjectResponse();
-        }
-
-        Boolean isStarred = Boolean.parseBoolean(requestBody.getStatus());
-        return portfolioDB.starProject(projectID, isStarred)
-                .map(result -> {
-                    ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
-                    loader.setIsProjectStarred(isStarred);
-                    return ActionStatus.ok();
-                })
-                .otherwise(ActionStatus.failedWithMessage("Star project fail"));
-    }
-
     /**
      * Initiate load label list
      * PUT http://localhost:{port}/v2/labelfiles
@@ -590,31 +414,6 @@ public class ProjectEndpoint {
     }
 
     /**
-     * Close/terminate classifai
-     * PUT http://localhost:{port}/v2/close
-     *
-     * Example:
-     * PUT http://localhost:{port}/v2/close
-     */
-    @PUT
-    @Path("/v2/close")
-    public ActionStatus closeClassifai()
-    {
-        //terminate after 1 seconds
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        System.exit(0);
-                    }
-                },
-                1000
-        );
-
-        return ActionStatus.ok();
-    }
-
-    /**
      * Get status of choosing a project folder
      * GET http://localhost:{port}/v2/folders
      *
@@ -639,5 +438,30 @@ public class ProjectEndpoint {
         }
 
         return response;
+    }
+
+    /**
+     * Close/terminate classifai
+     * PUT http://localhost:{port}/v2/close
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/close
+     */
+    @PUT
+    @Path("/v2/close")
+    public ActionStatus closeClassifai()
+    {
+        //terminate after 1 seconds
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        System.exit(0);
+                    }
+                },
+                1000
+        );
+
+        return ActionStatus.ok();
     }
 }

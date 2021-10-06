@@ -17,7 +17,6 @@ package ai.classifai.database.portfolio;
 
 import ai.classifai.action.ActionOps;
 import ai.classifai.action.parser.PortfolioParser;
-import ai.classifai.action.parser.ProjectParser;
 import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
@@ -28,12 +27,9 @@ import ai.classifai.database.versioning.Version;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
 import ai.classifai.dto.data.ThumbnailProperties;
-import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
-import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ErrorCodes;
@@ -109,31 +105,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 });
     }
 
-    public static void loadProjectFromImportingConfigFile(@NonNull JsonObject input)
-    {
-        ProjectLoader loader = PortfolioParser.parseIn(input);
-
-        String newProjName = "";
-        while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
-        {
-            newProjName = new NameGenerator().getNewProjectName();
-            loader.setProjectName(newProjName);
-            loader.setProjectId(UuidGenerator.generateUuid());
-        }
-
-        // Only show popup if there is duplicate project name
-        if(!newProjName.equals(""))
-        {
-            String message = "Name Overlapped. Rename as " + newProjName + ".";
-            log.info(message);
-        }
-
-        ProjectHandler.loadProjectLoader(loader);
-
-        //load project table first
-        JsonObject contentJsonObject = input.getJsonObject(ParamConfig.getProjectContentParam());
-        ProjectParser.parseIn(loader, contentJsonObject);
-
+    public static void loadProject(ProjectLoader loader) {
         //load portfolio table last
         Tuple params = PortfolioVerticle.buildNewProject(loader);
 
@@ -141,12 +113,10 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .execute(params)
                 .onComplete(DBUtils.handleEmptyResponse(
                         () -> {
-                            ProjectImportSelector.setProjectName(loader.getProjectName());
                             log.info("Import project " + loader.getProjectName() + " success!");
-                            },
+                        },
                         cause -> log.info("Failed to import project " + loader.getProjectName() + " from configuration file")
-                        ));
-
+                ));
     }
 
     public static void updateLoaderLabelList(ProjectLoader loader, ProjectVersion project, List<String> newLabelListJson)

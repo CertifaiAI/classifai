@@ -52,6 +52,7 @@ public class EndpointRouter extends AbstractVerticle
     ProjectMetadataEndpoint projectMetadataEndpoint;
     DataEndpoint dataEndpoint;
     ExportProjectEndpoint exportProjectEndpoint;
+    UpdateProjectEndpoint updateProjectEndpoint;
     CloudEndpoint cloud;
 
     public EndpointRouter()
@@ -106,6 +107,10 @@ public class EndpointRouter extends AbstractVerticle
                 .portfolioDB(portfolioDB)
                 .build();
 
+        this.updateProjectEndpoint = UpdateProjectEndpoint.builder()
+                .portfolioDB(portfolioDB)
+                .build();
+
         this.cloud = CloudEndpoint.builder()
                 .vertx(vertx)
                 .build();
@@ -123,7 +128,7 @@ public class EndpointRouter extends AbstractVerticle
         configureVersionVertx();
         Router router = RestRouter.register(vertx,
                 projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
-                imageEndpoint, projectEndpoint, dataEndpoint);
+                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint);
 
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
