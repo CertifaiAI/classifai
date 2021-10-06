@@ -32,8 +32,10 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 
 /***
@@ -73,17 +75,17 @@ public class PortfolioParser
     {
         //annotation_type (string -> int)
         String annotation = projectConfig.getAnnotationType();
-        int annotationInt = AnnotationHandler.getType(annotation).ordinal();
+        int annotationInt = Objects.requireNonNull(AnnotationHandler.getType(annotation)).ordinal();
 
         ProjectVersion project = loadProjectVersion(projectConfig.getProjectVersion());
 
         Version currentVersion = new Version(projectConfig.getCurrentVersion());
         project.setCurrentVersion(currentVersion.getVersionUuid());
 
-        Map uuidDict = ActionOps.getKeyWithArray(projectConfig.getUuidVersionList());
+        Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(projectConfig.getUuidVersionList());
         project.setUuidListDict(uuidDict);                                                                          //uuid_version_list
 
-        Map labelDict = ActionOps.getKeyWithArray(projectConfig.getLabelVersionList());
+        Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(projectConfig.getLabelVersionList());
         project.setLabelListDict(labelDict);                                                                        //label_version_list
 
 

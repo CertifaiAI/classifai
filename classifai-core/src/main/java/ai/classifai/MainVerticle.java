@@ -38,11 +38,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
-    private final static PortfolioVerticle portfolioVerticle = new PortfolioVerticle();
-    private final static BoundingBoxVerticle boundingBoxVerticle = new BoundingBoxVerticle();
-    private final static SegVerticle segVerticle = new SegVerticle();
-    private final static WasabiVerticle wasabiVerticle = new WasabiVerticle();
-    private final static EndpointRouter serverVerticle = new EndpointRouter();
+    private static final PortfolioVerticle portfolioVerticle = new PortfolioVerticle();
+    private static final BoundingBoxVerticle boundingBoxVerticle = new BoundingBoxVerticle();
+    private static final SegVerticle segVerticle = new SegVerticle();
+    private static final WasabiVerticle wasabiVerticle = new WasabiVerticle();
+    private static final EndpointRouter serverVerticle = new EndpointRouter();
 
     @Override
     public void start(Promise<Void> promise)
