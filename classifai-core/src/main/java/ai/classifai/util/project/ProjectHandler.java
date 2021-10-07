@@ -42,24 +42,17 @@ public class ProjectHandler {
 
     //key: projectID
     //value: ProjectLoader
-    private static Map<String, ProjectLoader> projectIDLoaderDict;
+    private static final Map<String, ProjectLoader> projectIDLoaderDict = new HashMap<>();
 
     //key: Pair<String projectName, Integer annotationType>
     //value: projectID
-    private static Map<Pair<String, Integer>, String> projectIDSearch;
+    private static final Map<Pair<String, Integer>, String> projectIDSearch = new HashMap<>();
 
     //key: projectID
     //value: Pair<String projectName, Integer annotationType>
-    private static Map<String, Pair<String, Integer>> projectNameSearch;
+    private static final Map<String, Pair<String, Integer>> projectNameSearch = new HashMap<>();
 
     @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
-
-    static
-    {
-        projectIDLoaderDict = new HashMap<>();
-        projectIDSearch = new HashMap<>();
-        projectNameSearch = new HashMap<>();
-    }
 
     public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
     {
