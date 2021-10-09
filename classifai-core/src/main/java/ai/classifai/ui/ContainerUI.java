@@ -23,15 +23,19 @@ public class ContainerUI implements NativeUI {
             case 0:
                 log.error(title);
                 log.error(message);
+                break;
             case 1:
                 log.info(title);
                 log.info(message);
+                break;
             case 2:
                 log.warn(title);
                 log.warn(message);
+                break;
             default:
                 log.debug(title);
                 log.debug(message);
+                break;
         }
     }
 
