@@ -5,21 +5,24 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Slf4j
-@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectMetadataEndpoint {
-    private PortfolioDB portfolioDB;
+    private final PortfolioDB portfolioDB;
+    private final ProjectHandler projectHandler;
+
+    public ProjectMetadataEndpoint(PortfolioDB portfolioDB, ProjectHandler projectHandler) {
+        this.portfolioDB = portfolioDB;
+        this.projectHandler = projectHandler;
+    }
 
     /**
      * Retrieve specific project metadata
@@ -32,10 +35,10 @@ public class ProjectMetadataEndpoint {
     public Future<ActionStatus> getProjectMetadata(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
         log.info("Get metadata of project: " + projectName + " of annotation type: " + type.name());
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
         if(loader == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
@@ -54,7 +57,7 @@ public class ProjectMetadataEndpoint {
     @Path("/{annotation_type}/projects/meta")
     public Future<ActionStatus> getAllProjectsMeta(@PathParam("annotation_type") String annotationType)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
         return portfolioDB.getAllProjectsMeta(type.ordinal())
                 .map(ActionStatus::okWithResponse)

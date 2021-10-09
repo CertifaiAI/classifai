@@ -15,17 +15,22 @@
  */
 package ai.classifai;
 
+import ai.classifai.action.ProjectExport;
+import ai.classifai.action.ProjectImport;
+import ai.classifai.database.DbConfig;
 import ai.classifai.database.DbOps;
-import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
-import ai.classifai.database.annotation.seg.SegVerticle;
-import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.JDBCPoolHolder;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.wasabis3.WasabiVerticle;
+import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.router.EndpointRouter;
-import ai.classifai.ui.component.LookFeelSetter;
-import ai.classifai.ui.launcher.LogoLauncher;
-import ai.classifai.ui.launcher.RunningStatus;
-import ai.classifai.ui.launcher.WelcomeLauncher;
+import ai.classifai.ui.ContainerUI;
+import ai.classifai.ui.DesktopUI;
+import ai.classifai.ui.NativeUI;
+import ai.classifai.ui.enums.RunningStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -38,56 +43,63 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
-    private static final PortfolioVerticle portfolioVerticle = new PortfolioVerticle();
-    private static final BoundingBoxVerticle boundingBoxVerticle = new BoundingBoxVerticle();
-    private static final SegVerticle segVerticle = new SegVerticle();
-    private static final WasabiVerticle wasabiVerticle = new WasabiVerticle();
-    private static final EndpointRouter serverVerticle = new EndpointRouter();
+    private final WasabiVerticle wasabiVerticle;
+    private final EndpointRouter serverVerticle;
+    private final NativeUI ui;
+    private final ProjectHandler projectHandler;
+    private final JDBCPoolHolder jdbcPoolHolder;
+    private final PortfolioDB portfolioDB;
+
+    public MainVerticle(CLIProjectInitiator initiator){
+        jdbcPoolHolder = new JDBCPoolHolder();
+
+        /* TODO: fix circular dependency */
+        final ProjectImport projectImport = new ProjectImport(null, null, null);
+        if(ParamConfig.isDockerEnv()){
+            ui = new ContainerUI();
+        }else{
+            ui = new DesktopUI(this::closeVerticles, projectImport);
+        }
+        this.projectHandler = new ProjectHandler(ui, initiator);
+        final ProjectExport projectExport = new ProjectExport(projectHandler);
+
+        final AnnotationDB annotationDB = new AnnotationDB(jdbcPoolHolder, projectHandler, null/* TODO: fix circular dependency */);
+        this.portfolioDB = new PortfolioDB(jdbcPoolHolder, projectHandler, projectExport, annotationDB);
+        annotationDB.setPortfolioDB(portfolioDB);
+
+        //TODO: Fix circular dependency
+        projectImport.setProjectHandler(projectHandler);
+        projectImport.setAnnotationDB(annotationDB);
+        projectImport.setPortfolioDB(portfolioDB);
+
+
+        wasabiVerticle = new WasabiVerticle(projectHandler, portfolioDB, annotationDB);
+        serverVerticle = new EndpointRouter(ui, portfolioDB, annotationDB, projectHandler);
+    }
 
     @Override
     public void start(Promise<Void> promise)
     {
-        if(!ParamConfig.isDockerEnv()) LookFeelSetter.setDarkMode(); //to align dark mode for windows
+        ui.start();
+        new DbOps(ui).configureDatabase();
 
-        DbOps.configureDatabase();
+        Promise<String> serverDeployment = Promise.promise();
+        vertx.deployVerticle(serverVerticle, serverDeployment);
 
-        if (!ParamConfig.isDockerEnv()) WelcomeLauncher.start();
-
-        Promise<String> portfolioDeployment = Promise.promise();
-        vertx.deployVerticle(portfolioVerticle, portfolioDeployment);
-
-        portfolioDeployment.future().compose(id_ -> {
-
-            Promise<String> bndBoxDeployment = Promise.promise();
-            vertx.deployVerticle(boundingBoxVerticle, bndBoxDeployment);
-            return bndBoxDeployment.future();
-
-        }).compose(id_ -> {
-
-            Promise<String> segDeployment = Promise.promise();
-            vertx.deployVerticle(segVerticle, segDeployment);
-            return segDeployment.future();
-
-        }).compose(id_ -> {
-
-            Promise<String> serverDeployment = Promise.promise();
-            vertx.deployVerticle(serverVerticle, serverDeployment);
-            return serverDeployment.future();
-
-        }).compose(id_ -> {
-
+        serverDeployment.future().compose(id_ -> {
             Promise<String> wasabiDeployment = Promise.promise();
             vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
             return wasabiDeployment.future();
 
         }).onComplete(ar -> {
+            jdbcPoolHolder.init(vertx, DbConfig.getH2());
 
             if (ar.succeeded())
             {
-                portfolioVerticle.configProjectLoaderFromDb();
-                portfolioVerticle.buildProjectFromCLI();
+                portfolioDB.configProjectLoaderFromDb();
+                portfolioDB.buildProjectFromCLI();
 
-                LogoLauncher.print();
+                printLogo();
 
                 log.info("Classifai started successfully");
                 log.info("Go on and open http://localhost:" + ParamConfig.getHostingPort());
@@ -97,7 +109,7 @@ public class MainVerticle extends AbstractVerticle
                 {
                     try
                     {
-                        WelcomeLauncher.setRunningStatus(RunningStatus.RUNNING);
+                        ui.setRunningStatus(RunningStatus.RUNNING);
                     }
                     catch (Exception e)
                     {
@@ -116,12 +128,10 @@ public class MainVerticle extends AbstractVerticle
 
     }
 
-    public static void closeVerticles()
+    public void closeVerticles()
     {
         try
         {
-            boundingBoxVerticle.stop(Promise.promise());
-            segVerticle.stop(Promise.promise());
             serverVerticle.stop(Promise.promise());
             wasabiVerticle.stop(Promise.promise());
         }
@@ -134,8 +144,22 @@ public class MainVerticle extends AbstractVerticle
     @Override
     public void stop(Promise<Void> promise) throws Exception
     {
+        jdbcPoolHolder.stop();
         vertx.close( r -> {if(r.succeeded()){
             log.info("Classifai close successfully");
         }});
+    }
+
+    public static void printLogo()
+    {
+        log.info("\n");
+        log.info("   *********  ***          *****     *********  *********  *********  *********    *****    *********  ");
+        log.info("   *********  ***        *********   ***        ***        *********  *********  *********  *********  ");
+        log.info("   ***        ***        ***    ***  ***        ***           ***     ***        ***   ***     ***     ");
+        log.info("   ***        ***        ***    ***  *********  *********     ***     *********  ***   ***     ***     ");
+        log.info("   ***        ***        **********        ***        ***     ***     *********  *********     ***     ");
+        log.info("   *********  *********  ***    ***        ***        ***  *********  ***        ***   ***  *********  ");
+        log.info("   *********  *********  ***    ***  *********  *********  *********  ***        ***   ***  *********  ");
+        log.info("\n");
     }
 }

@@ -15,12 +15,9 @@
  */
 package ai.classifai.action;
 
-import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.loader.ProjectLoader;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Utility class for delete data
@@ -28,37 +25,8 @@ import java.util.List;
  * @author devenyantis
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeleteProjectData {
 
-    private DeleteProjectData() {
-        throw new IllegalStateException("Utility class");
-    }
-
-    public static List<String> deleteProjectDataOnComplete(ProjectLoader loader, List<String> deleteUUIDList,
-                                                           List<String> deletedDataPathList) throws IOException {
-        List<String> dbUUIDList = loader.getUuidListFromDb();
-        if (dbUUIDList.removeAll(deleteUUIDList))
-        {
-            loader.setUuidListFromDb(dbUUIDList);
-
-            List<String> sanityUUIDList = loader.getSanityUuidList();
-
-            if (sanityUUIDList.removeAll(deleteUUIDList))
-            {
-                loader.setSanityUuidList(sanityUUIDList);
-                FileMover.moveFileToDirectory(loader.getProjectPath().toString(), deletedDataPathList);
-            }
-            else
-            {
-                log.info("Error in removing uuid list");
-            }
-
-            //update Portfolio Verticle
-            PortfolioVerticle.updateFileSystemUuidList(loader.getProjectId());
-
-        }
-
-        return loader.getSanityUuidList();
-    }
 
 }

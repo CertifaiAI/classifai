@@ -23,10 +23,8 @@ import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -38,12 +36,19 @@ import javax.ws.rs.core.MediaType;
  * @author devenyantis
  */
 @Slf4j
-@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ExportProjectEndpoint {
 
-    private PortfolioDB portfolioDB;
+    private final PortfolioDB portfolioDB;
+    private final ProjectHandler projectHandler;
+    private final ProjectExport projectExport;
+
+    public ExportProjectEndpoint(PortfolioDB portfolioDB, ProjectHandler projectHandler, ProjectExport projectExport) {
+        this.portfolioDB = portfolioDB;
+        this.projectHandler = projectHandler;
+        this.projectExport = projectExport;
+    }
 
     /***
      * export a project to configuration file
@@ -56,15 +61,15 @@ public class ExportProjectEndpoint {
                                               @PathParam("project_name") String projectName,
                                               @PathParam("export_type") String exportTypeVar)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
-        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+        String projectId = projectHandler.getProjectId(projectName, type.ordinal());
 
         if(projectId == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
-        ActionConfig.ExportType exportType = ProjectExport.getExportType(exportTypeVar);
+        ActionConfig.ExportType exportType = projectExport.getExportType(exportTypeVar);
         if(exportType.equals(ActionConfig.ExportType.INVALID_CONFIG)) {
             return HTTPResponseHandler.nullProjectResponse();
         }
@@ -72,7 +77,7 @@ public class ExportProjectEndpoint {
         return portfolioDB.exportProject(projectId, exportType.ordinal())
                 .map(ActionStatus.ok())
                 .otherwise(cause -> {
-                    ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
+                    projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
                     return ActionStatus.failedWithMessage("Export of project failed for " + projectName);
                 });
     }
@@ -89,7 +94,7 @@ public class ExportProjectEndpoint {
     @Path("/v2/{annotation_type}/projects/exportstatus")
     public ExportStatusResponse getExportStatus()
     {
-        ProjectExport.ProjectExportStatus exportStatus = ProjectExport.getExportStatus();
+        ProjectExport.ProjectExportStatus exportStatus = projectExport.getExportStatus();
 
         ExportStatusResponse response = ExportStatusResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
@@ -99,7 +104,7 @@ public class ExportProjectEndpoint {
 
         if(exportStatus.equals(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS))
         {
-            response.setProjectConfigPath(ProjectExport.getExportPath());
+            response.setProjectConfigPath(projectExport.getExportPath());
         }
 
        return response;

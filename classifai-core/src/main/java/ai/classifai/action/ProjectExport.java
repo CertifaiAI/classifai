@@ -26,7 +26,9 @@ import ai.classifai.util.project.ProjectHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -42,9 +44,7 @@ import java.util.zip.ZipOutputStream;
  *
  * @author codenamewei
  */
-@Builder
 @Slf4j
-@NoArgsConstructor
 public class ProjectExport
 {
     public enum ProjectExportStatus {
@@ -55,13 +55,19 @@ public class ProjectExport
     }
 
     @Getter @Setter
-    private static ProjectExportStatus exportStatus = ProjectExportStatus.EXPORT_NOT_INITIATED;
+    private ProjectExportStatus exportStatus = ProjectExportStatus.EXPORT_NOT_INITIATED;
     @Getter @Setter
-    private static String exportPath = "";
+    private String exportPath = "";
 
-    public static String exportToFile(@NonNull String projectId, @NonNull ProjectConfigProperties configProperties)
+    private ProjectHandler projectHandler;
+
+    public ProjectExport(ProjectHandler projectHandler) {
+        this.projectHandler = projectHandler;
+    }
+
+    public String exportToFile(@NonNull String projectId, @NonNull ProjectConfigProperties configProperties)
     {
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        ProjectLoader loader = Objects.requireNonNull(projectHandler.getProjectLoader(projectId));
 
         //Configuration file of json format
         String configPath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".json";
@@ -87,7 +93,7 @@ public class ProjectExport
         return configPath;
     }
 
-    public static String exportToFileWithData(ProjectLoader loader, String projectId, ProjectConfigProperties configContent) throws IOException
+    public String exportToFileWithData(ProjectLoader loader, String projectId, ProjectConfigProperties configContent) throws IOException
     {
         String configPath = exportToFile(projectId, configContent);
         File zipFile = Paths.get(loader.getProjectPath().getAbsolutePath(), loader.getProjectName() + ".zip").toFile();
@@ -117,7 +123,7 @@ public class ProjectExport
         return zipFile.toString();
     }
 
-    private static void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
+    private void addToEntry(File filePath, ZipOutputStream out, File dir) throws IOException
     {
         String relativePath = filePath.toString().substring(dir.getAbsolutePath().length()+1);
         String saveFileRelativePath = Paths.get(dir.getName(), relativePath).toFile().toString();
@@ -143,7 +149,7 @@ public class ProjectExport
         }
     }
 
-    public static ProjectConfigProperties getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
+    public ProjectConfigProperties getConfigContent(@NonNull RowSet<Row> rowSet, @NonNull RowSet<Row> projectRowSet)
     {
         if(rowSet.size() == 0)
         {
@@ -170,7 +176,7 @@ public class ProjectExport
         return projectConfig;
     }
 
-    public static ActionConfig.ExportType getExportType(String exportType)
+    public ActionConfig.ExportType getExportType(String exportType)
     {
         if(exportType.equals("cfg"))
         {

@@ -13,31 +13,39 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.project;
+package ai.classifai.ui.selector.project;
 
-import ai.classifai.selector.status.SelectionWindowStatus;
-import ai.classifai.ui.SelectionWindow;
-import ai.classifai.ui.launcher.WelcomeLauncher;
-import lombok.Getter;
+import ai.classifai.ui.DesktopUI;
+import ai.classifai.ui.component.SelectionWindow;
+import ai.classifai.ui.enums.SelectionWindowStatus;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
 /**
- * Open browser to select project folder
+ * Open browser to choose label file to import
  *
  * @author codenamewei
  */
 @Slf4j
-public class ProjectFolderSelector extends SelectionWindow
+public class LabelFileSelector extends SelectionWindow
 {
-    @Getter private File projectFolderPath = null;
+    private static final FileNameExtensionFilter TXT_FILTER = new FileNameExtensionFilter(
+            "Text Files", "txt");
 
-    public String getProjectFolderPath()
+    @Setter private File labelFile = null;
+
+    public LabelFileSelector(DesktopUI ui) {
+        super(ui);
+    }
+
+    public String getLabelFilePath()
     {
-        return (projectFolderPath != null) ? projectFolderPath.getAbsolutePath() : "";
+        return (labelFile != null) ? labelFile.getAbsolutePath() : "";
     }
 
     public void run()
@@ -50,21 +58,22 @@ public class ProjectFolderSelector extends SelectionWindow
                 {
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
 
-                    projectFolderPath = null;
+                    labelFile = null;
 
-                    JFrame frame = initFrame();
-                    String title = "Select Project Folder";
-                    JFileChooser chooser = initChooser(JFileChooser.DIRECTORIES_ONLY, title);
+                    JFrame frame = ui.getFrameAtMousePointer();
+                    String title = "Select Label File (*.txt)";
+                    JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
+                    chooser.setFileFilter(TXT_FILTER);
 
                     //Important: prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
+                    ui.ensureWelcomeLauncherStaysInBackground();
 
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        projectFolderPath = chooser.getSelectedFile();
+                        labelFile = chooser.getSelectedFile();
                     }
                     else
                     {
@@ -84,6 +93,5 @@ public class ProjectFolderSelector extends SelectionWindow
             log.info("LabelFileSelector failed to open", e);
         }
     }
+
 }
-
-

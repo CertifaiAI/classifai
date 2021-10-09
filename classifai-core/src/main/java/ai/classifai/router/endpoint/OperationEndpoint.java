@@ -24,10 +24,8 @@ import ai.classifai.util.datetime.DateTime;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -40,12 +38,16 @@ import java.util.Objects;
  * @author devenyantis
  */
 @Slf4j
-@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class OperationEndpoint {
+    private final PortfolioDB portfolioDB;
+    private final ProjectHandler projectHandler;
 
-    private PortfolioDB portfolioDB;
+    public OperationEndpoint(PortfolioDB portfolioDB, ProjectHandler projectHandler) {
+        this.portfolioDB = portfolioDB;
+        this.projectHandler = projectHandler;
+    }
 
     /***
      *
@@ -61,11 +63,11 @@ public class OperationEndpoint {
                                            @PathParam("uuid") String uuid,
                                            ThumbnailProperties requestBody)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
-        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+        ProjectLoader loader = Objects.requireNonNull(projectHandler.getProjectLoader(projectID));
 
         if(projectID == null) {
             return HTTPResponseHandler.nullProjectResponse();
@@ -105,8 +107,8 @@ public class OperationEndpoint {
                                              @PathParam("project_name") String projectName,
                                              LabelListBody requestBody)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         if(projectID == null) {
             return HTTPResponseHandler.nullProjectResponse();

@@ -4,18 +4,19 @@ import ai.classifai.database.wasabis3.WasabiQuery;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import lombok.Builder;
 
-@Builder
 public class CloudEndpoint
 {
-    private Vertx vertx;
+    private final Vertx vertx;
+
+    public CloudEndpoint(Vertx vertx) {
+        this.vertx = vertx;
+    }
 
     /**
      * PUT http://localhost:{port}/v2/:annotation_type/wasabi/newproject/:project_name
@@ -32,7 +33,7 @@ public class CloudEndpoint
      */
     public void createWasabiCloudProject(RoutingContext context)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
 
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 

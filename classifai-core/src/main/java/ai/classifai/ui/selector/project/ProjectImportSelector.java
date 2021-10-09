@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.project;
+package ai.classifai.ui.selector.project;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ProjectImport;
-import ai.classifai.selector.status.FileSystemStatus;
-import ai.classifai.selector.status.SelectionWindowStatus;
-import ai.classifai.ui.SelectionWindow;
-import ai.classifai.ui.launcher.WelcomeLauncher;
+import ai.classifai.ui.DesktopUI;
+import ai.classifai.ui.component.SelectionWindow;
+import ai.classifai.ui.enums.FileSystemStatus;
+import ai.classifai.ui.enums.SelectionWindowStatus;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -38,12 +38,17 @@ import java.nio.file.Paths;
  */
 @Slf4j
 public class ProjectImportSelector extends SelectionWindow {
+    private static final FileNameExtensionFilter JSON_FILTER = new FileNameExtensionFilter(
+            "Json Files", "json");
+    private final ProjectImport projectImport;
 
     @Getter private FileSystemStatus importFileSystemStatus = FileSystemStatus.DID_NOT_INITIATED;
     @Getter private String projectName = null;
 
-    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
-            "Json Files", "json");
+    public ProjectImportSelector(DesktopUI ui, ProjectImport projectImport) {
+        super(ui);
+        this.projectImport = projectImport;
+    }
 
     public void run()
     {
@@ -57,13 +62,13 @@ public class ProjectImportSelector extends SelectionWindow {
                     this.importFileSystemStatus = FileSystemStatus.ITERATING_FOLDER;
                     this.projectName = null;
 
-                    JFrame frame = initFrame();
+                    JFrame frame = ui.getFrameAtMousePointer();
                     String title = "Select File";
                     JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
-                    chooser.setFileFilter(imgFilter);
+                    chooser.setFileFilter(JSON_FILTER);
 
                     //Important: prevent Welcome Console from popping out
-                    WelcomeLauncher.setToBackground();
+                    ui.ensureWelcomeLauncherStaysInBackground();
 
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
@@ -104,7 +109,7 @@ public class ProjectImportSelector extends SelectionWindow {
 
         log.info("Proceed with importing project with " + jsonFile.getName());
 
-        this.projectName = ProjectImport.importProjectFile(jsonFile);
+        this.projectName = projectImport.importProjectFile(jsonFile);
 
         if(this.projectName == null) {
             String mes = "Import project failed.";

@@ -13,26 +13,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.ui.launcher;
-
+package ai.classifai.ui.enums;
 
 /**
- * Messages to show on WelcomeLauncher
+ * State of file system
  *
  * @author codenamewei
  */
-public enum RunningStatus
+public enum FileSystemStatus
 {
-    STARTING("Starting..."),
-    RUNNING("Running...");
-
-    private String text;
-
-    RunningStatus(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
-    }
+    DID_NOT_INITIATED,
+    ITERATING_FOLDER,
+    DATABASE_UPDATING,
+    DATABASE_UPDATED,
+    DATABASE_NOT_UPDATED,
+    ABORTED
 }
+

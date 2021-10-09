@@ -15,49 +15,39 @@
  */
 package ai.classifai.ui.component;
 
-import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.ui.DesktopUI;
+import ai.classifai.ui.enums.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 
 /**
- * Selection window setting and process
+ * For selection windows initialization and settings
  *
  * @author devenyantis
  */
-public class SelectionWindow {
+@Slf4j
+public abstract class SelectionWindow {
 
-    public enum WindowStatus
-    {
-        WINDOW_OPEN,
-        WINDOW_CLOSE
-    }
+    protected final DesktopUI ui;
+    // To make sure window open once only
     @Getter @Setter
-    private static WindowStatus windowStatus = WindowStatus.WINDOW_CLOSE;
+    protected SelectionWindowStatus windowStatus = SelectionWindowStatus.WINDOW_CLOSE;
 
-    private static final FileNameExtensionFilter imgFilter = new FileNameExtensionFilter(
-            "Json Files", "json");
-
-    public static JFrame initFrame()
-    {
-        Point pt = MouseInfo.getPointerInfo().getLocation();
-        JFrame frame = new JFrame();
-        frame.setIconImage(LogoLauncher.getClassifaiIcon());
-
-        frame.setAlwaysOnTop(true);
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setLocation(pt);
-        frame.requestFocus();
-        frame.setVisible(false);
-
-        return frame;
+    protected SelectionWindow(DesktopUI ui){
+        this.ui = ui;
     }
 
-    public static JFileChooser initChooser()
+    public boolean isWindowOpen()
+    {
+        return windowStatus.equals(SelectionWindowStatus.WINDOW_OPEN);
+    }
+
+    public JFileChooser initChooser(int mode, String title)
     {
         JFileChooser chooser = new JFileChooser() {
             @Override
@@ -70,14 +60,19 @@ public class SelectionWindow {
             }
         };
 
+        chooser.setDialogTitle(title);
         chooser.setCurrentDirectory(ParamConfig.getRootSearchPath());
-        chooser.setFileFilter(imgFilter);
-        chooser.setDialogTitle("Select Files");
         chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileSelectionMode(mode);
         chooser.setAcceptAllFileFilterUsed(false);
 
         return chooser;
     }
 
+    public void showAbortImportPopup()
+    {
+        String popupTitle = "Error Opening Window";
+        String message = "Another selection window is currently open. Please close to proceed.";
+        ui.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+    }
 }

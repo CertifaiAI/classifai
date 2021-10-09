@@ -15,7 +15,7 @@
  */
 package ai.classifai.action.parser;
 
-import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ImageDataProperties;
@@ -90,7 +90,7 @@ public class ProjectParser
         }
     }
 
-    public static void parseIn(@NonNull ProjectLoader loader, @NonNull Map<String, ImageDataProperties> content)
+    public static void parseIn(@NonNull AnnotationDB annotationDB, @NonNull ProjectLoader loader, @NonNull Map<String, ImageDataProperties> content)
     {
         String projectId = loader.getProjectId();
 
@@ -122,7 +122,7 @@ public class ProjectParser
 
                     loader.getUuidAnnotationDict().put(uuid, annotation);
 
-                    AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+                    annotationDB.uploadUuidFromConfigFile(annotation.getTuple(), loader);
                 } else {
                     log.debug("Hash not same for " + fullPath);
                 }

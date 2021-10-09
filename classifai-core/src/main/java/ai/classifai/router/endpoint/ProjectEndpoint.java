@@ -1,6 +1,7 @@
 package ai.classifai.router.endpoint;
 
 import ai.classifai.action.LabelListImport;
+import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.api.body.CreateProjectBody;
 import ai.classifai.dto.api.response.FileSysStatusResponse;
@@ -8,23 +9,19 @@ import ai.classifai.dto.api.response.LoadingStatusResponse;
 import ai.classifai.dto.api.response.SelectionStatusResponse;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
-import ai.classifai.selector.project.LabelFileSelector;
-import ai.classifai.selector.project.ProjectFolderSelector;
-import ai.classifai.selector.project.ProjectImportSelector;
-import ai.classifai.selector.status.FileSystemStatus;
-import ai.classifai.selector.status.NewProjectStatus;
-import ai.classifai.selector.status.SelectionWindowStatus;
+import ai.classifai.ui.NativeUI;
+import ai.classifai.ui.enums.FileSystemStatus;
+import ai.classifai.ui.enums.NewProjectStatus;
+import ai.classifai.ui.enums.SelectionWindowStatus;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -40,15 +37,20 @@ import java.util.List;
  * @author devenyantis
  */
 @Slf4j
-@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectEndpoint {
+    private final PortfolioDB portfolioDB;
+    private final NativeUI ui;
+    private final ProjectHandler projectHandler;
+    private final AnnotationDB annotationDB;
 
-    private PortfolioDB portfolioDB;
-    private ProjectImportSelector projectImporter;
-    private ProjectFolderSelector projectFolderSelector;
-    private LabelFileSelector labelFileSelector;
+    public ProjectEndpoint(PortfolioDB portfolioDB, AnnotationDB annotationDB, NativeUI ui, ProjectHandler projectHandler) {
+        this.portfolioDB = portfolioDB;
+        this.ui = ui;
+        this.projectHandler = projectHandler;
+        this.annotationDB = annotationDB;
+    }
 
     /**
      * Create new project
@@ -80,7 +82,7 @@ public class ProjectEndpoint {
 
             if(projectStatus.equals(NewProjectStatus.CONFIG.name()))
             {
-                projectImporter.run();
+                ui.showProjectImportSelector();
                 promise.complete(ActionStatus.ok());
             }
             else if(projectStatus.equals(NewProjectStatus.RAW.name()))
@@ -116,7 +118,7 @@ public class ProjectEndpoint {
     @Path("/v2/{annotation_type}/projects/importstatus")
     public FileSysStatusResponse getImportStatus()
     {
-        FileSystemStatus fileSysStatus = projectImporter.getImportFileSystemStatus();
+        FileSystemStatus fileSysStatus = ui.getProjectImportStatus();
 
         FileSysStatusResponse response = FileSysStatusResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
@@ -126,7 +128,7 @@ public class ProjectEndpoint {
 
         if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
         {
-            response.setProjectName(projectImporter.getProjectName());
+            response.setProjectName(ui.getImportedProjectName());
         }
 
         return response;
@@ -136,9 +138,9 @@ public class ProjectEndpoint {
         String projectName = requestBody.getProjectName();
 
         String annotationName = requestBody.getAnnotationType();
-        Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
+        Integer annotationInt = AnnotationType.get(annotationName).ordinal();
 
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        if (projectHandler.isProjectNameUnique(projectName, annotationInt))
         {
             String projectPath = requestBody.getProjectPath();
 
@@ -154,9 +156,11 @@ public class ProjectEndpoint {
                     .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                     .projectInfra(ProjectInfra.ON_PREMISE)
                     .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                    .portfolioDB(portfolioDB)
+                    .annotationDB(annotationDB)
                     .build();
 
-            ProjectHandler.loadProjectLoader(loader);
+            projectHandler.loadProjectLoader(loader);
             loader.initFolderIteration();
 
             return ActionStatus.ok();
@@ -177,9 +181,9 @@ public class ProjectEndpoint {
     public FileSysStatusResponse createProjectStatus(@PathParam("annotation_type") String annotationType,
                                                      @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
 
         if(loader == null) {
             return FileSysStatusResponse.builder()
@@ -218,9 +222,9 @@ public class ProjectEndpoint {
     public Future<ActionStatus> loadProject(@PathParam("annotation_type") String annotationType,
                                             @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
         Promise<ActionStatus> promise = Promise.promise();
 
         if(loader == null) {
@@ -273,8 +277,8 @@ public class ProjectEndpoint {
     public LoadingStatusResponse loadProjectStatus(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        ProjectLoader projectLoader = ProjectHandler.getProjectLoader(projectName, type);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        ProjectLoader projectLoader = projectHandler.getProjectLoader(projectName, type);
 
         if (projectLoader == null) {
             return LoadingStatusResponse.builder()
@@ -328,8 +332,8 @@ public class ProjectEndpoint {
     public Future<ActionStatus> deleteProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         if(projectID == null) {
             return HTTPResponseHandler.nullProjectResponse();
@@ -340,7 +344,7 @@ public class ProjectEndpoint {
         return portfolioDB.deleteProjectFromPortfolioDb(projectID)
                 .compose(result -> portfolioDB.deleteProjectFromAnnotationDb(projectID))
                 .map(result -> {
-                    ProjectHandler.deleteProjectFromCache(projectID);
+                    projectHandler.deleteProjectFromCache(projectID);
                     return ActionStatus.ok();
                 })
                 .onFailure(cause -> ActionStatus.failedWithMessage(errorMessage));
@@ -357,10 +361,9 @@ public class ProjectEndpoint {
     @Path("/v2/labelfiles")
     public ActionStatus selectLabelFile()
     {
-        if(!labelFileSelector.isWindowOpen())
+        if(!ui.isLabelFileSelectorOpen())
         {
-            labelFileSelector.run();
-
+            ui.showLabelFileSelector();
         }
 
         return ActionStatus.ok();
@@ -377,7 +380,7 @@ public class ProjectEndpoint {
     @Path("/v2/labelfiles")
     public SelectionStatusResponse selectLabelFileStatus()
     {
-        SelectionWindowStatus status = labelFileSelector.getWindowStatus();
+        SelectionWindowStatus status = ui.getLabelFileSelectorWindowStatus();
 
         SelectionStatusResponse response = SelectionStatusResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
@@ -387,7 +390,7 @@ public class ProjectEndpoint {
 
         if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
         {
-            response.setLabelFilePath(labelFileSelector.getLabelFilePath());
+            response.setLabelFilePath(ui.getLabelFileSelectedPath());
         }
 
         return response;
@@ -405,9 +408,9 @@ public class ProjectEndpoint {
     @Path("/v2/folders")
     public ActionStatus selectProjectFolder()
     {
-        if(!projectFolderSelector.isWindowOpen())
+        if(!ui.isProjectFolderSelectorOpen())
         {
-            projectFolderSelector.run();
+            ui.showProjectFolderSelector();
         }
 
         return ActionStatus.ok();
@@ -424,7 +427,7 @@ public class ProjectEndpoint {
     @Path("/v2/folders")
     public SelectionStatusResponse selectProjectFolderStatus()
     {
-        SelectionWindowStatus status = projectFolderSelector.getWindowStatus();
+        SelectionWindowStatus status = ui.getProjectFolderSelectorWindowStatus();
 
         SelectionStatusResponse response = SelectionStatusResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
@@ -434,7 +437,7 @@ public class ProjectEndpoint {
 
         if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
         {
-            response.setProjectPath(projectFolderSelector.getProjectFolderPath());
+            response.setProjectPath(ui.getProjectFolderSelectedPath());
         }
 
         return response;

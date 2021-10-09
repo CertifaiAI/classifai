@@ -13,22 +13,15 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.status;
+package ai.classifai.ui.enums;
 
 /**
- * State of create new project
- *
- * - raw
- * - config file
+ * State of windows to select file/folder
  *
  * @author codenamewei
  */
-public enum NewProjectStatus
+public enum SelectionWindowStatus
 {
-    RAW,
-    CONFIG;
-
-    public static String getParamList() {
-        return RAW.name() + ", " + CONFIG.name();
-    }
+    WINDOW_OPEN,
+    WINDOW_CLOSE
 }
