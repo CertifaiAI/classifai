@@ -20,7 +20,6 @@ import ai.classifai.loader.ProjectLoader;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.awt.*;
 import java.io.IOException;
 
 /**
@@ -31,35 +30,29 @@ import java.io.IOException;
 @Slf4j
 public class FileGenerator {
 
-    public void run(@NonNull ProjectLoader loader, @NonNull ProjectConfigProperties configContent, @NonNull int exportType) {
-        EventQueue.invokeLater(() -> {
+    public void run(@NonNull ProjectExport projectExport, @NonNull ProjectLoader loader, @NonNull ProjectConfigProperties configContent, @NonNull int exportType) {
+        final Runnable runnable = () -> {
             String exportPath = null;
-            if(exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal())
-            {
+            if (exportType == ActionConfig.ExportType.CONFIG_WITH_DATA.ordinal()) {
                 log.info("Exporting project config with data");
-                try
-                {
-                    exportPath = ProjectExport.exportToFileWithData(loader, loader.getProjectId(), configContent);
+                try {
+                    exportPath = projectExport.exportToFileWithData(loader, loader.getProjectId(), configContent);
+                } catch (IOException e) {
+                    log.info("Exporting fail", e);
                 }
-                catch (IOException e)
-                {
-                    log.info("Exporting fail");
-                }
-            }
-            else if (exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal())
-            {
+            } else if (exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal()) {
                 log.info("Exporting project config");
-                exportPath = ProjectExport.exportToFile(loader.getProjectId(), configContent);
+                exportPath = projectExport.exportToFile(loader.getProjectId(), configContent);
             }
 
-            if(exportPath != null)
-            {
-                ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS);
-                ProjectExport.setExportPath(exportPath);
+            if (exportPath != null) {
+                projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS);
+                projectExport.setExportPath(exportPath);
 
                 return;
             }
-            ProjectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
-        });
+            projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
+        };
+        new Thread(runnable, "Project Export").start();
     }
 }

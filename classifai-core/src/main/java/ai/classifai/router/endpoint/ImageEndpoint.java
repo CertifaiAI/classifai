@@ -5,10 +5,8 @@ import ai.classifai.dto.api.response.ImageSourceResponse;
 import ai.classifai.dto.data.ThumbnailProperties;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -19,8 +17,13 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class ImageEndpoint {
 
-    @Setter
-    private PortfolioDB portfolioDB;
+    private final PortfolioDB portfolioDB;
+    private final ProjectHandler projectHandler;
+
+    public ImageEndpoint(PortfolioDB portfolioDB, ProjectHandler projectHandler) {
+        this.portfolioDB = portfolioDB;
+        this.projectHandler = projectHandler;
+    }
 
     /**
      * Retrieve thumbnail with metadata
@@ -34,8 +37,8 @@ public class ImageEndpoint {
                                                     @PathParam("project_name") String projectName ,
                                                     @PathParam("uuid") String uuid)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         return portfolioDB.getThumbnail(projectID, uuid);
     }
@@ -53,8 +56,8 @@ public class ImageEndpoint {
                                                       @PathParam("project_name") String projectName,
                                                       @PathParam("uuid") String uuid)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         return portfolioDB.getImageSource(projectID, uuid, projectName)
                 .map(result -> ImageSourceResponse.builder()

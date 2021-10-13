@@ -16,8 +16,8 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
+import ai.classifai.util.ParamConfig;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +66,7 @@ public class TifHandler
 
             int maxPages = reader.getNumImages(true);
 
-            if (maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
+            if (maxPages > ParamConfig.getMaxImportPages()) maxPages = ParamConfig.getMaxImportPages();
 
             for (int page = 0; page < maxPages; ++page)
             {
@@ -75,7 +75,7 @@ public class TifHandler
                 String savedPath;
                 if (outputPath == null)
                 {
-                    savedPath = FileHandler.getAbsolutePath(tifFullPath);
+                    savedPath = tifFullPath.getParentFile().getAbsolutePath();
                 }
                 else
                 {

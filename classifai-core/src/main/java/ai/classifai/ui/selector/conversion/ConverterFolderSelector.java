@@ -13,8 +13,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.conversion;
+package ai.classifai.ui.selector.conversion;
 
+import ai.classifai.ui.DesktopUI;
 import ai.classifai.ui.launcher.conversion.ConversionSelection;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.util.ParamConfig;
@@ -31,6 +32,14 @@ import java.io.File;
  */
 @Slf4j
 public class ConverterFolderSelector {
+
+    private final DesktopUI ui;
+    private final ConverterLauncher converterLauncher;
+
+    public ConverterFolderSelector(DesktopUI ui, ConverterLauncher converterLauncher){
+        this.ui = ui;
+        this.converterLauncher = converterLauncher;
+    }
 
     public void run(ConversionSelection selection)
     {
@@ -65,8 +74,7 @@ public class ConverterFolderSelector {
                     int res = chooser.showOpenDialog(frame);
                     frame.dispose();
 
-                    //prevent Welcome Console from popping out
-                    //WelcomeLauncher.setToBackground();
+                    ui.ensureWelcomeLauncherStaysInBackground();
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
@@ -76,11 +84,11 @@ public class ConverterFolderSelector {
                         {
                             if(selection.equals(ConversionSelection.INPUT))
                             {
-                                ConverterLauncher.setInputFolderPath(rootFolder.getAbsolutePath());
+                                converterLauncher.setInputFolderPath(rootFolder.getAbsolutePath());
                             }
                             else if(selection.equals(ConversionSelection.OUTPUT))
                             {
-                                ConverterLauncher.setOutputFolderPath(rootFolder.getAbsolutePath());
+                                converterLauncher.setOutputFolderPath(rootFolder.getAbsolutePath());
                             }
                         }
 

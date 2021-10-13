@@ -17,6 +17,7 @@ public class LoadingStatusResponse {
     int message;
 
     @JsonProperty("error_message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     String errorMessage;
 
     @JsonProperty

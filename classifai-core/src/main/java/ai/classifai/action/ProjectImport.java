@@ -15,19 +15,27 @@
  */
 package ai.classifai.action;
 
-import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.util.ParamConfig;
-import io.vertx.core.json.JsonObject;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import ai.classifai.action.parser.PortfolioParser;
+import ai.classifai.action.parser.ProjectParser;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
+import ai.classifai.dto.data.ImageDataProperties;
+import ai.classifai.dto.data.ProjectConfigProperties;
+import ai.classifai.loader.NameGenerator;
+import ai.classifai.loader.ProjectLoader;
+import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.project.ProjectHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Import of project from configuration file
@@ -35,74 +43,59 @@ import java.util.List;
  * @author codenamewei
  */
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectImport
 {
-    public static boolean importProjectFile(@NonNull File jsonFile)
+    /* all circular dependencies :( */
+    @Setter private PortfolioDB portfolioDB;
+    @Setter private AnnotationDB annotationDB;
+    @Setter private ProjectHandler projectHandler;
+
+    public ProjectImport(ProjectHandler projectHandler, PortfolioDB portfolioDB, AnnotationDB annotationDB){
+        this.projectHandler = projectHandler;
+        this.portfolioDB = portfolioDB;
+        this.annotationDB = annotationDB;
+    }
+
+    public String importProjectFile(@NonNull File jsonFile)
     {
-        try
-        {
+        try {
             String jsonStr = IOUtils.toString(new FileReader(jsonFile));
+            ProjectConfigProperties importConfig = jsonStrToConfig(jsonStr);
 
-            JsonObject inputJsonObject = new JsonObject(jsonStr);
-
-            checkProjectPath(inputJsonObject);
-
-            if(!checkToolVersion(inputJsonObject) || !checkJsonKeys(inputJsonObject))
-            {
-                return false;
+            if(importConfig == null) {
+                return null;
             }
 
-            PortfolioVerticle.loadProjectFromImportingConfigFile(inputJsonObject);
+            if(!checkToolVersion(importConfig)) {
+                return null;
+            }
 
-        }
-        catch(Exception e)
-        {
+            checkProjectPath(importConfig);
+
+            return loadProjectFromImportingConfigFile(importConfig);
+
+        } catch(Exception e) {
             log.info("Error in importing project. ", e);
-            return false;
+            return null;
         }
-
-        return true;
     }
 
-    public static boolean checkJsonKeys(JsonObject inputJsonObject)
+    public ProjectConfigProperties jsonStrToConfig(String jsonString)
     {
-        // Templates for JSON config files in order
-        List<String> jsonExportFileTemplates = Arrays.asList(
-                ActionConfig.getToolParam(),
-                ActionConfig.getToolVersionParam(),
-                ActionConfig.getUpdatedDateParam(),
-                ParamConfig.getProjectIdParam(),
-                ParamConfig.getProjectNameParam(),
-                ParamConfig.getAnnotationTypeParam(),
-                ParamConfig.getIsNewParam(),
-                ParamConfig.getIsStarredParam(),
-                ParamConfig.getProjectInfraParam(),
-                ParamConfig.getCurrentVersionParam(),
-                ParamConfig.getProjectVersionParam(),
-                ParamConfig.getUuidVersionListParam(),
-                ParamConfig.getLabelVersionListParam(),
-                ParamConfig.getProjectContentParam()
-        );
-
-        for(String key: jsonExportFileTemplates)
-        {
-            if(!inputJsonObject.containsKey(key))
-            {
-                String message = "Missing Key in JSON file: " + key;
-                log.info(message);
-
-                return false;
-            }
+        ObjectMapper mp = new ObjectMapper();
+        try {
+            return mp.readValue(jsonString, new TypeReference<ProjectConfigProperties>() {});
+        } catch (JsonProcessingException e) {
+            log.info("Fail to convert import config", e);
+            return null;
         }
-        return true;
     }
 
-    public static boolean checkToolVersion(JsonObject inputJsonObject)
+    public boolean checkToolVersion(ProjectConfigProperties importConfig)
     {
-        String toolNameFromJson = inputJsonObject.getString(ActionConfig.getToolParam());
-        String toolVersionFromJson = inputJsonObject.getString(ActionConfig.getToolVersionParam());
-        String updatedDateFromJson = inputJsonObject.getString(ActionConfig.getUpdatedDateParam());
+        String toolNameFromJson = importConfig.getToolName();
+        String toolVersionFromJson = importConfig.getToolVersion();
+        String updatedDateFromJson = importConfig.getUpdateDate();
 
         if(toolNameFromJson == null || toolVersionFromJson == null || updatedDateFromJson == null || !toolNameFromJson.equals(ActionConfig.getToolName()))
         {
@@ -123,15 +116,45 @@ public class ProjectImport
         return true;
     }
 
-    public static void checkProjectPath(JsonObject inputJsonObject)
+    public void checkProjectPath(ProjectConfigProperties importConfig)
     {
-        String initialProjectPath = inputJsonObject.getString(ParamConfig.getProjectPathParam());
+        String initialProjectPath = importConfig.getProjectPath();
 
         if(!initialProjectPath.equals(ActionConfig.getJsonFilePath()))
         {
             String message = "Project path updated \nFrom: " + initialProjectPath + "\nTo: " + ActionConfig.getJsonFilePath();
             log.info(message);
         }
+    }
+
+    public String loadProjectFromImportingConfigFile(@NonNull ProjectConfigProperties importConfig)
+    {
+        ProjectLoader loader = PortfolioParser.parseIn(importConfig, portfolioDB, annotationDB);
+
+        String newProjName = "";
+        while (!projectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
+        {
+            newProjName = new NameGenerator().getNewProjectName();
+            loader.setProjectName(newProjName);
+            loader.setProjectId(UuidGenerator.generateUuid());
+        }
+
+        // Only show popup if there is duplicate project name
+        if(!newProjName.equals(""))
+        {
+            String message = "Name Overlapped. Rename as " + newProjName + ".";
+            log.info(message);
+        }
+
+        projectHandler.loadProjectLoader(loader);
+
+        //load project table first
+        Map<String, ImageDataProperties> content = importConfig.getContent();
+        ProjectParser.parseIn(annotationDB, loader, content);
+
+        portfolioDB.loadProject(loader);
+
+        return loader.getProjectName();
     }
 
 }

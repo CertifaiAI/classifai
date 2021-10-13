@@ -15,20 +15,17 @@
  */
 package ai.classifai.action.parser;
 
-import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ImageDataProperties;
 import ai.classifai.dto.data.VersionConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.Hash;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.StringHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import lombok.AccessLevel;
@@ -93,48 +90,40 @@ public class ProjectParser
         }
     }
 
-    public static void parseIn(@NonNull ProjectLoader loader, @NonNull JsonObject contentJsonBody)
+    public static void parseIn(@NonNull AnnotationDB annotationDB, @NonNull ProjectLoader loader, @NonNull Map<String, ImageDataProperties> content)
     {
         String projectId = loader.getProjectId();
 
-        Iterator<Map.Entry<String, Object>> iterator = contentJsonBody.iterator();
-
-        while(iterator.hasNext())
-        {
-            Map.Entry<String, Object> item = iterator.next();
+        for (Map.Entry<String, ImageDataProperties> item: content.entrySet()) {
             String uuid = item.getKey();
 
-            JsonObject jsonObject = (JsonObject) item.getValue();
+            ImageDataProperties imageProps = item.getValue();
 
-            String subPath = String.join(File.separator,jsonObject.getString(ParamConfig.getImgPathParam()).split("[/\\\\]"));
+            String subPath = String.join(File.separator, imageProps.getImgPath().split("[/\\\\]"));
 
             File fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), subPath).toFile();
 
             // Only proceed to uploading image if image exists. Else skip
-            if(fullPath.exists())
-            {
+            if(fullPath.exists()) {
                 String currentHash = Hash.getHash256String(fullPath);
-                String fileHash = jsonObject.getString(ParamConfig.getCheckSumParam());
+                String fileHash = imageProps.getChecksum();
 
-                if(fileHash.equals(currentHash))
-                {
+                if (fileHash.equals(currentHash)) {
                     Annotation annotation = Annotation.builder()
                             .uuid(uuid)
                             .projectId(projectId)
                             .imgPath(subPath)
-                            .annotationDict(buildAnnotationDict(jsonObject.getJsonArray(ParamConfig.getVersionListParam())))
-                            .imgDepth(jsonObject.getInteger(ParamConfig.getImgDepth()))
-                            .imgOriW(jsonObject.getInteger(ParamConfig.getImgOriWParam()))
-                            .imgOriH(jsonObject.getInteger(ParamConfig.getImgOriHParam()))
-                            .fileSize(jsonObject.getInteger(ParamConfig.getFileSizeParam()))
+                            .annotationDict(buildAnnotationDict(imageProps.getVersionList()))
+                            .imgDepth(imageProps.getImgDepth())
+                            .imgOriW(imageProps.getImgOriW())
+                            .imgOriH(imageProps.getImgOriH())
+                            .fileSize(imageProps.getFileSize())
                             .build();
 
                     loader.getUuidAnnotationDict().put(uuid, annotation);
 
-                    AnnotationVerticle.uploadUuidFromConfigFile(annotation.getTuple(), loader);
-                }
-                else
-                {
+                    annotationDB.uploadUuidFromConfigFile(annotation.getTuple(), loader);
+                } else {
                     log.debug("Hash not same for " + fullPath);
                 }
             }
@@ -142,20 +131,26 @@ public class ProjectParser
     }
 
     //version of a project <> DataInfoProperties
-    public static Map<String, DataInfoProperties> buildAnnotationDict(JsonArray jsonVersionList)
+    public static Map<String, DataInfoProperties> buildAnnotationDict(String jsonVersionList)
     {
         ObjectMapper mp = new ObjectMapper();
 
         try {
-            List<VersionConfigProperties> versionConfigProperties = mp.readValue(jsonVersionList.toString(), new TypeReference<>() {});
-            return versionConfigProperties.stream().collect(Collectors.toMap(
-                    VersionConfigProperties::getVersionUuid,
-                    VersionConfigProperties::getAnnotationData
-            ));
+            List<VersionConfigProperties> versionConfigProperties = mp.readValue(jsonVersionList, new TypeReference<>() {});
+            return buildAnnotationDict(versionConfigProperties);
         } catch (JsonProcessingException e) {
             log.info("Converting to annotationDict fail", e);
             return Map.of();
         }
+    }
+
+    //version of a project <> DataInfoProperties
+    public static Map<String, DataInfoProperties> buildAnnotationDict(List<VersionConfigProperties> versionList)
+    {
+        return versionList.stream().collect(Collectors.toMap(
+                VersionConfigProperties::getVersionUuid,
+                VersionConfigProperties::getAnnotationData
+        ));
     }
 
     //build empty annotationDict
@@ -167,7 +162,7 @@ public class ProjectParser
 
         for(String versionUuid : versionUuidList)
         {
-            annotationDict.put(versionUuid, new DataInfoProperties());
+            annotationDict.put(versionUuid, DataInfoProperties.builder().build());
         }
 
         return annotationDict;

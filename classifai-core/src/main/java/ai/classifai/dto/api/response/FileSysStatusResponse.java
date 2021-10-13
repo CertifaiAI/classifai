@@ -18,6 +18,7 @@ public class FileSysStatusResponse {
     int message;
 
     @JsonProperty("error_message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     String errorMessage;
 
     @JsonProperty("file_system_status")

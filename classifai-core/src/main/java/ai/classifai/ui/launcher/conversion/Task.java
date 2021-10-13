@@ -38,15 +38,17 @@ public class Task extends SwingWorker<Void, Void> {
      */
     @Getter
     private static boolean isStop = false;
+    private final ConverterLauncher converterLauncher;
 
     public static void stop()
     {
         isStop = true;
     }
 
-    public Task()
+    public Task(ConverterLauncher converterLauncher)
     {
         isStop = false;
+        this.converterLauncher = converterLauncher;
     }
 
     @Override
@@ -56,26 +58,26 @@ public class Task extends SwingWorker<Void, Void> {
 
         //iterate to get number of files
 
-        String[] inputExtension = ConverterLauncher.getInputExtension();
+        String[] inputExtension = converterLauncher.getInputExtension();
 
-        File inputPath = new File(ConverterLauncher.getInputFolderPath());
+        File inputPath = new File(converterLauncher.getInputFolderPath());
 
         List<String> inputFiles = FileHandler.processFolder(inputPath, inputExtension);
 
-        ConverterLauncher.appendTaskOutput("Total number of files to convert: " + inputFiles.size());
+        converterLauncher.appendTaskOutput("Total number of files to convert: " + inputFiles.size());
 
         if (inputFiles.isEmpty())
         {
-            ConverterLauncher.appendTaskOutput("Input file lists empty. Task completed!");
+            converterLauncher.appendTaskOutput("Input file lists empty. Task completed!");
             setProgress(100);
         }
         else
         {
-            String inputFormat = ConverterLauncher.getInputFormat();
+            String inputFormat = converterLauncher.getInputFormat();
 
-            String outputFolderPath = ConverterLauncher.getOutputFolderPath();
+            String outputFolderPath = converterLauncher.getOutputFolderPath();
 
-            String outputFormat = ConverterLauncher.getOutputFormat();
+            String outputFormat = converterLauncher.getOutputFormat();
 
             int progress = 0;
             //Initialize progress property.
@@ -93,11 +95,11 @@ public class Task extends SwingWorker<Void, Void> {
 
                     if(isStop) break;
 
-                    ConverterLauncher.appendTaskOutput(file.getName());
+                    converterLauncher.appendTaskOutput(file.getName());
 
                     String message = pdfHandler.savePdf2Image(file, outputFolderPath, outputFormat);
 
-                    if(message != null) ConverterLauncher.appendTaskOutput(message);
+                    if(message != null) converterLauncher.appendTaskOutput(message);
 
                     progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
 
@@ -114,11 +116,11 @@ public class Task extends SwingWorker<Void, Void> {
 
                     if(isStop) break;
 
-                    ConverterLauncher.appendTaskOutput(file.getName());
+                    converterLauncher.appendTaskOutput(file.getName());
 
                     String message = tifHandler.saveTif2Image(file, outputFolderPath, outputFormat);
 
-                    if(message != null) ConverterLauncher.appendTaskOutput(message);
+                    if(message != null) converterLauncher.appendTaskOutput(message);
 
                     progress = (int) ((++fileProcessed / (double) inputFiles.size()) * 100);
 
@@ -138,7 +140,7 @@ public class Task extends SwingWorker<Void, Void> {
      */
     public void done()
     {
-        ConverterLauncher.enableConvertButton();
+        converterLauncher.enableConvertButton();
         //ConverterLauncher.getTaskOutput().append("Completed!\n");
     }
 }

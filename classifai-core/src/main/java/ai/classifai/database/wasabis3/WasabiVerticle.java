@@ -19,9 +19,11 @@ import ai.classifai.data.type.image.ImageFileType;
 import ai.classifai.database.DBUtils;
 import ai.classifai.database.DbConfig;
 import ai.classifai.database.VerticleServiceable;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
-import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.CloudParamConfig;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.PasswordHash;
@@ -61,7 +63,16 @@ import java.util.List;
 @Slf4j
 public class WasabiVerticle extends AbstractVerticle implements VerticleServiceable
 {
-    @Setter private static JDBCPool wasabiTablePool;
+    private final PortfolioDB portfolioDB;
+    private final AnnotationDB annotationDB;
+    @Setter private JDBCPool wasabiTablePool;
+    private final ProjectHandler projectHandler;
+
+    public WasabiVerticle(ProjectHandler projectHandler, PortfolioDB portfolioDB, AnnotationDB annotationDB){
+        this.projectHandler = projectHandler;
+        this.portfolioDB = portfolioDB;
+        this.annotationDB = annotationDB;
+    }
 
     @Override
     public void onMessage(Message<JsonObject> message)
@@ -84,14 +95,14 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
         }
     }
 
-    private static void writeWasabiCredential(Message<JsonObject> message)
+    private void writeWasabiCredential(Message<JsonObject> message)
     {
         JsonObject request = message.body();
 
         String projectName = request.getString(ParamConfig.getProjectNameParam());
         Integer annotationInt = request.getInteger(ParamConfig.getAnnotationTypeParam());
 
-        if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
+        if (projectHandler.isProjectNameUnique(projectName, annotationInt))
         {
             log.info("Creating Wasabi S3 project with name: " + projectName);
 
@@ -105,6 +116,8 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                     .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                     .projectInfra(ProjectInfra.WASABI_S3)
                     .wasabiProject(wasabiProject)
+                    .portfolioDB(portfolioDB)
+                    .annotationDB(annotationDB)
                     .build();
 
             Tuple wasabiTuple = buildWasabiTuple(request, loader.getProjectId());
@@ -115,7 +128,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
                             result -> {
                                 message.replyAndRequest(ReplyHandler.getOkReply());
                                 log.info("Save credential in wasabi table success");
-                                ProjectHandler.loadProjectLoader(loader);
+                                projectHandler.loadProjectLoader(loader);
                                 //only save project to portfolio after get all the data
                                 saveObjectsInBucket(loader);
                             },
@@ -133,7 +146,7 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
         }
     }
 
-    private static void saveObjectsInBucket(@NonNull ProjectLoader loader)
+    private void saveObjectsInBucket(@NonNull ProjectLoader loader)
     {
         loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
 
@@ -160,10 +173,10 @@ public class WasabiVerticle extends AbstractVerticle implements VerticleServicea
             });
         }
 
-        ImageHandler.saveToProjectTable(loader, dataPaths);
+        ImageHandler.saveToProjectTable(annotationDB, loader, dataPaths);
     }
 
-    public static Tuple buildWasabiTuple(@NonNull JsonObject input, @NonNull String projectId)
+    public Tuple buildWasabiTuple(@NonNull JsonObject input, @NonNull String projectId)
     {
         PasswordHash passwordHash = new PasswordHash();
 

@@ -15,23 +15,19 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.action.FileGenerator;
-import ai.classifai.database.DbConfig;
+import ai.classifai.action.ProjectExport;
+import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.portfolio.PortfolioDB;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.router.endpoint.*;
-import ai.classifai.selector.project.LabelFileSelector;
-import ai.classifai.selector.project.ProjectFolderSelector;
-import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.ui.NativeUI;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.type.database.H2;
+import ai.classifai.util.project.ProjectHandler;
 import com.zandero.rest.RestRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.jdbcclient.JDBCPool;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,34 +38,28 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    private ProjectFolderSelector projectFolderSelector;
-    private ProjectImportSelector projectImporter;
+    private final NativeUI ui;
+    private final ProjectHandler projectHandler;
+    private final ProjectExport projectExport;
+    private final PortfolioDB portfolioDB;
+    private final AnnotationDB annotationDB;
 
-    private LabelFileSelector labelFileSelector;
-    private FileGenerator fileGenerator;
+    OperationEndpoint operationEndpoint;
+    ImageEndpoint imageEndpoint;
+    ProjectEndpoint projectEndpoint;
+    ProjectMetadataEndpoint projectMetadataEndpoint;
+    DataEndpoint dataEndpoint;
+    ExportProjectEndpoint exportProjectEndpoint;
+    UpdateProjectEndpoint updateProjectEndpoint;
+    CloudEndpoint cloud;
 
-    OperationEndpoint operationEndpoint = new OperationEndpoint();
-    ImageEndpoint imageEndpoint = new ImageEndpoint();
-    ProjectEndpoint projectEndpoint = new ProjectEndpoint();
-    ProjectMetadataEndpoint projectMetadataEndpoint = new ProjectMetadataEndpoint();
-    DataEndpoint dataEndpoint = new DataEndpoint();
-    ExportProjectEndpoint exportProjectEndpoint = new ExportProjectEndpoint();
-
-    CloudEndpoint cloud = new CloudEndpoint();
-
-    public EndpointRouter()
+    public EndpointRouter(NativeUI ui, PortfolioDB portfolioDB, AnnotationDB annotationDB, ProjectHandler projectHandler, ProjectExport projectExport)
     {
-        Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
-        projectFolder.start();
-
-        Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
-        projectImport.start();
-
-        Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
-        labelFileImport.start();
-
-        Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
-        threadZipFileGenerator.start();
+        this.ui = ui;
+        this.projectHandler = projectHandler;
+        this.portfolioDB = portfolioDB;
+        this.annotationDB = annotationDB;
+        this.projectExport = projectExport;
     }
 
     @Override
@@ -81,22 +71,14 @@ public class EndpointRouter extends AbstractVerticle
 
     private void configureVersionVertx()
     {
-        H2 h2 = DbConfig.getH2();
-        JDBCPool portFolioPool = PortfolioVerticle.createJDBCPool(vertx, h2);
-        PortfolioDB portfolioDB = new PortfolioDB(portFolioPool);
-
-        operationEndpoint.setPortfolioDB(portfolioDB);
-        imageEndpoint.setPortfolioDB(portfolioDB);
-        projectEndpoint.setPortfolioDB(portfolioDB);
-        projectMetadataEndpoint.setPortfolioDB(portfolioDB);
-        dataEndpoint.setPortfolioDB(portfolioDB);
-        exportProjectEndpoint.setPortfolioDB(portfolioDB);
-
-        projectEndpoint.setProjectImporter(projectImporter);
-        projectEndpoint.setProjectFolderSelector(projectFolderSelector);
-        projectEndpoint.setLabelFileSelector(labelFileSelector);
-
-        cloud.setVertx(vertx);
+        this.operationEndpoint = new OperationEndpoint(portfolioDB, projectHandler);
+        this.imageEndpoint = new ImageEndpoint(portfolioDB, projectHandler);
+        this.projectEndpoint = new ProjectEndpoint(portfolioDB, annotationDB, ui, projectHandler);
+        this.projectMetadataEndpoint = new ProjectMetadataEndpoint(portfolioDB, projectHandler);
+        this.dataEndpoint = new DataEndpoint(portfolioDB, projectHandler);
+        this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, projectExport);
+        this.updateProjectEndpoint = new UpdateProjectEndpoint(portfolioDB, projectHandler);
+        this.cloud = new CloudEndpoint(vertx);
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
@@ -108,9 +90,10 @@ public class EndpointRouter extends AbstractVerticle
     @Override
     public void start(Promise<Void> promise)
     {
+        configureVersionVertx();
         Router router = RestRouter.register(vertx,
                 projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
-                imageEndpoint, projectEndpoint, dataEndpoint);
+                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint);
 
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
@@ -122,7 +105,6 @@ public class EndpointRouter extends AbstractVerticle
 
                     if (r.succeeded())
                     {
-                        configureVersionVertx();
                         promise.complete();
                     }
                     else {

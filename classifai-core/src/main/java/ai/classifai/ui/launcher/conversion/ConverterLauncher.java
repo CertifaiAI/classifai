@@ -15,12 +15,12 @@
  */
 package ai.classifai.ui.launcher.conversion;
 
-import ai.classifai.selector.conversion.ConverterFolderSelector;
-import ai.classifai.ui.launcher.LogoLauncher;
+import ai.classifai.ui.DesktopUI;
+import ai.classifai.ui.selector.conversion.ConverterFolderSelector;
+import ai.classifai.ui.utils.UIResources;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.FileFormat;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,53 +41,50 @@ import java.io.File;
  * @author codenamewei
  */
 @Slf4j
-@NoArgsConstructor
 public class ConverterLauncher extends JPanel
 {
-    private static ConverterFolderSelector folderSelector;
-
-    @Getter private static boolean isOpened;
-
-    private static final int MAX_PAGE = 20;
-
     private final String FONT_TYPE = "Serif";//Serif, SansSerif, Monospaced, Dialog, and DialogInput.
+    private final int ELEMENT_HEIGHT = 40;
+    private final int TEXT_FIELD_LENGTH = 23;
+    private final int MAX_PAGE = 20;
+    private final String DEFAULT_OUTPUT_PATH = "Same as source file";
 
-    private static final int ELEMENT_HEIGHT = 40;
-    private static final int TEXT_FIELD_LENGTH = 23;
+    private ConverterFolderSelector folderSelector;
+
+    @Getter private boolean isOpened;
 
     //JTextField.getText()
-    private static JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
-    private static JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    private JTextField inputFolderField = new JTextField(TEXT_FIELD_LENGTH);
+    private JTextField outputFolderField = new JTextField(TEXT_FIELD_LENGTH);
 
-    private static final String DEFAULT_OUTPUT_PATH = "Same as source file";
 
     private JLabel inputFolderLabel =  new JLabel("Input Folder     : ");
     private JLabel outputFolderLabel = new JLabel("Output Folder  : ");
 
-    private static JButton inputBrowserButton;
-    private static JButton outputBrowserButton;
+    private JButton inputBrowserButton;
+    private JButton outputBrowserButton;
 
-    private static JComboBox inputFormatCombo;
-    private static JComboBox outputFormatCombo;
+    private JComboBox inputFormatCombo;
+    private JComboBox outputFormatCombo;
 
-    private static InputFolderListener inputFolderListener;
-    private static OutputFolderListener outputFolderListener;
+    private InputFolderListener inputFolderListener;
+    private OutputFolderListener outputFolderListener;
 
     private JLabel maxPage = new JLabel("Maximum Page: ");
     private JTextField maxPageTextField = new JTextField();
 
-    @Getter private static JTextArea taskOutput;
+    @Getter private JTextArea taskOutput;
     private JScrollPane progressPane;
 
     private JProgressBar progressBar = new JProgressBar(0, 100);
-    private static JButton convertButton = new JButton("Convert");
+    private JButton convertButton = new JButton("Convert");
 
-    private static boolean isConvertButtonClicked = false;
+    private boolean isConvertButtonClicked = false;
 
     private Task task;
     private JFrame frame;
 
-    static
+    public ConverterLauncher(DesktopUI ui)
     {
         String gap = "   ";
         String[] inputFormat = new String[] {
@@ -110,38 +107,38 @@ public class ConverterLauncher extends JPanel
 
         isOpened = false;
 
-        Thread inputFolderThread = new Thread(() -> folderSelector = new ConverterFolderSelector());
+        Thread inputFolderThread = new Thread(() -> folderSelector = new ConverterFolderSelector(ui, this));
         inputFolderThread.start();
     }
 
-    public static void setInputFolderPath(String inputPath)
+    public void setInputFolderPath(String inputPath)
     {
         inputFolderField.setText(inputPath);
     }
 
-    public static void setOutputFolderPath(String outputPath)
+    public void setOutputFolderPath(String outputPath)
     {
         outputFolderField.setText(outputPath);
     }
 
-    public static String getDefaultOutputPath()
+    public String getDefaultOutputPath()
     {
         return DEFAULT_OUTPUT_PATH;
     }
 
-    public static int getMaxPage()
+    public int getMaxPage()
     {
         return MAX_PAGE;
     }
 
-    public static String getInputFormat()
+    public String getInputFormat()
     {
         String inputFormat = (String) inputFormatCombo.getSelectedItem();
 
         return inputFormat.trim().toLowerCase();
     }
 
-    public static String getOutputFormat()
+    public String getOutputFormat()
     {
         String outputFormat = (String) outputFormatCombo.getSelectedItem();
 
@@ -232,7 +229,7 @@ public class ConverterLauncher extends JPanel
 
         frame.add(panel);
 
-        frame.setIconImage(LogoLauncher.getClassifaiIcon());
+        frame.setIconImage(UIResources.getClassifaiIcon());
         frame.setResizable(false);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -291,7 +288,7 @@ public class ConverterLauncher extends JPanel
         design(progressBar);
         design(convertButton);
 
-        convertButton.addActionListener(new ConvertButtonListener());
+        convertButton.addActionListener(new ConvertButtonListener(this));
     }
 
     private void design(Object obj)
@@ -401,7 +398,7 @@ public class ConverterLauncher extends JPanel
         });
     }
 
-    public static void appendTaskOutput(@NonNull String message)
+    public void appendTaskOutput(@NonNull String message)
     {
         taskOutput.append(message + "\n");
         log.debug(message);
@@ -409,11 +406,18 @@ public class ConverterLauncher extends JPanel
 
     class ConvertButtonListener implements ActionListener
     {
+
+        private final ConverterLauncher converterLauncher;
+
+        public ConvertButtonListener(ConverterLauncher converterLauncher){
+            this.converterLauncher = converterLauncher;
+        }
+
         public void actionPerformed(ActionEvent e)
         {
             if (!isConvertButtonClicked) //prevent multiple clicks
             {
-                task = new Task();
+                task = new Task(converterLauncher);
                 task.addPropertyChangeListener(this::propertyChange);
                 task.execute();
 
@@ -430,7 +434,7 @@ public class ConverterLauncher extends JPanel
          */
         public void propertyChange(PropertyChangeEvent evt)
         {
-            if ("progress" == evt.getPropertyName())
+            if ("progress".equals(evt.getPropertyName()))
             {
                 int progress = (Integer) evt.getNewValue();
                 progressBar.setIndeterminate(false);
@@ -458,7 +462,7 @@ public class ConverterLauncher extends JPanel
 
     }
 
-    public static String[] getInputExtension()
+    public String[] getInputExtension()
     {
 
         String extensionRepresentative = ((String) inputFormatCombo.getSelectedItem()).trim();
@@ -475,12 +479,12 @@ public class ConverterLauncher extends JPanel
         return null;
     }
 
-    public static String getInputFolderPath()
+    public String getInputFolderPath()
     {
         return inputFolderField.getText();
     }
 
-    public static String getOutputFolderPath()
+    public String getOutputFolderPath()
     {
         String buffer = outputFolderField.getText();
 
@@ -492,7 +496,7 @@ public class ConverterLauncher extends JPanel
         return buffer;
     }
 
-    public static void enableConvertButton()
+    public void enableConvertButton()
     {
         convertButton.setForeground(Color.LIGHT_GRAY);
         convertButton.setEnabled(true);

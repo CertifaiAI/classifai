@@ -16,7 +16,7 @@
 package ai.classifai.database;
 
 import ai.classifai.database.migration.DbMigration;
-import ai.classifai.ui.SelectionWindow;
+import ai.classifai.ui.NativeUI;
 import ai.classifai.util.data.FileHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,18 +33,21 @@ import java.util.List;
  */
 @Slf4j
 public class DbOps {
-    private DbOps() {
-        throw new IllegalStateException("DbOps class");
+
+    private final NativeUI ui;
+
+    public DbOps(NativeUI ui) {
+        this.ui = ui;
     }
 
-    public static void configureDatabase() {
+    public void configureDatabase() {
         migrateDbIfExist();
 
         setupDb();
     }
 
     //hsqldb v1 -> h2 v2 database migration
-    private static void migrateDbIfExist() {
+    private void migrateDbIfExist() {
         if (DbConfig.getHsql().isDbExist() && !DbConfig.getH2().isDbExist()) {
             log.info("Database migration required. Executing database migration.");
 
@@ -58,7 +61,7 @@ public class DbOps {
         }
     }
 
-    private static void setupDb()
+    private void setupDb()
     {
         String dataRootPath = DbConfig.getDbRootPath();
 
@@ -70,7 +73,8 @@ public class DbOps {
             {
                 String popupTitle = "Database Setup Error";
                 String message = "H2 Database is locked. Likely another classifai application is running. Close it and try again.";
-                SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+
+                ui.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
                 System.exit(0);
             }
@@ -90,7 +94,7 @@ public class DbOps {
         }
     }
 
-    private static boolean isDbExist()
+    private boolean isDbExist()
     {
         if(!new File(DbConfig.getDbRootPath()).exists()) return false;
 
@@ -104,7 +108,7 @@ public class DbOps {
         return true;
     }
 
-    private static boolean mkdirDatabase()
+    private boolean mkdirDatabase()
     {
         File dataRootPath = new File(DbConfig.getDbRootPath());
 
