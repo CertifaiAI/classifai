@@ -100,6 +100,20 @@ public class PortfolioDB {
         return promise.future();
     }
 
+    private Future<RowSet<Row>> runQuery(String query, JDBCPool pool) {
+        final Promise<RowSet<Row>> promise = Promise.promise();
+        pool.preparedQuery(query)
+                .execute()
+                .onComplete(fetch -> {
+                    if(fetch.succeeded()) {
+                        promise.complete(fetch.result());
+                    } else {
+                        promise.fail(fetch.cause());
+                    }
+                });
+        return promise.future();
+    }
+
     public Future<Void> renameProject(String projectId, String newProjectName) {
         Tuple params = Tuple.of(newProjectName, projectId);
 
@@ -131,7 +145,10 @@ public class PortfolioDB {
                                     });
                             promise.complete();
                         },
-                        cause -> projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL)
+                        cause -> {
+                            projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
+                            log.info("Project export fail", cause);
+                        }
                 ));
 
         return promise.future();
@@ -470,7 +487,7 @@ public class PortfolioDB {
 
     public void configProjectLoaderFromDb()
     {
-        runQuery(PortfolioDbQuery.getRetrieveAllProjects(), null)
+        runQuery(PortfolioDbQuery.getRetrieveAllProjects(), this.holder.getPortfolioPool())
                 .onComplete(DBUtils.handleResponse(
                         result -> {
                             if (result.size() == 0) {

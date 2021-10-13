@@ -38,7 +38,7 @@ public class FileGenerator {
                 try {
                     exportPath = projectExport.exportToFileWithData(loader, loader.getProjectId(), configContent);
                 } catch (IOException e) {
-                    log.info("Exporting fail");
+                    log.info("Exporting fail", e);
                 }
             } else if (exportType == ActionConfig.ExportType.CONFIG_ONLY.ordinal()) {
                 log.info("Exporting project config");

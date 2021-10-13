@@ -40,6 +40,7 @@ public class EndpointRouter extends AbstractVerticle
 {
     private final NativeUI ui;
     private final ProjectHandler projectHandler;
+    private final ProjectExport projectExport;
     private final PortfolioDB portfolioDB;
     private final AnnotationDB annotationDB;
 
@@ -52,12 +53,13 @@ public class EndpointRouter extends AbstractVerticle
     UpdateProjectEndpoint updateProjectEndpoint;
     CloudEndpoint cloud;
 
-    public EndpointRouter(NativeUI ui, PortfolioDB portfolioDB, AnnotationDB annotationDB, ProjectHandler projectHandler)
+    public EndpointRouter(NativeUI ui, PortfolioDB portfolioDB, AnnotationDB annotationDB, ProjectHandler projectHandler, ProjectExport projectExport)
     {
         this.ui = ui;
         this.projectHandler = projectHandler;
         this.portfolioDB = portfolioDB;
         this.annotationDB = annotationDB;
+        this.projectExport = projectExport;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class EndpointRouter extends AbstractVerticle
         this.projectEndpoint = new ProjectEndpoint(portfolioDB, annotationDB, ui, projectHandler);
         this.projectMetadataEndpoint = new ProjectMetadataEndpoint(portfolioDB, projectHandler);
         this.dataEndpoint = new DataEndpoint(portfolioDB, projectHandler);
-        this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, new ProjectExport(projectHandler));
+        this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, projectExport);
         this.updateProjectEndpoint = new UpdateProjectEndpoint(portfolioDB, projectHandler);
         this.cloud = new CloudEndpoint(vertx);
     }

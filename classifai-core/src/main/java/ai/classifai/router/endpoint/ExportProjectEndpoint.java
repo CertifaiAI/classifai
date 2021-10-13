@@ -74,12 +74,10 @@ public class ExportProjectEndpoint {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
+        projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_STARTING);
         return portfolioDB.exportProject(projectId, exportType.ordinal())
                 .map(ActionStatus.ok())
-                .otherwise(cause -> {
-                    projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_FAIL);
-                    return ActionStatus.failedWithMessage("Export of project failed for " + projectName);
-                });
+                .otherwise(ActionStatus.failedWithMessage("Export of project failed for " + projectName));
     }
 
     /**
@@ -105,6 +103,7 @@ public class ExportProjectEndpoint {
         if(exportStatus.equals(ProjectExport.ProjectExportStatus.EXPORT_SUCCESS))
         {
             response.setProjectConfigPath(projectExport.getExportPath());
+            projectExport.setExportStatus(ProjectExport.ProjectExportStatus.EXPORT_NOT_INITIATED);
         }
 
        return response;

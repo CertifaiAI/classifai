@@ -55,9 +55,9 @@ public class MainVerticle extends AbstractVerticle
 
         /* TODO: fix circular dependency */
         final ProjectImport projectImport = new ProjectImport(null, null, null);
-        if(ParamConfig.isDockerEnv()){
+        if(ParamConfig.isDockerEnv()) {
             ui = new ContainerUI();
-        }else{
+        } else {
             ui = new DesktopUI(this::closeVerticles, projectImport);
         }
         this.projectHandler = new ProjectHandler(ui, initiator);
@@ -74,7 +74,7 @@ public class MainVerticle extends AbstractVerticle
 
 
         wasabiVerticle = new WasabiVerticle(projectHandler, portfolioDB, annotationDB);
-        serverVerticle = new EndpointRouter(ui, portfolioDB, annotationDB, projectHandler);
+        serverVerticle = new EndpointRouter(ui, portfolioDB, annotationDB, projectHandler, projectExport);
     }
 
     @Override

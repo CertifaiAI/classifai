@@ -52,7 +52,7 @@ public class ProjectHandler {
     //value: Pair<String projectName, Integer annotationType>
     private final Map<String, Pair<String, Integer>> projectNameSearch = new HashMap<>();
 
-    @Getter private CLIProjectInitiator cliProjectInitiator = null;
+    @Getter private CLIProjectInitiator cliProjectInitiator;
 
     public ProjectHandler(NativeUI ui, CLIProjectInitiator initiator){
         this.ui = ui;
