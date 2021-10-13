@@ -17,10 +17,9 @@ package ai.classifai.config;
 
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import com.formdev.flatlaf.FlatLightLaf;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -66,6 +65,10 @@ public class CLIArgument
     private String projectType = null;
 
     private String dataPath = null;
+
+    @Getter
+    private CLIProjectInitiator initiator;
+
 
     public CLIArgument(String[] args)
     {
@@ -141,7 +144,7 @@ public class CLIArgument
             return;
         }
 
-        AnnotationType type = AnnotationHandler.getType(projectType);
+        AnnotationType type = AnnotationType.get(projectType);
 
         //scenario 2
         if (type == null)
@@ -150,8 +153,6 @@ public class CLIArgument
             printMessageForCLIProjectFailed();
             return;
         }
-
-        CLIProjectInitiator initiator;
 
         boolean isDataPathValid = dataPath != null && !dataPath.equals("") && new File(dataPath).exists();
         boolean isProjectNameValid = (projectName != null) && (!projectName.equals(""));
@@ -193,8 +194,6 @@ public class CLIArgument
             }
 
         }
-
-        ProjectHandler.setCliProjectInitiator(initiator);
     }
 
     private void printMessageForCLIProjectFailed()

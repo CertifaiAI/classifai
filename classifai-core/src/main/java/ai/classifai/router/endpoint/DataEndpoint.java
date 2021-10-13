@@ -8,20 +8,23 @@ import ai.classifai.dto.api.response.DeleteProjectDataResponse;
 import ai.classifai.dto.api.response.RenameDataResponse;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
-import lombok.Builder;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class DataEndpoint {
 
-    private PortfolioDB portfolioDB;
+    private final PortfolioDB portfolioDB;
+    private final ProjectHandler projectHandler;
+
+    public DataEndpoint(PortfolioDB portfolioDB, ProjectHandler projectHandler) {
+        this.portfolioDB = portfolioDB;
+        this.projectHandler = projectHandler;
+    }
 
     /**
      * Load data based on uuid
@@ -44,8 +47,8 @@ public class DataEndpoint {
                                                                @PathParam("project_name") String projectName,
                                                                DeleteProjectDataBody requestBody)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         if(projectID == null) {
             return Future.succeededFuture(DeleteProjectDataResponse.builder()
@@ -86,8 +89,8 @@ public class DataEndpoint {
                                                  @PathParam("project_name") String projectName,
                                                  RenameDataBody requestBody)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectId = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectId = projectHandler.getProjectId(projectName, type.ordinal());
 
         return portfolioDB.renameData(projectId, requestBody.getUuid(), requestBody.getNewFilename())
                 .map(result -> RenameDataResponse.builder()

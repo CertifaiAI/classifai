@@ -17,9 +17,9 @@ package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageData;
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.database.annotation.AnnotationVerticle;
+import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -232,7 +232,7 @@ public class ImageHandler {
         return true;
     }
 
-    public static void saveToProjectTable(@NonNull ProjectLoader loader, List<String> filesPath)
+    public static void saveToProjectTable(@NonNull AnnotationDB annotationDB, @NonNull ProjectLoader loader, List<String> filesPath)
     {
         loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesPath.size());
@@ -242,7 +242,7 @@ public class ImageHandler {
         {
             for (int i = 0; i < filesPath.size(); ++i)
             {
-                AnnotationVerticle.saveDataPoint(loader, filesPath.get(i), i + 1);
+                annotationDB.saveDataPoint(loader, filesPath.get(i), i + 1);
             }
 
         }
@@ -254,7 +254,7 @@ public class ImageHandler {
                 String projectFullPath = loader.getProjectPath().getAbsolutePath();
                 String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, filesPath.get(i)));
 
-                AnnotationVerticle.saveDataPoint(loader, dataSubPath, i + 1);
+                annotationDB.saveDataPoint(loader, dataSubPath, i + 1);
             }
 
         }
@@ -287,9 +287,9 @@ public class ImageHandler {
      *     scenario 4: adding new files
      *     scenario 5: evrything stills the same
      */
-    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader)
+    public static boolean loadProjectRootPath(@NonNull ProjectLoader loader, @NonNull AnnotationDB annotationDB)
     {
-        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
+        if(loader.getIsProjectNew())
         {
             loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
         }
@@ -327,15 +327,15 @@ public class ImageHandler {
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
+        if(loader.getIsProjectNew())
         {
-            saveToProjectTable(loader, dataFullPathList);
+            saveToProjectTable(annotationDB, loader, dataFullPathList);
         }
         else // when refreshing project folder
         {
             for (int i = 0; i < dataFullPathList.size(); ++i)
             {
-                AnnotationVerticle.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
+                annotationDB.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
             }
         }
 

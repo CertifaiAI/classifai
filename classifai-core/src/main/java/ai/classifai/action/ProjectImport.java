@@ -17,7 +17,8 @@ package ai.classifai.action;
 
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.parser.ProjectParser;
-import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.data.ImageDataProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.loader.NameGenerator;
@@ -27,9 +28,8 @@ import ai.classifai.util.project.ProjectHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
@@ -43,10 +43,20 @@ import java.util.Map;
  * @author codenamewei
  */
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProjectImport
 {
-    public static String importProjectFile(@NonNull File jsonFile)
+    /* all circular dependencies :( */
+    @Setter private PortfolioDB portfolioDB;
+    @Setter private AnnotationDB annotationDB;
+    @Setter private ProjectHandler projectHandler;
+
+    public ProjectImport(ProjectHandler projectHandler, PortfolioDB portfolioDB, AnnotationDB annotationDB){
+        this.projectHandler = projectHandler;
+        this.portfolioDB = portfolioDB;
+        this.annotationDB = annotationDB;
+    }
+
+    public String importProjectFile(@NonNull File jsonFile)
     {
         try {
             String jsonStr = IOUtils.toString(new FileReader(jsonFile));
@@ -70,7 +80,7 @@ public class ProjectImport
         }
     }
 
-    public static ProjectConfigProperties jsonStrToConfig(String jsonString)
+    public ProjectConfigProperties jsonStrToConfig(String jsonString)
     {
         ObjectMapper mp = new ObjectMapper();
         try {
@@ -81,7 +91,7 @@ public class ProjectImport
         }
     }
 
-    public static boolean checkToolVersion(ProjectConfigProperties importConfig)
+    public boolean checkToolVersion(ProjectConfigProperties importConfig)
     {
         String toolNameFromJson = importConfig.getToolName();
         String toolVersionFromJson = importConfig.getToolVersion();
@@ -106,7 +116,7 @@ public class ProjectImport
         return true;
     }
 
-    public static void checkProjectPath(ProjectConfigProperties importConfig)
+    public void checkProjectPath(ProjectConfigProperties importConfig)
     {
         String initialProjectPath = importConfig.getProjectPath();
 
@@ -117,12 +127,12 @@ public class ProjectImport
         }
     }
 
-    public static String loadProjectFromImportingConfigFile(@NonNull ProjectConfigProperties importConfig)
+    public String loadProjectFromImportingConfigFile(@NonNull ProjectConfigProperties importConfig)
     {
-        ProjectLoader loader = PortfolioParser.parseIn(importConfig);
+        ProjectLoader loader = PortfolioParser.parseIn(importConfig, portfolioDB, annotationDB);
 
         String newProjName = "";
-        while (!ProjectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
+        while (!projectHandler.isProjectNameUnique(loader.getProjectName(), loader.getAnnotationType()))
         {
             newProjName = new NameGenerator().getNewProjectName();
             loader.setProjectName(newProjName);
@@ -136,13 +146,13 @@ public class ProjectImport
             log.info(message);
         }
 
-        ProjectHandler.loadProjectLoader(loader);
+        projectHandler.loadProjectLoader(loader);
 
         //load project table first
         Map<String, ImageDataProperties> content = importConfig.getContent();
-        ProjectParser.parseIn(loader, content);
+        ProjectParser.parseIn(annotationDB, loader, content);
 
-        PortfolioVerticle.loadProject(loader);
+        portfolioDB.loadProject(loader);
 
         return loader.getProjectName();
     }

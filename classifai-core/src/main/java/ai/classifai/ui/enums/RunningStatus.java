@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,15 +13,26 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.status;
+package ai.classifai.ui.enums;
+
 
 /**
- * State of windows to select file/folder
+ * Messages to show on WelcomeLauncher
  *
  * @author codenamewei
  */
-public enum SelectionWindowStatus
+public enum RunningStatus
 {
-    WINDOW_OPEN,
-    WINDOW_CLOSE
+    STARTING("Starting..."),
+    RUNNING("Running...");
+
+    private String text;
+
+    RunningStatus(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
 }

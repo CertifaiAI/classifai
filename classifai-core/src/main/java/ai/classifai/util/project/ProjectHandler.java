@@ -18,11 +18,9 @@ package ai.classifai.util.project;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.ui.SelectionWindow;
-import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.ui.NativeUI;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,28 +38,35 @@ import java.util.Set;
 @Slf4j
 public class ProjectHandler {
 
+    private final NativeUI ui;
+
     //key: projectID
     //value: ProjectLoader
-    private static final Map<String, ProjectLoader> projectIDLoaderDict = new HashMap<>();
+    private final Map<String, ProjectLoader> projectIDLoaderDict = new HashMap<>();
 
     //key: Pair<String projectName, Integer annotationType>
     //value: projectID
-    private static final Map<Pair<String, Integer>, String> projectIDSearch = new HashMap<>();
+    private final Map<Pair<String, Integer>, String> projectIDSearch = new HashMap<>();
 
     //key: projectID
     //value: Pair<String projectName, Integer annotationType>
-    private static final Map<String, Pair<String, Integer>> projectNameSearch = new HashMap<>();
+    private final Map<String, Pair<String, Integer>> projectNameSearch = new HashMap<>();
 
-    @Getter @Setter private static CLIProjectInitiator cliProjectInitiator = null;
+    @Getter private CLIProjectInitiator cliProjectInitiator = null;
 
-    public static ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
+    public ProjectHandler(NativeUI ui, CLIProjectInitiator initiator){
+        this.ui = ui;
+        cliProjectInitiator = initiator;
+    }
+
+    public ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
     {
         return getProjectLoader(new ImmutablePair<>(projectName, annotationType.ordinal()));
     }
 
-    private static ProjectLoader getProjectLoader(Pair<String, Integer> project)
+    private ProjectLoader getProjectLoader(Pair<String, Integer> project)
     {
-        String projectIDKey = getProjectID(project);
+        String projectIDKey = getProjectId(project);
 
         if (projectIDKey == null)
         {
@@ -72,7 +77,7 @@ public class ProjectHandler {
         return getProjectLoader(projectIDKey);
     }
 
-    public static ProjectLoader getProjectLoader(String projectID)
+    public ProjectLoader getProjectLoader(String projectID)
     {
         try
         {
@@ -85,7 +90,7 @@ public class ProjectHandler {
         return null;
     }
 
-    public static String getProjectID(Pair<String, Integer> projectNameTypeKey)
+    public String getProjectId(Pair<String, Integer> projectNameTypeKey)
     {
         if (projectIDSearch.containsKey(projectNameTypeKey))
         {
@@ -98,16 +103,16 @@ public class ProjectHandler {
         }
     }
 
-    public static String getProjectId(String projectName, Integer annotationType)
+    public String getProjectId(String projectName, Integer annotationType)
     {
         Pair<String, Integer> key = new ImmutablePair<>(projectName, annotationType);
 
-        return getProjectID(key);
+        return getProjectId(key);
     }
 
-    public static void loadProjectLoader(ProjectLoader loader)
+    public void loadProjectLoader(ProjectLoader loader)
     {
-        if (!AnnotationHandler.checkSanity(loader.getAnnotationType()))
+        if (!AnnotationType.checkSanity(loader.getAnnotationType()))
         {
             log.debug("Saving new project of name: " + loader.getProjectName() + " failed with invalid annotation type.");
         }
@@ -128,9 +133,9 @@ public class ProjectHandler {
 
     }
 
-    public static boolean isProjectNameUnique(String projectName, Integer annotationType)
+    public boolean isProjectNameUnique(String projectName, Integer annotationType)
     {
-        if (!AnnotationHandler.checkSanity(annotationType))
+        if (!AnnotationType.checkSanity(annotationType))
         {
             log.info("Query whether project of name: " + projectName + " unique failed as annotationType invalid.");
             return false;
@@ -155,7 +160,7 @@ public class ProjectHandler {
         return isProjectNameUnique;
     }
 
-    public static void deleteProjectFromCache(String projectID)
+    public void deleteProjectFromCache(String projectID)
     {
         try
         {
@@ -182,7 +187,7 @@ public class ProjectHandler {
         }
     }
 
-    public static boolean checkValidProjectRename(String newProjectName, int annotationType)
+    public boolean checkValidProjectRename(String newProjectName, int annotationType)
     {
 
         if(!isProjectNameUnique(newProjectName, annotationType))
@@ -190,7 +195,8 @@ public class ProjectHandler {
             // Popup error message if duplicate name exists
             String popupTitle = "Rename Error";
             String message = "Duplicate project name. Abort process";
-            SelectionWindow.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
+            // TODO: Move to NativeUI
+            ui.showPopupAndLog(popupTitle, message, JOptionPane.ERROR_MESSAGE);
 
             return false;
         }
@@ -198,7 +204,7 @@ public class ProjectHandler {
         return true;
     }
 
-    public static void updateProjectNameInCache(String projectID, ProjectLoader loader, String oldProjectName)
+    public void updateProjectNameInCache(String projectID, ProjectLoader loader, String oldProjectName)
     {
         try
         {

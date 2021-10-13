@@ -4,16 +4,14 @@ import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.api.body.ProjectStatusBody;
 import ai.classifai.dto.api.response.ReloadProjectStatus;
 import ai.classifai.loader.ProjectLoader;
-import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
-import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -21,12 +19,16 @@ import javax.ws.rs.core.MediaType;
 import java.util.Objects;
 
 @Slf4j
-@Builder
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UpdateProjectEndpoint {
+    private final PortfolioDB portfolioDB;
+    private final ProjectHandler projectHandler;
 
-    private PortfolioDB portfolioDB;
+    public UpdateProjectEndpoint(PortfolioDB portfolioDB, ProjectHandler projectHandler) {
+        this.portfolioDB = portfolioDB;
+        this.projectHandler = projectHandler;
+    }
 
     /**
      * Rename project
@@ -42,19 +44,19 @@ public class UpdateProjectEndpoint {
                                               @PathParam("project_name") String projectName,
                                               @PathParam("new_project_name") String newProjectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
 
         if(loader == null) {
             return HTTPResponseHandler.nullProjectResponse();
         }
 
-        if(ProjectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
+        if(projectHandler.checkValidProjectRename(newProjectName, type.ordinal()))
         {
             return portfolioDB.renameProject(loader.getProjectId(), newProjectName)
                     .map(result -> {
                         loader.setProjectName(newProjectName);
-                        ProjectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
+                        projectHandler.updateProjectNameInCache(loader.getProjectId(), loader, projectName);
                         log.debug("Rename to " + newProjectName + " success.");
 
                         return ActionStatus.ok();
@@ -81,11 +83,11 @@ public class UpdateProjectEndpoint {
     public Future<ActionStatus> reloadProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
         log.info("Reloading project: " + projectName + " of annotation type: " + type.name());
 
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
 
         if(loader == null) {
             return HTTPResponseHandler.nullProjectResponse();
@@ -111,8 +113,8 @@ public class UpdateProjectEndpoint {
     public ReloadProjectStatus reloadProjectStatus(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
 
         if(loader == null) {
             return ReloadProjectStatus.builder()
@@ -154,8 +156,8 @@ public class UpdateProjectEndpoint {
                                             @PathParam("project_name") String projectName,
                                             ProjectStatusBody requestBody)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         if(projectID == null) {
             return HTTPResponseHandler.nullProjectResponse();
@@ -164,7 +166,7 @@ public class UpdateProjectEndpoint {
         Boolean isStarred = Boolean.parseBoolean(requestBody.getStatus());
         return portfolioDB.starProject(projectID, isStarred)
                 .map(result -> {
-                    ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
+                    ProjectLoader loader = Objects.requireNonNull(projectHandler.getProjectLoader(projectID));
                     loader.setIsProjectStarred(isStarred);
                     return ActionStatus.ok();
                 })
@@ -182,8 +184,8 @@ public class UpdateProjectEndpoint {
                                           @PathParam("project_name") String projectName,
                                           ProjectStatusBody requestBody)
     {
-        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(annotationType);
-        String projectID = ProjectHandler.getProjectId(projectName, type.ordinal());
+        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 
         if(projectID == null) {
             return ActionStatus.failDefault();
@@ -191,7 +193,7 @@ public class UpdateProjectEndpoint {
 
         if(requestBody.getStatus().equals("closed"))
         {
-            Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID)).setIsLoadedFrontEndToggle(Boolean.FALSE);
+            Objects.requireNonNull(projectHandler.getProjectLoader(projectID)).setIsLoadedFrontEndToggle(Boolean.FALSE);
         }
         else
         {

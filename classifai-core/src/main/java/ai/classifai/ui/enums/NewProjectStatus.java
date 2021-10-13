@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
+ * Copyright (c) 2021 CertifAI Sdn. Bhd.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
@@ -13,20 +13,22 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package ai.classifai.selector.status;
+package ai.classifai.ui.enums;
 
 /**
- * State of file system
+ * State of create new project
+ *
+ * - raw
+ * - config file
  *
  * @author codenamewei
  */
-public enum FileSystemStatus
+public enum NewProjectStatus
 {
-    DID_NOT_INITIATED,
-    ITERATING_FOLDER,
-    DATABASE_UPDATING,
-    DATABASE_UPDATED,
-    DATABASE_NOT_UPDATED,
-    ABORTED
-}
+    RAW,
+    CONFIG;
 
+    public static String getParamList() {
+        return RAW.name() + ", " + CONFIG.name();
+    }
+}

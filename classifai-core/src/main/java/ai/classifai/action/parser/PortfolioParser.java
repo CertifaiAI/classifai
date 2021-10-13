@@ -17,14 +17,15 @@ package ai.classifai.action.parser;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.util.project.ProjectInfraHandler;
-import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.sqlclient.Row;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -53,7 +54,7 @@ public class PortfolioParser
      */
     public static ProjectConfigProperties parseOut(@NonNull Row row)
     {
-        String annotationName = AnnotationHandler.getType(row.getInteger(2)).name();
+        String annotationName = AnnotationType.get(row.getInteger(2)).name();
 
         return ProjectConfigProperties.builder()
                 .projectID(row.getString(0))
@@ -71,11 +72,11 @@ public class PortfolioParser
 
     }
 
-    public static ProjectLoader parseIn(@NonNull ProjectConfigProperties projectConfig)
+    public static ProjectLoader parseIn(@NonNull ProjectConfigProperties projectConfig, @NonNull PortfolioDB portfolioDB, @NonNull AnnotationDB annotationDB)
     {
         //annotation_type (string -> int)
         String annotation = projectConfig.getAnnotationType();
-        int annotationInt = Objects.requireNonNull(AnnotationHandler.getType(annotation)).ordinal();
+        int annotationInt = Objects.requireNonNull(AnnotationType.get(annotation)).ordinal();
 
         ProjectVersion project = loadProjectVersion(projectConfig.getProjectVersion());
 
@@ -83,25 +84,24 @@ public class PortfolioParser
         project.setCurrentVersion(currentVersion.getVersionUuid());
 
         Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(projectConfig.getUuidVersionList());
-        project.setUuidListDict(uuidDict);                                                                          //uuid_version_list
+        project.setUuidListDict(uuidDict);
 
         Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(projectConfig.getLabelVersionList());
-        project.setLabelListDict(labelDict);                                                                        //label_version_list
+        project.setLabelListDict(labelDict);
 
 
-        ProjectInfra projectInfra = ProjectInfraHandler.getInfra(projectConfig.getProjectInfra());
+        ProjectInfra projectInfra = ProjectInfra.get(projectConfig.getProjectInfra());
         return ProjectLoader.builder()
-                                .projectId(projectConfig.getProjectID())               //project_id
-                                .projectName(projectConfig.getProjectName())           //project_name
-                                .annotationType(annotationInt)                                                  //annotation_type
-                                .projectPath(new File(ActionConfig.getJsonFilePath()))                          //project_path
-                                .isProjectStarred(projectConfig.getIsStarred())       //is_starred
-
-                                .projectInfra(projectInfra)                                                     //project_infra
-
+                                .projectId(projectConfig.getProjectID())
+                                .projectName(projectConfig.getProjectName())
+                                .annotationType(annotationInt)
+                                .projectPath(new File(ActionConfig.getJsonFilePath()))
+                                .isProjectStarred(projectConfig.getIsStarred())
+                                .projectInfra(projectInfra)
                                 .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
-
-                                .projectVersion(project)                                                        //project_version
+                                .projectVersion(project)
+                                .portfolioDB(portfolioDB)
+                                .annotationDB(annotationDB)
                                 .build();
     }
 
