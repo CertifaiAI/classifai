@@ -18,6 +18,7 @@ package ai.classifai.dto.data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -27,18 +28,23 @@ import java.util.List;
 @NonNull
 public class DataInfoProperties {
 
+    @Builder.Default
     @JsonProperty("annotation")
-    List<AnnotationPointProperties> annotation;
+    List<AnnotationPointProperties> annotation = new ArrayList<>();
 
+    @Builder.Default
     @JsonProperty("img_x")
-    int imgX;
+    int imgX = 0;
 
+    @Builder.Default
     @JsonProperty("img_y")
-    int imgY;
+    int imgY = 0;
 
+    @Builder.Default
     @JsonProperty("img_w")
-    int imgW;
+    int imgW = 0;
 
+    @Builder.Default
     @JsonProperty("img_h")
-    int imgH;
+    int imgH = 0;
 }

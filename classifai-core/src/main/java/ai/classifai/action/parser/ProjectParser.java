@@ -17,7 +17,6 @@ package ai.classifai.action.parser;
 
 import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.versioning.Annotation;
-import ai.classifai.dto.data.AnnotationPointProperties;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ImageDataProperties;
 import ai.classifai.dto.data.VersionConfigProperties;
@@ -158,21 +157,15 @@ public class ProjectParser
     public static Map<String, DataInfoProperties> buildAnnotationDict(@NonNull ProjectLoader loader)
     {
         Map<String, DataInfoProperties> annotationDict = new HashMap<>();
-        int newImagePropValue = 0;
 
         Set<String> versionUuidList = loader.getProjectVersion().getVersionUuidDict().keySet();
 
         for(String versionUuid : versionUuidList)
         {
-            annotationDict.put(versionUuid, DataInfoProperties.builder()
-                    .annotation(new ArrayList<AnnotationPointProperties>())
-                    .imgX(newImagePropValue)
-                    .imgY(newImagePropValue)
-                    .imgW(newImagePropValue)
-                    .imgH(newImagePropValue)
-                    .build()
-            );
+            annotationDict.put(versionUuid, DataInfoProperties.builder().build());
         }
+
+        log.info("DEVEN: " + annotationDict);
 
         return annotationDict;
     }
