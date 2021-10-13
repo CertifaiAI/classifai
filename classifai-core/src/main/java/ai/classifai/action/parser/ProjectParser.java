@@ -165,8 +165,6 @@ public class ProjectParser
             annotationDict.put(versionUuid, DataInfoProperties.builder().build());
         }
 
-        log.info("DEVEN: " + annotationDict);
-
         return annotationDict;
     }
 
