@@ -23,6 +23,8 @@ import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
@@ -361,6 +363,28 @@ public class ImageHandler {
         }
 
         return true;
+    }
+
+    public static void checkAndBackUpFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList, List<String> fileNames,
+                                            File projectPath, Integer index, Boolean file) throws IOException
+    {
+        File backUpFolder = new File(backUpFolderPath);
+
+        if(!backUpFolder.exists()){
+            backUpFolder.mkdir();
+            log.info("Moved Image Backup folder for similar name image file is created at " + projectPath.getParent());
+        }
+
+        int fileIndex = fileNames.indexOf(FilenameUtils.getName(addedFileList.get(index)));
+
+        if(file)
+        {
+            FileUtils.moveFileToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
+        }
+        else
+        {
+            FileUtils.moveDirectoryToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
+        }
     }
 
 }

@@ -48,13 +48,12 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Classifai v2 endpoints
@@ -833,7 +832,7 @@ public class V2Endpoint extends EndpointBase {
                 {
                     //decode image base64 string into image
                     byte[] decodedBytes = Base64.getDecoder().decode(imageBase64JsonArray.getString(i).split("base64,")[1]);
-                    File imageFile = new File(projectPath.getAbsolutePath() + "/" + imageNameJsonArray.getString(i));
+                    File imageFile = new File(projectPath.getAbsolutePath() + File.separator + imageNameJsonArray.getString(i));
 
                     if(!fileNames.contains(imageFile.getAbsolutePath()))
                     {
@@ -926,7 +925,19 @@ public class V2Endpoint extends EndpointBase {
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         File projectPath = loader.getProjectPath();
-        List<String> fileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
+        List<String> currentFolderFileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
+        List<String> fileNames = currentFolderFileNames.stream().map(FilenameUtils::getName).collect(Collectors.toList());
+        File[] filesList = projectPath.listFiles();
+        List<String> folderNames = new ArrayList<>();
+        List<String> folderList = Arrays.stream(Objects.requireNonNull(filesList)).map(File::getAbsolutePath).collect(Collectors.toList());
+
+        for(File file : Objects.requireNonNull(filesList))
+        {
+            if(file.isDirectory())
+            {
+                folderNames.add(file.getName());
+            }
+        }
 
         context.request().bodyHandler( h ->
         {
@@ -934,67 +945,96 @@ public class V2Endpoint extends EndpointBase {
             Boolean modifyImageName = request.getBoolean(ParamConfig.getModifyImgNameParam());
             Boolean replaceImageName = request.getBoolean(ParamConfig.getReplaceImgNameParam());
 
-            log.info(String.valueOf(modifyImageName));
-            log.info(String.valueOf(replaceImageName));
-
             List<String> imageFilePathList = imageFileSelector.getImageFilePathList();
             List<String> imageDirectoryList = imageFileSelector.getImageDirectoryList();
 
-            log.info(String.valueOf(imageDirectoryList));
-            log.info(String.valueOf(imageFilePathList));
-            log.info(imageFilePathList.get(0));
-
             log.info("Moving selected images or folder to " + projectName + "......");
 
-            for (int i = 0; i < imageFilePathList.size(); i++) {
-                try {
-                    if(fileNames.contains(imageFilePathList.get(i))) {
-                        int index = fileNames.indexOf(imageFilePathList.get(i));
-                        Files.move(Paths.get(fileNames.get(index)), Paths.get(projectPath + "/backup"));
+            String backUpFolderPath = projectPath.getParent() + File.separator + "Moved_Image_Backup" + File.separator;
+
+            for (int i = 0; i < imageFilePathList.size(); i++)
+            {
+                try
+                {
+                    if(fileNames.contains(FilenameUtils.getName(imageFilePathList.get(i))))
+                    {
+                        ImageHandler.checkAndBackUpFolder(backUpFolderPath, imageFilePathList, currentFolderFileNames,
+                                fileNames, projectPath, i, true);
                     }
 
-                    if(!modifyImageName && replaceImageName) {
-                        Files.move(Paths.get(imageFilePathList.get(i)), Paths.get(projectPath.getAbsolutePath()));
+                    if(!modifyImageName && replaceImageName)
+                    {
+                        String fileName = FilenameUtils.getName(imageFilePathList.get(i));
+                        File deleteFile = new File(backUpFolderPath + fileName);
+                        Files.delete(deleteFile.toPath());
+                        FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
+                        log.info("Original image was replaced by selected image");
                     }
 
-                    if(modifyImageName && !replaceImageName ) {
-                        String fileName = FilenameUtils.getBaseName(imageFilePathList.get(i));
+                    if(modifyImageName && !replaceImageName )
+                    {
+                        FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
+                        String fileName = FilenameUtils.getName(imageFilePathList.get(i));
+                        String fileBaseName = FilenameUtils.getBaseName(imageFilePathList.get(i));
                         String fileExtension = FilenameUtils.getExtension(imageFilePathList.get(i));
-                        String newFileName = fileName + "_" + i + "." + fileExtension;
-                        Files.move(Paths.get(newFileName), Paths.get(projectPath.getAbsolutePath()));
+                        File oldFile = new File(projectPath.getPath() + File.separator + fileName);
+                        File newFile = new File(projectPath.getAbsolutePath() + File.separator
+                                + fileBaseName + "_" + i + "." + fileExtension);
+                        Files.move(newFile.toPath(), oldFile.toPath());
+                        log.info("Selected image has been renamed to " + newFile.getName());
                     }
 
-                    if(modifyImageName && replaceImageName) {
-                        Files.move(new File(imageFilePathList.get(i)).toPath(),projectPath.toPath());
+                    if(!modifyImageName && !replaceImageName)
+                    {
+                        FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
+                        log.info("Selected image has been moved to current project folder");
                     }
 
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     log.info("Fail to move selected images to current project folder");
                 }
             }
 
-            for (int j = 0; j < imageDirectoryList.size(); j++) {
+            for (int j = 0; j < imageDirectoryList.size(); j++)
+            {
                 try {
-                    if(fileNames.contains(imageDirectoryList.get(j))) {
-                        int index = fileNames.indexOf(imageDirectoryList.get(j));
-                        Files.move(Paths.get(fileNames.get(index)), Paths.get(projectPath + "/backup"));
+                    if(folderNames.contains(FilenameUtils.getName(imageDirectoryList.get(j))))
+                    {
+                        ImageHandler.checkAndBackUpFolder(backUpFolderPath, imageDirectoryList, folderList,
+                                folderNames, projectPath, j, false);
                     }
 
-                    if(!modifyImageName && replaceImageName) {
-                        Files.move(Paths.get(imageDirectoryList.get(j)), Paths.get(projectPath.getAbsolutePath()));
+                    if(!modifyImageName && replaceImageName)
+                    {
+                        String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
+                        File deleteFolder = new File(backUpFolderPath + folderName);
+                        FileUtils.deleteDirectory(deleteFolder);
+                        FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
+                        log.info("The original folder was replaced by selected folder");
                     }
 
-                    if(modifyImageName && !replaceImageName ) {
-                        String fileName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
-                        String fileExtension = FilenameUtils.getExtension(imageDirectoryList.get(j));
-                        String newFileName = fileName + "_" + j + "." + fileExtension;
-                        Files.move(Paths.get(newFileName), Paths.get(projectPath.getAbsolutePath()));
+                    if(modifyImageName && !replaceImageName )
+                    {
+                        FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
+                        String folderBaseName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
+                        String folderModifyName = folderBaseName + "_" + j;
+                        File oldFolder = new File(projectPath.getPath() + File.separator + folderBaseName);
+                        File newFolder = new File(projectPath.getAbsolutePath() + File.separator + folderModifyName);
+                        oldFolder.renameTo(newFolder);
+                        log.info("Selected folder has been renamed to " + newFolder.getName());
                     }
 
-                    if(!modifyImageName && !replaceImageName) {
-                        Files.move(Paths.get(imageDirectoryList.get(j)), Paths.get(projectPath.getAbsolutePath()));
+                    if(!modifyImageName && !replaceImageName)
+                    {
+                        FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
+                        log.info("Selected folder has moved into current project folder");
                     }
-                } catch (IOException e) {
+
+                }
+                catch (IOException e)
+                {
                     log.info("Fail to move selected image folder to current project folder");
                 }
             }
@@ -1057,6 +1097,14 @@ public class V2Endpoint extends EndpointBase {
         HTTPResponseHandler.configureOK(context, res);
     }
 
+    /**
+     * Delete selected image and folder
+     * PUT http://localhost:{port}/v2/deleteimagefiles
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/deleteimagefiles
+     *
+     */
     public void deleteMoveImageAndFolder(RoutingContext context)
     {
         context.request().bodyHandler(h ->
