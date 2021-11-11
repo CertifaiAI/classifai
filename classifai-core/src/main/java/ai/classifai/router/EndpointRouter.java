@@ -102,18 +102,6 @@ public class EndpointRouter extends AbstractVerticle
     {
         Router router = Router.router(vertx);
 
-        router.route().handler(io.vertx.ext.web.handler.CorsHandler.create(".*.")
-                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
-                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
-                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
-                .allowedMethod(HttpMethod.DELETE)
-                .allowedMethod(io.vertx.core.http.HttpMethod.PUT)
-                .allowedHeader("Access-Control-Allow-Method")
-                .allowedHeader("Access-Control-Allow-Origin")
-                .allowedHeader("Cache-Control")
-                .allowedHeader("Pragma")
-                .allowedHeader("Content-Type"));
-
         //display for content in webroot
         //uses no-cache header for cache busting, perform revalidation when fetching static assets
         router.route().handler(this::addNoCacheHeader);
