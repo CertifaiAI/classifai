@@ -17,6 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.action.FileGenerator;
 import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.selector.project.ImageFileSelector;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
@@ -42,6 +43,7 @@ public class EndpointRouter extends AbstractVerticle
 
     private LabelFileSelector labelFileSelector;
     private FileGenerator fileGenerator;
+    private ImageFileSelector imageFileSelector;
 
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
@@ -61,6 +63,9 @@ public class EndpointRouter extends AbstractVerticle
 
         Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
         threadZipFileGenerator.start();
+
+        Thread imageFileImport = new Thread(() -> imageFileSelector = new ImageFileSelector());
+        imageFileImport.start();
     }
 
     @Override
@@ -79,6 +84,7 @@ public class EndpointRouter extends AbstractVerticle
         v2.setProjectImporter(projectImporter);
 
         v2.setLabelFileSelector(labelFileSelector);
+        v2.setImageFileSelector(imageFileSelector);
 
         cloud.setVertx(vertx);
 
@@ -95,6 +101,18 @@ public class EndpointRouter extends AbstractVerticle
     public void start(Promise<Void> promise)
     {
         Router router = Router.router(vertx);
+
+        router.route().handler(io.vertx.ext.web.handler.CorsHandler.create(".*.")
+                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .allowedMethod(HttpMethod.DELETE)
+                .allowedMethod(io.vertx.core.http.HttpMethod.PUT)
+                .allowedHeader("Access-Control-Allow-Method")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Cache-Control")
+                .allowedHeader("Pragma")
+                .allowedHeader("Content-Type"));
 
         //display for content in webroot
         //uses no-cache header for cache busting, perform revalidation when fetching static assets
@@ -162,6 +180,20 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/close").handler(v2::closeClassifai);
 
         router.get("/v2/:annotation_type/projects/:project_name/statistic").handler(v2::getProjectStatistic);
+
+        router.put("/v2/imagefiles").handler(v2::selectImageFile);
+
+        router.get("/v2/imagefiles").handler(v2::selectImageFileStatus);
+
+        router.put("/v2/deleteimagefiles").handler(v2::deleteMoveImageAndFolder);
+
+        router.put("/v2/:annotation_type/projects/:project_name/add").handler(v2::addImages);
+
+        router.get("/v2/:annotation_type/projects/:project_name/addstatus").handler(v2::addImagesStatus);
+
+        router.put("/v2/:annotation_type/projects/:project_name/move").handler(v2::moveImages);
+
+        router.get("/v2/:annotation_type/projects/:project_name/movestatus").handler(v2::moveImagesStatus);
 
         //*******************************Cloud*******************************
 

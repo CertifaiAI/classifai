@@ -22,6 +22,7 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
+import ai.classifai.selector.project.ImageFileSelector;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
@@ -31,6 +32,8 @@ import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.data.FileHandler;
+import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -43,12 +46,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Classifai v2 endpoints
@@ -62,6 +68,7 @@ public class V2Endpoint extends EndpointBase {
     @Setter private ProjectImportSelector projectImporter = null;
 
     @Setter private LabelFileSelector labelFileSelector = null;
+    @Setter private ImageFileSelector imageFileSelector = null;
 
     /***
      * change is_load state of a project to false
@@ -749,4 +756,331 @@ public class V2Endpoint extends EndpointBase {
         });
 
     }
+
+    /**
+     * Initiate load image files
+     * PUT http://localhost:{port}/v2/imagefiles
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/imagefiles
+     */
+    public void selectImageFile(RoutingContext context)
+    {
+        helper.checkIfDockerEnv(context);
+
+        if(!imageFileSelector.isWindowOpen())
+        {
+            imageFileSelector.run();
+
+        }
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
+    /**
+     * Get load image files status
+     * GET http://localhost:{port}/v2/imagefiles
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/imagefiles
+     */
+    public void selectImageFileStatus(RoutingContext context) {
+        helper.checkIfDockerEnv(context);
+
+        SelectionWindowStatus status = imageFileSelector.getWindowStatus();
+
+        JsonObject jsonResponse = compileSelectionWindowResponse(status);
+
+        if (status.equals(SelectionWindowStatus.WINDOW_CLOSE)) {
+            jsonResponse.put(ParamConfig.getImgPathListParam(), imageFileSelector.getImageFilePathList());
+            jsonResponse.put(ParamConfig.getImgDirectoryListParam(), imageFileSelector.getImageDirectoryList());
+        }
+
+        HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+    /**
+     * Initiate add image files
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/add
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/vehicles/add
+     */
+    public void addImages(RoutingContext context) {
+
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
+
+        File projectPath = loader.getProjectPath();
+        List<String> fileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
+
+        log.info("Saving images to " + projectName + "......");
+
+        context.request().bodyHandler( h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+            JsonArray imageNameJsonArray = request.getJsonArray(ParamConfig.getImgNameListParam());
+            JsonArray imageBase64JsonArray = request.getJsonArray(ParamConfig.getImgBase64ListParam());
+
+            for(int i = 0; i < imageNameJsonArray.size(); i++)
+            {
+                try
+                {
+                    //decode image base64 string into image
+                    byte[] decodedBytes = Base64.getDecoder().decode(imageBase64JsonArray.getString(i).split("base64,")[1]);
+                    File imageFile = new File(projectPath.getAbsolutePath() + "/" + imageNameJsonArray.getString(i));
+
+                    if(!fileNames.contains(imageFile.getAbsolutePath()))
+                    {
+                        FileUtils.writeByteArrayToFile(imageFile, decodedBytes);
+                    }
+                    else
+                    {
+                        log.info(imageFile.getName() + " is exist in current folder");
+                    }
+                }
+                catch (IOException e)
+                {
+                    log.info("Fail to convert Base64 String to Image file");
+                    return;
+                }
+            }
+
+        });
+
+        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+
+        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
+        {
+            JsonObject response = (JsonObject) fetch.result().body();
+
+            if (ReplyHandler.isReplyOk(response))
+            {
+                HTTPResponseHandler.configureOK(context);
+
+            } else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to add images to " + projectName));
+            }
+        });
+    }
+
+    /**
+     * Get load status of project
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/addstatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/addstatus
+     *
+     */
+    public void addImagesStatus(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
+
+        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+
+        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
+
+        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
+        {
+            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
+        }
+
+        HTTPResponseHandler.configureOK(context, res);
+    }
+
+    /**
+     * Initiate move image files and folder
+     * PUT http://localhost:{port}/v2/:annotation_type/projects/:project_name/move
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/bndbox/projects/vehicles/move
+     */
+    public void moveImages(RoutingContext context) {
+
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
+
+        File projectPath = loader.getProjectPath();
+        List<String> fileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
+
+        context.request().bodyHandler( h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+            Boolean modifyImageName = request.getBoolean(ParamConfig.getModifyImgNameParam());
+            Boolean replaceImageName = request.getBoolean(ParamConfig.getReplaceImgNameParam());
+
+            log.info(String.valueOf(modifyImageName));
+            log.info(String.valueOf(replaceImageName));
+
+            List<String> imageFilePathList = imageFileSelector.getImageFilePathList();
+            List<String> imageDirectoryList = imageFileSelector.getImageDirectoryList();
+
+            log.info(String.valueOf(imageDirectoryList));
+            log.info(String.valueOf(imageFilePathList));
+            log.info(imageFilePathList.get(0));
+
+            log.info("Moving selected images or folder to " + projectName + "......");
+
+            for (int i = 0; i < imageFilePathList.size(); i++) {
+                try {
+                    if(fileNames.contains(imageFilePathList.get(i))) {
+                        int index = fileNames.indexOf(imageFilePathList.get(i));
+                        Files.move(Paths.get(fileNames.get(index)), Paths.get(projectPath + "/backup"));
+                    }
+
+                    if(!modifyImageName && replaceImageName) {
+                        Files.move(Paths.get(imageFilePathList.get(i)), Paths.get(projectPath.getAbsolutePath()));
+                    }
+
+                    if(modifyImageName && !replaceImageName ) {
+                        String fileName = FilenameUtils.getBaseName(imageFilePathList.get(i));
+                        String fileExtension = FilenameUtils.getExtension(imageFilePathList.get(i));
+                        String newFileName = fileName + "_" + i + "." + fileExtension;
+                        Files.move(Paths.get(newFileName), Paths.get(projectPath.getAbsolutePath()));
+                    }
+
+                    if(modifyImageName && replaceImageName) {
+                        Files.move(new File(imageFilePathList.get(i)).toPath(),projectPath.toPath());
+                    }
+
+                } catch (IOException e) {
+                    log.info("Fail to move selected images to current project folder");
+                }
+            }
+
+            for (int j = 0; j < imageDirectoryList.size(); j++) {
+                try {
+                    if(fileNames.contains(imageDirectoryList.get(j))) {
+                        int index = fileNames.indexOf(imageDirectoryList.get(j));
+                        Files.move(Paths.get(fileNames.get(index)), Paths.get(projectPath + "/backup"));
+                    }
+
+                    if(!modifyImageName && replaceImageName) {
+                        Files.move(Paths.get(imageDirectoryList.get(j)), Paths.get(projectPath.getAbsolutePath()));
+                    }
+
+                    if(modifyImageName && !replaceImageName ) {
+                        String fileName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
+                        String fileExtension = FilenameUtils.getExtension(imageDirectoryList.get(j));
+                        String newFileName = fileName + "_" + j + "." + fileExtension;
+                        Files.move(Paths.get(newFileName), Paths.get(projectPath.getAbsolutePath()));
+                    }
+
+                    if(!modifyImageName && !replaceImageName) {
+                        Files.move(Paths.get(imageDirectoryList.get(j)), Paths.get(projectPath.getAbsolutePath()));
+                    }
+                } catch (IOException e) {
+                    log.info("Fail to move selected image folder to current project folder");
+                }
+            }
+        });
+
+        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
+
+        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
+        {
+            JsonObject response = (JsonObject) fetch.result().body();
+
+            if (ReplyHandler.isReplyOk(response))
+            {
+                HTTPResponseHandler.configureOK(context);
+
+            } else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to move selected images or folder to " + projectName));
+            }
+        });
+    }
+
+    /**
+     * Get load status of project
+     * GET http://localhost:{port}/v2/:annotation_type/projects/:project_name/movestatus
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/bndbox/projects/helloworld/movestatus
+     *
+     */
+    public void moveImagesStatus(RoutingContext context)
+    {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(helper.checkIfProjectNull(context, loader, projectName)) return;
+
+        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+
+        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
+
+        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
+        {
+            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+        }
+        else if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        {
+            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
+            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
+            res.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
+        }
+
+        HTTPResponseHandler.configureOK(context, res);
+    }
+
+    public void deleteMoveImageAndFolder(RoutingContext context)
+    {
+        context.request().bodyHandler(h ->
+        {
+            JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
+
+            JsonArray imagePathList = request.getJsonArray(ParamConfig.getImgPathListParam());
+            JsonArray imageDirectoryList = request.getJsonArray(ParamConfig.getImgDirectoryListParam());
+
+            if(!imagePathList.isEmpty()) {
+                for(int i = 0; i < imagePathList.size(); i++) {
+                    imageFileSelector.getImageFilePathList().remove(imagePathList.getString(i));
+                }
+            }
+
+            if(!imageDirectoryList.isEmpty()) {
+                for(int i = 0; i < imageDirectoryList.size(); i++) {
+                    imageFileSelector.getImageDirectoryList().remove(imageDirectoryList.getString(i));
+                }
+            }
+        });
+
+        HTTPResponseHandler.configureOK(context);
+
+    }
+
 }

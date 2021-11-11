@@ -121,6 +121,13 @@ public class ParamConfig
     @Getter private static final String imgThumbnailParam = "img_thumbnail";
     @Getter private static final String base64Param = "base64";
 
+    // add and move image and folder
+    @Getter private static final String imgBase64ListParam = "img_base64_list";
+    @Getter private static final String imgNameListParam = "img_name_list";
+    @Getter private static final String imgDirectoryListParam = "img_directory_list";
+    @Getter private static final String modifyImgNameParam = "modify_img_name";
+    @Getter private static final String replaceImgNameParam = "replace_img_name";
+
     //Common name when performing data migration
     @Getter private static final String projectContentParam = "content";
 
