@@ -15,9 +15,9 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.loader.CLIProjectInitiator;
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.type.AnnotationType;
+import ai.classifai.core.loader.CLIProjectInitiator;
+import ai.classifai.core.util.ParamConfig;
+import ai.classifai.core.util.type.AnnotationType;
 import com.formdev.flatlaf.FlatLightLaf;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

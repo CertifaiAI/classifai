@@ -15,22 +15,21 @@
  */
 package ai.classifai;
 
-import ai.classifai.action.ProjectExport;
-import ai.classifai.action.ProjectImport;
-import ai.classifai.database.DbConfig;
-import ai.classifai.database.DbOps;
-import ai.classifai.database.JDBCPoolHolder;
-import ai.classifai.database.annotation.AnnotationDB;
-import ai.classifai.database.portfolio.PortfolioDB;
-import ai.classifai.database.wasabis3.WasabiVerticle;
-import ai.classifai.loader.CLIProjectInitiator;
-import ai.classifai.router.EndpointRouter;
-import ai.classifai.ui.ContainerUI;
-import ai.classifai.ui.DesktopUI;
-import ai.classifai.ui.NativeUI;
-import ai.classifai.ui.enums.RunningStatus;
-import ai.classifai.util.ParamConfig;
-import ai.classifai.util.project.ProjectHandler;
+import ai.classifai.backend.action.ProjectExport;
+import ai.classifai.backend.action.ProjectImport;
+import ai.classifai.backend.database.DbConfig;
+import ai.classifai.backend.database.DbOps;
+import ai.classifai.backend.database.JDBCPoolHolder;
+import ai.classifai.backend.database.annotation.AnnotationDB;
+import ai.classifai.backend.database.portfolio.PortfolioDB;
+import ai.classifai.core.loader.CLIProjectInitiator;
+import ai.classifai.core.util.ParamConfig;
+import ai.classifai.core.util.project.ProjectHandler;
+import ai.classifai.frontend.EndpointRouter;
+import ai.classifai.frontend.ui.ContainerUI;
+import ai.classifai.frontend.ui.DesktopUI;
+import ai.classifai.frontend.ui.NativeUI;
+import ai.classifai.frontend.ui.enums.RunningStatus;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainVerticle extends AbstractVerticle
 {
-    private final WasabiVerticle wasabiVerticle;
     private final EndpointRouter serverVerticle;
     private final NativeUI ui;
     private final ProjectHandler projectHandler;
@@ -72,8 +70,6 @@ public class MainVerticle extends AbstractVerticle
         projectImport.setAnnotationDB(annotationDB);
         projectImport.setPortfolioDB(portfolioDB);
 
-
-        wasabiVerticle = new WasabiVerticle(projectHandler, portfolioDB, annotationDB);
         serverVerticle = new EndpointRouter(ui, portfolioDB, annotationDB, projectHandler, projectExport);
     }
 
@@ -86,12 +82,7 @@ public class MainVerticle extends AbstractVerticle
         Promise<String> serverDeployment = Promise.promise();
         vertx.deployVerticle(serverVerticle, serverDeployment);
 
-        serverDeployment.future().compose(id_ -> {
-            Promise<String> wasabiDeployment = Promise.promise();
-            vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
-            return wasabiDeployment.future();
-
-        }).onComplete(ar -> {
+        serverDeployment.future().onComplete(ar -> {
             jdbcPoolHolder.init(vertx, DbConfig.getH2());
 
             if (ar.succeeded())
@@ -133,7 +124,6 @@ public class MainVerticle extends AbstractVerticle
         try
         {
             serverVerticle.stop(Promise.promise());
-            wasabiVerticle.stop(Promise.promise());
         }
         catch (Exception e)
         {

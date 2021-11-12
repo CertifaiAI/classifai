@@ -1,6 +1,6 @@
 package ai.classifai.wasabis3;
 
-import ai.classifai.util.CloudParamConfig;
+import ai.classifai.core.util.CloudParamConfig;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NonNull;

@@ -15,7 +15,7 @@
  */
 package ai.classifai.config;
 
-import ai.classifai.util.ParamConfig;
+import ai.classifai.core.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
