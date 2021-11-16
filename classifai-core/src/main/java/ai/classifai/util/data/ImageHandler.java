@@ -447,7 +447,7 @@ public class ImageHandler {
                             fileNames, projectPath, i, true);
                 }
 
-                if(!modifyImageName && Boolean.TRUE.equals(replaceImage))
+                if(Boolean.TRUE.equals(!modifyImageName) && Boolean.TRUE.equals(replaceImage))
                 {
                     String fileName = FilenameUtils.getName(imageFilePathList.get(i));
                     File deleteFile = new File(backUpFolderPath + fileName);
@@ -456,7 +456,7 @@ public class ImageHandler {
                     log.info("Original image was replaced by selected image");
                 }
 
-                if(Boolean.TRUE.equals(modifyImageName) && !replaceImage)
+                if(Boolean.TRUE.equals(modifyImageName) && Boolean.TRUE.equals(!replaceImage))
                 {
                     FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
                     String fileName = FilenameUtils.getName(imageFilePathList.get(i));
@@ -510,7 +510,7 @@ public class ImageHandler {
                             folderNames, projectPath, j, false);
                 }
 
-                if (!modifyFolderName && Boolean.TRUE.equals(replaceFolder))
+                if (Boolean.TRUE.equals(!modifyFolderName) && Boolean.TRUE.equals(replaceFolder))
                 {
                     String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
                     File deleteFolder = new File(backUpFolderPath + folderName);
@@ -519,7 +519,7 @@ public class ImageHandler {
                     log.info("The original folder was replaced by selected folder");
                 }
 
-                if (Boolean.TRUE.equals(modifyFolderName) && !replaceFolder)
+                if (Boolean.TRUE.equals(modifyFolderName) && Boolean.TRUE.equals(!replaceFolder))
                 {
                     FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
                     String folderBaseName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
