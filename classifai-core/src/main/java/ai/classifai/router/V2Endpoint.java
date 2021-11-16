@@ -27,6 +27,7 @@ import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
 import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.selector.status.ImageAndFolderToProjectStatus;
 import ai.classifai.selector.status.NewProjectStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
@@ -46,14 +47,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Classifai v2 endpoints
@@ -825,52 +823,10 @@ public class V2Endpoint extends EndpointBase {
             JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
             JsonArray imageNameJsonArray = request.getJsonArray(ParamConfig.getImgNameListParam());
             JsonArray imageBase64JsonArray = request.getJsonArray(ParamConfig.getImgBase64ListParam());
-
-            for(int i = 0; i < imageNameJsonArray.size(); i++)
-            {
-                try
-                {
-                    //decode image base64 string into image
-                    byte[] decodedBytes = Base64.getDecoder().decode(imageBase64JsonArray.getString(i).split("base64,")[1]);
-                    File imageFile = new File(projectPath.getAbsolutePath() + File.separator + imageNameJsonArray.getString(i));
-
-                    if(!fileNames.contains(imageFile.getAbsolutePath()))
-                    {
-                        FileUtils.writeByteArrayToFile(imageFile, decodedBytes);
-                    }
-                    else
-                    {
-                        log.info(imageFile.getName() + " is exist in current folder");
-                    }
-                }
-                catch (IOException e)
-                {
-                    log.info("Fail to convert Base64 String to Image file");
-                    return;
-                }
-            }
-
+            ImageHandler.addImageToProjectFolder(imageNameJsonArray, imageBase64JsonArray, projectPath, fileNames);
         });
 
-        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
-
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-
-        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
-        {
-            JsonObject response = (JsonObject) fetch.result().body();
-
-            if (ReplyHandler.isReplyOk(response))
-            {
-                HTTPResponseHandler.configureOK(context);
-
-            } else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to add images to " + projectName));
-            }
-        });
+        HTTPResponseHandler.configureOK(context);
     }
 
     /**
@@ -891,20 +847,32 @@ public class V2Endpoint extends EndpointBase {
 
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+        int totalImagesToBeAdded = ImageHandler.getTotalImagesToBeAdded();
+        int currentAddedImages = ImageHandler.getCurrentAddedImages();
 
-        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
+        JsonObject addImageResponse;
 
-        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
+        if(currentAddedImages < totalImagesToBeAdded)
         {
-            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
+            addImageResponse = compileAddImageToProjectResponse(ImageAndFolderToProjectStatus.ADDING_IMAGES);
         }
-        else if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
+        else if(currentAddedImages == totalImagesToBeAdded)
         {
-            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
+            addImageResponse = compileAddImageToProjectResponse(ImageAndFolderToProjectStatus.IMAGES_ADDED);
+            //zero back the amount
+            ImageHandler.setCurrentAddedImages(0);
+            ImageHandler.setTotalImagesToBeAdded(0);
+        }
+        else
+        {
+            addImageResponse = compileAddImageToProjectResponse(ImageAndFolderToProjectStatus.OPERATION_FAILED);
+            //zero back the amount
+            ImageHandler.setCurrentAddedImages(0);
+            ImageHandler.setTotalImagesToBeAdded(0);
+            log.info("Operation of adding selected images to project " + projectName + " failed");
         }
 
-        HTTPResponseHandler.configureOK(context, res);
+        HTTPResponseHandler.configureOK(context, addImageResponse);
     }
 
     /**
@@ -925,25 +893,12 @@ public class V2Endpoint extends EndpointBase {
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
         File projectPath = loader.getProjectPath();
-        List<String> currentFolderFileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
-        List<String> fileNames = currentFolderFileNames.stream().map(FilenameUtils::getName).collect(Collectors.toList());
-        File[] filesList = projectPath.listFiles();
-        List<String> folderNames = new ArrayList<>();
-        List<String> folderList = Arrays.stream(Objects.requireNonNull(filesList)).map(File::getAbsolutePath).collect(Collectors.toList());
-
-        for(File file : Objects.requireNonNull(filesList))
-        {
-            if(file.isDirectory())
-            {
-                folderNames.add(file.getName());
-            }
-        }
 
         context.request().bodyHandler( h ->
         {
             JsonObject request = Objects.requireNonNull(ConversionHandler.json2JSONObject(h.toJson()));
             Boolean modifyImageName = request.getBoolean(ParamConfig.getModifyImgNameParam());
-            Boolean replaceImageName = request.getBoolean(ParamConfig.getReplaceImgNameParam());
+            Boolean replaceImage = request.getBoolean(ParamConfig.getReplaceImgNameParam());
 
             List<String> imageFilePathList = imageFileSelector.getImageFilePathList();
             List<String> imageDirectoryList = imageFileSelector.getImageDirectoryList();
@@ -952,113 +907,29 @@ public class V2Endpoint extends EndpointBase {
 
             String backUpFolderPath = projectPath.getParent() + File.separator + "Moved_Image_Backup" + File.separator;
 
-            for (int i = 0; i < imageFilePathList.size(); i++)
+            try
             {
-                try
-                {
-                    if(fileNames.contains(FilenameUtils.getName(imageFilePathList.get(i))))
-                    {
-                        ImageHandler.checkAndBackUpFolder(backUpFolderPath, imageFilePathList, currentFolderFileNames,
-                                fileNames, projectPath, i, true);
-                    }
-
-                    if(!modifyImageName && replaceImageName)
-                    {
-                        String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                        File deleteFile = new File(backUpFolderPath + fileName);
-                        Files.delete(deleteFile.toPath());
-                        FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                        log.info("Original image was replaced by selected image");
-                    }
-
-                    if(modifyImageName && !replaceImageName )
-                    {
-                        FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                        String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                        String fileBaseName = FilenameUtils.getBaseName(imageFilePathList.get(i));
-                        String fileExtension = FilenameUtils.getExtension(imageFilePathList.get(i));
-                        File oldFile = new File(projectPath.getPath() + File.separator + fileName);
-                        File newFile = new File(projectPath.getAbsolutePath() + File.separator
-                                + fileBaseName + "_" + i + "." + fileExtension);
-                        Files.move(newFile.toPath(), oldFile.toPath());
-                        log.info("Selected image has been renamed to " + newFile.getName());
-                    }
-
-                    if(!modifyImageName && !replaceImageName)
-                    {
-                        FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                        log.info("Selected image has been moved to current project folder");
-                    }
-
-                }
-                catch (IOException e)
-                {
-                    log.info("Fail to move selected images to current project folder");
-                }
+                ImageHandler.moveImageToProjectFolder(imageFilePathList, modifyImageName, replaceImage,
+                        backUpFolderPath, projectPath);
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to move selected images to " + projectPath.getName());
             }
 
-            for (int j = 0; j < imageDirectoryList.size(); j++)
+            try
             {
-                try {
-                    if(folderNames.contains(FilenameUtils.getName(imageDirectoryList.get(j))))
-                    {
-                        ImageHandler.checkAndBackUpFolder(backUpFolderPath, imageDirectoryList, folderList,
-                                folderNames, projectPath, j, false);
-                    }
-
-                    if(!modifyImageName && replaceImageName)
-                    {
-                        String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
-                        File deleteFolder = new File(backUpFolderPath + folderName);
-                        FileUtils.deleteDirectory(deleteFolder);
-                        FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                        log.info("The original folder was replaced by selected folder");
-                    }
-
-                    if(modifyImageName && !replaceImageName )
-                    {
-                        FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                        String folderBaseName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
-                        String folderModifyName = folderBaseName + "_" + j;
-                        File oldFolder = new File(projectPath.getPath() + File.separator + folderBaseName);
-                        File newFolder = new File(projectPath.getAbsolutePath() + File.separator + folderModifyName);
-                        oldFolder.renameTo(newFolder);
-                        log.info("Selected folder has been renamed to " + newFolder.getName());
-                    }
-
-                    if(!modifyImageName && !replaceImageName)
-                    {
-                        FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                        log.info("Selected folder has moved into current project folder");
-                    }
-
-                }
-                catch (IOException e)
-                {
-                    log.info("Fail to move selected image folder to current project folder");
-                }
+                ImageHandler.moveImageFolderToProjectFolder(imageDirectoryList, modifyImageName, replaceImage,
+                        backUpFolderPath, projectPath);
             }
+            catch (IOException e)
+            {
+                log.info("Fail to move selected image folders to " + projectPath.getName());
+            }
+
         });
 
-        loader.setFileSystemStatus(FileSystemStatus.ITERATING_FOLDER);
-
-        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIdParam(), loader.getProjectId());
-
-        DeliveryOptions reloadOps = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getReloadProject());
-
-        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, reloadOps, fetch ->
-        {
-            JsonObject response = (JsonObject) fetch.result().body();
-
-            if (ReplyHandler.isReplyOk(response))
-            {
-                HTTPResponseHandler.configureOK(context);
-
-            } else
-            {
-                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to move selected images or folder to " + projectName));
-            }
-        });
+        HTTPResponseHandler.configureOK(context);
     }
 
     /**
@@ -1079,22 +950,68 @@ public class V2Endpoint extends EndpointBase {
 
         if(helper.checkIfProjectNull(context, loader, projectName)) return;
 
-        FileSystemStatus fileSysStatus = loader.getFileSystemStatus();
+        JsonObject moveImageAndFolderResponse = ReplyHandler.getOkReply();
 
-        JsonObject res = compileFileSysStatusResponse(fileSysStatus);
+        int currentAddedImages = ImageHandler.getCurrentAddedImages();
+        int totalImagesToBeAdded = ImageHandler.getTotalImagesToBeAdded();
+        int currentAddedFolders = ImageHandler.getCurrentAddedFolders();
+        int totalFoldersToBeAdded = ImageHandler.getTotalFoldersToBeAdded();
 
-        if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATING))
+        if(currentAddedImages != 0 && totalImagesToBeAdded != 0)
         {
-            res.put(ParamConfig.getProgressMetadata(), loader.getProgressUpdate());
-        }
-        else if(fileSysStatus.equals(FileSystemStatus.DATABASE_UPDATED))
-        {
-            res.put(ParamConfig.getUuidAdditionListParam(), loader.getReloadAdditionList());
-            res.put(ParamConfig.getUuidDeletionListParam(), loader.getReloadDeletionList());
-            res.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
+            if (currentAddedImages < totalImagesToBeAdded)
+            {
+                moveImageAndFolderResponse
+                        .put(ParamConfig.getAddImageToProjectStatusParam(), ImageAndFolderToProjectStatus.ADDING_IMAGES.ordinal())
+                        .put(ParamConfig.getAddImageToProjectMessageParam(), ImageAndFolderToProjectStatus.ADDING_IMAGES.name());
+            }
         }
 
-        HTTPResponseHandler.configureOK(context, res);
+        if(currentAddedFolders != 0 && totalFoldersToBeAdded != 0)
+        {
+            if (currentAddedImages < totalImagesToBeAdded) {
+                moveImageAndFolderResponse
+                        .put(ParamConfig.getAddFolderToProjectStatusParam(), ImageAndFolderToProjectStatus.ADDING_FOLDERS.ordinal())
+                        .put(ParamConfig.getAddFolderToProjectMessageParam(), ImageAndFolderToProjectStatus.ADDING_FOLDERS.name());
+            }
+        }
+
+        if(totalImagesToBeAdded > 0 && currentAddedImages == totalImagesToBeAdded)
+        {
+            moveImageAndFolderResponse
+                    .put(ParamConfig.getAddImageToProjectStatusParam(), ImageAndFolderToProjectStatus.IMAGES_ADDED.ordinal())
+                    .put(ParamConfig.getAddImageToProjectMessageParam(), ImageAndFolderToProjectStatus.IMAGES_ADDED.name());
+            //zero back the amount
+            ImageHandler.setCurrentAddedImages(0);
+            ImageHandler.setTotalImagesToBeAdded(0);
+        }
+
+        if(totalFoldersToBeAdded > 0 && currentAddedFolders == totalFoldersToBeAdded)
+        {
+            moveImageAndFolderResponse
+                    .put(ParamConfig.getAddFolderToProjectStatusParam(), ImageAndFolderToProjectStatus.FOLDERS_ADDED.ordinal())
+                    .put(ParamConfig.getAddFolderToProjectMessageParam(), ImageAndFolderToProjectStatus.FOLDERS_ADDED.name());
+            //zero back the amount
+            ImageHandler.setCurrentAddedFolders(0);
+            ImageHandler.setTotalFoldersToBeAdded(0);
+        }
+
+        else
+        {
+            moveImageAndFolderResponse
+                    .put(ParamConfig.getAddImageToProjectStatusParam(), ImageAndFolderToProjectStatus.OPERATION_FAILED.ordinal())
+                    .put(ParamConfig.getAddImageToProjectMessageParam(), ImageAndFolderToProjectStatus.OPERATION_FAILED.name())
+                    .put(ParamConfig.getAddFolderToProjectStatusParam(), ImageAndFolderToProjectStatus.OPERATION_FAILED.ordinal())
+                    .put(ParamConfig.getAddFolderToProjectMessageParam(), ImageAndFolderToProjectStatus.OPERATION_FAILED.name());
+            //zero back the amount
+            ImageHandler.setCurrentAddedImages(0);
+            ImageHandler.setTotalImagesToBeAdded(0);
+            ImageHandler.setCurrentAddedFolders(0);
+            ImageHandler.setTotalFoldersToBeAdded(0);
+            log.info("Operation of adding selected images and folders to project " + projectName + " failed");
+        }
+
+        HTTPResponseHandler.configureOK(context, moveImageAndFolderResponse);
     }
 
     /**

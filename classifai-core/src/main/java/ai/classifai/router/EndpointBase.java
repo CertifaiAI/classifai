@@ -15,6 +15,7 @@
  */
 package ai.classifai.router;
 
+import ai.classifai.selector.status.ImageAndFolderToProjectStatus;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
 import ai.classifai.util.ParamConfig;
@@ -53,4 +54,15 @@ public abstract class EndpointBase
 
         return response;
     }
+
+    public JsonObject compileAddImageToProjectResponse(ImageAndFolderToProjectStatus status)
+    {
+        JsonObject response = ReplyHandler.getOkReply();
+
+        response.put(ParamConfig.getAddImageToProjectStatusParam(), status.ordinal())
+                .put(ParamConfig.getAddImageToProjectMessageParam(), status.name());
+
+        return response;
+    }
+
 }
