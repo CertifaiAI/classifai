@@ -957,23 +957,18 @@ public class V2Endpoint extends EndpointBase {
         int currentAddedFolders = ImageHandler.getCurrentAddedFolders();
         int totalFoldersToBeAdded = ImageHandler.getTotalFoldersToBeAdded();
 
-        if(currentAddedImages != 0 && totalImagesToBeAdded != 0)
+        if(currentAddedImages != 0 && totalImagesToBeAdded != 0 && currentAddedImages < totalImagesToBeAdded)
         {
-            if (currentAddedImages < totalImagesToBeAdded)
-            {
-                moveImageAndFolderResponse
-                        .put(ParamConfig.getAddImageToProjectStatusParam(), ImageAndFolderToProjectStatus.ADDING_IMAGES.ordinal())
-                        .put(ParamConfig.getAddImageToProjectMessageParam(), ImageAndFolderToProjectStatus.ADDING_IMAGES.name());
-            }
+            moveImageAndFolderResponse
+                    .put(ParamConfig.getAddImageToProjectStatusParam(), ImageAndFolderToProjectStatus.ADDING_IMAGES.ordinal())
+                    .put(ParamConfig.getAddImageToProjectMessageParam(), ImageAndFolderToProjectStatus.ADDING_IMAGES.name());
         }
 
-        if(currentAddedFolders != 0 && totalFoldersToBeAdded != 0)
+        if(currentAddedFolders != 0 && totalFoldersToBeAdded != 0 && currentAddedImages < totalImagesToBeAdded)
         {
-            if (currentAddedImages < totalImagesToBeAdded) {
-                moveImageAndFolderResponse
-                        .put(ParamConfig.getAddFolderToProjectStatusParam(), ImageAndFolderToProjectStatus.ADDING_FOLDERS.ordinal())
-                        .put(ParamConfig.getAddFolderToProjectMessageParam(), ImageAndFolderToProjectStatus.ADDING_FOLDERS.name());
-            }
+            moveImageAndFolderResponse
+                    .put(ParamConfig.getAddFolderToProjectStatusParam(), ImageAndFolderToProjectStatus.ADDING_FOLDERS.ordinal())
+                    .put(ParamConfig.getAddFolderToProjectMessageParam(), ImageAndFolderToProjectStatus.ADDING_FOLDERS.name());
         }
 
         if(totalImagesToBeAdded > 0 && currentAddedImages == totalImagesToBeAdded)
