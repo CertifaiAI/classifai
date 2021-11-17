@@ -73,5 +73,6 @@
     "containsUnsupportedImage1": "Terdapat ",
     "containsUnsupportedImage2": " imej yang tidak disokong di dalam projek ini!",
     "unsupportedImageList1": "Senarai imej tersebut terdapat di dalam fail TXT yang telah dimuat turun.",
-    "unsupportedImageList2": "Sila tukar format imej tersebut ke format jpg/png dan import semula."
+    "unsupportedImageList2": "Sila tukar format imej tersebut ke format jpg/png dan import semula.",
+    "projectStats": "Statistik Projek"
 }
