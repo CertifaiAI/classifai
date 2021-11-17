@@ -30,6 +30,9 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Endpoint routing for different url requests
  *
@@ -87,13 +90,27 @@ public class EndpointRouter extends AbstractVerticle
         ctx.next();
     }
 
+    private void enableDevelopmentCORS(Router router) {
+        Set<String> allowedHeaders = new HashSet<>();
+        allowedHeaders.add("Access-Control-Allow-Method");
+        allowedHeaders.add("Access-Control-Allow-Origin");
+        allowedHeaders.add("Cache-Control");
+        allowedHeaders.add("Pragma");
+        allowedHeaders.add("Content-Type");
+        RestRouter.enableCors(router, "*", false, -1, allowedHeaders);
+    }
+
     @Override
     public void start(Promise<Void> promise)
     {
         configureVersionVertx();
+
         Router router = RestRouter.register(vertx,
                 projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
                 imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint);
+
+        // Only enable in development
+        enableDevelopmentCORS(router);
 
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
