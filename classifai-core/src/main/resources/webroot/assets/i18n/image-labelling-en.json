@@ -99,6 +99,18 @@
             "9": {
                 "key": "Double click on a selected bounding box/ polygon",
                 "functionality": "Choose label for the selected bounding box"
+            },
+            "10": {
+                "key": "z",
+                "functionality": "Select pointer tool to move, zoom in and out of image"
+            },
+            "11": {
+                "key": "a",
+                "functionality": "Select annotation tool to annotate image"
+            },
+            "12": {
+                "key": "x",
+                "functionality": "Cancel selected tool and revert back to default mode"
             }
         }
     },

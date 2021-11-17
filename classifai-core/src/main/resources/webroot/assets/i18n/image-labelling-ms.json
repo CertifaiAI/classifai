@@ -97,6 +97,18 @@
             "9": {
                 "key": "Klik dua kali pada kotak sempadan/poligon yang dipilih",
                 "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
+            },
+            "10": {
+                "key": "z",
+                "functionality": "Pilih alat penunjuk untuk mengerak, mengezum masuk dan keluar daripada imej"
+            },
+            "11": {
+                "key": "a",
+                "functionality": "Pilih alat anotasi untuk menganotasi imej"
+            },
+            "12": {
+                "key": "x",
+                "functionality": "Batalkan alat yang dipilih dan kembali ke mod lalai"
             }
         }
     },
