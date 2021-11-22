@@ -143,4 +143,8 @@ public class ParamConfig
     //cloud
     @Getter private static final String isCloudParam = "is_cloud";
     @Getter private static final String projectInfraParam = "project_infra";
+
+    //project statistics
+    @Getter private static final String labelParam = "label";
+    @Getter private static final String labelCountParam = "count";
 }

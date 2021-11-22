@@ -29,6 +29,7 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.api.response.ProjectStatisticResponse;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
@@ -37,6 +38,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.LabelListHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -51,8 +53,6 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -614,7 +614,7 @@ public class PortfolioDB {
                 BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
                 //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNailFromCloud(img);
             }
             catch(Exception e)
             {
@@ -628,11 +628,7 @@ public class PortfolioDB {
 
             try
             {
-                Mat imageMat  = Imgcodecs.imread(dataPath);
-
-                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
-
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNail(new File(dataPath));
             }
             catch(Exception e)
             {
@@ -690,5 +686,31 @@ public class PortfolioDB {
         }
 
         return loader.getSanityUuidList();
+    }
+
+    public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader)
+    {
+        File projectPath = projectLoader.getProjectPath();
+
+        LabelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
+
+        Integer numberOfLabeledImage = LabelListHandler.getNumberOfLabeledImage();
+        Integer numberOfUnlabeledImage = LabelListHandler.getNumberOfUnLabeledImage();
+
+        List<LinkedHashMap<String, String>> labelPerClassInProject = LabelListHandler
+                .getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader);
+
+        if (!projectPath.exists())
+        {
+            log.info(String.format("Root path of project [%s] is missing! %s does not exist.",
+                    projectLoader.getProjectName(), projectLoader.getProjectPath()));
+        }
+
+        return ProjectStatisticResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .numLabeledImage(numberOfLabeledImage)
+                .numUnLabeledImage(numberOfUnlabeledImage)
+                .labelPerClassInProject(labelPerClassInProject)
+                .build();
     }
 }
