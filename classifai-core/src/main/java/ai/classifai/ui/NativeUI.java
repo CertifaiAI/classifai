@@ -4,6 +4,8 @@ import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.ui.enums.RunningStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
 
+import java.util.List;
+
 public interface NativeUI {
     void start();
     void setRunningStatus(RunningStatus status);
@@ -22,4 +24,10 @@ public interface NativeUI {
     boolean isProjectFolderSelectorOpen();
     SelectionWindowStatus getProjectFolderSelectorWindowStatus();
     String getProjectFolderSelectedPath();
+
+    void showImageFileSelector();
+    boolean isImageFileSelectorOpen();
+    SelectionWindowStatus getImageFileSelectorWindowStatus();
+    List<String> getImagePathList();
+    List<String> getImageDirectoryList();
 }

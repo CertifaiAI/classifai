@@ -5,6 +5,8 @@ import ai.classifai.ui.enums.RunningStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @Slf4j
 public class ContainerUI implements NativeUI {
     @Override
@@ -83,6 +85,31 @@ public class ContainerUI implements NativeUI {
     @Override
     public void showProjectFolderSelector() {
 
+    }
+
+    @Override
+    public void showImageFileSelector() {
+
+    }
+
+    @Override
+    public boolean isImageFileSelectorOpen() {
+        return false;
+    }
+
+    @Override
+    public List<String> getImagePathList() {
+        return null;
+    }
+
+    @Override
+    public List<String> getImageDirectoryList() {
+        return null;
+    }
+
+    @Override
+    public SelectionWindowStatus getImageFileSelectorWindowStatus() {
+        return null;
     }
 
     @Override

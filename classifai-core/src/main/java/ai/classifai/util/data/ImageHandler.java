@@ -21,8 +21,12 @@ import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.Mat;
 
 import javax.imageio.ImageIO;
@@ -33,8 +37,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Image Handler
@@ -43,6 +49,10 @@ import java.util.*;
  */
 @Slf4j
 public class ImageHandler {
+    @Setter @Getter private static int currentAddedImages;
+    @Setter @Getter private static int totalImagesToBeAdded;
+    @Setter @Getter private static int currentAddedFolders;
+    @Setter @Getter private static int totalFoldersToBeAdded;
 
     public static BufferedImage toBufferedImage(Mat matrix)
     {
@@ -340,6 +350,175 @@ public class ImageHandler {
         }
 
         return true;
+    }
+
+    public static void createBackUpFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList, List<String> fileNames,
+                                          File projectPath, Integer index, Boolean file) throws IOException
+    {
+        File backUpFolder = new File(backUpFolderPath);
+
+        if(!backUpFolder.exists()){
+            backUpFolder.mkdir();
+            log.info("Image Backup folder for storing similar name image file is created at " + projectPath.getParent());
+        }
+
+        int fileIndex = fileNames.indexOf(FilenameUtils.getName(addedFileList.get(index)));
+
+        if(Boolean.TRUE.equals(file))
+        {
+            FileUtils.moveFileToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
+        }
+        else
+        {
+            FileUtils.moveDirectoryToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
+        }
+    }
+
+    public static void addImageToProjectFolder(List<String> imageNameList, List<String> imageBase64List, File projectPath,
+                                               List<String> currentFolderFiles)
+    {
+        totalImagesToBeAdded = imageNameList.size();
+
+        for(int i = 0; i < imageNameList.size(); i++)
+        {
+            try
+            {
+                //decode image base64 string into image
+                byte[] decodedBytes = Base64.getDecoder().decode(imageBase64List.get(i).split("base64,")[1]);
+                File imageFile = new File(projectPath.getAbsolutePath() + File.separator + imageNameList.get(i));
+                currentAddedImages = i + 1; //to make count start at 1
+
+                if(!currentFolderFiles.contains(imageFile.getAbsolutePath()))
+                {
+                    FileUtils.writeByteArrayToFile(imageFile, decodedBytes);
+                    log.info(imageFile.getName() + " is added to project folder " + projectPath.getName());
+                }
+                else
+                {
+                    log.info(imageFile.getName() + " is exist in current folder");
+                    log.info("Operation add " + imageFile.getName() + " to project folder " + projectPath.getName() + " aborted");
+                }
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to convert Base64 String to Image file");
+                return;
+            }
+        }
+    }
+
+    public static void moveImageToProjectFolder(List<String> imageFilePathList, Boolean modifyImageOrFolderName, Boolean replaceImageOrFolder,
+                                                String backUpFolderPath, File projectPath) throws IOException
+    {
+        List<String> currentFolderFileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
+        List<String> fileNames = currentFolderFileNames.stream().map(FilenameUtils::getName).collect(Collectors.toList());
+        totalImagesToBeAdded = imageFilePathList.size();
+
+        for (int i = 0; i < imageFilePathList.size(); i++)
+        {
+            currentAddedImages = i + 1;
+            try
+            {
+                if(fileNames.contains(FilenameUtils.getName(imageFilePathList.get(i))))
+                {
+                    createBackUpFolder(backUpFolderPath, imageFilePathList, currentFolderFileNames,
+                            fileNames, projectPath, i, true);
+                }
+
+                if(Boolean.TRUE.equals(!modifyImageOrFolderName) && Boolean.TRUE.equals(replaceImageOrFolder))
+                {
+                    String fileName = FilenameUtils.getName(imageFilePathList.get(i));
+                    File deleteFile = new File(backUpFolderPath + fileName);
+                    Files.delete(deleteFile.toPath());
+                    FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
+                    log.info("Original image was replaced by selected image");
+                }
+
+                if(Boolean.TRUE.equals(modifyImageOrFolderName) && Boolean.TRUE.equals(!replaceImageOrFolder))
+                {
+                    FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
+                    String fileName = FilenameUtils.getName(imageFilePathList.get(i));
+                    String fileBaseName = FilenameUtils.getBaseName(imageFilePathList.get(i));
+                    String fileExtension = FilenameUtils.getExtension(imageFilePathList.get(i));
+                    File oldFile = new File(projectPath.getPath() + File.separator + fileName);
+                    File newFile = new File(projectPath.getAbsolutePath() + File.separator
+                            + fileBaseName + "_" + i + "." + fileExtension);
+                    Files.move(newFile.toPath(), oldFile.toPath());
+                    log.info("Selected image has been renamed to " + newFile.getName());
+                }
+
+                if(Boolean.TRUE.equals(!modifyImageOrFolderName) && Boolean.TRUE.equals(!replaceImageOrFolder))
+                {
+                    FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
+                    log.info("Selected image has been moved to current project folder");
+                }
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to move selected images to current project folder");
+            }
+        }
+    }
+
+    public static void moveImageFolderToProjectFolder(List<String> imageDirectoryList, Boolean modifyFolderName, Boolean replaceFolder,
+                                                      String backUpFolderPath, File projectPath) throws IOException
+    {
+        File[] filesList = projectPath.listFiles();
+
+        List<String> folderList = Arrays.stream(Objects.requireNonNull(filesList))
+                .map(File::getAbsolutePath)
+                .collect(Collectors.toList());
+
+        List<String> folderNames = Arrays.stream(filesList)
+                .map(Objects::requireNonNull)
+                .filter(File::isDirectory)
+                .map(File::getName)
+                .collect(Collectors.toList());
+
+        totalFoldersToBeAdded = imageDirectoryList.size();
+
+        for (int j = 0; j < imageDirectoryList.size(); j++)
+        {
+            currentAddedFolders = j + 1;
+            try
+            {
+                if (folderNames.contains(FilenameUtils.getName(imageDirectoryList.get(j))))
+                {
+                    createBackUpFolder(backUpFolderPath, imageDirectoryList, folderList,
+                            folderNames, projectPath, j, false);
+                }
+
+                if (Boolean.TRUE.equals(!modifyFolderName) && Boolean.TRUE.equals(replaceFolder))
+                {
+                    String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
+                    File deleteFolder = new File(backUpFolderPath + folderName);
+                    FileUtils.deleteDirectory(deleteFolder);
+                    FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
+                    log.info("The original folder was replaced by selected folder");
+                }
+
+                if (Boolean.TRUE.equals(modifyFolderName) && Boolean.TRUE.equals(!replaceFolder))
+                {
+                    FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
+                    String folderBaseName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
+                    String folderModifyName = folderBaseName + "_" + j;
+                    File oldFolder = new File(projectPath.getPath() + File.separator + folderBaseName);
+                    File newFolder = new File(projectPath.getAbsolutePath() + File.separator + folderModifyName);
+                    Files.move(oldFolder.toPath(), newFolder.toPath());
+                    log.info("Selected folder has been renamed to " + newFolder.getName());
+                }
+
+                if (Boolean.TRUE.equals(!modifyFolderName) && Boolean.TRUE.equals(!replaceFolder))
+                {
+                    FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
+                    log.info("Selected folder has moved into current project folder");
+                }
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to move selected image folder to current project folder");
+            }
+        }
     }
 
 }

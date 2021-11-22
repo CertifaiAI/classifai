@@ -7,6 +7,7 @@ import ai.classifai.ui.enums.RunningStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
+import ai.classifai.ui.selector.project.ImageFileSelector;
 import ai.classifai.ui.selector.project.LabelFileSelector;
 import ai.classifai.ui.selector.project.ProjectFolderSelector;
 import ai.classifai.ui.selector.project.ProjectImportSelector;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 import static javax.swing.JOptionPane.showMessageDialog;
 
@@ -24,6 +26,7 @@ public class DesktopUI implements NativeUI {
     private final ProjectImportSelector projectImportSelector;
     private final ProjectFolderSelector projectFolderSelector;
     private final LabelFileSelector labelFileSelector;
+    private final ImageFileSelector imageFileSelector;
 
     public DesktopUI(Runnable serverShutdownCallback, ProjectImport projectImport){
         LookFeelSetter.setDarkMode();
@@ -32,6 +35,7 @@ public class DesktopUI implements NativeUI {
         projectImportSelector = new ProjectImportSelector(this, projectImport);
         projectFolderSelector = new ProjectFolderSelector(this);
         labelFileSelector = new LabelFileSelector(this);
+        imageFileSelector = new ImageFileSelector(this);
     }
 
     @Override
@@ -95,6 +99,27 @@ public class DesktopUI implements NativeUI {
     @Override
     public boolean isProjectFolderSelectorOpen() {
         return projectFolderSelector.isWindowOpen();
+    }
+
+    @Override
+    public void showImageFileSelector() {
+        imageFileSelector.run();
+    }
+
+    @Override
+    public boolean isImageFileSelectorOpen() {
+        return imageFileSelector.isWindowOpen();
+    }
+
+    @Override
+    public List<String> getImagePathList() { return imageFileSelector.getImagePathList();}
+
+    @Override
+    public List<String> getImageDirectoryList() { return imageFileSelector.getImageDirectoryList();}
+
+    @Override
+    public SelectionWindowStatus getImageFileSelectorWindowStatus() {
+        return imageFileSelector.getWindowStatus();
     }
 
     @Override

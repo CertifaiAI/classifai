@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,4 +30,12 @@ public class SelectionStatusResponse {
     @JsonProperty("label_file_path")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String labelFilePath;
+
+    @JsonProperty("img_path_list")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    List<String> imagePathList;
+
+    @JsonProperty("img_directory_list")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    List<String> imageDirectoryList;
 }
