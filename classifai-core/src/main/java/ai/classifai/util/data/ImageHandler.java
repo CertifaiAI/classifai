@@ -49,10 +49,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class ImageHandler {
-    @Setter @Getter private static int currentAddedImages;
-    @Setter @Getter private static int totalImagesToBeAdded;
-    @Setter @Getter private static int currentAddedFolders;
-    @Setter @Getter private static int totalFoldersToBeAdded;
+    @Setter @Getter private static int currentAddedImages = 0;
+    @Setter @Getter private static int totalImagesToBeAdded = 0;
+    @Setter @Getter private static int currentAddedFolders = 0;
+    @Setter @Getter private static int totalFoldersToBeAdded = 0;
 
     public static BufferedImage toBufferedImage(Mat matrix)
     {
@@ -352,7 +352,7 @@ public class ImageHandler {
         return true;
     }
 
-    public static void createBackUpFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList, List<String> fileNames,
+    public static void backUpImageOrFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList, List<String> fileNames,
                                           File projectPath, Integer index, Boolean file) throws IOException
     {
         File backUpFolder = new File(backUpFolderPath);
@@ -421,7 +421,7 @@ public class ImageHandler {
             {
                 if(fileNames.contains(FilenameUtils.getName(imageFilePathList.get(i))))
                 {
-                    createBackUpFolder(backUpFolderPath, imageFilePathList, currentFolderFileNames,
+                    backUpImageOrFolder(backUpFolderPath, imageFilePathList, currentFolderFileNames,
                             fileNames, projectPath, i, true);
                 }
 
@@ -484,7 +484,7 @@ public class ImageHandler {
             {
                 if (folderNames.contains(FilenameUtils.getName(imageDirectoryList.get(j))))
                 {
-                    createBackUpFolder(backUpFolderPath, imageDirectoryList, folderList,
+                    backUpImageOrFolder(backUpFolderPath, imageDirectoryList, folderList,
                             folderNames, projectPath, j, false);
                 }
 

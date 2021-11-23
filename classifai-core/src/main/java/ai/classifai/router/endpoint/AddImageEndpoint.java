@@ -7,9 +7,12 @@ import ai.classifai.ui.enums.ImageAndFolderToProjectStatus;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.http.ActionStatus;
+import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationType;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -37,15 +40,15 @@ public class AddImageEndpoint {
      */
     @PUT
     @Path("/v2/{annotation_type}/projects/{project_name}/add")
-    public ActionStatus addImage(@PathParam("annotation_type") String annotationType,
-                                 @PathParam("project_name") String projectName, AddImageBody addImageBody)
+    public Future<ActionStatus> addImage(@PathParam("annotation_type") String annotationType,
+                                         @PathParam("project_name") String projectName, AddImageBody addImageBody)
     {
         AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
         ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
 
         if(loader == null) {
-            return ActionStatus.failedWithMessage("Project not exist");
+            return HTTPResponseHandler.nullProjectResponse();
         }
 
         File projectPath = loader.getProjectPath();
@@ -55,7 +58,10 @@ public class AddImageEndpoint {
 
         ImageHandler.addImageToProjectFolder(addImageBody.getImgNameList(), addImageBody.getImgBase64List(), projectPath, fileNames);
 
-        return ActionStatus.ok();
+        Promise<ActionStatus> promise = Promise.promise();
+        promise.complete(ActionStatus.ok());
+
+        return promise.future();
     }
 
     /**
@@ -87,7 +93,6 @@ public class AddImageEndpoint {
 
         ImageAndFolderToProjectResponse addImageResponse;
 
-
         if(currentAddedImages < totalImagesToBeAdded)
         {
             ImageAndFolderToProjectStatus status = ImageAndFolderToProjectStatus.ADDING_IMAGES;
@@ -97,8 +102,8 @@ public class AddImageEndpoint {
                      .addImageStatus(status.ordinal())
                      .addImageMessage(status.name())
                      .build();
-
         }
+
         else if(currentAddedImages == totalImagesToBeAdded)
         {
             ImageAndFolderToProjectStatus status = ImageAndFolderToProjectStatus.IMAGES_ADDED;
@@ -113,6 +118,7 @@ public class AddImageEndpoint {
             ImageHandler.setCurrentAddedImages(0);
             ImageHandler.setTotalImagesToBeAdded(0);
         }
+
         else
         {
             ImageAndFolderToProjectStatus status = ImageAndFolderToProjectStatus.OPERATION_FAILED;

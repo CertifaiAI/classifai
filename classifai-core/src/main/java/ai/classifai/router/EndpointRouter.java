@@ -55,6 +55,8 @@ public class EndpointRouter extends AbstractVerticle
     ExportProjectEndpoint exportProjectEndpoint;
     UpdateProjectEndpoint updateProjectEndpoint;
     CloudEndpoint cloud;
+    AddImageEndpoint addImageEndpoint;
+    MoveImageAndFolderEndpoint moveImageAndFolderEndpoint;
 
     public EndpointRouter(NativeUI ui, PortfolioDB portfolioDB, AnnotationDB annotationDB, ProjectHandler projectHandler, ProjectExport projectExport)
     {
@@ -82,6 +84,8 @@ public class EndpointRouter extends AbstractVerticle
         this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, projectExport);
         this.updateProjectEndpoint = new UpdateProjectEndpoint(portfolioDB, projectHandler);
         this.cloud = new CloudEndpoint(vertx);
+        this.addImageEndpoint = new AddImageEndpoint(projectHandler);
+        this.moveImageAndFolderEndpoint = new MoveImageAndFolderEndpoint(projectHandler, ui);
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
@@ -107,7 +111,8 @@ public class EndpointRouter extends AbstractVerticle
 
         Router router = RestRouter.register(vertx,
                 projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
-                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint);
+                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint, addImageEndpoint,
+                moveImageAndFolderEndpoint);
 
         // Only enable in development
         enableDevelopmentCORS(router);

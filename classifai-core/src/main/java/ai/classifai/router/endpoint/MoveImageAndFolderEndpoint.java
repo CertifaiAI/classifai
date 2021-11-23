@@ -153,7 +153,7 @@ public class MoveImageAndFolderEndpoint {
 
         }
 
-        if(currentAddedImages == totalImagesToBeAdded)
+        if(totalImagesToBeAdded > 0 && currentAddedImages == totalImagesToBeAdded)
         {
             ImageAndFolderToProjectStatus addImageStatus = ImageAndFolderToProjectStatus.IMAGES_ADDED;
 
@@ -171,7 +171,7 @@ public class MoveImageAndFolderEndpoint {
 
         }
 
-        if(currentAddedFolders == totalFoldersToBeAdded)
+        if(totalFoldersToBeAdded > 0 && currentAddedFolders == totalFoldersToBeAdded)
         {
             ImageAndFolderToProjectStatus addDirectoryStatus = ImageAndFolderToProjectStatus.FOLDERS_ADDED;
 
