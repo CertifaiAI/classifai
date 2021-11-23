@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -352,8 +353,8 @@ public class ImageHandler {
         return true;
     }
 
-    public static void backUpImageOrFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList, List<String> fileNames,
-                                          File projectPath, Integer index, Boolean file) throws IOException
+    public static void backUpImageOrFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList,
+                                           List<String> fileNames, File projectPath, Integer index, Boolean file) throws IOException
     {
         File backUpFolder = new File(backUpFolderPath);
 
@@ -367,10 +368,14 @@ public class ImageHandler {
         if(Boolean.TRUE.equals(file))
         {
             FileUtils.moveFileToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
+            String fileName = FilenameUtils.getName(currentFolderList.get(fileIndex));
+            log.info("Similar name image file " + fileName + " is found and move to folder " + backUpFolder.getName());
         }
         else
         {
             FileUtils.moveDirectoryToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
+            String folderName = FilenameUtils.getName(currentFolderList.get(fileIndex));
+            log.info("Similar name directory " + folderName + " is found and move to folder " + backUpFolder.getName());
         }
     }
 
@@ -428,10 +433,10 @@ public class ImageHandler {
                 if(Boolean.TRUE.equals(!modifyImageOrFolderName) && Boolean.TRUE.equals(replaceImageOrFolder))
                 {
                     String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                    File deleteFile = new File(backUpFolderPath + fileName);
+                    File deleteFile = Paths.get(backUpFolderPath, fileName).toFile();
                     Files.delete(deleteFile.toPath());
                     FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                    log.info("Similar named image in project folder " + projectPath.getName() + " was replaced by "
+                    log.info("Similar named image in project folder " + projectPath.getName() + " is replaced by "
                             + fileName);
                 }
 
@@ -441,10 +446,10 @@ public class ImageHandler {
                     String fileName = FilenameUtils.getName(imageFilePathList.get(i));
                     String fileBaseName = FilenameUtils.getBaseName(imageFilePathList.get(i));
                     String fileExtension = FilenameUtils.getExtension(imageFilePathList.get(i));
-                    File oldFile = new File(projectPath.getPath() + File.separator + fileName);
-                    File newFile = new File(projectPath.getAbsolutePath() + File.separator
-                            + fileBaseName + "_" + i + "." + fileExtension);
-                    Files.move(newFile.toPath(), oldFile.toPath());
+                    String modifyName = fileBaseName + "_" + i + "." + fileExtension;
+                    File oldFile = Paths.get(projectPath.toString(), fileName).toFile();
+                    File newFile = Paths.get(projectPath.toString(), modifyName).toFile();
+                    Files.move(oldFile.toPath(), newFile.toPath());
                     log.info("Image " + fileName + " has been moved into project folder " + projectPath.getName()
                             + " and renamed to " + newFile.getName());
                 }
@@ -469,10 +474,13 @@ public class ImageHandler {
     {
         File[] filesList = projectPath.listFiles();
 
+        // To get a list of directories in project folder
         List<String> folderList = Arrays.stream(Objects.requireNonNull(filesList))
+                .filter(File::isDirectory)
                 .map(File::getAbsolutePath)
                 .collect(Collectors.toList());
 
+        // To get a list of directories names
         List<String> folderNames = Arrays.stream(filesList)
                 .map(Objects::requireNonNull)
                 .filter(File::isDirectory)
@@ -495,10 +503,10 @@ public class ImageHandler {
                 if (Boolean.TRUE.equals(!modifyFolderName) && Boolean.TRUE.equals(replaceFolder))
                 {
                     String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
-                    File deleteFolder = new File(backUpFolderPath + folderName);
+                    File deleteFolder = Paths.get(backUpFolderPath, folderName).toFile();
                     FileUtils.deleteDirectory(deleteFolder);
                     FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                    log.info("Similar named directory in project folder " + projectPath.getName() + " was replaced by "
+                    log.info("Similar named directory in project folder " + projectPath.getName() + " is replaced by "
                             + folderName);
                 }
 
@@ -507,8 +515,8 @@ public class ImageHandler {
                     FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
                     String folderBaseName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
                     String folderModifyName = folderBaseName + "_" + j;
-                    File oldFolder = new File(projectPath.getPath() + File.separator + folderBaseName);
-                    File newFolder = new File(projectPath.getAbsolutePath() + File.separator + folderModifyName);
+                    File oldFolder = Paths.get(projectPath.toString(), folderBaseName).toFile();
+                    File newFolder = Paths.get(projectPath.toString(), folderModifyName).toFile();
                     Files.move(oldFolder.toPath(), newFolder.toPath());
                     log.info("Directory " + folderBaseName + " has been moved into project folder " + projectPath.getName() +
                             " and renamed to " + newFolder.getName());
