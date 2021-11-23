@@ -23,6 +23,7 @@ import ai.classifai.database.JDBCPoolHolder;
 import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.wasabis3.WasabiVerticle;
+import ai.classifai.loader.CLIProjectImporter;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.router.EndpointRouter;
 import ai.classifai.ui.ContainerUI;
@@ -50,7 +51,7 @@ public class MainVerticle extends AbstractVerticle
     private final JDBCPoolHolder jdbcPoolHolder;
     private final PortfolioDB portfolioDB;
 
-    public MainVerticle(CLIProjectInitiator initiator){
+    public MainVerticle(CLIProjectInitiator initiator, CLIProjectImporter importer){
         jdbcPoolHolder = new JDBCPoolHolder();
 
         /* TODO: fix circular dependency */
@@ -60,11 +61,11 @@ public class MainVerticle extends AbstractVerticle
         } else {
             ui = new DesktopUI(this::closeVerticles, projectImport);
         }
-        this.projectHandler = new ProjectHandler(ui, initiator);
+        this.projectHandler = new ProjectHandler(ui, initiator, importer);
         final ProjectExport projectExport = new ProjectExport(projectHandler);
 
         final AnnotationDB annotationDB = new AnnotationDB(jdbcPoolHolder, projectHandler, null/* TODO: fix circular dependency */);
-        this.portfolioDB = new PortfolioDB(jdbcPoolHolder, projectHandler, projectExport, annotationDB);
+        this.portfolioDB = new PortfolioDB(jdbcPoolHolder, projectHandler, projectExport, annotationDB, projectImport);
         annotationDB.setPortfolioDB(portfolioDB);
 
         //TODO: Fix circular dependency
@@ -98,6 +99,7 @@ public class MainVerticle extends AbstractVerticle
             {
                 portfolioDB.configProjectLoaderFromDb();
                 portfolioDB.buildProjectFromCLI();
+                portfolioDB.importProjectFromCLI();
 
                 printLogo();
 

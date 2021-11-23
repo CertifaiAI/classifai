@@ -37,4 +37,7 @@ public class CLIProjectInitiator
     @Builder.Default private String projectName = new NameGenerator().getNewProjectName();
 
     @Builder.Default private File rootDataPath = null;
+
+    @Builder.Default private File labelFilePath = null;
+
 }

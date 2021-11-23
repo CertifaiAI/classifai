@@ -48,6 +48,6 @@ public class ClassifaiApp
         opt.setWorker(true);
 
         Vertx vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(new MainVerticle(cliArgs.getInitiator()), opt);
+        vertx.deployVerticle(new MainVerticle(cliArgs.getInitiator(), cliArgs.getImporter()), opt);
     }
 }

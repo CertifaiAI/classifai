@@ -87,4 +87,20 @@ public class FileMover {
 
         return desFile.toPath();
     }
+
+    public static void moveConfigFile(File folderName, Path source, Path target) {
+
+        if(!folderName.exists()) {
+            folderName.mkdir();
+            log.info("Backup folder " + folderName.getName() + " is created");
+        }
+
+        try {
+            Files.move(source, target);
+        } catch (IOException e) {
+            log.info("Configuration file fail to move to backup folder");
+        }
+
+        log.info("Please export a new project configuration file for this project after finish the annotation work");
+    }
 }

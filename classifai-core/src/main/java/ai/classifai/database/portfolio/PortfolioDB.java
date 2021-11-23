@@ -15,10 +15,7 @@
  */
 package ai.classifai.database.portfolio;
 
-import ai.classifai.action.ActionOps;
-import ai.classifai.action.FileGenerator;
-import ai.classifai.action.FileMover;
-import ai.classifai.action.ProjectExport;
+import ai.classifai.action.*;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.rename.RenameDataErrorCode;
 import ai.classifai.action.rename.RenameProjectData;
@@ -33,9 +30,13 @@ import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
 import ai.classifai.dto.data.ThumbnailProperties;
+import ai.classifai.loader.NameGenerator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
+import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -51,12 +52,16 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -73,13 +78,17 @@ public class PortfolioDB {
     private final ProjectExport projectExport;
     private final AnnotationDB annotationDB;
     private final JDBCPoolHolder holder;
+    private final ProjectImport projectImport;
 
-    public PortfolioDB(JDBCPoolHolder holder, ProjectHandler projectHandler, ProjectExport projectExport, AnnotationDB annotationDB) {
+
+    public PortfolioDB(JDBCPoolHolder holder, ProjectHandler projectHandler, ProjectExport projectExport,
+                       AnnotationDB annotationDB, ProjectImport projectImport) {
         this.holder = holder;
 
         this.projectHandler = projectHandler;
         this.projectExport = projectExport;
         this.annotationDB = annotationDB;
+        this.projectImport = projectImport;
     }
 
     private Future<RowSet<Row>> runQuery(String query, Tuple params) {
@@ -533,7 +542,137 @@ public class PortfolioDB {
 
     public void buildProjectFromCLI()
     {
-        // TODO: To build project from cli
+        try
+        {
+            // To build project from cli
+            String projectName = projectHandler.getCliProjectInitiator().getProjectName();
+            AnnotationType annotationType = projectHandler.getCliProjectInitiator().getProjectType();
+            File dataPath = projectHandler.getCliProjectInitiator().getRootDataPath();
+
+            // load label list file into project
+            File labelPath = projectHandler.getCliProjectInitiator().getLabelFilePath();
+            ArrayList<String> nameList = new ArrayList<>();
+
+            runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), this.holder.getPortfolioPool())
+                    .onComplete(DBUtils.handleResponse(
+                        result -> {
+                            if (result.size() == 0) {
+                                log.info("No projects founds.");
+                            }
+                            else {
+                                for (Row row : result) {
+                                    nameList.add(row.getString(0));
+                                }
+
+                                if (nameList.contains(projectName)) {
+                                    log.info("Project name exist in database, please use another name");
+                                    System.exit(0);
+                                } else {
+                                    if (labelPath == null) {
+                                        ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
+                                                .projectId(UuidGenerator.generateUuid())
+                                                .projectName(projectName)
+                                                .annotationType(annotationType.ordinal())
+                                                .projectPath(dataPath)
+                                                .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                                .projectInfra(ProjectInfra.ON_PREMISE)
+                                                .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                                .build();
+
+                                        projectHandler.checkCLIBuildProjectStatus(loaderWithoutLabel);
+                                    } else {
+                                        List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
+
+                                        ProjectLoader loaderWithLabel = ProjectLoader.builder()
+                                                .projectId(UuidGenerator.generateUuid())
+                                                .projectName(projectName)
+                                                .annotationType(annotationType.ordinal())
+                                                .projectPath(dataPath)
+                                                .labelList(labelList)
+                                                .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                                                .projectInfra(ProjectInfra.ON_PREMISE)
+                                                .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                                .build();
+
+                                        projectHandler.checkCLIBuildProjectStatus(loaderWithLabel);
+                                    }
+                                }
+                            }
+                        },
+                        cause -> log.info("Build project using command line failed")
+                    ));
+        }
+        catch (NullPointerException e)
+        {
+            log.debug("Build project using command line interface not initiated");
+        }
+    }
+
+    public void importProjectFromCLI()
+    {
+        try
+        {
+            // Load configuration file using CLI
+            File projectConfigFile = projectHandler.getCliProjectImporter().getConfigFilePath();
+            FileHandler.checkProjectConfigExtension(projectConfigFile.toString());
+
+            ActionConfig.setJsonFilePath(Paths.get(FilenameUtils.getFullPath(projectConfigFile.toString())).toString());
+            String jsonStr = IOUtils.toString(new FileReader(projectConfigFile));
+            ProjectConfigProperties importConfig = projectImport.jsonStrToConfig(jsonStr);
+
+            String projectName = importConfig.getProjectName();
+            String projectId = importConfig.getProjectID();
+            String projectPath = importConfig.getProjectPath();
+            Map<String, String> project = new HashMap<>();
+
+            runQuery(PortfolioDbQuery.getRetrieveAllProjects(), this.holder.getPortfolioPool())
+                    .onComplete(DBUtils.handleResponse(
+                        result -> {
+                            if (result.size() == 0) {
+                                log.info("No projects founds.");
+                            }
+                            else {
+                                for (Row row : result) {
+                                    project.put(row.getString(1), row.getString(3));
+                                }
+
+                                // If database dont have the project name, load the project configuration file
+                                if (!project.containsKey(projectName)) {
+                                    projectImport.loadProjectFromImportingConfigFile(importConfig);
+                                    log.info("Project " + projectName + " loaded from configuration file");
+                                } else {
+                                    // If the project to be loaded has the same name and path with a project in database, reload the project
+                                    if (project.get(projectName).equals(projectPath)) {
+                                        projectHandler.checkReloadProjectFromDatabaseStatus(projectId);
+                                    } else {
+                                        // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
+                                        importConfig.setProjectID(UuidGenerator.generateUuid());
+                                        importConfig.setProjectName(new NameGenerator().getNewProjectName());
+                                        projectImport.loadProjectFromImportingConfigFile(importConfig);
+                                        log.info("Project loaded with new generated name " + importConfig.getProjectName());
+
+                                        // handle old project configuration file
+                                        String originalConfigFilePath = importConfig.getProjectPath();
+                                        String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteDataFolderName()).toString();
+                                        String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
+
+
+                                        File folderName = new File(deletedConfigFolderName);
+                                        Path source = Paths.get(projectConfigFile.toString());
+                                        Path target = Paths.get(deletedConfigFolderName, projectConfigName);
+
+                                        FileMover.moveConfigFile(folderName, source, target);
+                                    }
+                                }
+                            }
+                        },
+                        cause -> log.info("Import project using command line failed")
+                    ));
+        }
+        catch (NullPointerException | IOException e)
+        {
+            log.debug("Import project using command line interface not initiated");
+        }
     }
 
     public void getProjectMetadata(@NonNull List<ProjectMetaProperties> result, @NonNull String projectId)

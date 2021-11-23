@@ -18,6 +18,7 @@ package ai.classifai.util.data;
 import ai.classifai.util.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -180,6 +181,16 @@ public class FileHandler
             return false;
         }
         return true;
+    }
+
+    public static void checkProjectConfigExtension (String fileExtension) {
+        String validExtension = "json";
+        String currentExtension = FilenameUtils.getExtension(fileExtension);
+
+        if (!currentExtension.equals(validExtension)){
+            log.info("The imported project configuration file format is not in json format, please change it");
+            System.exit(0);
+        }
     }
 
 }

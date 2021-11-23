@@ -16,6 +16,7 @@
 package ai.classifai.util.project;
 
 import ai.classifai.database.versioning.ProjectVersion;
+import ai.classifai.loader.CLIProjectImporter;
 import ai.classifai.loader.CLIProjectInitiator;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.NativeUI;
@@ -26,8 +27,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -54,9 +57,12 @@ public class ProjectHandler {
 
     @Getter private CLIProjectInitiator cliProjectInitiator;
 
-    public ProjectHandler(NativeUI ui, CLIProjectInitiator initiator){
+    @Getter private CLIProjectImporter cliProjectImporter;
+
+    public ProjectHandler(NativeUI ui, CLIProjectInitiator initiator, CLIProjectImporter importer){
         this.ui = ui;
         cliProjectInitiator = initiator;
+        cliProjectImporter = importer;
     }
 
     public ProjectLoader getProjectLoader(String projectName, AnnotationType annotationType)
@@ -229,6 +235,35 @@ public class ProjectHandler {
         {
             log.debug("Error: ", e);
         }
+    }
+
+    public void checkCLIBuildProjectStatus(ProjectLoader loader)
+    {
+        try
+        {
+            loadProjectLoader(loader);
+            loader.initFolderIteration();
+            log.info("New project build successfully using command line interface");
+        }
+        catch (IOException e)
+        {
+            log.debug("Loading files in project folder failed");
+        }
+    }
+
+    public void checkReloadProjectFromDatabaseStatus(String projectId )
+    {
+        try
+        {
+            ProjectLoader loader = getProjectLoader(projectId);
+            Objects.requireNonNull(loader).initFolderIteration();
+        }
+        catch (IOException e)
+        {
+            log.info("Project not reloaded from database");
+        }
+        log.info("Detected project is exist in database from information given in configuration file");
+        log.info("Project is reloaded from database");
     }
 
 
