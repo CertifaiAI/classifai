@@ -26,6 +26,8 @@ public interface NativeUI {
     String getProjectFolderSelectedPath();
 
     void showImageFileSelector();
+    void clearImagePathList();
+    void clearImageDirectoryList();
     boolean isImageFileSelectorOpen();
     SelectionWindowStatus getImageFileSelectorWindowStatus();
     List<String> getImagePathList();

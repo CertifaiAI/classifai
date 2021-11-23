@@ -112,10 +112,16 @@ public class DesktopUI implements NativeUI {
     }
 
     @Override
-    public List<String> getImagePathList() { return imageFileSelector.getImagePathList();}
+    public List<String> getImagePathList() { return imageFileSelector.getImagePathList(); }
 
     @Override
-    public List<String> getImageDirectoryList() { return imageFileSelector.getImageDirectoryList();}
+    public List<String> getImageDirectoryList() { return imageFileSelector.getImageDirectoryList(); }
+
+    @Override
+    public void clearImagePathList() { imageFileSelector.clearImagePathList(); }
+
+    @Override
+    public void clearImageDirectoryList() { imageFileSelector.clearImageDirectoryList(); }
 
     @Override
     public SelectionWindowStatus getImageFileSelectorWindowStatus() {

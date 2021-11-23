@@ -144,7 +144,4 @@ public class ParamConfig
     @Getter private static final String isCloudParam = "is_cloud";
     @Getter private static final String projectInfraParam = "project_infra";
 
-    //add or move image/folder
-    @Getter private static final String backUpFolderParam = ".classifai_backup_folder";
-
 }

@@ -114,4 +114,11 @@ public class ImageFileSelector extends SelectionWindow {
         }
     }
 
+    public void clearImagePathList() {
+        imagePathList.clear();
+    }
+    public void clearImageDirectoryList() {
+        imageDirectoryList.clear();
+    }
+
 }

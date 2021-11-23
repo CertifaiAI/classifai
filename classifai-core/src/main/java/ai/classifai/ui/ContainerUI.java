@@ -108,6 +108,16 @@ public class ContainerUI implements NativeUI {
     }
 
     @Override
+    public void clearImagePathList() {
+
+    }
+
+    @Override
+    public void clearImageDirectoryList() {
+
+    }
+
+    @Override
     public SelectionWindowStatus getImageFileSelectorWindowStatus() {
         return null;
     }

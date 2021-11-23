@@ -19,6 +19,7 @@ import ai.classifai.action.ProjectExport;
 import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.router.endpoint.*;
+import ai.classifai.ui.DesktopUI;
 import ai.classifai.ui.NativeUI;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectHandler;
