@@ -71,6 +71,7 @@ public class ProjectLoader
 
     @Builder.Default private Boolean isProjectNew = Boolean.TRUE;
     @Builder.Default private Boolean isProjectStarred = Boolean.FALSE;
+    @Builder.Default private Boolean isDocker = Boolean.FALSE;
 
     @Builder.Default private WasabiProject wasabiProject = null;
 

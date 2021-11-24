@@ -13,6 +13,7 @@ import ai.classifai.ui.NativeUI;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.ui.enums.NewProjectStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
@@ -139,6 +140,7 @@ public class ProjectEndpoint {
 
         String annotationName = requestBody.getAnnotationType();
         Integer annotationInt = AnnotationType.get(annotationName).ordinal();
+        Boolean isDocker = ParamConfig.isDockerEnv();
 
         if (projectHandler.isProjectNameUnique(projectName, annotationInt))
         {
@@ -158,6 +160,7 @@ public class ProjectEndpoint {
                     .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                     .portfolioDB(portfolioDB)
                     .annotationDB(annotationDB)
+                    .isDocker(isDocker)
                     .build();
 
             projectHandler.loadProjectLoader(loader);

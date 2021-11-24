@@ -45,4 +45,7 @@ public class ProjectMetaProperties {
 
     @JsonProperty("root_path_valid")
     Boolean isRootPathValidParam;
+
+    @JsonProperty("is_docker")
+    Boolean isDocker;
 }

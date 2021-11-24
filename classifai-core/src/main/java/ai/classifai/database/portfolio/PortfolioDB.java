@@ -548,6 +548,7 @@ public class PortfolioDB {
             String projectName = projectHandler.getCliProjectInitiator().getProjectName();
             AnnotationType annotationType = projectHandler.getCliProjectInitiator().getProjectType();
             File dataPath = projectHandler.getCliProjectInitiator().getRootDataPath();
+            Boolean isDocker = ParamConfig.isDockerEnv();
 
             // load label list file into project
             File labelPath = projectHandler.getCliProjectInitiator().getLabelFilePath();
@@ -577,6 +578,7 @@ public class PortfolioDB {
                                                 .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                                                 .projectInfra(ProjectInfra.ON_PREMISE)
                                                 .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                                .isDocker(isDocker)
                                                 .build();
 
                                         projectHandler.checkCLIBuildProjectStatus(loaderWithoutLabel);
@@ -592,6 +594,7 @@ public class PortfolioDB {
                                                 .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                                                 .projectInfra(ProjectInfra.ON_PREMISE)
                                                 .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                                                .isDocker(isDocker)
                                                 .build();
 
                                         projectHandler.checkCLIBuildProjectStatus(loaderWithLabel);
@@ -683,6 +686,8 @@ public class PortfolioDB {
 
         File projectPath = loader.getProjectPath();
 
+        Boolean isDocker = loader.getIsDocker();
+
         if (!projectPath.exists())
         {
             log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
@@ -703,6 +708,7 @@ public class PortfolioDB {
                 .currentVersionParam(currentVersion.getVersionUuid())
                 .totalUuidParam(existingDataInDir.size())
                 .isRootPathValidParam(projectPath.exists())
+                .isDocker(isDocker)
                 .build()
         );
 
@@ -731,6 +737,7 @@ public class PortfolioDB {
                 loader.getIsProjectNew(),                   //is_new
                 loader.getIsProjectStarred(),               //is_starred
                 loader.getProjectInfra().name(),            //project_infra
+                loader.getIsDocker(),                       //is_docker
                 project.getCurrentVersion().getDbFormat(),  //current_version
                 project.getDbFormat(),                      //version_list
                 project.getUuidVersionDbFormat(),           //uuid_version_list

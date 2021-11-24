@@ -2,11 +2,11 @@
 
 # ----------------------------- Deploy Classifai into Docker Container--------------------------------------------------
 
-# Step 1: Move this docker file into classifai-uberjar/target
+# Step 1: Copy this docker file into classifai-uberjar/target
 #
-# Step 2: Change the ENV parameters below to different name or path accordingly. Remove the ENV parameter that not
-#         required Noted that datapath, labelpath and configpath are paths that use to access the files in the docker
-#         container that shared from the local machine.
+# Step 2: Change the ENV parameters below to name or paths if interest accordingly. Remove the ENV parameters that are not
+#         required. Noted that datapath, labelpath and configpath are paths that use to access the files in the docker
+#         container which are shared from the local machine.
 #
 # Step 3: Modify the arguments in startDocker.bat or startDocker.sh
 #         Make sure to mount volume using -v in order to share the dataset folder and database from local machine
