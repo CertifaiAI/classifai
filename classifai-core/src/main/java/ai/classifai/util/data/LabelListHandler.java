@@ -17,6 +17,7 @@ package ai.classifai.util.data;
 
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.dto.data.AnnotationPointProperties;
+import ai.classifai.dto.data.LabelNameAndCountProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.ParamConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -126,12 +127,12 @@ public class LabelListHandler {
 
     }
 
-    public List<LinkedHashMap<String, String>> getLabelPerClassInProject(Map<String, Annotation> uuidAnnotationDict,
+    public List<LabelNameAndCountProperties> getLabelPerClassInProject(Map<String, Annotation> uuidAnnotationDict,
                                                                           ProjectLoader projectLoader)
     {
         Set<String> imageUUID = uuidAnnotationDict.keySet();
         List<Annotation> annotationList = getAnnotationList(imageUUID, uuidAnnotationDict);
-        List<LinkedHashMap<String, String>> labelPerClassInProjectList = new ArrayList<>();
+        List<LabelNameAndCountProperties> labelPerClassInProjectList = new ArrayList<>();
 
         List<Map<String, Integer>> labelByClassList = annotationList.stream()
                 .map(Annotation::getAnnotationDictDbFormat)
@@ -158,13 +159,12 @@ public class LabelListHandler {
 
     }
 
-    private static LinkedHashMap<String, String> getMap(String key, Integer value)
+    private static LabelNameAndCountProperties getMap(String key, Integer value)
     {
-        LinkedHashMap<String, String> labelCountMap = new LinkedHashMap<>();
-        labelCountMap.put(ParamConfig.getLabelParam(), key);
-        labelCountMap.put(ParamConfig.getLabelCountParam(), String.valueOf(value));
-
-        return labelCountMap;
+        return LabelNameAndCountProperties.builder()
+                .label(key)
+                .count(value)
+                .build();
     }
 
     private static Map<String,Integer> getLabelByClass(List<AnnotationPointProperties> labelPointData)

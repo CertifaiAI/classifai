@@ -34,6 +34,7 @@ import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
 import ai.classifai.dto.data.ThumbnailProperties;
+import ai.classifai.dto.data.LabelNameAndCountProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
@@ -699,7 +700,7 @@ public class PortfolioDB {
         Integer numberOfLabeledImage = labelListHandler.getNumberOfLabeledImage();
         Integer numberOfUnlabeledImage = labelListHandler.getNumberOfUnLabeledImage();
 
-        List<LinkedHashMap<String, String>> labelPerClassInProject = labelListHandler
+        List<LabelNameAndCountProperties> labelPerClassInProject = labelListHandler
                 .getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader);
 
         if (!projectPath.exists())

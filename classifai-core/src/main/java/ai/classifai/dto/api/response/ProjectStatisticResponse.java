@@ -1,10 +1,10 @@
 package ai.classifai.dto.api.response;
 
+import ai.classifai.dto.data.LabelNameAndCountProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 @Data
@@ -24,7 +24,7 @@ public class ProjectStatisticResponse {
     int numUnLabeledImage;
 
     @JsonProperty("label_per_class_in_project")
-    List<LinkedHashMap<String, String>> labelPerClassInProject;
+    List<LabelNameAndCountProperties> labelPerClassInProject;
 
     @JsonProperty("error_message")
     @JsonInclude(JsonInclude.Include.NON_NULL)
