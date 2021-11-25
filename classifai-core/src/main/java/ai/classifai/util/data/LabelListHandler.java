@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,9 +40,8 @@ import java.util.stream.IntStream;
  */
 
 @Slf4j
+@NoArgsConstructor
 public class LabelListHandler {
-
-    public LabelListHandler() { }
 
     private final List<List<List<AnnotationPointProperties>>> totalImage = new ArrayList<>();
 
