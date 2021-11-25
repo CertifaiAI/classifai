@@ -44,9 +44,6 @@ import java.util.*;
  */
 @Slf4j
 public class ImageHandler {
-    private static int oriWidth = 0;
-    private static int oriHeight = 0;
-    private static int depth = 0;
 
     public static BufferedImage toBufferedImage(Mat matrix)
     {
@@ -148,6 +145,10 @@ public class ImageHandler {
 
     public static Map<String, String> getThumbNail(File imageFile)
     {
+        int oriWidth = 0;
+        int oriHeight = 0;
+        int depth = 0;
+
         ImageData imgData = ImageData.getImageData(imageFile);
 
         if(imgData != null)

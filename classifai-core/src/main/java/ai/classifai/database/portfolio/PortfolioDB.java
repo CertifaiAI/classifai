@@ -690,14 +690,16 @@ public class PortfolioDB {
 
     public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader)
     {
+        LabelListHandler labelListHandler = new LabelListHandler();
+
         File projectPath = projectLoader.getProjectPath();
 
-        LabelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
+        labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
 
-        Integer numberOfLabeledImage = LabelListHandler.getNumberOfLabeledImage();
-        Integer numberOfUnlabeledImage = LabelListHandler.getNumberOfUnLabeledImage();
+        Integer numberOfLabeledImage = labelListHandler.getNumberOfLabeledImage();
+        Integer numberOfUnlabeledImage = labelListHandler.getNumberOfUnLabeledImage();
 
-        List<LinkedHashMap<String, String>> labelPerClassInProject = LabelListHandler
+        List<LinkedHashMap<String, String>> labelPerClassInProject = labelListHandler
                 .getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader);
 
         if (!projectPath.exists())

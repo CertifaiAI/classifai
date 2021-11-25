@@ -45,7 +45,7 @@ public class ProjectStatisticEndpoint {
         if(projectLoader == null) {
             return ProjectStatisticResponse.builder()
                     .message(ReplyHandler.FAILED)
-                    .errorMessage("Unable to retrieve project statistic for project: " + projectName)
+                    .errorMessage("Project not found. Unable to retrieve project statistic for project: " + projectName)
                     .build();
         }
 
