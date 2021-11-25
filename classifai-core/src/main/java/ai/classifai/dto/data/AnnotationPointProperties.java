@@ -18,12 +18,17 @@ package ai.classifai.dto.data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @NonNull
 public class AnnotationPointProperties {
+    @JsonProperty
+    List<CoordinatesPointProperties> coorPt;
+
     @JsonProperty
     Integer x1;
 
@@ -41,6 +46,12 @@ public class AnnotationPointProperties {
 
     @JsonProperty
     String color;
+
+    @JsonProperty
+    String region;
+
+    @JsonProperty
+    List<String> subLabel;
 
     @JsonProperty
     DistanceToImageProperties distancetoImg;
