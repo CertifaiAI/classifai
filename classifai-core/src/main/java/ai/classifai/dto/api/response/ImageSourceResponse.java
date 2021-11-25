@@ -8,13 +8,12 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NonNull
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ImageSourceResponse {
     @JsonProperty
     int message;
 
     @JsonProperty("error_message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     String errorMessage;
 
     @JsonProperty("img_src")
