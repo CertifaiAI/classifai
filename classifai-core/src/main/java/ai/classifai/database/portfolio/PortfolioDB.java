@@ -697,12 +697,6 @@ public class PortfolioDB {
 
         labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
 
-        Integer numberOfLabeledImage = labelListHandler.getNumberOfLabeledImage();
-        Integer numberOfUnlabeledImage = labelListHandler.getNumberOfUnLabeledImage();
-
-        List<LabelNameAndCountProperties> labelPerClassInProject = labelListHandler
-                .getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader);
-
         if (!projectPath.exists())
         {
             log.info(String.format("Root path of project [%s] is missing! %s does not exist.",
@@ -711,9 +705,9 @@ public class PortfolioDB {
 
         return ProjectStatisticResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
-                .numLabeledImage(numberOfLabeledImage)
-                .numUnLabeledImage(numberOfUnlabeledImage)
-                .labelPerClassInProject(labelPerClassInProject)
+                .numLabeledImage(labelListHandler.getNumberOfLabeledImage())
+                .numUnLabeledImage(labelListHandler.getNumberOfUnLabeledImage())
+                .labelPerClassInProject(labelListHandler.getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader))
                 .build();
     }
 }
