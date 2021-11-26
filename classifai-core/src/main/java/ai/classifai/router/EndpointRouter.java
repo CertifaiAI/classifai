@@ -19,7 +19,6 @@ import ai.classifai.action.ProjectExport;
 import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.router.endpoint.*;
-import ai.classifai.ui.DesktopUI;
 import ai.classifai.ui.NativeUI;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectHandler;
@@ -56,6 +55,7 @@ public class EndpointRouter extends AbstractVerticle
     ExportProjectEndpoint exportProjectEndpoint;
     UpdateProjectEndpoint updateProjectEndpoint;
     CloudEndpoint cloud;
+    ProjectStatisticEndpoint projectStatisticEndpoint;
     AddImageEndpoint addImageEndpoint;
     MoveImageAndFolderEndpoint moveImageAndFolderEndpoint;
 
@@ -85,6 +85,7 @@ public class EndpointRouter extends AbstractVerticle
         this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, projectExport);
         this.updateProjectEndpoint = new UpdateProjectEndpoint(portfolioDB, projectHandler);
         this.cloud = new CloudEndpoint(vertx);
+        this.projectStatisticEndpoint = new ProjectStatisticEndpoint(projectHandler, portfolioDB);
         this.addImageEndpoint = new AddImageEndpoint(projectHandler);
         this.moveImageAndFolderEndpoint = new MoveImageAndFolderEndpoint(projectHandler, ui);
     }
@@ -112,8 +113,8 @@ public class EndpointRouter extends AbstractVerticle
 
         Router router = RestRouter.register(vertx,
                 projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
-                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint, addImageEndpoint,
-                moveImageAndFolderEndpoint);
+                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint, projectStatisticEndpoint,
+                addImageEndpoint, moveImageAndFolderEndpoint);
 
         // Only enable in development
         enableDevelopmentCORS(router);
