@@ -11,15 +11,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RenameDataResponse {
     @JsonProperty
     int message;
 
     @JsonProperty("error_code")
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     int errorCode;
 
     @JsonProperty("error_message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     String errorMessage;
 
     @JsonProperty("img_path")
