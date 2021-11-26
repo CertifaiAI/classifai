@@ -120,8 +120,8 @@ public class MoveImageAndFolderEndpoint {
                     .build();
         }
 
-        ImageAndFolderToProjectResponse moveImageResponse = null;
-        ImageAndFolderToProjectResponse moveFolderResponse = null;
+        ImageAndFolderToProjectResponse moveImageResponse = new ImageAndFolderToProjectResponse();
+        ImageAndFolderToProjectResponse moveFolderResponse = new ImageAndFolderToProjectResponse();
 
         int currentAddedImages = ImageHandler.getCurrentAddedImages();
         int totalImagesToBeAdded = ImageHandler.getTotalImagesToBeAdded();
@@ -265,7 +265,7 @@ public class MoveImageAndFolderEndpoint {
     private ImageAndFolderToProjectResponse combineResponse(ImageAndFolderToProjectResponse moveImageResponse, Integer currentAddedImages,
                                ImageAndFolderToProjectResponse moveFolderResponse, Integer currentAddedFolders)
     {
-        ImageAndFolderToProjectResponse imageAndFolderToProjectResponse = null;
+        ImageAndFolderToProjectResponse imageAndFolderToProjectResponse = new ImageAndFolderToProjectResponse();
 
         if(currentAddedImages != 0 && currentAddedFolders == 0) {
             imageAndFolderToProjectResponse = ImageAndFolderToProjectResponse.builder()
@@ -299,7 +299,7 @@ public class MoveImageAndFolderEndpoint {
     private ImageAndFolderToProjectResponse combineFailResponse(ImageAndFolderToProjectResponse moveImageResponse, Integer currentAddedImages,
                                                             ImageAndFolderToProjectResponse moveFolderResponse, Integer currentAddedFolders)
     {
-        ImageAndFolderToProjectResponse failResponse = null;
+        ImageAndFolderToProjectResponse failResponse = new ImageAndFolderToProjectResponse();
 
         if(currentAddedImages == 0 && currentAddedFolders == 0) {
             failResponse = ImageAndFolderToProjectResponse.builder()

@@ -8,8 +8,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NonNull
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ImageAndFolderToProjectResponse {
 
     @JsonProperty
