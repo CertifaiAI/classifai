@@ -10,8 +10,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NonNull
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoadingStatusResponse {
     @JsonProperty
     int message;
