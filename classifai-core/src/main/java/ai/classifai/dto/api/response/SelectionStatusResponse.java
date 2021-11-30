@@ -31,11 +31,4 @@ public class SelectionStatusResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String labelFilePath;
 
-    @JsonProperty("img_path_list")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    List<String> imagePathList;
-
-    @JsonProperty("img_directory_list")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    List<String> imageDirectoryList;
 }

@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 import static javax.swing.JOptionPane.showMessageDialog;
 
