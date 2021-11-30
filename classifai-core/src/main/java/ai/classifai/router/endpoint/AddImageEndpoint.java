@@ -56,7 +56,8 @@ public class AddImageEndpoint {
 
         log.info("Saving images to " + projectName + "......");
 
-        ImageHandler.addImageToProjectFolder(addImageBody.getImgNameList(), addImageBody.getImgBase64List(), projectPath, fileNames);
+        ImageHandler imageHandler = new ImageHandler();
+        imageHandler.addImageToProjectFolder(addImageBody.getImgNameList(), addImageBody.getImgBase64List(), projectPath, fileNames);
 
         Promise<ActionStatus> promise = Promise.promise();
         promise.complete(ActionStatus.ok());
@@ -88,23 +89,13 @@ public class AddImageEndpoint {
                     .build();
         }
 
-        int totalImagesToBeAdded = ImageHandler.getTotalImagesToBeAdded();
-        int currentAddedImages = ImageHandler.getCurrentAddedImages();
+        ImageHandler imageHandler = new ImageHandler();
+        int totalImagesToBeAdded = imageHandler.getTotalImagesToBeAdded();
+        int currentAddedImages = imageHandler.getCurrentAddedImages();
 
         ImageAndFolderToProjectResponse addImageResponse;
 
-        if(currentAddedImages < totalImagesToBeAdded)
-        {
-            ImageAndFolderToProjectStatus status = ImageAndFolderToProjectStatus.ADDING_IMAGES;
-
-            addImageResponse = ImageAndFolderToProjectResponse.builder()
-                     .message(ReplyHandler.SUCCESSFUL)
-                     .addImageStatus(status.ordinal())
-                     .addImageMessage(status.name())
-                     .build();
-        }
-
-        else if(currentAddedImages == totalImagesToBeAdded)
+        if(currentAddedImages == totalImagesToBeAdded)
         {
             ImageAndFolderToProjectStatus status = ImageAndFolderToProjectStatus.IMAGES_ADDED;
 
@@ -114,9 +105,8 @@ public class AddImageEndpoint {
                     .addImageMessage(status.name())
                     .build();
 
-            //zero back the amount
-            ImageHandler.setCurrentAddedImages(0);
-            ImageHandler.setTotalImagesToBeAdded(0);
+            imageHandler.setCurrentAddedImages(0);
+            imageHandler.setTotalImagesToBeAdded(0);
         }
 
         else
@@ -129,9 +119,8 @@ public class AddImageEndpoint {
                     .addImageMessage(status.name())
                     .build();
 
-            //zero back the amount
-            ImageHandler.setCurrentAddedImages(0);
-            ImageHandler.setTotalImagesToBeAdded(0);
+            imageHandler.setCurrentAddedImages(0);
+            imageHandler.setTotalImagesToBeAdded(0);
             log.info("Operation of adding selected images to project " + projectName + " failed");
         }
 

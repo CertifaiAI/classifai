@@ -22,6 +22,7 @@ import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +39,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Image Handler
@@ -50,11 +48,10 @@ import java.util.stream.Collectors;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor
 public class ImageHandler {
-    @Setter @Getter private static int currentAddedImages = 0;
-    @Setter @Getter private static int totalImagesToBeAdded = 0;
-    @Setter @Getter private static int currentAddedFolders = 0;
-    @Setter @Getter private static int totalFoldersToBeAdded = 0;
+    @Setter @Getter private int currentAddedImages = 0;
+    @Setter @Getter private int totalImagesToBeAdded = 0;
 
     public static BufferedImage toBufferedImage(Mat matrix)
     {
@@ -375,36 +372,10 @@ public class ImageHandler {
         return true;
     }
 
-    public static void backUpImageOrFolder(String backUpFolderPath, List<String> addedFileList, List<String> currentFolderList,
-                                           List<String> fileNames, File projectPath, Integer index, Boolean file) throws IOException
-    {
-        File backUpFolder = new File(backUpFolderPath);
-
-        if(!backUpFolder.exists()){
-            backUpFolder.mkdir();
-            log.info("Folder " + backUpFolder.getName() + " is created in " + projectPath.getAbsolutePath());
-        }
-
-        int fileIndex = fileNames.indexOf(FilenameUtils.getName(addedFileList.get(index)));
-
-        if(Boolean.TRUE.equals(file))
-        {
-            FileUtils.moveFileToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
-            String fileName = FilenameUtils.getName(currentFolderList.get(fileIndex));
-            log.info("Similar name image file " + fileName + " is found and move to folder " + backUpFolder.getName());
-        }
-        else
-        {
-            FileUtils.moveDirectoryToDirectory(new File(currentFolderList.get(fileIndex)), backUpFolder, false);
-            String folderName = FilenameUtils.getName(currentFolderList.get(fileIndex));
-            log.info("Similar name directory " + folderName + " is found and move to folder " + backUpFolder.getName());
-        }
-    }
-
-    public static void addImageToProjectFolder(List<String> imageNameList, List<String> imageBase64List, File projectPath,
+    public void addImageToProjectFolder(List<String> imageNameList, List<String> imageBase64List, File projectPath,
                                                List<String> currentFolderFiles)
     {
-        totalImagesToBeAdded = imageNameList.size();
+        setTotalImagesToBeAdded(imageNameList.size());
 
         for(int i = 0; i < imageNameList.size(); i++)
         {
@@ -413,7 +384,7 @@ public class ImageHandler {
                 //decode image base64 string into image
                 byte[] decodedBytes = Base64.getDecoder().decode(imageBase64List.get(i).split("base64,")[1]);
                 File imageFile = new File(projectPath.getAbsolutePath() + File.separator + imageNameList.get(i));
-                currentAddedImages = i + 1; //to make count start at 1
+                setCurrentAddedImages(i + 1); //to make count start at 1
 
                 if(!currentFolderFiles.contains(imageFile.getAbsolutePath()))
                 {
@@ -430,131 +401,6 @@ public class ImageHandler {
             {
                 log.info("Fail to convert Base64 String to Image file");
                 return;
-            }
-        }
-    }
-
-    public static void moveImageToProjectFolder(List<String> imageFilePathList, Boolean modifyImageOrFolderName, Boolean replaceImageOrFolder,
-                                                String backUpFolderPath, File projectPath) throws IOException
-    {
-        List<String> currentFolderFileNames = FileHandler.processFolder(projectPath, ImageHandler::isImageFileValid);
-        List<String> fileNames = currentFolderFileNames.stream().map(FilenameUtils::getName).collect(Collectors.toList());
-        totalImagesToBeAdded = imageFilePathList.size();
-
-        for (int i = 0; i < imageFilePathList.size(); i++)
-        {
-            currentAddedImages = i + 1;
-            try
-            {
-                if(fileNames.contains(FilenameUtils.getName(imageFilePathList.get(i))))
-                {
-                    backUpImageOrFolder(backUpFolderPath, imageFilePathList, currentFolderFileNames,
-                            fileNames, projectPath, i, true);
-                }
-
-                if(Boolean.TRUE.equals(!modifyImageOrFolderName) && Boolean.TRUE.equals(replaceImageOrFolder))
-                {
-                    String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                    File deleteFile = Paths.get(backUpFolderPath, fileName).toFile();
-                    Files.delete(deleteFile.toPath());
-                    FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                    log.info("Similar named image in project folder " + projectPath.getName() + " is replaced by "
-                            + fileName);
-                }
-
-                if(Boolean.TRUE.equals(modifyImageOrFolderName) && Boolean.TRUE.equals(!replaceImageOrFolder))
-                {
-                    FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                    String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                    String fileBaseName = FilenameUtils.getBaseName(imageFilePathList.get(i));
-                    String fileExtension = FilenameUtils.getExtension(imageFilePathList.get(i));
-                    String modifyName = fileBaseName + "_" + i + "." + fileExtension;
-                    File oldFile = Paths.get(projectPath.toString(), fileName).toFile();
-                    File newFile = Paths.get(projectPath.toString(), modifyName).toFile();
-                    Files.move(oldFile.toPath(), newFile.toPath());
-                    log.info("Image " + fileName + " has been moved into project folder " + projectPath.getName()
-                            + " and renamed to " + newFile.getName());
-                }
-
-                if(Boolean.TRUE.equals(!modifyImageOrFolderName) && Boolean.TRUE.equals(!replaceImageOrFolder))
-                {
-                    String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                    FileUtils.moveFileToDirectory(new File(imageFilePathList.get(i)), projectPath, false);
-                    log.info("Image " + fileName + " has been moved into project folder " + projectPath.getName());
-                }
-            }
-            catch (IOException e)
-            {
-                String fileName = FilenameUtils.getName(imageFilePathList.get(i));
-                log.info("Fail to move image " + fileName + " to project folder " + projectPath.getName());
-            }
-        }
-    }
-
-    public static void moveImageFolderToProjectFolder(List<String> imageDirectoryList, Boolean modifyFolderName, Boolean replaceFolder,
-                                                      String backUpFolderPath, File projectPath) throws IOException
-    {
-        File[] filesList = projectPath.listFiles();
-
-        // To get a list of directories in project folder
-        List<String> folderList = Arrays.stream(Objects.requireNonNull(filesList))
-                .filter(File::isDirectory)
-                .map(File::getAbsolutePath)
-                .collect(Collectors.toList());
-
-        // To get a list of directories names
-        List<String> folderNames = Arrays.stream(filesList)
-                .map(Objects::requireNonNull)
-                .filter(File::isDirectory)
-                .map(File::getName)
-                .collect(Collectors.toList());
-
-        totalFoldersToBeAdded = imageDirectoryList.size();
-
-        for (int j = 0; j < imageDirectoryList.size(); j++)
-        {
-            currentAddedFolders = j + 1;
-            try
-            {
-                if (folderNames.contains(FilenameUtils.getName(imageDirectoryList.get(j))))
-                {
-                    backUpImageOrFolder(backUpFolderPath, imageDirectoryList, folderList,
-                            folderNames, projectPath, j, false);
-                }
-
-                if (Boolean.TRUE.equals(!modifyFolderName) && Boolean.TRUE.equals(replaceFolder))
-                {
-                    String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
-                    File deleteFolder = Paths.get(backUpFolderPath, folderName).toFile();
-                    FileUtils.deleteDirectory(deleteFolder);
-                    FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                    log.info("Similar named directory in project folder " + projectPath.getName() + " is replaced by "
-                            + folderName);
-                }
-
-                if (Boolean.TRUE.equals(modifyFolderName) && Boolean.TRUE.equals(!replaceFolder))
-                {
-                    FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                    String folderBaseName = FilenameUtils.getBaseName(imageDirectoryList.get(j));
-                    String folderModifyName = folderBaseName + "_" + j;
-                    File oldFolder = Paths.get(projectPath.toString(), folderBaseName).toFile();
-                    File newFolder = Paths.get(projectPath.toString(), folderModifyName).toFile();
-                    Files.move(oldFolder.toPath(), newFolder.toPath());
-                    log.info("Directory " + folderBaseName + " has been moved into project folder " + projectPath.getName() +
-                            " and renamed to " + newFolder.getName());
-                }
-
-                if (Boolean.TRUE.equals(!modifyFolderName) && Boolean.TRUE.equals(!replaceFolder))
-                {
-                    String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
-                    FileUtils.moveDirectoryToDirectory(new File(imageDirectoryList.get(j)), projectPath, false);
-                    log.info("Directory " + folderName + " has been moved into project folder " + projectPath.getName());
-                }
-            }
-            catch (IOException e)
-            {
-                String folderName = FilenameUtils.getName(imageDirectoryList.get(j));
-                log.info("Fail to move directory " + folderName + " to current project folder");
             }
         }
     }

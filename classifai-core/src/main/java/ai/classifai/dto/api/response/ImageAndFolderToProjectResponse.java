@@ -21,14 +21,6 @@ public class ImageAndFolderToProjectResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String addImageMessage;
 
-    @JsonProperty("add_folder_status")
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    int addFolderStatus;
-
-    @JsonProperty("add_folder_message")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String addFolderMessage;
-
     @JsonProperty("error_message")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String errorMessage;

@@ -25,11 +25,4 @@ public interface NativeUI {
     SelectionWindowStatus getProjectFolderSelectorWindowStatus();
     String getProjectFolderSelectedPath();
 
-    void showImageFileSelector();
-    void clearImagePathList();
-    void clearImageDirectoryList();
-    boolean isImageFileSelectorOpen();
-    SelectionWindowStatus getImageFileSelectorWindowStatus();
-    List<String> getImagePathList();
-    List<String> getImageDirectoryList();
 }
