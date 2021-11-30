@@ -14,7 +14,6 @@ public class ImageAndFolderToProjectResponse {
     int message;
 
     @JsonProperty("add_image_status")
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     int addImageStatus;
 
     @JsonProperty("add_image_message")
