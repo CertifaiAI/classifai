@@ -4,8 +4,6 @@ import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.ui.enums.RunningStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
 
-import java.util.List;
-
 public interface NativeUI {
     void start();
     void setRunningStatus(RunningStatus status);
