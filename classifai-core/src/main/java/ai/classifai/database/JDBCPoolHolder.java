@@ -1,5 +1,8 @@
 package ai.classifai.database;
 
+import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
+import ai.classifai.database.annotation.seg.SegDbQuery;
+import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
@@ -11,6 +14,7 @@ import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.SqlClient;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class JDBCPoolHolder {
     //annotationInt, jdbc
     private Map<Integer, JDBCPool> annotationJDBCPool = new HashMap<>();
@@ -39,11 +44,36 @@ public class JDBCPoolHolder {
     }
 
     public void init(Vertx vertx, H2 db) {
-        addJDBCPool(AnnotationType.BOUNDINGBOX, createPoolForTable(vertx, db, DbConfig.getBndBoxKey()));
-        addJDBCPool(AnnotationType.SEGMENTATION, createPoolForTable(vertx, db, DbConfig.getSegKey()));
+
+        JDBCPool bndBoxPool = createPoolForTable(vertx, db, DbConfig.getBndBoxKey());
+        createInitialTable(bndBoxPool, BoundingBoxDbQuery.getCreateProject());
+        addJDBCPool(AnnotationType.BOUNDINGBOX, bndBoxPool);
+
+        JDBCPool segPool = createPoolForTable(vertx, db, DbConfig.getSegKey());
+        createInitialTable(segPool, SegDbQuery.getCreateProject());
+        addJDBCPool(AnnotationType.SEGMENTATION, segPool);
 
         portfolioPool = createPoolForTable(vertx, db, DbConfig.getPortfolioKey());
+        createInitialTable(portfolioPool, PortfolioDbQuery.getCreatePortfolioTable());
+
         wasabiPool = createPoolForTable(vertx, db, DbConfig.getWasabiKey());
+    }
+
+    public void createInitialTable(JDBCPool pool, String query) {
+        pool.getConnection(ar -> {
+            if (ar.succeeded()) {
+                pool.query(query).execute()
+                        .onComplete(value -> {
+                            if(value.succeeded()) {
+                                log.debug("Success: " + query);
+                            } else {
+                                log.debug("Fail: " + query);
+                            }
+                        });
+            } else {
+                log.error("Could not open database connection", ar.cause());
+            }
+        });
     }
 
     private static JDBCPool createPoolForTable(Vertx vertx, H2 db, String table){
