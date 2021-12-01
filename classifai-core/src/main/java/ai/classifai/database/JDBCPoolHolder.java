@@ -1,5 +1,6 @@
 package ai.classifai.database;
 
+import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
@@ -46,11 +47,11 @@ public class JDBCPoolHolder {
     public void init(Vertx vertx, H2 db) {
 
         JDBCPool bndBoxPool = createPoolForTable(vertx, db, DbConfig.getBndBoxKey());
-        createInitialTable(bndBoxPool, BoundingBoxDbQuery.getCreateProject());
+        createInitialTable(bndBoxPool, AnnotationQuery.getCreateProject());
         addJDBCPool(AnnotationType.BOUNDINGBOX, bndBoxPool);
 
         JDBCPool segPool = createPoolForTable(vertx, db, DbConfig.getSegKey());
-        createInitialTable(segPool, SegDbQuery.getCreateProject());
+        createInitialTable(segPool, AnnotationQuery.getCreateProject());
         addJDBCPool(AnnotationType.SEGMENTATION, segPool);
 
         portfolioPool = createPoolForTable(vertx, db, DbConfig.getPortfolioKey());
