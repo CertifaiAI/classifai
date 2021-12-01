@@ -16,7 +16,6 @@ public class RenameDataResponse {
     int message;
 
     @JsonProperty("error_code")
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     int errorCode;
 
     @JsonProperty("error_message")
