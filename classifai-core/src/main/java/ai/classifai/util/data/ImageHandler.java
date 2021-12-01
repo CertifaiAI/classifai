@@ -172,17 +172,6 @@ public class ImageHandler {
         return getThumbNailAttributes(image, oriWidth, oriHeight, depth);
     }
 
-    public static Map<String, String> getThumbNailFromCloud(BufferedImage image)
-    {
-        int oriWidth = image.getWidth();
-
-        int oriHeight = image.getHeight();
-
-        int depth = image.getColorModel().getNumComponents();
-
-        return getThumbNailAttributes(image, oriWidth, oriHeight, depth);
-    }
-
     private static Map<String, String> getThumbNailAttributes(BufferedImage image, int oriWidth, int oriHeight, int depth)
     {
         Map<String, String> imageData = new HashMap<>();
@@ -267,27 +256,14 @@ public class ImageHandler {
         loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesPath.size());
 
-        //cloud
-        if(loader.isCloud())
+        for (int i = 0; i < filesPath.size(); ++i)
         {
-            for (int i = 0; i < filesPath.size(); ++i)
-            {
-                annotationDB.saveDataPoint(loader, filesPath.get(i), i + 1);
-            }
+            String projectFullPath = loader.getProjectPath().getAbsolutePath();
+            String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, filesPath.get(i)));
 
+            annotationDB.saveDataPoint(loader, dataSubPath, i + 1);
         }
-        //local file system
-        else
-        {
-            for (int i = 0; i < filesPath.size(); ++i)
-            {
-                String projectFullPath = loader.getProjectPath().getAbsolutePath();
-                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, filesPath.get(i)));
 
-                annotationDB.saveDataPoint(loader, dataSubPath, i + 1);
-            }
-
-        }
     }
 
     public static List<String> getValidImagesFromFolder(File rootPath)
