@@ -1,8 +1,6 @@
 package ai.classifai.database;
 
 import ai.classifai.database.annotation.AnnotationQuery;
-import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
-import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.database.portfolio.PortfolioDbQuery;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.util.type.AnnotationType;
@@ -31,9 +29,6 @@ public class JDBCPoolHolder {
     @Getter
     private JDBCPool portfolioPool;
 
-    @Getter
-    private JDBCPool wasabiPool;
-
     public void addJDBCPool(@NonNull AnnotationType type, @NonNull JDBCPool jdbcPool)
     {
         annotationJDBCPool.put(type.ordinal(), jdbcPool);
@@ -57,7 +52,6 @@ public class JDBCPoolHolder {
         portfolioPool = createPoolForTable(vertx, db, DbConfig.getPortfolioKey());
         createInitialTable(portfolioPool, PortfolioDbQuery.getCreatePortfolioTable());
 
-        wasabiPool = createPoolForTable(vertx, db, DbConfig.getWasabiKey());
     }
 
     public void createInitialTable(JDBCPool pool, String query) {
@@ -88,7 +82,6 @@ public class JDBCPoolHolder {
 
     public Future<Void> stop() {
         final List<Future> futures = new ArrayList<>();
-        futures.add(wasabiPool.close());
         futures.add(portfolioPool.close());
         futures.addAll(annotationJDBCPool.values().stream().map(SqlClient::close).collect(Collectors.toList()));
 

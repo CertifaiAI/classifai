@@ -142,7 +142,7 @@ public class AnnotationDB
                         for (Row row : result) {
                             String fullPath = loader.getDataFullPath(row.getString(1)).toString();
 
-                            if (loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath))) {
+                            if (ImageHandler.isImageReadable(new File(fullPath))) {
                                 Map<String, DataInfoProperties> annotationDict = ProjectParser.buildAnnotationDict(row.getString(2));
 
                                 Annotation annotation = Annotation.builder()

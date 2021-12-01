@@ -54,7 +54,6 @@ public class EndpointRouter extends AbstractVerticle
     DataEndpoint dataEndpoint;
     ExportProjectEndpoint exportProjectEndpoint;
     UpdateProjectEndpoint updateProjectEndpoint;
-    CloudEndpoint cloud;
     ProjectStatisticEndpoint projectStatisticEndpoint;
 
     public EndpointRouter(NativeUI ui, PortfolioDB portfolioDB, AnnotationDB annotationDB, ProjectHandler projectHandler, ProjectExport projectExport)
@@ -82,7 +81,6 @@ public class EndpointRouter extends AbstractVerticle
         this.dataEndpoint = new DataEndpoint(portfolioDB, projectHandler);
         this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, projectExport);
         this.updateProjectEndpoint = new UpdateProjectEndpoint(portfolioDB, projectHandler);
-        this.cloud = new CloudEndpoint(vertx);
         this.projectStatisticEndpoint = new ProjectStatisticEndpoint(projectHandler, portfolioDB);
     }
 
