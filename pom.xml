@@ -28,7 +28,6 @@
         <module>classifai-core</module>
         <module>classifai-api</module>
         <module>classifai-uberjar</module>
-        <module>classifai-cloud</module>
         <!--<module>classifai-test</module>-->
     </modules>
 
@@ -118,11 +117,6 @@
             <dependency>
                 <groupId>ai.classifai</groupId>
                 <artifactId>classifai-api</artifactId>
-                <version>${classifai.release.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ai.classifai</groupId>
-                <artifactId>classifai-cloud</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
