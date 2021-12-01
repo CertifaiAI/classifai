@@ -34,7 +34,6 @@ import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
 import ai.classifai.dto.data.ThumbnailProperties;
-import ai.classifai.dto.data.LabelNameAndCountProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
