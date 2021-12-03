@@ -22,4 +22,5 @@ public interface NativeUI {
     boolean isProjectFolderSelectorOpen();
     SelectionWindowStatus getProjectFolderSelectorWindowStatus();
     String getProjectFolderSelectedPath();
+
 }

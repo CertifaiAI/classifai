@@ -21,8 +21,13 @@ import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
@@ -43,7 +48,10 @@ import java.util.*;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor
 public class ImageHandler {
+    @Setter @Getter private int currentAddedImages = 0;
+    @Setter @Getter private int totalImagesToBeAdded = 0;
 
     public static BufferedImage toBufferedImage(Mat matrix)
     {
@@ -338,6 +346,39 @@ public class ImageHandler {
         }
 
         return true;
+    }
+
+    public void addImageToProjectFolder(List<String> imageNameList, List<String> imageBase64List, File projectPath,
+                                               List<String> currentFolderFiles)
+    {
+        setTotalImagesToBeAdded(imageNameList.size());
+
+        for(int i = 0; i < imageNameList.size(); i++)
+        {
+            try
+            {
+                //decode image base64 string into image
+                byte[] decodedBytes = Base64.getDecoder().decode(imageBase64List.get(i).split("base64,")[1]);
+                File imageFile = new File(projectPath.getAbsolutePath() + File.separator + imageNameList.get(i));
+                setCurrentAddedImages(i + 1); //to make count start at 1
+
+                if(!currentFolderFiles.contains(imageFile.getAbsolutePath()))
+                {
+                    FileUtils.writeByteArrayToFile(imageFile, decodedBytes);
+                    log.info(imageFile.getName() + " is added to project folder " + projectPath.getName());
+                }
+                else
+                {
+                    log.info(imageFile.getName() + " is exist in current folder");
+                    log.info("Operation add " + imageFile.getName() + " to project folder " + projectPath.getName() + " aborted");
+                }
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to convert Base64 String to Image file");
+                return;
+            }
+        }
     }
 
 }

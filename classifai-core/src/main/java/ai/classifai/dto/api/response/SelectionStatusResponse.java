@@ -28,4 +28,5 @@ public class SelectionStatusResponse {
     @JsonProperty("label_file_path")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String labelFilePath;
+
 }
