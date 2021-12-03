@@ -2,26 +2,26 @@ package ai.classifai.dto.api.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RenameDataResponse {
+public class ImageAndFolderToProjectResponse {
+
     @JsonProperty
     int message;
 
-    @JsonProperty("error_code")
-    int errorCode;
+    @JsonProperty("add_image_status")
+    int addImageStatus;
+
+    @JsonProperty("add_image_message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    String addImageMessage;
 
     @JsonProperty("error_message")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String errorMessage;
 
-    @JsonProperty("img_path")
-    String imgPath;
 }

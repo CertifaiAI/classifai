@@ -236,31 +236,23 @@ public class ProjectEndpoint {
 
         loader.toggleFrontEndLoaderParam(); //if project is_new = true, change to false since loading the project
 
-        if(loader.isCloud())
-        {
-            //FIXME
-            promise.complete(ActionStatus.ok());
-        }
-        else
-        {
-            ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
+        ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
 
-            //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
-            if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
-            {
-                loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
-                return portfolioDB.loadProject(loader.getProjectId())
-                        .map(ActionStatus.ok())
-                        .otherwise(ActionStatus.failedWithMessage("Failed to load project " + projectName + ". Check validity of data points failed."));
-            }
-            else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
-            {
-                promise.complete(ActionStatus.failedWithMessage("Loading project is in progress in the backend. Did not reinitiated."));
-            }
-            else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
-            {
-                promise.complete(ActionStatus.failedWithMessage("LoaderStatus with error message when loading project " + projectName + " .Loading project aborted."));
-            }
+        //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
+        if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
+        {
+            loader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
+            return portfolioDB.loadProject(loader.getProjectId())
+                    .map(ActionStatus.ok())
+                    .otherwise(ActionStatus.failedWithMessage("Failed to load project " + projectName + ". Check validity of data points failed."));
+        }
+        else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
+        {
+            promise.complete(ActionStatus.failedWithMessage("Loading project is in progress in the backend. Did not reinitiated."));
+        }
+        else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
+        {
+            promise.complete(ActionStatus.failedWithMessage("LoaderStatus with error message when loading project " + projectName + " .Loading project aborted."));
         }
 
         return promise.future();
@@ -470,4 +462,5 @@ public class ProjectEndpoint {
 
         return ActionStatus.ok();
     }
+
 }

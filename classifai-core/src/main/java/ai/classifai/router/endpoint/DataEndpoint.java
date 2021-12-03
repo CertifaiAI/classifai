@@ -1,5 +1,6 @@
 package ai.classifai.router.endpoint;
 
+import ai.classifai.action.rename.RenameDataErrorCode;
 import ai.classifai.action.rename.RenameProjectData;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.api.body.DeleteProjectDataBody;
@@ -96,6 +97,8 @@ public class DataEndpoint {
                 .map(result -> RenameDataResponse.builder()
                         .message(ReplyHandler.SUCCESSFUL)
                         .imgPath(result)
+                        .errorCode(RenameDataErrorCode.RENAME_SUCCESS.ordinal())
+                        .errorMessage(RenameDataErrorCode.RENAME_SUCCESS.name())
                         .build())
                 .otherwise(cause -> RenameProjectData.reportRenameError(cause.getMessage()));
     }

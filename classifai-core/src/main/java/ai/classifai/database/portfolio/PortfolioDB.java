@@ -15,7 +15,10 @@
  */
 package ai.classifai.database.portfolio;
 
-import ai.classifai.action.*;
+import ai.classifai.action.ActionOps;
+import ai.classifai.action.FileGenerator;
+import ai.classifai.action.FileMover;
+import ai.classifai.action.ProjectExport;
 import ai.classifai.action.parser.PortfolioParser;
 import ai.classifai.action.rename.RenameDataErrorCode;
 import ai.classifai.action.rename.RenameProjectData;
@@ -26,6 +29,7 @@ import ai.classifai.database.annotation.AnnotationQuery;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.api.response.ProjectStatisticResponse;
 import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.dto.data.ProjectMetaProperties;
@@ -38,12 +42,12 @@ import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.LabelListHandler;
 import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
-import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.jdbcclient.JDBCPool;
@@ -57,7 +61,6 @@ import org.apache.commons.io.IOUtils;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -323,17 +326,12 @@ public class PortfolioDB {
         return runQuery(AnnotationQuery.getRetrieveDataPath(), params, holder.getJDBCPool(loader))
                 .map(result -> {
                     if(result.size() != 0) {
-                        String imageStr;
+
                         Row row = result.iterator().next();
                         String dataPath = row.getString(0);
+                        File fileImgPath = loader.getDataFullPath(dataPath);
 
-                        if(loader.isCloud()) {
-                            imageStr = WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath);
-                        } else {
-                            File fileImgPath = loader.getDataFullPath(dataPath);
-                            imageStr = ImageHandler.encodeFileToBase64Binary(fileImgPath);
-                        }
-                        return imageStr;
+                        return ImageHandler.encodeFileToBase64Binary(fileImgPath);
                     }
 
                     log.info("Failure to retrieve data path for " + projectName + " with uuid " + uuid);
@@ -701,7 +699,6 @@ public class PortfolioDB {
                 .isNewParam(loader.getIsProjectNew())
                 .isStarredParam(loader.getIsProjectStarred())
                 .isLoadedParam(loader.getIsLoadedFrontEndToggle())
-                .isCloud(loader.isCloud())
                 .projectInfraParam(loader.getProjectInfra())
                 .createdDateParam(currentVersion.getCreatedDate().toString())
                 .lastModifiedDate(currentVersion.getLastModifiedDate().toString())
@@ -751,39 +748,15 @@ public class PortfolioDB {
         Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
         DataInfoProperties version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
         Map<String, String> imgData = new HashMap<>();
-        String dataPath = "";
+        String dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
 
-        if(loader.isCloud())
+        try
         {
-            try
-            {
-                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
-
-                //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNail(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Unable to write Buffered Image.");
-            }
-
+            imgData = ImageHandler.getThumbNail(new File(dataPath));
         }
-        else
+        catch(Exception e)
         {
-            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
-
-            try
-            {
-                Mat imageMat  = Imgcodecs.imread(dataPath);
-
-                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
-
-                imgData = ImageHandler.getThumbNail(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Failure in reading image of path " + dataPath, e);
-            }
+            log.debug("Failure in reading image of path " + dataPath, e);
         }
 
         ThumbnailProperties thmbProps = ThumbnailProperties.builder()
@@ -836,5 +809,27 @@ public class PortfolioDB {
         }
 
         return loader.getSanityUuidList();
+    }
+
+    public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader)
+    {
+        LabelListHandler labelListHandler = new LabelListHandler();
+
+        File projectPath = projectLoader.getProjectPath();
+
+        labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
+
+        if (!projectPath.exists())
+        {
+            log.info(String.format("Root path of project [%s] is missing! %s does not exist.",
+                    projectLoader.getProjectName(), projectLoader.getProjectPath()));
+        }
+
+        return ProjectStatisticResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .numLabeledImage(labelListHandler.getNumberOfLabeledImage())
+                .numUnLabeledImage(labelListHandler.getNumberOfUnLabeledImage())
+                .labelPerClassInProject(labelListHandler.getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader))
+                .build();
     }
 }

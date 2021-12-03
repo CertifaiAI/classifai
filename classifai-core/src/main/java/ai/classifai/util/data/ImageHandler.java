@@ -21,9 +21,15 @@ import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -42,7 +48,10 @@ import java.util.*;
  * @author codenamewei
  */
 @Slf4j
+@NoArgsConstructor
 public class ImageHandler {
+    @Setter @Getter private int currentAddedImages = 0;
+    @Setter @Getter private int totalImagesToBeAdded = 0;
 
     public static BufferedImage toBufferedImage(Mat matrix)
     {
@@ -142,20 +151,30 @@ public class ImageHandler {
         return result;
     }
 
-    public static Map<String, String> getThumbNail(BufferedImage image) throws IOException {
+    public static Map<String, String> getThumbNail(File imageFile)
+    {
+        int oriWidth = 0;
+        int oriHeight = 0;
+        int depth = 0;
+
+        ImageData imgData = ImageData.getImageData(imageFile);
+
+        if(imgData != null)
+        {
+            oriWidth = imgData.getWidth();
+            oriHeight = imgData.getHeight();
+            depth = imgData.getDepth();
+        }
+
+        Mat imageMat  = Imgcodecs.imread(imageFile.getAbsolutePath());
+        BufferedImage image = ImageHandler.toBufferedImage(imageMat);
+
+        return getThumbNailAttributes(image, oriWidth, oriHeight, depth);
+    }
+
+    private static Map<String, String> getThumbNailAttributes(BufferedImage image, int oriWidth, int oriHeight, int depth)
+    {
         Map<String, String> imageData = new HashMap<>();
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "png", out);
-        ImageData imgData = ImageData.getImageData(out.toByteArray());
-
-        int oriWidth = imgData.getWidth();
-
-        int oriHeight = imgData.getHeight();
-
-        int depth = imgData.getDepth();
-
-        image = rotateWithOrientation(image);
 
         Integer thumbnailWidth = ImageFileType.getFixedThumbnailWidth();
         Integer thumbnailHeight = ImageFileType.getFixedThumbnailHeight();
@@ -176,8 +195,8 @@ public class ImageHandler {
         g2d.dispose();
 
         imageData.put(ParamConfig.getImgDepth(), Integer.toString(depth));
-        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(imgData.getHeight()));
-        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(imgData.getWidth()));
+        imageData.put(ParamConfig.getImgOriHParam(), Integer.toString(oriHeight));
+        imageData.put(ParamConfig.getImgOriWParam(), Integer.toString(oriWidth));
         imageData.put(ParamConfig.getBase64Param(), base64FromBufferedImage(resized));
 
         return imageData;
@@ -237,27 +256,14 @@ public class ImageHandler {
         loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesPath.size());
 
-        //cloud
-        if(loader.isCloud())
+        for (int i = 0; i < filesPath.size(); ++i)
         {
-            for (int i = 0; i < filesPath.size(); ++i)
-            {
-                annotationDB.saveDataPoint(loader, filesPath.get(i), i + 1);
-            }
+            String projectFullPath = loader.getProjectPath().getAbsolutePath();
+            String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, filesPath.get(i)));
 
+            annotationDB.saveDataPoint(loader, dataSubPath, i + 1);
         }
-        //local file system
-        else
-        {
-            for (int i = 0; i < filesPath.size(); ++i)
-            {
-                String projectFullPath = loader.getProjectPath().getAbsolutePath();
-                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, filesPath.get(i)));
 
-                annotationDB.saveDataPoint(loader, dataSubPath, i + 1);
-            }
-
-        }
     }
 
     public static List<String> getValidImagesFromFolder(File rootPath)
@@ -340,6 +346,39 @@ public class ImageHandler {
         }
 
         return true;
+    }
+
+    public void addImageToProjectFolder(List<String> imageNameList, List<String> imageBase64List, File projectPath,
+                                               List<String> currentFolderFiles)
+    {
+        setTotalImagesToBeAdded(imageNameList.size());
+
+        for(int i = 0; i < imageNameList.size(); i++)
+        {
+            try
+            {
+                //decode image base64 string into image
+                byte[] decodedBytes = Base64.getDecoder().decode(imageBase64List.get(i).split("base64,")[1]);
+                File imageFile = new File(projectPath.getAbsolutePath() + File.separator + imageNameList.get(i));
+                setCurrentAddedImages(i + 1); //to make count start at 1
+
+                if(!currentFolderFiles.contains(imageFile.getAbsolutePath()))
+                {
+                    FileUtils.writeByteArrayToFile(imageFile, decodedBytes);
+                    log.info(imageFile.getName() + " is added to project folder " + projectPath.getName());
+                }
+                else
+                {
+                    log.info(imageFile.getName() + " is exist in current folder");
+                    log.info("Operation add " + imageFile.getName() + " to project folder " + projectPath.getName() + " aborted");
+                }
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to convert Base64 String to Image file");
+                return;
+            }
+        }
     }
 
 }
