@@ -13,7 +13,7 @@ import java.util.Locale;
 public enum ProjectInfra
 {
     ON_PREMISE, //default
-    WASABI_S3;  //Wasabi S3 cloud
+    OTHERS;  //add on if have additional service
 
     public static ProjectInfra get(String caseInsensitive){
         try {
