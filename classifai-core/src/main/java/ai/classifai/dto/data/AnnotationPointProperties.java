@@ -15,6 +15,7 @@
  */
 package ai.classifai.dto.data;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -27,18 +28,23 @@ import java.util.List;
 @NonNull
 public class AnnotationPointProperties {
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     List<CoordinatesPointProperties> coorPt;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     Integer x1;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     Integer y1;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     Integer x2;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     Integer y2;
 
     @JsonProperty
@@ -48,12 +54,15 @@ public class AnnotationPointProperties {
     String color;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     String region;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     List<String> subLabel;
 
     @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     DistanceToImageProperties distancetoImg;
 
     @JsonProperty
