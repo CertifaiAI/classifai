@@ -92,13 +92,14 @@ public class FileMover {
 
         if(!folderName.exists()) {
             folderName.mkdir();
-            log.info("Backup folder " + folderName.getName() + " is created");
+            log.info("Folder " + folderName.getName() + " is created");
         }
 
         try {
             Files.move(source, target);
+            log.info("Previous project configuration JSON file has moved to " + folderName.getName());
         } catch (IOException e) {
-            log.info("Configuration file fail to move to backup folder");
+            log.info(source.getFileName() + " is fail to move to " + folderName.getName());
         }
 
         log.info("Please export a new project configuration file for this project after finish the annotation work");

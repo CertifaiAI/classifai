@@ -497,16 +497,16 @@ public class PortfolioDB {
                             } else {
                                 for (Row row : result)
                                 {
-                                    Version currentVersion = new Version(row.getString(7));
+                                    Version currentVersion = new Version(row.getString(8));
 
-                                    ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(8));     //project_version
+                                    ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(9));     //project_version
 
                                     project.setCurrentVersion(currentVersion.getVersionUuid());
 
-                                    Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(row.getString(9));
+                                    Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(row.getString(10));
                                     project.setUuidListDict(uuidDict);                                                      //uuid_project_version
 
-                                    Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(row.getString(10));
+                                    Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(row.getString(11));
                                     project.setLabelListDict(labelDict);                                                    //label_project_version
 
                                     ProjectLoader loader = ProjectLoader.builder()
@@ -518,6 +518,7 @@ public class PortfolioDB {
                                             .isProjectNew(row.getBoolean(4))                                               //is_new
                                             .isProjectStarred(row.getBoolean(5))                                           //is_starred
                                             .projectInfra(ProjectInfra.get(row.getString(6)))                              //project_infra
+                                            .isDocker(row.getBoolean(7))                                                   //is_docker
                                             .projectVersion(project)                                                            //project_version
                                             .portfolioDB(this)
                                             .annotationDB(annotationDB)
@@ -537,62 +538,73 @@ public class PortfolioDB {
     {
         try
         {
-            // To build project from cli
             String projectName = projectHandler.getCliProjectInitiator().getProjectName();
             AnnotationType annotationType = projectHandler.getCliProjectInitiator().getProjectType();
             File dataPath = projectHandler.getCliProjectInitiator().getRootDataPath();
             Boolean isDocker = ParamConfig.isDockerEnv();
-
-            // load label list file into project
             File labelPath = projectHandler.getCliProjectInitiator().getLabelFilePath();
-            ArrayList<String> nameList = new ArrayList<>();
 
-            runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), this.holder.getPortfolioPool())
+            ArrayList<String> nameList = new ArrayList<>();
+            int annotationIndex = annotationType.ordinal();
+            Tuple params = Tuple.of(annotationIndex);
+            ProjectLoader projectLoader;
+
+            if (labelPath == null)
+            {
+                projectLoader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationType.ordinal())
+                        .projectPath(dataPath)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                        .isDocker(isDocker)
+                        .portfolioDB(this)
+                        .annotationDB(annotationDB)
+                        .build();
+
+            }
+
+            else
+            {
+                List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
+
+                projectLoader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationType.ordinal())
+                        .projectPath(dataPath)
+                        .labelList(labelList)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                        .portfolioDB(this)
+                        .annotationDB(annotationDB)
+                        .isDocker(isDocker)
+                        .build();
+
+            }
+
+            projectHandler.checkCLIBuildProjectStatus(projectLoader);
+
+            runQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType(), params)
                     .onComplete(DBUtils.handleResponse(
                         result -> {
-                            if (result.size() == 0) {
-                                log.info("No projects founds.");
+                            for (Row row : result)
+                            {
+                                nameList.add(row.getString(0));
                             }
-                            else {
-                                for (Row row : result) {
-                                    nameList.add(row.getString(0));
-                                }
 
-                                if (nameList.contains(projectName)) {
-                                    log.info("Project name exist in database, please use another name");
-                                    System.exit(0);
-                                } else {
-                                    if (labelPath == null) {
-                                        ProjectLoader loaderWithoutLabel = ProjectLoader.builder()
-                                                .projectId(UuidGenerator.generateUuid())
-                                                .projectName(projectName)
-                                                .annotationType(annotationType.ordinal())
-                                                .projectPath(dataPath)
-                                                .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                                                .projectInfra(ProjectInfra.ON_PREMISE)
-                                                .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                                                .isDocker(isDocker)
-                                                .build();
+                            if (nameList.contains(projectName))
+                            {
+                                log.info("Project name exist in database, please use another name");
+                                System.exit(0);
+                            }
 
-                                        projectHandler.checkCLIBuildProjectStatus(loaderWithoutLabel);
-                                    } else {
-                                        List<String> labelList = new LabelListImport(labelPath).getValidLabelList();
-
-                                        ProjectLoader loaderWithLabel = ProjectLoader.builder()
-                                                .projectId(UuidGenerator.generateUuid())
-                                                .projectName(projectName)
-                                                .annotationType(annotationType.ordinal())
-                                                .projectPath(dataPath)
-                                                .labelList(labelList)
-                                                .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                                                .projectInfra(ProjectInfra.ON_PREMISE)
-                                                .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                                                .isDocker(isDocker)
-                                                .build();
-
-                                        projectHandler.checkCLIBuildProjectStatus(loaderWithLabel);
-                                    }
-                                }
+                            else
+                            {
+                                createNewProject(projectLoader.getProjectId());
                             }
                         },
                         cause -> log.info("Build project using command line failed")
@@ -600,7 +612,7 @@ public class PortfolioDB {
         }
         catch (NullPointerException e)
         {
-            log.debug("Build project using command line interface not initiated");
+            log.debug("Classifai runs normal. Build project using command line not initiated");
         }
     }
 
@@ -608,7 +620,6 @@ public class PortfolioDB {
     {
         try
         {
-            // Load configuration file using CLI
             File projectConfigFile = projectHandler.getCliProjectImporter().getConfigFilePath();
             FileHandler.checkProjectConfigExtension(projectConfigFile.toString());
 
@@ -624,42 +635,47 @@ public class PortfolioDB {
             runQuery(PortfolioDbQuery.getRetrieveAllProjects(), this.holder.getPortfolioPool())
                     .onComplete(DBUtils.handleResponse(
                         result -> {
-                            if (result.size() == 0) {
-                                log.info("No projects founds.");
+                            for (Row row : result)
+                            {
+                                project.put(row.getString(1), row.getString(3));
                             }
-                            else {
-                                for (Row row : result) {
-                                    project.put(row.getString(1), row.getString(3));
+
+                            // If database dont have the project name, load the project configuration file
+                            if (!project.containsKey(projectName))
+                            {
+                                projectImport.loadProjectFromImportingConfigFile(importConfig);
+                                log.info("Project " + projectName + " loaded from configuration file");
+                            }
+
+                            else
+                            {
+                                // If the project to be loaded has the same name and path with a project in database, reload the project
+                                if (project.get(projectName).equals(projectPath))
+                                {
+                                    projectHandler.checkReloadProjectFromDatabaseStatus(projectId);
                                 }
 
-                                // If database dont have the project name, load the project configuration file
-                                if (!project.containsKey(projectName)) {
+                                else
+                                {
+                                    // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
+                                    importConfig.setProjectID(UuidGenerator.generateUuid());
+                                    importConfig.setProjectName(new NameGenerator().getNewProjectName());
                                     projectImport.loadProjectFromImportingConfigFile(importConfig);
-                                    log.info("Project " + projectName + " loaded from configuration file");
-                                } else {
-                                    // If the project to be loaded has the same name and path with a project in database, reload the project
-                                    if (project.get(projectName).equals(projectPath)) {
-                                        projectHandler.checkReloadProjectFromDatabaseStatus(projectId);
-                                    } else {
-                                        // If the project to be loaded has same name with a project in database but it has different path, load project with new generated name
-                                        importConfig.setProjectID(UuidGenerator.generateUuid());
-                                        importConfig.setProjectName(new NameGenerator().getNewProjectName());
-                                        projectImport.loadProjectFromImportingConfigFile(importConfig);
-                                        log.info("Project loaded with new generated name " + importConfig.getProjectName());
+                                    log.info("Project loaded with new generated name " + importConfig.getProjectName());
 
-                                        // handle old project configuration file
-                                        String originalConfigFilePath = importConfig.getProjectPath();
-                                        String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteDataFolderName()).toString();
-                                        String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
+                                    // handle the existing configuration file
+                                    String originalConfigFilePath = importConfig.getProjectPath();
+                                    String deletedConfigFolderName = Paths.get(originalConfigFilePath, ParamConfig.getDeleteDataFolderName()).toString();
+                                    String projectConfigName = Paths.get(projectConfigFile.toString()).getFileName().toString();
 
 
-                                        File folderName = new File(deletedConfigFolderName);
-                                        Path source = Paths.get(projectConfigFile.toString());
-                                        Path target = Paths.get(deletedConfigFolderName, projectConfigName);
+                                    File folderName = new File(deletedConfigFolderName);
+                                    Path source = Paths.get(projectConfigFile.toString());
+                                    Path target = Paths.get(deletedConfigFolderName, projectConfigName);
 
-                                        FileMover.moveConfigFile(folderName, source, target);
-                                    }
+                                    FileMover.moveConfigFile(folderName, source, target);
                                 }
+
                             }
                         },
                         cause -> log.info("Import project using command line failed")
@@ -667,7 +683,7 @@ public class PortfolioDB {
         }
         catch (NullPointerException | IOException e)
         {
-            log.debug("Import project using command line interface not initiated");
+            log.debug("Classifai runs normal. Import project using command line not initiated");
         }
     }
 

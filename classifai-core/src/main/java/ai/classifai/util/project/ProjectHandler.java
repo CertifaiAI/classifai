@@ -243,7 +243,6 @@ public class ProjectHandler {
         {
             loadProjectLoader(loader);
             loader.initFolderIteration();
-            log.info("New project build successfully using command line interface");
         }
         catch (IOException e)
         {
