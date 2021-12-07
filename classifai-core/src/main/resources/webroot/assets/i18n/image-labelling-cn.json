@@ -28,7 +28,8 @@
         "annotation": "标注",
         "statistic": "数据",
         "export": "导出",
-        "reload": "重新加载"
+        "reload": "重新加载",
+        "addImageFiles": "添加图片"
     },
     "labellingProject": {
         "project": "项目",
@@ -99,15 +100,15 @@
                 "functionality": "为选定的边界框选择标签/多边形"
             },
             "10": {
-                "key": "z",
+                "key": "Alt + z",
                 "functionality": "选择鼠标工具来移动、放大和缩小图像"
             },
             "11": {
-                "key": "a",
+                "key": "Alt + a",
                 "functionality": "选择标注工具对图像进行图像标注"
             },
             "12": {
-                "key": "x",
+                "key": "Alt + x",
                 "functionality": "取消选择的工具并恢复到默认模式"
             }
         }
@@ -156,7 +157,8 @@
         "submit": "提交",
         "confirm": "确认",
         "confirmation": "您确定要将所选的图像添加到项目文件夹吗 ?",
-        "imageAdded": "已添加的图像： "
+        "imageAdded": "已添加的图像： ",
+        "notification": "从文件夹中选择图像添加到当前的项目文件夹"
     },
     "configFileInfoTitle": "选择正确的导出格式",
     "configFileInfoDest1": "配置文件是包含项目元数据的配置文件。当数据在要导入到的系统中随时可用时，它是合适的。",
