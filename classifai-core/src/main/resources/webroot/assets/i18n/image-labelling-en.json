@@ -31,8 +31,7 @@
         "statistic": "Statistic",
         "export": "Export",
         "reload": "Reload",
-        "addImageFiles": "Add Image File",
-        "moveImages": "Move Images"
+        "addImageFiles": "Add Image File"
     },
     "labellingProject": {
         "project": "Project",
@@ -103,15 +102,15 @@
                 "functionality": "Choose label for the selected bounding box"
             },
             "10": {
-                "key": "z",
+                "key": "Alt + z",
                 "functionality": "Select pointer tool to move, zoom in and out of image"
             },
             "11": {
-                "key": "a",
+                "key": "Alt + a",
                 "functionality": "Select annotation tool to annotate image"
             },
             "12": {
-                "key": "x",
+                "key": "Alt + x",
                 "functionality": "Cancel selected tool and revert back to default mode"
             }
         }
@@ -160,7 +159,8 @@
         "submit": "Submit",
         "confirm": "Confirm",
         "confirmation": "Are you sure you want to add the selected images to the project folder ?",
-        "imageAdded": "Total images added : "
+        "imageAdded": "Total images added : ",
+        "notification": "Select images from source folder to add into current project folder"
     },
     "configFileInfoTitle": "Choosing the Right Export",
     "configFileInfoDest1": "Config File is the configuration file contains of metadata of a project. It is suitable when the data is readily available in the system to be imported to.",

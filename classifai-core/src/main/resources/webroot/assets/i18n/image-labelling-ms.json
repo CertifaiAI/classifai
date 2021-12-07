@@ -28,7 +28,8 @@
         "annotation": "Anotasi",
         "statistic": "Statistik",
         "export": "Eksport",
-        "reload": "Muat Semula"
+        "reload": "Muat Semula",
+        "addImageFiles": "Tambah Imej"
     },
     "labellingProject": {
         "project": "Projek",
@@ -99,15 +100,15 @@
                 "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
             },
             "10": {
-                "key": "z",
+                "key": "Alt + z",
                 "functionality": "Pilih alat penunjuk untuk mengerak, mengezum masuk dan keluar daripada imej"
             },
             "11": {
-                "key": "a",
+                "key": "Alt + a",
                 "functionality": "Pilih alat anotasi untuk menganotasi imej"
             },
             "12": {
-                "key": "x",
+                "key": "Alt + x",
                 "functionality": "Batalkan alat yang dipilih dan kembali ke mod lalai"
             }
         }
@@ -156,7 +157,8 @@
         "submit": "Hantar",
         "confirm": "Teruskan",
         "confirmation": "Adakah anda pasti menambah imej yang dipilih ke projek folder?",
-        "imageAdded": "Jumlah imej ditambah : "
+        "imageAdded": "Jumlah imej ditambah : ",
+        "notification": "Pilih imej daripada folder untuk ditambahkan ke dalam folder projek semasa"
     },
     "configFileInfoTitle": "Pilih Fail Eksport",
     "configFileInfoDest1": "Fail Konfig ialah fail konfigurasi yang mengandungi metadata sesuatu projek. Pilihan ini sesuai jika data sudah tersedia dalam sistem untuk diimport.",
