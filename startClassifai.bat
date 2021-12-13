@@ -1,7 +1,7 @@
 @REM Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
 
 @echo on
-SET JAR="%userprofile%\.m2\repository\ai\classifai\classifai-uberjar\2.0.0-alpha2\classifai-uberjar-2.0.0-alpha2-dev.jar"
+SET JAR="%userprofile%\.m2\repository\ai\classifai\classifai-uberjar\2.0.0-alpha3\classifai-uberjar-2.0.0-alpha3-dev.jar"
 
 del %JAR%
 
