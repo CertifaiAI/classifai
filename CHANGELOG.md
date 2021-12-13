@@ -7,12 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The detailed rules and walkthrough of writing a changelog is located [here](https://docs.google.com/document/d/10N5B6ojby5rS7hq3cs83vqHfZgkHBU1HCKalsV2tOo0/edit#heading=h.uh2vc5aigamo)
 
 *Note: This changelog is implemented since `2.0.0-alpha` version. All records before it are drafted based on [release notes](https://github.com/CertifaiAI/classifai/releases) might not be as detailed.*
-## Unreleased
+## [2.0.0-alpha3] - 2021-12-14
 ### Added
 - Added tutorial modal for user guide [#212](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/212)
-- Project versioning [WIP]
-- Project import image from cloud storage [WIP]
-- Database migration [WIP]
+- Project versioning
+- Database migration
+- Project statistics
+- Add images to project
+- Different color for labels
+- Shortcut key to toggle annotation and zoom tool
+- Shortcut key to shift canvas in zoom mode
+
+### Fixed
+- Project loading speed
+- Coco Json area, width and height
+- Delete previous point using backspace
+
+### Changed
+- Refactored backend -> Implement Model, View, Controller pattern
+- Remove event bus 
+- Remove wasabi service
 
 ## [2.0.0-alpha2] - 2021-08-12
 ### Added
