@@ -17,6 +17,9 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Different color for labels
 - Shortcut key to toggle annotation and zoom tool
 - Shortcut key to shift canvas in zoom mode
+- Toggle tab by clicking icon
+- Updated keyShortcut.md
+- Add label at the drop-down box
 
 ### Fixed
 - Project loading speed
@@ -24,8 +27,11 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Delete previous point using backspace
 
 ### Changed
-- Refactored backend -> Implement Model, View, Controller pattern
-- Remove event bus 
+- Refactored backend -> Implement Model, View, Controller design pattern
+- Remove event bus for database query
+- Add database facade
+- JAX-RS implementation for API annotation
+- Remove Json Object -> using data transfer object for type checking
 - Remove wasabi service
 
 ## [2.0.0-alpha2] - 2021-08-12
