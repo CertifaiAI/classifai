@@ -9,6 +9,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 *Note: This changelog is implemented since `2.0.0-alpha` version. All records before it are drafted based on [release notes](https://github.com/CertifaiAI/classifai/releases) might not be as detailed.*
 ## Unreleased
 ### Added
+- Added tutorial modal for user guide [#212](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/212)
 - Project versioning [WIP]
 - Project import image from cloud storage [WIP]
 - Database migration [WIP]

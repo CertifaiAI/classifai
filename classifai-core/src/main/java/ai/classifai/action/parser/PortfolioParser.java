@@ -17,15 +17,15 @@ package ai.classifai.action.parser;
 
 import ai.classifai.action.ActionConfig;
 import ai.classifai.action.ActionOps;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.data.ProjectConfigProperties;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
-import ai.classifai.util.ParamConfig;
 import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.util.project.ProjectInfraHandler;
-import ai.classifai.util.type.AnnotationHandler;
-import io.vertx.core.json.JsonObject;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.sqlclient.Row;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -33,8 +33,10 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 
 /***
@@ -49,58 +51,57 @@ public class PortfolioParser
     /**
      * Extracting portfolio content and parse to JsonObject, preparing for saving
      * @param row
-     * @param jsonObject
      */
-    public static void parseOut(@NonNull Row row, @NonNull JsonObject jsonObject)
+    public static ProjectConfigProperties parseOut(@NonNull Row row)
     {
-        String annotationName = AnnotationHandler.getType(row.getInteger(2)).name();
+        String annotationName = AnnotationType.get(row.getInteger(2)).name();
 
-        jsonObject.put(ParamConfig.getProjectIdParam(), row.getString(0));                                  //project_id
-        jsonObject.put(ParamConfig.getProjectNameParam(), row.getString(1));                                //project_name
-        jsonObject.put(ParamConfig.getAnnotationTypeParam(), annotationName.toLowerCase(Locale.ROOT));           //annotation_type (in string)
+        return ProjectConfigProperties.builder()
+                .projectID(row.getString(0))
+                .projectName(row.getString(1))
+                .annotationType(annotationName.toLowerCase(Locale.ROOT))
+                .projectPath(row.getString(3))
+                .isNew(row.getBoolean(4))
+                .isStarred(row.getBoolean(5))
+                .projectInfra(row.getString(6).toLowerCase())
+                .currentVersion(row.getString(7))
+                .projectVersion(row.getString(8))
+                .uuidVersionList(row.getString(9))
+                .labelVersionList(row.getString(10))
+                .build();
 
-        jsonObject.put(ParamConfig.getProjectPathParam(), row.getString(3));                                //project_path
-        jsonObject.put(ParamConfig.getIsNewParam(), row.getBoolean(4));                                     //is_new
-        jsonObject.put(ParamConfig.getIsStarredParam(), row.getBoolean(5));                                 //is_starred
-
-        jsonObject.put(ParamConfig.getProjectInfraParam(), row.getString(6).toLowerCase());                 //project_infra
-        jsonObject.put(ParamConfig.getCurrentVersionParam(), row.getString(7));                             //current version
-        jsonObject.put(ParamConfig.getProjectVersionParam(), row.getString(8));                             //project version
-        jsonObject.put(ParamConfig.getUuidVersionListParam(), row.getString(9));                            //uuid_version_list
-        jsonObject.put(ParamConfig.getLabelVersionListParam(), row.getString(10));                          //label_version_list
     }
 
-    public static ProjectLoader parseIn(@NonNull JsonObject jsonObject)
+    public static ProjectLoader parseIn(@NonNull ProjectConfigProperties projectConfig, @NonNull PortfolioDB portfolioDB, @NonNull AnnotationDB annotationDB)
     {
         //annotation_type (string -> int)
-        String annotation = jsonObject.getString(ParamConfig.getAnnotationTypeParam());
-        int annotationInt = AnnotationHandler.getType(annotation).ordinal();
+        String annotation = projectConfig.getAnnotationType();
+        int annotationInt = Objects.requireNonNull(AnnotationType.get(annotation)).ordinal();
 
-        ProjectVersion project = loadProjectVersion(jsonObject.getString(ParamConfig.getProjectVersionParam()));
+        ProjectVersion project = loadProjectVersion(projectConfig.getProjectVersion());
 
-        Version currentVersion = new Version(jsonObject.getString(ParamConfig.getCurrentVersionParam()));
+        Version currentVersion = new Version(projectConfig.getCurrentVersion());
         project.setCurrentVersion(currentVersion.getVersionUuid());
 
-        Map uuidDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getUuidVersionListParam()));
-        project.setUuidListDict(uuidDict);                                                                          //uuid_version_list
+        Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(projectConfig.getUuidVersionList());
+        project.setUuidListDict(uuidDict);
 
-        Map labelDict = ActionOps.getKeyWithArray(jsonObject.getString(ParamConfig.getLabelVersionListParam()));
-        project.setLabelListDict(labelDict);                                                                        //label_version_list
+        Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(projectConfig.getLabelVersionList());
+        project.setLabelListDict(labelDict);
 
 
-        ProjectInfra projectInfra = ProjectInfraHandler.getInfra(jsonObject.getString(ParamConfig.getProjectInfraParam()));
+        ProjectInfra projectInfra = ProjectInfra.get(projectConfig.getProjectInfra());
         return ProjectLoader.builder()
-                                .projectId(jsonObject.getString(ParamConfig.getProjectIdParam()))               //project_id
-                                .projectName(jsonObject.getString(ParamConfig.getProjectNameParam()))           //project_name
-                                .annotationType(annotationInt)                                                  //annotation_type
-                                .projectPath(new File(ActionConfig.getJsonFilePath()))                          //project_path
-                                .isProjectStarred(jsonObject.getBoolean(ParamConfig.getIsStarredParam()))       //is_starred
-
-                                .projectInfra(projectInfra)                                                     //project_infra
-
+                                .projectId(projectConfig.getProjectID())
+                                .projectName(projectConfig.getProjectName())
+                                .annotationType(annotationInt)
+                                .projectPath(new File(ActionConfig.getJsonFilePath()))
+                                .isProjectStarred(projectConfig.getIsStarred())
+                                .projectInfra(projectInfra)
                                 .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
-
-                                .projectVersion(project)                                                        //project_version
+                                .projectVersion(project)
+                                .portfolioDB(portfolioDB)
+                                .annotationDB(annotationDB)
                                 .build();
     }
 

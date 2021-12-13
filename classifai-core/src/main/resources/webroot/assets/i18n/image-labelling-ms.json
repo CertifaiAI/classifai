@@ -4,7 +4,8 @@
         "datasetManagement": "Pengurusan Set Data",
         "revision": "Semakan",
         "addUser": "Tambah pengguna",
-        "profile": "Profil"
+        "profile": "Profil",
+        "tutorial": "Tutorial"
     },
     "labellingInfo": {
         "previous": "Sebelumnya",
@@ -96,6 +97,18 @@
             "9": {
                 "key": "Klik dua kali pada kotak sempadan/poligon yang dipilih",
                 "functionality": "Memilih/ menukar label untuk kotak sempadan/poligon yang dipilih"
+            },
+            "10": {
+                "key": "z",
+                "functionality": "Pilih alat penunjuk untuk mengerak, mengezum masuk dan keluar daripada imej"
+            },
+            "11": {
+                "key": "a",
+                "functionality": "Pilih alat anotasi untuk menganotasi imej"
+            },
+            "12": {
+                "key": "x",
+                "functionality": "Batalkan alat yang dipilih dan kembali ke mod lalai"
             }
         }
     },
@@ -137,6 +150,14 @@
         "dontask": "Jangan tanya pengesahan lagi",
         "confirm": "Teruskan"
     },
+    "addImageModal": {
+        "addImage": "Tambah imej",
+        "addFolder": "Tambah folder",
+        "submit": "Hantar",
+        "confirm": "Teruskan",
+        "confirmation": "Adakah anda pasti menambah imej yang dipilih ke projek folder?",
+        "imageAdded": "Jumlah imej ditambah : "
+    },
     "configFileInfoTitle": "Pilih Fail Eksport",
     "configFileInfoDest1": "Fail Konfig ialah fail konfigurasi yang mengandungi metadata sesuatu projek. Pilihan ini sesuai jika data sudah tersedia dalam sistem untuk diimport.",
     "configFileInfoDest2": "Fail Zip mengandungi Fail Konfig beserta dengan set data yang digunakan dalam projek. Semua komponen sesuatu projek disertakan untuk membolehkan penghasilan semula projek tersebut di dalam sistem yang berbeza.",
@@ -154,5 +175,6 @@
         "noProgress": " Tidak ada kemajuan pelabelan.",
         "noLabelSelected": "Tidak ada label yang dipilih.",
         "noPolygon": "Tidak ada poligon."
-    }
+    },
+    "projectStats": "Statistik Projek"
 }

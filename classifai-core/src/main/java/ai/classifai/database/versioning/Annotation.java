@@ -15,6 +15,7 @@
  */
 package ai.classifai.database.versioning;
 
+import ai.classifai.dto.data.DataInfoProperties;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
 import io.vertx.core.json.JsonArray;
@@ -42,7 +43,7 @@ public class Annotation
     private String imgPath;                                                 //img_path
 
     //project version uuid <> annotation
-    private Map<String, AnnotationVersion> annotationDict;                  //version_list
+    private Map<String, DataInfoProperties> annotationDict;                  //version_list
 
     @Builder.Default private Integer imgDepth = 0;                          //img_depth
 
@@ -55,12 +56,12 @@ public class Annotation
     {
         JsonArray response = new JsonArray();
 
-        for (Map.Entry<String, AnnotationVersion> entry : annotationDict.entrySet())
+        for (Map.Entry<String, DataInfoProperties> entry : annotationDict.entrySet())
         {
             JsonObject jsonAnnotationVersion = new JsonObject();
 
             jsonAnnotationVersion.put(ParamConfig.getVersionUuidParam(), entry.getKey());
-            jsonAnnotationVersion.put(ParamConfig.getAnnotationDataParam(), entry.getValue().getJsonObject());
+            jsonAnnotationVersion.put(ParamConfig.getAnnotationDataParam(), entry.getValue());
 
             response.add(jsonAnnotationVersion);
         }

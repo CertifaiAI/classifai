@@ -15,13 +15,15 @@
  */
 package ai.classifai.loader;
 
-import ai.classifai.database.portfolio.PortfolioVerticle;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
-import ai.classifai.selector.status.FileSystemStatus;
+import ai.classifai.ui.enums.FileSystemStatus;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.wasabis3.WasabiProject;
+import ai.classifai.util.type.AnnotationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -54,6 +56,12 @@ public class ProjectLoader
 
     private ProjectInfra projectInfra;
 
+    @NonNull
+    private PortfolioDB portfolioDB;
+
+    @NonNull
+    private AnnotationDB annotationDB;
+
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
     private ProjectLoaderStatus projectLoaderStatus;
@@ -62,8 +70,6 @@ public class ProjectLoader
 
     @Builder.Default private Boolean isProjectNew = Boolean.TRUE;
     @Builder.Default private Boolean isProjectStarred = Boolean.FALSE;
-
-    @Builder.Default private WasabiProject wasabiProject = null;
 
     @Builder.Default private List<String> labelList = new ArrayList<>();
 
@@ -112,7 +118,7 @@ public class ProjectLoader
         if (isProjectNew)
         {
             //update database to be old project
-            PortfolioVerticle.updateIsNewParam(projectId);
+            portfolioDB.updateIsNewParam(projectId);
         }
 
         isLoadedFrontEndToggle = Boolean.TRUE;
@@ -189,7 +195,7 @@ public class ProjectLoader
                 projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
                 projectVersion.setCurrentVersionLabelList(labelList);
 
-                PortfolioVerticle.createNewProject(projectId);
+                portfolioDB.createNewProject(projectId);
 
                 fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
             }
@@ -248,7 +254,7 @@ public class ProjectLoader
             sanityUuidList.removeAll(dbListBuffer);
             reloadDeletionList = dbListBuffer;
 
-            PortfolioVerticle.updateFileSystemUuidList(projectId);
+            portfolioDB.updateFileSystemUuidList(projectId);
             fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
         }
     }
@@ -260,18 +266,13 @@ public class ProjectLoader
         progressUpdate = Arrays.asList(new Integer[]{0, totalUuidMaxLen});
     }
 
-    public boolean isCloud()
-    {
-        return wasabiProject != null;
-    }
-
     public void initFolderIteration() throws IOException {
-        if(!ImageHandler.loadProjectRootPath(this))
+        if(!ImageHandler.loadProjectRootPath(this, annotationDB))
         {
             getExampleImage();
 
             // Run loadProjectRootPath again
-            if(!ImageHandler.loadProjectRootPath(this))
+            if(!ImageHandler.loadProjectRootPath(this, annotationDB))
             {
                 log.debug("Loading files in project folder failed");
             }
@@ -290,4 +291,16 @@ public class ProjectLoader
         log.info("Empty folder. Example image added.");
     }
 
+    public File getDataFullPath( @NonNull String dataSubPath)
+    {
+        return Paths.get(getProjectPath().getAbsolutePath(), dataSubPath).toFile();
+    }
+
+    public String getAnnotationKey() {
+        if(getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal())) {
+            return ParamConfig.getBoundingBoxParam();
+        } else {
+            return ParamConfig.getSegmentationParam();
+        }
+    }
 }

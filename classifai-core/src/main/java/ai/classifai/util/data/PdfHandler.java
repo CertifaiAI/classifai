@@ -16,8 +16,8 @@
 package ai.classifai.util.data;
 
 import ai.classifai.data.type.image.ImageFileType;
-import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.launcher.conversion.Task;
+import ai.classifai.util.ParamConfig;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +53,7 @@ public class PdfHandler
             PDFRenderer pdfRenderer = new PDFRenderer(document);
 
             int maxPages = document.getNumberOfPages();
-            if (maxPages > ConverterLauncher.getMaxPage()) maxPages = ConverterLauncher.getMaxPage();
+            if (maxPages > ParamConfig.getMaxImportPages()) maxPages = ParamConfig.getMaxImportPages();
 
             for (int page = 0; page < maxPages; ++page)
             {
@@ -63,7 +63,7 @@ public class PdfHandler
 
                 if (outputPath == null)
                 {
-                    savedPath = FileHandler.getAbsolutePath(pdfFullPath);
+                    savedPath = pdfFullPath.getParentFile().getAbsolutePath();
                 }
                 else
                 {

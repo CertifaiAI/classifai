@@ -15,7 +15,7 @@
  */
 package ai.classifai.ui.component;
 
-import ai.classifai.util.type.OS;
+import ai.classifai.ui.component.os.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,38 +28,35 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class OSManager
 {
-    private OS currentOS;
+    private final static OS os = getOS();
 
-    public OSManager()
-    {
-        currentOS = getOS(System.getProperty("os.name").toLowerCase());
+    public static boolean openLogInEditor(){
+        return os.openLogInEditor();
     }
 
-    private OS getOS(String osPropertyName)
+    public static boolean openBrowser(){
+        return os.openBrowser();
+    }
+
+    private static OS getOS()
     {
-        if (osPropertyName.indexOf("mac") >= 0)
+        String osPropertyName = System.getProperty("os.name").toLowerCase();
+        if (osPropertyName.contains("mac"))
         {
-            return OS.MAC;
+            return new Mac();
         }
-        else if (osPropertyName.indexOf("win") >= 0)
+        else if (osPropertyName.contains("win"))
         {
-            return OS.WINDOWS;
+            return new Windows();
         }
-        else if (osPropertyName.indexOf("linux") >= 0) //centos, ubuntu
+        else if (osPropertyName.contains("linux")) //centos, ubuntu
         {
-            return OS.LINUX;
-        }
-        else if (osPropertyName.indexOf("nix") >= 0 || osPropertyName.indexOf("nux") >= 0 || osPropertyName.indexOf("aix") > 0)
-        {
-            return OS.UNIX;
-        }
-        else if (osPropertyName.indexOf("sunos") >= 0)
-        {
-            return OS.SOLARIS;
+            return new Linux();
         }
         else
         {
-            return OS.NULL;
+            return new UnsupportedOS();
         }
     }
+
 }

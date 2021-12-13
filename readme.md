@@ -74,6 +74,7 @@ We aim to solve these in **Classifai** by providing significant value to the dat
 |png, PNG| | | | | |
 |tif, tiff| | | | | |  
 |bmp| | | | | |  
+|webp| | | | | |    
 
 </center>
 
@@ -153,6 +154,7 @@ The installation packages and formats are listed below.
 | [Windows](https://bit.ly/37Ci3FP) | 7, 8, 10 | msi|
 | Ubuntu | [18 LTS](https://bit.ly/3jMohZg), [20 LTS](https://bit.ly/3fSLpEx) | deb |
 | Centos | [7](https://bit.ly/3s5lK02), [8](https://bit.ly/3CGYevs) | rpm |
+| [Mac](https://bit.ly/3kfcXFd) | 10 | pkg |
 
 Alternatively, download the [uber jar file](https://bit.ly/3sbmpgG) and run with Java JDK/JRE 14.
 ```
@@ -179,8 +181,8 @@ contact the team at _hello@classifai.ai_:smiley:
 
 Welcome to join! We have bi-weekly meeting to discuss about features, roadmaps and issues we are working on.
 
-- :alarm_clock: Biweekly Wednesday - Odd Week [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
-- :telephone_receiver: [Zoom](https://zoom.us/j/99519401430?pwd=bnlqckZJcEp0azU5QmRqcDdGSjJ3Zz09)
+- :alarm_clock: Monthly on Wednesday [9pm (GMT+8)](https://www.thetimezoneconverter.com/?t=9%3A00%20am&tz=malaysia)
+- :telephone_receiver: [Zoom](https://us02web.zoom.us/j/82283024486?pwd=NGoyNUJNbzFLdDdxblNHTHdLZmpCUT09)
 - :memo: [Meeting minutes](https://hackmd.io/IvEUZR_bTOy5-y8GbIYcLg?view)
 - :busts_in_silhouette:	 Community Support Channel with Discord
   - First Timer

@@ -34,7 +34,7 @@ public class ClassifaiApp
     public static void main(String[] args)
     {
         //initiate to run cli arguments
-        new CLIArgument(args);
+        final CLIArgument cliArgs = new CLIArgument(args);
 
         // Load native library to implement OpenCV Java
         nu.pattern.OpenCV.loadLocally();
@@ -48,6 +48,6 @@ public class ClassifaiApp
         opt.setWorker(true);
 
         Vertx vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(new MainVerticle(), opt);
+        vertx.deployVerticle(new MainVerticle(cliArgs.getInitiator()), opt);
     }
 }

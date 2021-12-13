@@ -32,35 +32,32 @@ import java.util.Base64;
 @Slf4j
 public class Hash
 {
-    public static String getHash256String(@NonNull File filePath)
-    {
-        try
-        {
-            byte[] buffer= new byte[8192];
+    public static String getHash256String(@NonNull File filePath) {
+        byte[] buffer= new byte[8192];
 
-            int count;
+        int count;
+        if(filePath.exists()) {
+            try {
+                //not thread safe, hence single instance per function
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-            //not thread safe, hence single instance per function
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
 
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
+                while ((count = bis.read(buffer)) > 0)
+                {
+                    digest.update(buffer, 0, count);
+                }
 
-            while ((count = bis.read(buffer)) > 0)
-            {
-                digest.update(buffer, 0, count);
+                bis.close();
+
+                byte[] hash = digest.digest();
+
+                return Base64.getEncoder().encodeToString(hash);
+            } catch (Exception e) {
+                log.info("Fail to get hash", e);
             }
-
-            bis.close();
-
-            byte[] hash = digest.digest();
-
-            return Base64.getEncoder().encodeToString(hash);
-
         }
-        catch(Exception e)
-        {
-            log.info("Error in generating SHA-256 Hashing: ", e);
-        }
+        log.info("File not found: " + filePath);
 
         return null;
     }

@@ -15,19 +15,23 @@
  */
 package ai.classifai.router;
 
-import ai.classifai.action.FileGenerator;
-import ai.classifai.database.portfolio.PortfolioVerticle;
-import ai.classifai.selector.project.LabelFileSelector;
-import ai.classifai.selector.project.ProjectFolderSelector;
-import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.action.ProjectExport;
+import ai.classifai.database.annotation.AnnotationDB;
+import ai.classifai.database.portfolio.PortfolioDB;
+import ai.classifai.router.endpoint.*;
+import ai.classifai.ui.NativeUI;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.project.ProjectHandler;
+import com.zandero.rest.RestRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Endpoint routing for different url requests
@@ -37,30 +41,29 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EndpointRouter extends AbstractVerticle
 {
-    private ProjectFolderSelector projectFolderSelector;
-    private ProjectImportSelector projectImporter;
+    private final NativeUI ui;
+    private final ProjectHandler projectHandler;
+    private final ProjectExport projectExport;
+    private final PortfolioDB portfolioDB;
+    private final AnnotationDB annotationDB;
 
-    private LabelFileSelector labelFileSelector;
-    private FileGenerator fileGenerator;
+    OperationEndpoint operationEndpoint;
+    ImageEndpoint imageEndpoint;
+    ProjectEndpoint projectEndpoint;
+    ProjectMetadataEndpoint projectMetadataEndpoint;
+    DataEndpoint dataEndpoint;
+    ExportProjectEndpoint exportProjectEndpoint;
+    UpdateProjectEndpoint updateProjectEndpoint;
+    ProjectStatisticEndpoint projectStatisticEndpoint;
+    AddImageEndpoint addImageEndpoint;
 
-    V1Endpoint v1 = new V1Endpoint();
-    V2Endpoint v2 = new V2Endpoint();
-
-    CloudEndpoint cloud = new CloudEndpoint();
-
-    public EndpointRouter()
+    public EndpointRouter(NativeUI ui, PortfolioDB portfolioDB, AnnotationDB annotationDB, ProjectHandler projectHandler, ProjectExport projectExport)
     {
-        Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
-        projectFolder.start();
-
-        Thread projectImport = new Thread(() -> projectImporter = new ProjectImportSelector());
-        projectImport.start();
-
-        Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
-        labelFileImport.start();
-
-        Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
-        threadZipFileGenerator.start();
+        this.ui = ui;
+        this.projectHandler = projectHandler;
+        this.portfolioDB = portfolioDB;
+        this.annotationDB = annotationDB;
+        this.projectExport = projectExport;
     }
 
     @Override
@@ -72,17 +75,15 @@ public class EndpointRouter extends AbstractVerticle
 
     private void configureVersionVertx()
     {
-        v1.setVertx(vertx);
-        v2.setVertx(vertx);
-
-        v2.setProjectFolderSelector(projectFolderSelector);
-        v2.setProjectImporter(projectImporter);
-
-        v2.setLabelFileSelector(labelFileSelector);
-
-        cloud.setVertx(vertx);
-
-        PortfolioVerticle.setFileGenerator(fileGenerator);
+        this.operationEndpoint = new OperationEndpoint(portfolioDB, projectHandler);
+        this.imageEndpoint = new ImageEndpoint(portfolioDB, projectHandler);
+        this.projectEndpoint = new ProjectEndpoint(portfolioDB, annotationDB, ui, projectHandler);
+        this.projectMetadataEndpoint = new ProjectMetadataEndpoint(portfolioDB, projectHandler);
+        this.dataEndpoint = new DataEndpoint(portfolioDB, projectHandler);
+        this.exportProjectEndpoint = new ExportProjectEndpoint(portfolioDB, projectHandler, projectExport);
+        this.updateProjectEndpoint = new UpdateProjectEndpoint(portfolioDB, projectHandler);
+        this.projectStatisticEndpoint = new ProjectStatisticEndpoint(projectHandler, portfolioDB);
+        this.addImageEndpoint = new AddImageEndpoint(projectHandler);
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
@@ -91,78 +92,31 @@ public class EndpointRouter extends AbstractVerticle
         ctx.next();
     }
 
+    private void enableDevelopmentCORS(Router router) {
+        Set<String> allowedHeaders = new HashSet<>();
+        allowedHeaders.add("Access-Control-Allow-Method");
+        allowedHeaders.add("Access-Control-Allow-Origin");
+        allowedHeaders.add("Cache-Control");
+        allowedHeaders.add("Pragma");
+        allowedHeaders.add("Content-Type");
+        RestRouter.enableCors(router, "*", false, -1, allowedHeaders);
+    }
+
     @Override
     public void start(Promise<Void> promise)
     {
-        Router router = Router.router(vertx);
+        configureVersionVertx();
 
-        //display for content in webroot
-        //uses no-cache header for cache busting, perform revalidation when fetching static assets
+        Router router = RestRouter.register(vertx,
+                projectMetadataEndpoint, exportProjectEndpoint, operationEndpoint,
+                imageEndpoint, projectEndpoint, dataEndpoint, updateProjectEndpoint, projectStatisticEndpoint,
+                addImageEndpoint);
+
+        // Only enable in development
+        enableDevelopmentCORS(router);
+
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
-
-        final String projectV1Endpoint = "/:annotation_type/projects/:project_name";
-
-        final String projectV2Endpoint = "/v2/:annotation_type/projects/:project_name";
-
-        //*******************************V1 Endpoints*******************************
-
-        router.get("/:annotation_type/projects/meta").handler(v1::getAllProjectsMeta);
-
-        router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
-
-        router.get(projectV1Endpoint).handler(v1::loadProject);
-
-        router.delete(projectV1Endpoint).handler(v1::deleteProject);
-
-        router.get("/:annotation_type/projects/:project_name/loadingstatus").handler(v1::loadProjectStatus);
-
-        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/thumbnail").handler(v1::getThumbnail);
-
-        router.get("/:annotation_type/projects/:project_name/uuid/:uuid/imgsrc").handler(v1::getImageSource);
-
-        router.put("/:annotation_type/projects/:project_name/uuid/:uuid/update").handler(v1::updateData);
-
-        router.put("/:annotation_type/projects/:project_name/newlabels").handler(v1::updateLabels);
-
-        //*******************************V2 Endpoints*******************************
-
-        router.put(projectV1Endpoint).handler(v2::closeProjectState);
-
-        router.put("/:annotation_type/projects/:project_name/star").handler(v2::starProject);
-
-        router.put("/v2/:annotation_type/projects/:project_name/reload").handler(v2::reloadProject);
-
-        router.get("/v2/:annotation_type/projects/:project_name/reloadstatus").handler(v2::reloadProjectStatus);
-
-        router.put("/v2/:annotation_type/projects/:project_name/export/:export_type").handler(v2::exportProject);
-
-        router.get("/v2/:annotation_type/projects/importstatus").handler(v2::getImportStatus);
-
-        router.get("/v2/:annotation_type/projects/exportstatus").handler(v2::getExportStatus);
-
-        router.put("/v2/:annotation_type/projects/:project_name/rename/:new_project_name").handler(v2::renameProject);
-
-        router.put("/v2/:annotation_type/projects/:project_name/imgsrc/rename").handler(v2::renameData);
-
-        router.put("/v2/labelfiles").handler(v2::selectLabelFile);
-
-        router.get("/v2/labelfiles").handler(v2::selectLabelFileStatus);
-
-        router.put("/v2/folders").handler(v2::selectProjectFolder);
-
-        router.get("/v2/folders").handler(v2::selectProjectFolderStatus);
-
-        router.put("/v2/projects").handler(v2::createProject);
-
-        router.get(projectV2Endpoint).handler(v2::createProjectStatus);
-
-        router.delete("/v2/:annotation_type/projects/:project_name/uuids").handler(v2::deleteProjectData);
-
-        //*******************************Cloud*******************************
-
-        router.put("/v2/:annotation_type/wasabi/projects/:project_name").handler(cloud::createWasabiCloudProject);
-
 
         vertx.createHttpServer()
                 .requestHandler(router)
@@ -171,7 +125,6 @@ public class EndpointRouter extends AbstractVerticle
 
                     if (r.succeeded())
                     {
-                        configureVersionVertx();
                         promise.complete();
                     }
                     else {

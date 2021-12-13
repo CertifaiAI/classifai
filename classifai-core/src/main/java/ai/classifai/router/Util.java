@@ -19,10 +19,8 @@ import ai.classifai.database.annotation.bndbox.BoundingBoxDbQuery;
 import ai.classifai.database.annotation.seg.SegDbQuery;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.http.HTTPResponseHandler;
-import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.ext.web.RoutingContext;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -33,16 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Util {
 
-    public boolean checkIfProjectNull(RoutingContext context, Object project, @NonNull String projectName)
+    public static boolean checkIfProjectNull(Object project)
     {
-        if(project == null)
-        {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project not found: " + projectName));
-
-            return true;
-        }
-
-        return false;
+        return project == null;
     }
 
     public void checkIfDockerEnv(RoutingContext context)

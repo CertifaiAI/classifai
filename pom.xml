@@ -28,7 +28,6 @@
         <module>classifai-core</module>
         <module>classifai-api</module>
         <module>classifai-uberjar</module>
-        <module>classifai-cloud</module>
         <!--<module>classifai-test</module>-->
     </modules>
 
@@ -99,6 +98,8 @@
         <classifai.release.version>2.0.0-alpha2</classifai.release.version>
         <classifai.release.name>dev</classifai.release.name>
         <opencv.version>4.5.1-2</opencv.version>
+        <jackson.version>2.12.3</jackson.version>
+        <version.com.zandero.rest.vertx>1.0.5</version.com.zandero.rest.vertx>
     </properties>
 
     <dependencyManagement>
@@ -116,11 +117,6 @@
             <dependency>
                 <groupId>ai.classifai</groupId>
                 <artifactId>classifai-api</artifactId>
-                <version>${classifai.release.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ai.classifai</groupId>
-                <artifactId>classifai-cloud</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
@@ -262,6 +258,16 @@
                 <groupId>org.openpnp</groupId>
                 <artifactId>opencv</artifactId>
                 <version>${opencv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zandero</groupId>
+                <artifactId>rest.vertx</artifactId>
+                <version>${version.com.zandero.rest.vertx}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
