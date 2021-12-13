@@ -11,9 +11,9 @@ import java.util.Objects;
 public class UIResources {
     private static final String BUTTON_PATH = "/console/";
     private static final String ICON_PATH = "/icon/";
-    private static final String FAVICON_FILE_NAME = "Classifai_Favicon_Light_BG.jpg";
-    private static final String FAVICON_DARK_FILE_NAME = "Classifai_Favicon_Dark_32px.png";
-    private static final String BACKGROUND_FILE_NAME = "Classifai_Welcome_Handler.jpg";
+    private static final String FAVICON_FILE_NAME = "cs-icon.jpg";
+    private static final String FAVICON_DARK_FILE_NAME = "cs-icon.jpg";
+    private static final String BACKGROUND_FILE_NAME = "CS.DataLabel_Welcome_Handler.jpg";
     private static final String OPEN_BUTTON_FILE_NAME = "Open_Button.png";
     private static final String CONFIG_BUTTON_FILE_NAME = "Config_Button.png";
     private static final String LOG_BUTTON_FILE_NAME = "Log_Button.png";
@@ -22,7 +22,7 @@ public class UIResources {
 
 
     public static Image getClassifaiIcon() { return getButton(FAVICON_FILE_NAME); }
-    public static Image getDarkClassifaiIcon() { return getIcon(FAVICON_DARK_FILE_NAME); }
+    public static Image getDarkClassifaiIcon() { return getButton(FAVICON_DARK_FILE_NAME); }
     public static Image getBackground() { return getButton(BACKGROUND_FILE_NAME); }
     public static Image getOpenButton() { return getButton(OPEN_BUTTON_FILE_NAME); }
     public static Image getConfigButton() { return getButton(CONFIG_BUTTON_FILE_NAME); }
