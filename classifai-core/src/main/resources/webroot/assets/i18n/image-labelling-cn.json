@@ -110,6 +110,18 @@
             "12": {
                 "key": "Alt + x",
                 "functionality": "取消选择的工具并恢复到默认模式"
+            },
+            "13": {
+                "key": "Ctrl/Command (按一次)",
+                "functionality": "在缩放模式下绘制多边形时在画布中移动图像"
+            },
+            "14": {
+                "key": "x",
+                "functionality": "取消缩放模式下移动图像的功能"
+            },
+            "15": {
+                "key": "Esc",
+                "functionality": "删除当前未完成的多边形绘制"
             }
         }
     },
