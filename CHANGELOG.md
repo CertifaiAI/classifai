@@ -12,27 +12,33 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Added tutorial modal for user guide [#212](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/212)
 - Project versioning
 - Database migration
-- Project statistics 
-- Add images to project
-- Different color for labels
-- Shortcut key to toggle annotation and zoom tool
-- Shortcut key to shift canvas in zoom mode
-- Toggle tab by clicking icon
+- Project statistics [#500](https://github.com/CertifaiAI/classifai/pull/500)
+- Add images to project [#519](https://github.com/CertifaiAI/classifai/pull/519)
+- Different color for labels [#228](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/228)
+- Add label at the drop-down box, remove label still selected status,shortcut key to toggle annotation tool, zoom tool and revert default [224](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/224)
+- Shortcut key to shift canvas in zoom mode [#226](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/226)
+- Toggle tab by clicking icon [#216](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/216)
 - Updated keyShortcut.md
-- Add label at the drop-down box
+- Update tutorial list [#229](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/229) [#215](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/215)
 
 ### Fixed
-- Project loading speed
-- Coco Json area, width and height
-- Delete previous point using backspace
+- Project loading speed [#506](https://github.com/CertifaiAI/classifai/pull/506)
+- Coco Json area, width and height [#227](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/227)
+- Delete previous point using backspace [#206](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/206)
+- Prevent icon enlarge when zoom in [#223](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/223)
 
 ### Changed
 - Refactored backend -> Implement Model, View, Controller design pattern
-- Remove event bus for database query
-- Add database facade
-- JAX-RS implementation for API annotation
-- Remove Json Object -> using data transfer object for type checking
-- Remove wasabi service
+- Remove event bus for database query [#504](https://github.com/CertifaiAI/classifai/pull/504)
+- Add database facade [#502](https://github.com/CertifaiAI/classifai/pull/502)
+- JAX-RS implementation for API annotation [#507](https://github.com/CertifaiAI/classifai/pull/507)
+- Remove Json Object -> using data transfer object for type checking [#505](https://github.com/CertifaiAI/classifai/pull/505)
+- Add CORS enable [#511](https://github.com/CertifaiAI/classifai/pull/511)
+- Remove wasabi service [#523](https://github.com/CertifaiAI/classifai/pull/523)
+- Remove global state [#509](https://github.com/CertifaiAI/classifai/pull/509)
+- Remove static object [#508](https://github.com/CertifaiAI/classifai/pull/508)
+- Refactor database response [#499](https://github.com/CertifaiAI/classifai/pull/499)
+- API terminate Classifai [#496](https://github.com/CertifaiAI/classifai/pull/496)
 
 ## [2.0.0-alpha2] - 2021-08-12
 ### Added
