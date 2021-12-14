@@ -110,6 +110,18 @@
             "12": {
                 "key": "Alt + x",
                 "functionality": "Batalkan alat yang dipilih dan kembali ke mod lalai"
+            },
+            "13": {
+                "key": "Ctrl/Command (tekan sekali)",
+                "functionality": "Menggerakkan imej dalam kanvas apabila melukis poligon dalam mod zum"
+            },
+            "14": {
+                "key": "x",
+                "functionality": "Membatalkan fungsi gerak imej dalam mod zum"
+            },
+            "15": {
+                "key": "Esc",
+                "functionality": "Membatalkan lukisan poligon semasa yang belum lengkap"
             }
         }
     },
