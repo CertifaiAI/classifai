@@ -112,6 +112,18 @@
             "12": {
                 "key": "Alt + x",
                 "functionality": "Cancel selected tool and revert back to default mode"
+            },
+            "13": {
+                "key": "Ctrl/Command (press once)",
+                "functionality": "Shift image in canvas when drawing polygons in zoom mode"
+            },
+            "14": {
+                "key": "x",
+                "functionality": "Cancel the function of shift image in zoom mode"
+            },
+            "15": {
+                "key": "Esc",
+                "functionality": "Remove the current incomplete drawing of polygons"
             }
         }
     },
