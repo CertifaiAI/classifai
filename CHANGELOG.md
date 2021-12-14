@@ -12,7 +12,7 @@ The detailed rules and walkthrough of writing a changelog is located [here](http
 - Added tutorial modal for user guide [#212](https://github.com/CertifaiAI/Classifai_FrontEnd/pull/212)
 - Project versioning
 - Database migration
-- Project statistics
+- Project statistics 
 - Add images to project
 - Different color for labels
 - Shortcut key to toggle annotation and zoom tool

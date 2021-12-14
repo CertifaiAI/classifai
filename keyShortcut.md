@@ -21,24 +21,23 @@ these are few common and useful shortcut keys have been created.
 | 9    | Alt + a                                       | Select annotation tool                     |
 | 10   | Alt + z                                       | Select pointer tool                        |
 | 11   | Alt + x                                       | Cancel all selection and revert default mode |
-| 12   | Ctrl/Command                                  | Shift canvas in zoom mode |
-| 13   | x                                             | Cancel shift canvas function |
 ## 2.0 Segmentation
 ![Segmentation-keyboard](/metadata/segmentation-keyboard.png)
 
-| No   | Shortcut Key                               | Functionality |
-|------|--------------------------------------------|-------------|
-| 1    | Ctrl/Command + z                           | Undo the last action |
-| 2    | Ctrl/Command + Shift + z                   | Redo the last undone action | 
-| 3    | Ctrl/Command + c                           | Copy the selected polygon |
-| 4    | Ctrl/Command + v                           | Paste the selected polygon |
-| 5    | Delete/Backspace (**With selected polygon**) | Delete a selected polygon |
-| 6    | Delete                                     | Delete the current image |
-| 7    | F2                                         | Rename the current image |
-| 8    | Double click on a selected polygon         | Choose label for the selected polygon |
-| 9    | Alt + a                                    | Select annotation tool                     |
-| 10   | Alt + z                                    | Select pointer tool                        |
-| 11   | Alt + x                                    | Cancel all selection and revert default mode |
-| 12   | Ctrl/Command                               | Shift canvas in zoom mode |
-| 13   | x                                          | Cancel shift canvas function |
-| 14   | Backspace                                  | Remove previous polygon point | 
+| No   | Shortcut Key                                 | Functionality                                             |
+|------|----------------------------------------------|-----------------------------------------------------------|
+| 1    | Ctrl/Command + z                             | Undo the last action                                      |
+| 2    | Ctrl/Command + Shift + z                     | Redo the last undone action                               | 
+| 3    | Ctrl/Command + c                             | Copy the selected polygon                                 |
+| 4    | Ctrl/Command + v                             | Paste the selected polygon                                |
+| 5    | Delete/Backspace (**With selected polygon**) | Delete a selected polygon                                 |
+| 6    | Delete                                       | Delete the current image                                  |
+| 7    | F2                                           | Rename the current image                                  |
+| 8    | Double click on a selected polygon           | Choose label for the selected polygon                     |
+| 9    | Alt + a                                      | Select annotation tool                                    |
+| 10   | Alt + z                                      | Select pointer tool                                       |
+| 11   | Alt + x                                      | Cancel all selection and revert default mode              |
+| 12   | Ctrl/Command (press once)                    | Shift image in canvas when drawing polygons in zoom mode  |
+| 13   | x                                            | Cancel the function of shift image in zoom mode           |
+| 14   | Backspace                                    | Remove previous polygon point                             |
+| 15   | Escape                                       | Remove the current incomplete drawing of polygons         |
