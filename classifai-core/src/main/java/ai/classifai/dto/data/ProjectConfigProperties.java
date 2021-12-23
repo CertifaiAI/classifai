@@ -55,4 +55,7 @@ public class ProjectConfigProperties {
 
     @JsonProperty
     Map<String, ImageDataProperties> content;
+
+    @JsonProperty("is_docker")
+    Boolean isDocker;
 }

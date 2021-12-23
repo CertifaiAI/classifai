@@ -25,9 +25,6 @@ public class ProjectMetaProperties {
     @JsonProperty("is_loaded")
     Boolean isLoadedParam;
 
-    @JsonProperty("is_cloud")
-    Boolean isCloud;
-
     @JsonProperty("project_infra")
     ProjectInfra projectInfraParam;
 

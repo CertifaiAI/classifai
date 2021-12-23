@@ -64,10 +64,11 @@ public class PortfolioParser
                 .isNew(row.getBoolean(4))
                 .isStarred(row.getBoolean(5))
                 .projectInfra(row.getString(6).toLowerCase())
-                .currentVersion(row.getString(7))
-                .projectVersion(row.getString(8))
-                .uuidVersionList(row.getString(9))
-                .labelVersionList(row.getString(10))
+                .isDocker(row.getBoolean(7))
+                .currentVersion(row.getString(8))
+                .projectVersion(row.getString(9))
+                .uuidVersionList(row.getString(10))
+                .labelVersionList(row.getString(11))
                 .build();
 
     }
@@ -102,6 +103,7 @@ public class PortfolioParser
                                 .projectVersion(project)
                                 .portfolioDB(portfolioDB)
                                 .annotationDB(annotationDB)
+                                .isDocker(projectConfig.getIsDocker())
                                 .build();
     }
 
