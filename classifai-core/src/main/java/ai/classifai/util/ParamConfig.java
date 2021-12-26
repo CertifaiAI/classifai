@@ -144,4 +144,17 @@ public class ParamConfig
     //cloud
     @Getter private static final String isCloudParam = "is_cloud";
     @Getter private static final String projectInfraParam = "project_infra";
+
+    //video
+    @Getter private static final String videoFilePathParam = "video_file_path";
+    @Getter private static final String videoFramePathParam = "video_frame_path";
+    @Getter private static final String videoFrameIndexParam = "video_frame_index";
+    @Getter private static final String videoTimeStamp = "video_time_stamp";
+    @Getter private static final String extractionFrameIntervalParam = "extraction_frame_interval";
+    @Getter private static final String videoLengthParam = "video_length";
+    @Getter private static final String currentExtractedFramesParam = "current_extracted_frames";
+    @Getter private static final String videoExtractionStatusParam = "video_extraction_status";
+    @Getter private static final String videoExtractionMessageParam = "video_extraction_message";
+    @Getter private static final String currentTimeStampParam = "current_time_stamp";
+
 }

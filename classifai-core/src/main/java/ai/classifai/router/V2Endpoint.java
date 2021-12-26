@@ -19,17 +19,21 @@ import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.database.portfolio.PortfolioDB;
+import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.selector.project.VideoFileSelector;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.NewProjectStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
+import ai.classifai.selector.status.VideoExtractionStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.data.VideoHandler;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
@@ -59,6 +63,7 @@ public class V2Endpoint extends EndpointBase {
     @Setter private ProjectImportSelector projectImporter = null;
 
     @Setter private LabelFileSelector labelFileSelector = null;
+    @Setter private VideoFileSelector videoFileSelector = null;
 
     @Setter private PortfolioDB portfolioDB;
 
@@ -202,29 +207,54 @@ public class V2Endpoint extends EndpointBase {
         String projectName = requestBody.getString(ParamConfig.getProjectNameParam());
 
         String annotationName = requestBody.getString(ParamConfig.getAnnotationTypeParam());
+
         Integer annotationInt = AnnotationHandler.getType(annotationName).ordinal();
 
         if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
             String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
 
+
             String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
             List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+            String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
+            Integer videoLength = VideoHandler.getVideoLength(videoPath);
 
-            ProjectLoader loader = ProjectLoader.builder()
-                    .projectId(UuidGenerator.generateUuid())
-                    .projectName(projectName)
-                    .annotationType(annotationInt)
-                    .projectPath(new File(projectPath))
-                    .labelList(labelList)
-                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                    .projectInfra(ProjectInfra.ON_PREMISE)
-                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                    .build();
+            if(videoPath != null)
+            {
+                ProjectLoader videoLoader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationInt)
+                        .projectPath(new File(projectPath))
+                        .videoPath(new File(videoPath))
+                        .labelList(labelList)
+                        .videoLength(videoLength)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .fileSystemStatus(FileSystemStatus.DATABASE_UPDATED)
+                        .build();
 
-            ProjectHandler.loadProjectLoader(loader);
+                ProjectHandler.loadProjectLoader(videoLoader);
+                videoLoader.initVideoFolderIteration();
+            }
+            else
+            {
+                ProjectLoader loader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationInt)
+                        .projectPath(new File(projectPath))
+                        .labelList(labelList)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                        .build();
 
-            loader.initFolderIteration();
+                ProjectHandler.loadProjectLoader(loader);
+
+                loader.initFolderIteration();
+            }
 
             HTTPResponseHandler.configureOK(context);
         }
@@ -609,4 +639,86 @@ public class V2Endpoint extends EndpointBase {
             ReplyHandler.sendResult(context, future, "Rename data fail");
         });
     }
+
+    public void selectVideoFile(RoutingContext context){
+
+        helper.checkIfDockerEnv(context);
+
+        if(!videoFileSelector.isWindowOpen())
+        {
+            videoFileSelector.run();
+        }
+
+        HTTPResponseHandler.configureOK(context);
+    }
+
+    public void selectVideoFileStatus(RoutingContext context)
+    {
+        helper.checkIfDockerEnv(context);
+
+        SelectionWindowStatus status = videoFileSelector.getWindowStatus();
+
+        JsonObject jsonResponse = compileSelectionWindowResponse(status);
+
+        if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
+        {
+            jsonResponse.put(ParamConfig.getVideoFilePathParam(), videoFileSelector.getVideoFilePath());
+        }
+
+        HTTPResponseHandler.configureOK(context, jsonResponse);
+    }
+
+    public void initiateVideoFrameExtraction(RoutingContext context) {
+
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        context.request().bodyHandler(request -> {
+
+            try {
+                JsonObject requestBody = request.toJsonObject();
+
+                String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
+                Integer currentTimeStamp = requestBody.getInteger(ParamConfig.getCurrentTimeStampParam());
+                VideoHandler.setCurrentTimeStamp(currentTimeStamp);
+
+//                String extractionFrameInterval = requestBody.getString(ParamConfig.getExtractionFrameIntervalParam());
+//                VideoHandler.setPartition(Integer.parseInt(extractionFrameInterval));
+                VideoHandler.extractFrames(videoPath);
+                loader.initVideoFolderIteration();
+            }
+            catch (Exception e)
+            {
+                log.info("Video extraction fail");
+            }
+
+        });
+
+        HTTPResponseHandler.configureOK(context);
+
+    }
+
+    public void videoExtractionStatus(RoutingContext context) {
+
+        // return current extracted index and status
+        int currentTimeStamp = VideoHandler.getCurrentTimeStamp();
+        int numberOfGeneratedFrame = VideoHandler.getNumOfGeneratedFrames();
+
+        JsonObject response;
+
+        if(numberOfGeneratedFrame != 0)
+        {
+            response = compileVideoExtractionResponse(VideoExtractionStatus.VIDEO_EXTRACTION_COMPLETED);
+        }
+        else
+        {
+            response = compileVideoExtractionResponse(VideoExtractionStatus.VIDEO_EXTRACTION_FAILED);
+        }
+
+        response.put(ParamConfig.getCurrentTimeStampParam(), currentTimeStamp);
+
+        HTTPResponseHandler.configureOK(context, response);
+    }
+
 }

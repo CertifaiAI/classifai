@@ -40,6 +40,9 @@ public class Annotation
     @Builder.Default private String uuid = UuidGenerator.generateUuid();    //uuid
     private String projectId;                                               //project_id
     private String imgPath;                                                 //img_path
+    private Integer videoFrameIdx;                                          //video_frame_idx
+    private Integer timeStamp;                                              //video_time_stamp
+    private String videoPath;                                               //video_path
 
     //project version uuid <> annotation
     private Map<String, AnnotationVersion> annotationDict;                  //version_list
@@ -72,6 +75,21 @@ public class Annotation
         return Tuple.of(uuid,                            //uuid
                 projectId,                               //project_id
                 imgPath,                                 //img_path
+                getAnnotationDictDbFormat(),             //version_list
+                imgDepth,                                //img_depth
+                imgOriW,                                 //img_ori_w
+                imgOriH,                                 //img_ori_h
+                fileSize);                               //file_size
+    }
+
+    public Tuple getVideoTuple()
+    {
+        return Tuple.of(uuid,                            //uuid
+                projectId,                               //project_id
+                videoFrameIdx,                           //video_frame_idx
+                timeStamp,
+                imgPath,                                 //img_path
+                videoPath,                               //video_path
                 getAnnotationDictDbFormat(),             //version_list
                 imgDepth,                                //img_depth
                 imgOriW,                                 //img_ori_w

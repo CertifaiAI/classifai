@@ -22,10 +22,12 @@ import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.selector.project.LabelFileSelector;
 import ai.classifai.selector.project.ProjectFolderSelector;
 import ai.classifai.selector.project.ProjectImportSelector;
+import ai.classifai.selector.project.VideoFileSelector;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.type.database.H2;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -44,6 +46,7 @@ public class EndpointRouter extends AbstractVerticle
     private ProjectImportSelector projectImporter;
 
     private LabelFileSelector labelFileSelector;
+    private VideoFileSelector videoFileSelector;
     private FileGenerator fileGenerator;
 
     V1Endpoint v1 = new V1Endpoint();
@@ -61,6 +64,9 @@ public class EndpointRouter extends AbstractVerticle
 
         Thread labelFileImport = new Thread(() -> labelFileSelector = new LabelFileSelector());
         labelFileImport.start();
+
+        Thread videoFileImport = new Thread(() -> videoFileSelector = new VideoFileSelector());
+        videoFileImport.start();
 
         Thread threadZipFileGenerator = new Thread(() -> fileGenerator = new FileGenerator());
         threadZipFileGenerator.start();
@@ -85,6 +91,7 @@ public class EndpointRouter extends AbstractVerticle
         v2.setProjectFolderSelector(projectFolderSelector);
         v2.setProjectImporter(projectImporter);
         v2.setLabelFileSelector(labelFileSelector);
+        v2.setVideoFileSelector(videoFileSelector);
         v2.setPortfolioDB(new PortfolioDB(portFolioPool));
 
         cloud.setVertx(vertx);
@@ -103,6 +110,18 @@ public class EndpointRouter extends AbstractVerticle
     {
         Router router = Router.router(vertx);
 
+        router.route().handler(io.vertx.ext.web.handler.CorsHandler.create(".*.")
+                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .allowedMethod(HttpMethod.DELETE)
+                .allowedMethod(io.vertx.core.http.HttpMethod.PUT)
+                .allowedHeader("Access-Control-Allow-Method")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Cache-Control")
+                .allowedHeader("Pragma")
+                .allowedHeader("Content-Type"));
+
         //display for content in webroot
         //uses no-cache header for cache busting, perform revalidation when fetching static assets
         router.route().handler(this::addNoCacheHeader);
@@ -117,6 +136,10 @@ public class EndpointRouter extends AbstractVerticle
         router.get("/:annotation_type/projects/meta").handler(v1::getAllProjectsMeta);
 
         router.get("/:annotation_type/projects/:project_name/meta").handler(v1::getProjectMetadata);
+
+        router.get("/:annotation_type/videoprojects/meta").handler(v1::getAllProjectsMeta);
+
+        router.get("/:annotation_type/videoprojects/:project_name/meta").handler(v1::getProjectMetadata);
 
         router.get(projectV1Endpoint).handler(v1::loadProject);
 
@@ -167,6 +190,16 @@ public class EndpointRouter extends AbstractVerticle
         router.delete("/v2/:annotation_type/projects/:project_name/uuids").handler(v2::deleteProjectData);
 
         router.put("/v2/close").handler(v2::closeClassifai);
+
+        router.put("/v2/videofiles").handler(v2::selectVideoFile);
+
+        router.get("/v2/videofiles").handler(v2::selectVideoFileStatus);
+
+        router.post("/v2/:annotation_type/projects/:project_name/extract").handler(v2::initiateVideoFrameExtraction);
+
+        router.get("/v2/:annotation_type/projects/:project_name/extractstatus").handler(v2::videoExtractionStatus);
+
+        router.put("/v2/videoprojects").handler(v2::createProject);
 
         //*******************************Cloud*******************************
 

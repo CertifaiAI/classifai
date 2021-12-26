@@ -20,6 +20,7 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.VideoHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.wasabis3.WasabiProject;
 import lombok.Builder;
@@ -51,6 +52,8 @@ public class ProjectLoader
 
     private Integer annotationType;
     private File projectPath;
+    private File videoPath;
+    private Integer videoLength;
 
     private ProjectInfra projectInfra;
 
@@ -196,6 +199,31 @@ public class ProjectLoader
         }
     }
 
+    public void updateFrameLoadingProgress(Integer currentSize)
+    {
+        currentUuidMarker = currentSize;
+        progressUpdate.set(0, currentUuidMarker);
+        log.info(("current UUID marker: " + currentUuidMarker));
+        log.info(("total UUID Max Len: " + totalUuidMaxLen));
+
+        //if done, offload set to list
+        if (currentUuidMarker.equals(totalUuidMaxLen))
+        {
+            if (fileSysNewUuidList.isEmpty())
+            {
+                fileSystemStatus = FileSystemStatus.DATABASE_NOT_UPDATED;
+            }
+            else
+            {
+                sanityUuidList.addAll(fileSysNewUuidList);
+                uuidListFromDb.addAll(fileSysNewUuidList);
+
+                projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
+                projectVersion.setCurrentVersionLabelList(labelList);
+            }
+        }
+    }
+
     public void uploadUuidFromRootPath(@NonNull String uuid)
     {
         if(!uuidListFromDb.contains(uuid)) uuidListFromDb.add(uuid);
@@ -288,6 +316,14 @@ public class ProjectLoader
         String destImgFileStr = Paths.get(projectPath.getAbsolutePath(), exampleImgFileName).toString();
         ImageIO.write(srcImg, "png", new File(destImgFileStr));
         log.info("Empty folder. Example image added.");
+    }
+
+    public void initVideoFolderIteration()
+    {
+        if(!ImageHandler.loadVideoProjectRootPath(this))
+        {
+            log.debug("Loading files in project folder failed");
+        }
     }
 
 }

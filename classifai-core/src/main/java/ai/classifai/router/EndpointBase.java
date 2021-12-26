@@ -17,6 +17,7 @@ package ai.classifai.router;
 
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
+import ai.classifai.selector.status.VideoExtractionStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.message.ReplyHandler;
 import io.vertx.core.Vertx;
@@ -50,6 +51,16 @@ public abstract class EndpointBase
 
         response.put(ParamConfig.getSelectionWindowStatusParam(), status.ordinal())
                 .put(ParamConfig.getSelectionWindowMessageParam(), status.name());
+
+        return response;
+    }
+
+    public JsonObject compileVideoExtractionResponse(VideoExtractionStatus status)
+    {
+        JsonObject response = ReplyHandler.getOkReply();
+
+        response.put(ParamConfig.getVideoExtractionStatusParam(), status.ordinal())
+                .put(ParamConfig.getVideoExtractionMessageParam(), status.name());
 
         return response;
     }

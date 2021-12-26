@@ -239,7 +239,7 @@ public class V1Endpoint extends EndpointBase
         context.request().bodyHandler(handler -> {
             JsonObject requestBody = handler.toJsonObject();
 
-            Future<JsonObject> future = portfolioDB.updateData(requestBody, projectID);
+            Future<JsonObject> future = portfolioDB.updateData(requestBody, projectID, type.ordinal());
             ReplyHandler.sendResultRunSuccessSideEffect(context, future,
                     () -> updateLastModifiedDate(loader),
                     "Failure in updating database for " + type + " project: " + projectName);

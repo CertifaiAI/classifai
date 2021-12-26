@@ -51,4 +51,18 @@ public class AnnotationQuery
 
     @Getter private static final String renameProjectData = "UPDATE Project SET img_path = ? WHERE uuid = ? AND project_id = ?";
 
+    @Getter private static final String createVideoProject = "CREATE TABLE IF NOT EXISTS VideoProject (uuid UUID, project_id UUID, video_frame_index INT, video_time_stamp INT, img_path VARCHAR(2000), video_file_path VARCHAR(2000), " +
+            " version_list CLOB, img_depth INT, img_ori_w INT, img_ori_h INT, file_size INT, PRIMARY KEY(uuid, project_id))";
+
+    @Getter private static final String createVideoData = "INSERT INTO VideoProject VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    @Getter private static final String retrieveVideoDataPath = "SELECT img_path FROM VideoProject WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String loadValidVideoProjectUuid = "SELECT img_path FROM VideoProject WHERE project_id = ? AND uuid = ?";
+
+    @Getter private static final String deleteVideoProject = "DELETE FROM VideoProject WHERE project_id = ?";
+
+    @Getter private static final String extractVideoProject = "SELECT uuid, img_path, video_frame_index, video_time_stamp, video_file_path, version_list, img_depth, img_ori_w, img_ori_h, file_size FROM VideoProject WHERE project_id = ?";
+
+    @Getter private static final String updateVideoData = "UPDATE VideoProject SET version_list = ?, img_depth = ?, img_ori_w = ?, img_ori_h = ?, file_size = ? WHERE uuid = ? AND project_id = ?";
 }

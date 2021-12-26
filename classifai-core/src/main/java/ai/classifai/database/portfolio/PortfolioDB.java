@@ -272,12 +272,23 @@ public class PortfolioDB {
         List<String> oriUUIDList = loader.getUuidListFromDb();
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
+        String annotationType = Objects.requireNonNull(AnnotationHandler.getType(loader.getAnnotationType())).name();
+        boolean imageType = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION");
+        String loadValidProjectUUID;
+
+        if (imageType){
+            loadValidProjectUUID = AnnotationQuery.getLoadValidProjectUuid();
+        }
+        else {
+            loadValidProjectUUID = AnnotationQuery.getLoadValidVideoProjectUuid();
+        }
+
         for (int i = 0; i < oriUUIDList.size(); ++i) {
             final Integer currentLength = i + 1;
             final String UUID = oriUUIDList.get(i);
             Tuple params = Tuple.of(projectId, UUID);
 
-            runQuery(AnnotationQuery.getLoadValidProjectUuid(), params, AnnotationHandler.getJDBCPool(loader))
+            runQuery(loadValidProjectUUID, params, AnnotationHandler.getJDBCPool(loader))
                     .onComplete(DBUtils.handleResponse(
                             result -> {
                                 if(result.iterator().hasNext())
@@ -304,12 +315,19 @@ public class PortfolioDB {
     }
 
     public Future<JsonObject> getThumbnail(String projectId, String uuid) {
+
         Promise<JsonObject> promise = Promise.promise();
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
-
         String annotationKey = PortfolioVerticle.getAnnotationKey(loader);
+        String annotationType = Objects.requireNonNull(AnnotationHandler.getType(loader.getAnnotationType())).name();
+        boolean imageType = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION");
 
-        promise.complete(PortfolioVerticle.queryData(projectId, uuid, annotationKey));
+        if (imageType){
+            promise.complete(PortfolioVerticle.queryData(projectId, uuid, annotationKey));
+        }
+        else {
+            promise.complete(PortfolioVerticle.queryVideoData(projectId, uuid, annotationKey));
+        }
 
         return promise.future();
     }
@@ -317,8 +335,19 @@ public class PortfolioDB {
     public Future<JsonObject> getImageSource(String projectId, String uuid, String projectName) {
         Tuple params = Tuple.of(uuid, projectId);
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+
+        String annotationType = Objects.requireNonNull(AnnotationHandler.getType(loader.getAnnotationType())).name();
+        boolean imageType = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION");
+        String retrieveDataPath;
+
+        if (imageType){
+            retrieveDataPath = AnnotationQuery.getRetrieveDataPath();
+        }
+        else {
+            retrieveDataPath = AnnotationQuery.getRetrieveVideoDataPath();
+        }
         Promise<JsonObject> promise = Promise.promise();
-        runQuery(AnnotationQuery.getRetrieveDataPath(), params, AnnotationHandler.getJDBCPool(loader))
+        runQuery(retrieveDataPath, params, AnnotationHandler.getJDBCPool(loader))
                 .onComplete(DBUtils.handleResponse(
                         result -> {
                             if (result.size() == 0) {
@@ -343,7 +372,7 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> updateData(JsonObject requestBody, String projectId) {
+    public Future<JsonObject> updateData(JsonObject requestBody, String projectId, Integer type) {
         Promise<JsonObject> promise = Promise.promise();
         try
         {
@@ -360,8 +389,16 @@ public class PortfolioDB {
 
             Integer imgOriH = requestBody.getInteger(ParamConfig.getImgOriHParam());
             annotation.setImgOriH(imgOriH);
+
             Integer fileSize = requestBody.getInteger(ParamConfig.getFileSizeParam());
             annotation.setFileSize(fileSize);
+
+            Integer videoFrameIdx = requestBody.getInteger(ParamConfig.getVideoFrameIndexParam());
+            annotation.setVideoFrameIdx(videoFrameIdx);
+
+            Integer timeStamp = requestBody.getInteger(ParamConfig.getVideoTimeStamp());
+            annotation.setTimeStamp(timeStamp);
+
 
             String currentVersionUuid = loader.getCurrentVersionUuid();
 
@@ -373,19 +410,40 @@ public class PortfolioDB {
             version.setImgW(requestBody.getInteger(ParamConfig.getImgWParam()));
             version.setImgH(requestBody.getInteger(ParamConfig.getImgHParam()));
 
-            Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
-                    imgDepth,
-                    imgOriW,
-                    imgOriH,
-                    fileSize,
-                    uuid,
-                    projectId);
+            String annotationType = Objects.requireNonNull(AnnotationHandler.getType(type)).name();
+            boolean imageType = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION") ;
+            String updateData;
 
-            runQuery(AnnotationQuery.getUpdateData(), params, AnnotationHandler.getJDBCPool(loader))
-                    .onComplete(DBUtils.handleResponse(
-                            result -> promise.complete(ReplyHandler.getOkReply()),
-                            promise::fail
-                    ));
+            if(imageType) {
+                updateData = AnnotationQuery.getUpdateData();
+                Tuple ImageParams = Tuple.of(annotation.getAnnotationDictDbFormat(),
+                        imgDepth,
+                        imgOriW,
+                        imgOriH,
+                        fileSize,
+                        uuid,
+                        projectId);
+                runQuery(updateData, ImageParams, AnnotationHandler.getJDBCPool(loader))
+                        .onComplete(DBUtils.handleResponse(
+                                result -> promise.complete(ReplyHandler.getOkReply()),
+                                promise::fail
+                        ));
+            }
+            else{
+                updateData = AnnotationQuery.getUpdateVideoData();
+                Tuple params = Tuple.of(annotation.getAnnotationDictDbFormat(),
+                        imgDepth,
+                        imgOriW,
+                        imgOriH,
+                        fileSize,
+                        uuid,
+                        projectId);
+                runQuery(updateData, params, AnnotationHandler.getJDBCPool(loader))
+                        .onComplete(DBUtils.handleResponse(
+                                result -> promise.complete(ReplyHandler.getOkReply()),
+                                promise::fail
+                        ));
+            }
         }
         catch (Exception e)
         {
@@ -445,9 +503,20 @@ public class PortfolioDB {
 
     public Future<JsonObject> deleteProjectFromAnnotationDb(String projectId) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        String annotationType = Objects.requireNonNull(AnnotationHandler.getType(loader.getAnnotationType())).name();
+        boolean imageType = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION");
+        String deleteProjectFromAnnotationDb;
+
+        if (imageType){
+            deleteProjectFromAnnotationDb = AnnotationQuery.getDeleteProject();
+        }
+        else {
+            deleteProjectFromAnnotationDb = AnnotationQuery.getDeleteVideoProject();
+        }
+
         Tuple params = Tuple.of(projectId);
         Promise<JsonObject> promise = Promise.promise();
-        runQuery(AnnotationQuery.getDeleteProject(), params, AnnotationHandler.getJDBCPool(loader))
+        runQuery(deleteProjectFromAnnotationDb, params, AnnotationHandler.getJDBCPool(loader))
                 .onComplete(DBUtils.handleResponse(
                         result -> promise.complete(ReplyHandler.getOkReply()),
                         promise::fail

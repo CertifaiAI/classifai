@@ -46,9 +46,13 @@ public class AnnotationHandler
         {
             return true;
         }
+        if (annotationTypeInt.equals(AnnotationType.VIDEOBOUNDINGBOX.ordinal()) || annotationTypeInt.equals(AnnotationType.VIDEOSEGMENTATION.ordinal()))
+        {
+            return true;
+        }
         else
         {
-            log.debug("Annotation unmatched in AnnotationType. AnnotationType only accepts [boundingbox/segmentation]");
+            log.debug("Annotation unmatched in AnnotationType. AnnotationType only accepts [boundingbox/segmentation/videoboundingbox/videosegmentation]");
             return false;
         }
     }
@@ -75,6 +79,14 @@ public class AnnotationHandler
         {
             type = AnnotationType.SEGMENTATION;
         }
+        else if(annotation.equals("videobndbox"))
+        {
+            type = AnnotationType.VIDEOBOUNDINGBOX;
+        }
+        else if(annotation.equals("videoseg"))
+        {
+            type = AnnotationType.VIDEOSEGMENTATION;
+        }
         return type;
     }
 
@@ -91,6 +103,14 @@ public class AnnotationHandler
         {
             return AnnotationType.SEGMENTATION;
         }
+        else if(type.equals(AnnotationType.VIDEOBOUNDINGBOX.name()))
+        {
+            return  AnnotationType.VIDEOBOUNDINGBOX;
+        }
+        else if(type.equals(AnnotationType.VIDEOSEGMENTATION.name()))
+        {
+            return  AnnotationType.VIDEOSEGMENTATION;
+        }
 
         log.debug("Annotation type from string resulted in failure: " + type);
 
@@ -106,6 +126,14 @@ public class AnnotationHandler
         else if (type.equals(AnnotationType.SEGMENTATION.ordinal()))
         {
             return AnnotationType.SEGMENTATION;
+        }
+        else if (type.equals(AnnotationType.VIDEOBOUNDINGBOX.ordinal()))
+        {
+            return AnnotationType.VIDEOBOUNDINGBOX;
+        }
+        else if (type.equals(AnnotationType.VIDEOSEGMENTATION.ordinal()))
+        {
+            return AnnotationType.VIDEOSEGMENTATION;
         }
 
         log.debug("Annotation type from integer resulted in failure: " + type);

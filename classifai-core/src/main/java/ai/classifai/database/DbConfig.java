@@ -46,6 +46,8 @@ public class DbConfig
     @Getter private static String bndBoxKey;
     @Getter private static String segKey;
     @Getter private static String wasabiKey;
+    @Getter private static String videoBndBoxKey;
+    @Getter private static String videoSegKey;
 
     @Getter private static List<String> tableKeys;
 
@@ -62,9 +64,11 @@ public class DbConfig
         bndBoxKey = "bbproject";
         segKey  = "segproject";
         wasabiKey = "wasabi";
+        videoBndBoxKey = "videobbproject";
+        videoSegKey = "videosegproject";
 
         //add more database tables here if created
-        tableKeys = Arrays.asList(portfolioKey, bndBoxKey, segKey, wasabiKey);
+        tableKeys = Arrays.asList(portfolioKey, bndBoxKey, segKey, wasabiKey, videoBndBoxKey, videoSegKey);
 
         tableFolderPathDict = new HashMap<>();
         tableAbsPathDict = new HashMap<>();

@@ -42,8 +42,6 @@ import io.vertx.sqlclient.Tuple;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -59,7 +57,7 @@ import java.util.Objects;
  * @author codenamewei
  */
 @Slf4j
-public abstract class AnnotationVerticle extends AbstractVerticle implements VerticleServiceable, AnnotationServiceable
+public abstract class AnnotationVerticle extends AbstractVerticle implements VerticleServiceable
 {
     @Getter protected JDBCPool jdbcPool;
 
@@ -158,14 +156,14 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         }
     }
 
-    public void loadValidProjectUuid(Message<JsonObject> message)
-    {
-        String projectId  = message.body().getString(ParamConfig.getProjectIdParam());
-
-        message.replyAndRequest(ReplyHandler.getOkReply());
-
-        loadValidProjectUuid(projectId);
-    }
+//    public void loadValidProjectUuid(Message<JsonObject> message)
+//    {
+//        String projectId  = message.body().getString(ParamConfig.getProjectIdParam());
+//
+//        message.replyAndRequest(ReplyHandler.getOkReply());
+//
+//        loadValidProjectUuid(projectId);
+//    }
 
     public static void saveDataPoint(@NonNull ProjectLoader loader, @NonNull String dataPath, @NonNull Integer currentLength)
     {
@@ -200,7 +198,18 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
         Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
 
-        clientJdbcPool.preparedQuery(AnnotationQuery.getExtractProject())
+        String annotationType = Objects.requireNonNull(AnnotationHandler.getType(loader.getAnnotationType())).name();
+        boolean imageType = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION");
+        String extractProject;
+
+        if (imageType){
+            extractProject = AnnotationQuery.getExtractProject();
+        }
+        else {
+            extractProject = AnnotationQuery.getExtractVideoProject();
+        }
+
+        clientJdbcPool.preparedQuery(extractProject)
                 .execute(Tuple.of(loader.getProjectId()))
                 .onComplete(DBUtils.handleResponse(
                         result -> {
@@ -215,21 +224,25 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                                     String fullPath = Paths.get(loader.getProjectPath().getAbsolutePath(), row.getString(1)).toString();
 
                                     if (loader.isCloud() || ImageHandler.isImageReadable(new File(fullPath))) {
-                                        Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(2)));
+                                        Map<String, AnnotationVersion> annotationDict = ProjectParser.buildAnnotationDict(new JsonArray(row.getString(5)));
 
                                         Annotation annotation = Annotation.builder()
                                                 .uuid(row.getString(0))         //uuid
                                                 .projectId(loader.getProjectId())    //project_id
                                                 .imgPath(row.getString(1))      //img_path
+                                                .videoFrameIdx(row.getInteger(2))
+                                                .timeStamp(row.getInteger(3))
+                                                .videoPath(row.getString(4))
                                                 .annotationDict(annotationDict)      //version_list
-                                                .imgDepth(row.getInteger(3))    //img_depth
-                                                .imgOriW(row.getInteger(4))     //img_ori_w
-                                                .imgOriH(row.getInteger(5))     //img_ori_h
-                                                .fileSize(row.getInteger(6))    //file_size
+                                                .imgDepth(row.getInteger(6))    //img_depth
+                                                .imgOriW(row.getInteger(7))     //img_ori_w
+                                                .imgOriH(row.getInteger(8))     //img_ori_h
+                                                .fileSize(row.getInteger(9))    //file_size
                                                 .build();
 
                                         uuidAnnotationDict.put(row.getString(0), annotation);
-                                    } else {
+                                    }
+                                    else {
                                         //remove uuid which is not readable
                                         loader.getSanityUuidList().remove(row.getString(0));
                                     }
@@ -343,9 +356,22 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
     {
         String projectID = message.body().getString(ParamConfig.getProjectIdParam());
 
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+        String annotationType = Objects.requireNonNull(AnnotationHandler.getType(loader.getAnnotationType())).name();
+        boolean imagetype = annotationType.equals("BOUNDINGBOX") || annotationType.equals("SEGMENTATION");
+        String deleteProject;
+
+        if (imagetype){
+            deleteProject = AnnotationQuery.getDeleteProject();
+        }
+        else {
+            deleteProject = AnnotationQuery.getDeleteVideoProject();
+        }
+
         Tuple params = Tuple.of(projectID);
 
-        jdbcPool.preparedQuery(AnnotationQuery.getDeleteProject())
+        jdbcPool.preparedQuery(deleteProject)
                 .execute(params)
                 .onComplete(DBUtils.handleEmptyResponse(message));
     }
@@ -424,7 +450,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
                 BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
                 //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNailFromCloud(img);
             }
             catch(Exception e)
             {
@@ -438,11 +464,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
             try
             {
-                Mat imageMat  = Imgcodecs.imread(dataPath);
-
-                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
-
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNail(new File(dataPath));
             }
             catch(Exception e)
             {
@@ -468,5 +490,34 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
 
         message.replyAndRequest(response);
+    }
+
+    public static void saveVideoDataPoint(@NonNull ProjectLoader loader, @NonNull List<String> dataList, @NonNull Integer currentFrameIdx)
+    {
+        String uuid = UuidGenerator.generateUuid();
+
+        Annotation annotation = Annotation.builder()
+                .uuid(uuid)
+                .projectId(loader.getProjectId())
+                .videoFrameIdx(currentFrameIdx)
+                .timeStamp(Integer.parseInt(dataList.get(1)))
+                .imgPath(dataList.get(0))
+                .videoPath(dataList.get(2))
+                .annotationDict(ProjectParser.buildAnnotationDict(loader))
+                .build();
+
+        loader.getUuidAnnotationDict().put(uuid, annotation);
+
+        JDBCPool clientJdbcPool = AnnotationHandler.getJDBCPool(loader);
+
+        clientJdbcPool.preparedQuery(AnnotationQuery.getCreateVideoData())
+                .execute(annotation.getVideoTuple())
+                .onComplete(DBUtils.handleEmptyResponse(
+                        () -> {
+                            loader.pushFileSysNewUUIDList(uuid);
+                            loader.updateFrameLoadingProgress(currentFrameIdx + 1); // because frame index start at 0
+                        },
+                        cause -> log.error("Push data point with path " + dataList.get(0) + " failed: " + cause)
+                ));
     }
 }

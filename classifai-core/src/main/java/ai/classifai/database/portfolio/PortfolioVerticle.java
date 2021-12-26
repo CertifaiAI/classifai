@@ -321,7 +321,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotationTypeParam());
 
         Tuple params = Tuple.of(annotationTypeIndex);
-        
+
         portfolioDbPool.preparedQuery(PortfolioDbQuery.getRetrieveAllProjectsForAnnotationType())
                 .execute(params)
                 .onComplete(DBUtils.handleResponse(
@@ -454,6 +454,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getLastModifiedDate(), currentVersion.getLastModifiedDate().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
+                .put(ParamConfig.getVideoLengthParam(), loader.getVideoLength())
+                .put(ParamConfig.getVideoFilePathParam(), loader.getVideoPath())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
     }
 
@@ -588,7 +590,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
 
                 //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNailFromCloud(img);
             }
             catch(Exception e)
             {
@@ -602,11 +604,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
 
             try
             {
-                Mat imageMat  = Imgcodecs.imread(dataPath);
-
-                BufferedImage img = ImageHandler.toBufferedImage(imageMat);
-
-                imgData = ImageHandler.getThumbNail(img);
+                imgData = ImageHandler.getThumbNail(new File(dataPath));
             }
             catch(Exception e)
             {
@@ -634,10 +632,76 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         return response;
     }
 
+    public static JsonObject queryVideoData(String projectId, String uuid, @NonNull String annotationKey)
+    {
+        ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
+        Annotation annotation = loader.getUuidAnnotationDict().get(uuid);
+
+        AnnotationVersion version = annotation.getAnnotationDict().get(loader.getCurrentVersionUuid());
+
+        Map<String, String> imgData = new HashMap<>();
+        String dataPath = "";
+        String videoPath = "";
+
+        if(loader.isCloud())
+        {
+            try
+            {
+                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
+
+                //not checking orientation for on cloud version
+                imgData = ImageHandler.getThumbNailFromCloud(img);
+            }
+            catch(Exception e)
+            {
+                log.debug("Unable to write Buffered Image.");
+            }
+
+        }
+        else
+        {
+            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
+            videoPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getVideoPath()).toString();
+
+            try
+            {
+                imgData = ImageHandler.getThumbNail(new File(dataPath));
+            }
+            catch(Exception e)
+            {
+                log.debug("Failure in reading image of path " + dataPath, e);
+            }
+        }
+
+        JsonObject response = ReplyHandler.getOkReply();
+
+        response.put(ParamConfig.getUuidParam(), uuid);
+        response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
+        response.put(ParamConfig.getVideoFrameIndexParam(), annotation.getVideoFrameIdx());
+        response.put(ParamConfig.getVideoTimeStamp(), annotation.getTimeStamp());
+        response.put(ParamConfig.getImgPathParam(), dataPath);
+        response.put(ParamConfig.getVideoFilePathParam(), videoPath);
+        response.put(annotationKey, version.getAnnotation());
+        response.put(ParamConfig.getImgDepth(),  Integer.parseInt(imgData.get(ParamConfig.getImgDepth())));
+        response.put(ParamConfig.getImgXParam(), version.getImgX());
+        response.put(ParamConfig.getImgYParam(), version.getImgY());
+        response.put(ParamConfig.getImgWParam(), version.getImgW());
+        response.put(ParamConfig.getImgHParam(), version.getImgH());
+        response.put(ParamConfig.getFileSizeParam(), annotation.getFileSize());
+        response.put(ParamConfig.getImgOriWParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriWParam())));
+        response.put(ParamConfig.getImgOriHParam(), Integer.parseInt(imgData.get(ParamConfig.getImgOriHParam())));
+        response.put(ParamConfig.getImgThumbnailParam(), imgData.get(ParamConfig.getBase64Param()));
+
+        return response;
+    }
+
     public static String getAnnotationKey(ProjectLoader loader) {
-        if(loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal())) {
+        if(loader.getAnnotationType().equals(AnnotationType.BOUNDINGBOX.ordinal()) || loader.getAnnotationType().equals(AnnotationType.VIDEOBOUNDINGBOX.ordinal()))
+        {
             return ParamConfig.getBoundingBoxParam();
-        } else {
+        }
+        else
+        {
             return ParamConfig.getSegmentationParam();
         }
     }

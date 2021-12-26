@@ -23,7 +23,9 @@ package ai.classifai.util.type;
 public enum AnnotationType
 {
     BOUNDINGBOX,
-    SEGMENTATION
+    SEGMENTATION,
+    VIDEOBOUNDINGBOX,
+    VIDEOSEGMENTATION
     //ADD WHEN HAVE NEW ANNOTATION TYPE
 }
 

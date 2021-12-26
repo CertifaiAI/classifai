@@ -18,6 +18,7 @@ package ai.classifai;
 import ai.classifai.database.DbOps;
 import ai.classifai.database.annotation.bndbox.BoundingBoxVerticle;
 import ai.classifai.database.annotation.seg.SegVerticle;
+import ai.classifai.database.annotation.videobndbox.VideoBoundingBoxVerticle;
 import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.database.wasabis3.WasabiVerticle;
 import ai.classifai.router.EndpointRouter;
@@ -42,6 +43,7 @@ public class MainVerticle extends AbstractVerticle
 
     private static BoundingBoxVerticle boundingBoxVerticle;
     private static SegVerticle segVerticle;
+    private static VideoBoundingBoxVerticle videoBoundingBoxVerticle;
 
     private static WasabiVerticle wasabiVerticle;
     private static EndpointRouter serverVerticle;
@@ -53,6 +55,7 @@ public class MainVerticle extends AbstractVerticle
         segVerticle = new SegVerticle();
         wasabiVerticle = new WasabiVerticle();
         serverVerticle = new EndpointRouter();
+        videoBoundingBoxVerticle = new VideoBoundingBoxVerticle();
     }
 
     @Override
@@ -90,6 +93,12 @@ public class MainVerticle extends AbstractVerticle
             Promise<String> wasabiDeployment = Promise.promise();
             vertx.deployVerticle(wasabiVerticle, wasabiDeployment);
             return wasabiDeployment.future();
+
+        }).compose(id_ -> {
+
+            Promise<String> videoBndBoxDeployment = Promise.promise();
+            vertx.deployVerticle(videoBoundingBoxVerticle, videoBndBoxDeployment);
+            return videoBndBoxDeployment.future();
 
         }).onComplete(ar -> {
 
@@ -135,6 +144,7 @@ public class MainVerticle extends AbstractVerticle
             segVerticle.stop(Promise.promise());
             serverVerticle.stop(Promise.promise());
             wasabiVerticle.stop(Promise.promise());
+            videoBoundingBoxVerticle.stop(Promise.promise());
         }
         catch (Exception e)
         {
