@@ -19,7 +19,6 @@ import ai.classifai.action.ActionConfig;
 import ai.classifai.action.LabelListImport;
 import ai.classifai.action.ProjectExport;
 import ai.classifai.database.portfolio.PortfolioDB;
-import ai.classifai.database.portfolio.PortfolioVerticle;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.selector.project.LabelFileSelector;
@@ -29,7 +28,7 @@ import ai.classifai.selector.project.VideoFileSelector;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.selector.status.NewProjectStatus;
 import ai.classifai.selector.status.SelectionWindowStatus;
-import ai.classifai.selector.status.VideoExtractionStatus;
+import ai.classifai.selector.status.VideoFramesExtractionStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.ConversionHandler;
 import ai.classifai.util.collection.UuidGenerator;
@@ -233,6 +232,7 @@ public class V2Endpoint extends EndpointBase {
                         .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                         .projectInfra(ProjectInfra.ON_PREMISE)
                         .fileSystemStatus(FileSystemStatus.DATABASE_UPDATED)
+                        .isVideoFramesExtractionCompleted(Boolean.FALSE)
                         .build();
 
                 ProjectHandler.loadProjectLoader(videoLoader);
@@ -668,7 +668,7 @@ public class V2Endpoint extends EndpointBase {
         HTTPResponseHandler.configureOK(context, jsonResponse);
     }
 
-    public void initiateVideoFrameExtraction(RoutingContext context) {
+    public void initiateVideoFramesExtraction(RoutingContext context) {
 
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
@@ -699,21 +699,30 @@ public class V2Endpoint extends EndpointBase {
 
     }
 
-    public void videoExtractionStatus(RoutingContext context) {
+    public void videoFramesExtractionStatus(RoutingContext context) {
 
         // return current extracted index and status
         int currentTimeStamp = VideoHandler.getCurrentTimeStamp();
         int numberOfGeneratedFrame = VideoHandler.getNumOfGeneratedFrames();
+        int videoLength = VideoHandler.getVideoLength();
+
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        if(numberOfGeneratedFrame >= videoLength) {
+            loader.setIsVideoFramesExtractionCompleted(Boolean.TRUE);
+        }
 
         JsonObject response;
 
         if(numberOfGeneratedFrame != 0)
         {
-            response = compileVideoExtractionResponse(VideoExtractionStatus.VIDEO_EXTRACTION_COMPLETED);
+            response = compileVideoFramesExtractionResponse(VideoFramesExtractionStatus.VIDEO_FRAMES_EXTRACTION_COMPLETED);
         }
         else
         {
-            response = compileVideoExtractionResponse(VideoExtractionStatus.VIDEO_EXTRACTION_FAILED);
+            response = compileVideoFramesExtractionResponse(VideoFramesExtractionStatus.VIDEO_FRAMES_EXTRACTION_FAILED);
         }
 
         response.put(ParamConfig.getCurrentTimeStampParam(), currentTimeStamp);

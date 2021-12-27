@@ -399,7 +399,8 @@ public class ImageHandler {
 //        }
 
         Map<Integer, List<String>> frameExtractionTracking = VideoHandler.getFrameExtractionMap();
-        VideoHandler.saveToProjectTable(loader, frameExtractionTracking);
+//        VideoHandler.saveToProjectTable(loader, frameExtractionTracking);
+        VideoHandler.saveToProjectTable(loader);
 
         //scenario 3 - 5
 //        if(Boolean.TRUE.equals(loader.getIsProjectNew()))

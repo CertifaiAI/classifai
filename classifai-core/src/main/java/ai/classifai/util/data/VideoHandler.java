@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class VideoHandler {
@@ -34,7 +35,7 @@ public class VideoHandler {
     @Getter @Setter private static int videoLength = 0;
     @Getter private static int numOfGeneratedFrames = 0;
     @Setter private static int partition = 0;
-    @Getter private static final Map<Integer, List<String>> frameExtractionMap = new LinkedHashMap<>();
+    @Getter private static Map<Integer, List<String>> frameExtractionMap = new LinkedHashMap<>();
     @Getter private static final List<String> base64Frames = new ArrayList<>();
 
 //    public static void initVideoObject(String videoPath) {
@@ -97,18 +98,11 @@ public class VideoHandler {
                 timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
                 setCurrentTimeStamp(timeStamp);
 
-//                if (previousEndingTimeStamp < timeStamp) {
-//                    break;
-//                } else {
-//                    previousEndingTimeStamp = timeStamp;
-//                }
-
                 if(saveFramesToFolder && partition == 0)
                 {
                     String output = getOutputFolder(videoPath);
-                    Imgcodecs.imwrite(output + "/" + "frame_" + generatedFrames +".jpg", frame);
-
-                    String outputImagePath = output + "/" + "frame_" + generatedFrames +".jpg";
+                    Imgcodecs.imwrite(output + "/" + "frame_" + generatedFrames + ".jpg", frame);
+                    String outputImagePath = output + "/" + "frame_" + generatedFrames + ".jpg";
                     frameExtractionMap.put(generatedFrames, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
                 }
 
@@ -127,6 +121,14 @@ public class VideoHandler {
 //                }
                 generatedFrames++;
             }
+
+            // to avoid weird unsorted write to database
+            frameExtractionMap = frameExtractionMap
+                    .entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+
             numOfGeneratedFrames = generatedFrames; // because frame start index at 0
             frameNumberStartPoint = generatedFrames;
 
@@ -246,9 +248,11 @@ public class VideoHandler {
 //        return base64Frames;
 //    }
 
-    public static void saveToProjectTable(@NonNull ProjectLoader loader, Map<Integer, List<String>> framesExtractionTracking)
+    public static void saveToProjectTable(@NonNull ProjectLoader loader)
     {
-        if (framesExtractionTracking.size() == 0)
+        Map <Integer, List<String>> frameMap = frameExtractionMap;
+
+        if (frameMap.size() == 0)
         {
             PortfolioVerticle.createNewProject(loader.getProjectId());
             loader.setFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
@@ -256,24 +260,24 @@ public class VideoHandler {
         else
         {
             Integer previousFileSysTotalUUIDSize = loader.getTotalUuidMaxLen();
-            log.info("previous total uuid: " + previousFileSysTotalUUIDSize);
+
             loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
             if (previousFileSysTotalUUIDSize == 1) {
-                loader.setFileSysTotalUUIDSize(framesExtractionTracking.size());
+                loader.setFileSysTotalUUIDSize(frameMap.size());
             } else {
-                loader.setFileSysTotalUUIDSize(framesExtractionTracking.size() + previousFileSysTotalUUIDSize);
+                loader.setFileSysTotalUUIDSize(frameMap.size() + previousFileSysTotalUUIDSize);
             }
 
-            for (Integer currentFrameIdx : framesExtractionTracking.keySet())
+            for (Map.Entry<Integer, List<String>> entry : frameMap.entrySet())
             {
                 String projectFullPath = loader.getProjectPath().getAbsolutePath();
                 List<String> dataList = new ArrayList<>();
-                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, framesExtractionTracking.get(currentFrameIdx).get(0)));
-                String videoSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, framesExtractionTracking.get(currentFrameIdx).get(2)));
+                String dataSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, entry.getValue().get(0)));
+                String videoSubPath = StringHandler.removeFirstSlashes(FileHandler.trimPath(projectFullPath, entry.getValue().get(2)));
                 dataList.add(dataSubPath);
-                dataList.add(framesExtractionTracking.get(currentFrameIdx).get(1));
+                dataList.add(entry.getValue().get(1));
                 dataList.add(videoSubPath);
-                AnnotationVerticle.saveVideoDataPoint(loader, dataList, currentFrameIdx);
+                AnnotationVerticle.saveVideoDataPoint(loader, dataList, entry.getKey());
             }
         }
 

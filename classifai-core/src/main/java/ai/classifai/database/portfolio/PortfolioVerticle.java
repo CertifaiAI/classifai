@@ -456,6 +456,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
                 .put(ParamConfig.getVideoLengthParam(), loader.getVideoLength())
                 .put(ParamConfig.getVideoFilePathParam(), loader.getVideoPath())
+                .put(ParamConfig.getIsVideoFramesExtractionCompleted(), loader.getIsVideoFramesExtractionCompleted())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
     }
 

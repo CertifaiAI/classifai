@@ -20,7 +20,6 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.data.ImageHandler;
-import ai.classifai.util.data.VideoHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.wasabis3.WasabiProject;
 import lombok.Builder;
@@ -54,6 +53,7 @@ public class ProjectLoader
     private File projectPath;
     private File videoPath;
     private Integer videoLength;
+    private Boolean isVideoFramesExtractionCompleted;
 
     private ProjectInfra projectInfra;
 
