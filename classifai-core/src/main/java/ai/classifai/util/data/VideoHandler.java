@@ -27,7 +27,6 @@ public class VideoHandler {
 
     private static final boolean saveFramesToFolder = true;
     private static int timeStamp = 0;
-    private static int previousEndingTimeStamp = 0;
     @Getter private static final int batchSize = 50;
     @Setter private static int frameNumberStartPoint = 0;
     @Getter @Setter private static int currentTimeStamp;
@@ -50,14 +49,6 @@ public class VideoHandler {
 //    }
 
     public static void extractFrames(String videoPath) {
-//        if (numOfGeneratedFrames >= videoLength) {
-//            return;
-//        }
-
-        // prevent improper call
-//        if (currentExtractedFrames < frameNumberStartPoint) {
-//            return;
-//        }
 
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
@@ -65,12 +56,12 @@ public class VideoHandler {
         cap.set(Videoio.CAP_PROP_POS_FRAMES, frameNumberStartPoint);
 
 
-//        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT);
-//        int framesPerSecond = (int) cap.get(Videoio.CAP_PROP_FPS);
+        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT);
+        int framesPerSecond = (int) cap.get(Videoio.CAP_PROP_FPS);
 
 
-//        log.info("Number of Frames: " + videoLength);
-//        log.info(framesPerSecond + " Frames per Second");
+        log.info("Number of Frames: " + videoLength);
+        log.info(framesPerSecond + " Frames per Second");
 
         frameExtractionMap.clear();
         if(cap.isOpened())
@@ -84,7 +75,7 @@ public class VideoHandler {
             //for partition use
             int count = 0;
 
-//            log.info("Extracting frames from video....");
+            log.info("Extracting frames from video....");
 //            log.info("Saving output to " + videoPath);
 
             while(cap.read(frame)) //the last frame of the movie will be invalid. check for it !
@@ -98,6 +89,7 @@ public class VideoHandler {
                 timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
                 setCurrentTimeStamp(timeStamp);
 
+                // without partition
                 if(saveFramesToFolder && partition == 0)
                 {
                     String output = getOutputFolder(videoPath);
@@ -106,30 +98,28 @@ public class VideoHandler {
                     frameExtractionMap.put(generatedFrames, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
                 }
 
-                // 2) set frame interval for extraction
-//                if(saveFramesToFolder && partition > 0)
-//                {
-//                    if(generatedFrames % partition == 0) {
-//                        String output = getOutputFolder(videoPath);
-//                        Imgcodecs.imwrite(output + "/" + "frame_" + generatedFrames + ".jpg", frame);
-//                        // get time stamp of frame
-//                        timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
-//                        String outputImagePath = output + "/" + "frame_" + generatedFrames + ".jpg";
-//                        frameExtractionMap.put(count, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
-//                        count++;
-//                    }
-//                }
+                // set partition for extraction
+                if(saveFramesToFolder && partition > 0)
+                {
+                    if(generatedFrames % partition == 0) {
+                        String output = getOutputFolder(videoPath);
+                        Imgcodecs.imwrite(output + "/" + "frame_" + generatedFrames + ".jpg", frame);
+                        String outputImagePath = output + "/" + "frame_" + generatedFrames + ".jpg";
+                        frameExtractionMap.put(count, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
+                        count++;
+                    }
+                }
                 generatedFrames++;
             }
 
-            // to avoid weird unsorted write to database
+            // to avoid unsorted write to database
             frameExtractionMap = frameExtractionMap
                     .entrySet()
                     .stream()
                     .sorted(Map.Entry.comparingByKey())
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 
-            numOfGeneratedFrames = generatedFrames; // because frame start index at 0
+            numOfGeneratedFrames = generatedFrames;
             frameNumberStartPoint = generatedFrames;
 
             cap.release();
