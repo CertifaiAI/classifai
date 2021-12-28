@@ -114,7 +114,7 @@ public class VideoHandler {
         return videoLength;
     }
 
-    public static void extractSpecificFrames(String videoPath) {
+    public static void extractSpecificFrames(String videoPath, String projectPath) {
 
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
@@ -138,11 +138,10 @@ public class VideoHandler {
 
                 if(saveFramesToFolder)
                 {
-                    String output = getOutputFolder(videoPath);
-                    Imgcodecs.imwrite(output + "/" + "frame_" + frameNumberStartPoint +".jpg", frame);
+                    Imgcodecs.imwrite(projectPath + "/" + "frame_" + frameNumberStartPoint +".jpg", frame);
                     // get time stamp of frame
                     timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
-                    String outputImagePath = output + "/" + "frame_" + frameNumberStartPoint +".jpg";
+                    String outputImagePath = projectPath + "/" + "frame_" + frameNumberStartPoint +".jpg";
                     frameExtractionMap.put(frameNumberStartPoint, Arrays.asList(outputImagePath, String.valueOf(timeStamp)));
                 }
 
@@ -159,17 +158,6 @@ public class VideoHandler {
         }
         log.info("Extracting frames from video....");
         log.info("Number of generated frames: " + numOfGeneratedFrames);
-    }
-
-    private static String getOutputFolder(String videoPath) {
-        String parentDir = Paths.get(videoPath).toFile().getAbsoluteFile().getParentFile().toString();
-        File saveOutputPath = Paths.get(parentDir, "outputs").toFile();
-
-        if(!saveOutputPath.exists()) {
-            saveOutputPath.mkdir();
-        }
-
-        return saveOutputPath.toString();
     }
 
     public static BufferedImage toBufferedImage(Mat m) {
