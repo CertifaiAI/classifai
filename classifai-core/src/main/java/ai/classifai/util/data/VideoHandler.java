@@ -17,15 +17,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class VideoHandler {
-
-    private static final boolean saveFramesToFolder = true;
+    private static int currentFrameIndex = 0;
+    @Getter private static boolean isFinishedExtraction = false;
     @Getter private static int timeStamp = 0;
     @Getter private static final int batchSize = 50;
     @Setter private static int frameNumberStartPoint = 0;
@@ -48,8 +47,8 @@ public class VideoHandler {
 
             int generatedFrames = numOfGeneratedFrames;
 
-            //for partition use
-            int frameIndex = 0;
+            //for partition indexing use
+            int frameIndex = currentFrameIndex;
 
             log.info("Extracting frames from video....");
             log.info("Saving output to " + projectPath);
@@ -65,25 +64,29 @@ public class VideoHandler {
                 timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
 
                 // using default partition
-                if(saveFramesToFolder && extractionPartition == 1)
+                if(extractionPartition == 1)
                 {
-                    Imgcodecs.imwrite(projectPath + "/" + "frame_" + generatedFrames + ".jpg", frame);
                     String outputImagePath = projectPath + "/" + "frame_" + generatedFrames + ".jpg";
+                    Imgcodecs.imwrite(outputImagePath, frame);
                     frameExtractionMap.put(generatedFrames, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
                 }
-
-                // set partition for extraction
-                if(saveFramesToFolder && extractionPartition > 1)
+                // using selected partition for extraction
+                else
                 {
                     if(generatedFrames % extractionPartition == 0) {
-                        Imgcodecs.imwrite(projectPath + "/" + "frame_" + generatedFrames + ".jpg", frame);
                         String outputImagePath = projectPath + "/" + "frame_" + generatedFrames + ".jpg";
+                        Imgcodecs.imwrite(outputImagePath, frame);
                         frameExtractionMap.put(frameIndex, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
                         frameIndex++;
                     }
+                    currentFrameIndex = frameIndex;
                 }
                 generatedFrames++;
             }
+
+            numOfGeneratedFrames = generatedFrames;
+            frameNumberStartPoint = generatedFrames;
+            isFinishedExtraction = generatedFrames >= getVideoLength(videoPath);
 
             // to avoid unsorted write to database
             frameExtractionMap = frameExtractionMap
@@ -92,9 +95,7 @@ public class VideoHandler {
                     .sorted(Map.Entry.comparingByKey())
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
 
-            numOfGeneratedFrames = generatedFrames;
-            frameNumberStartPoint = generatedFrames;
-            log.info("Current extracted frames until time: " + timeStamp + "ms");
+            log.info("Current extracted frames until time: " + timeConvertion(timeStamp));
 
             cap.release();
         }
@@ -108,13 +109,20 @@ public class VideoHandler {
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
 
-        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT) - 3; // frame start count at 0 and last frame not included
+        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT) - 2; // frame start count at 0 and last frame not included
         setVideoLength(videoLength);
 
         return videoLength;
     }
 
-    public static void extractSpecificFrames(String videoPath, String projectPath) {
+    private static String timeConvertion(Integer timeStamp) {
+        Duration time = Duration.ofMillis(timeStamp);
+        return String.format("%02d:%02d:%02d",
+                time.toHours(), time.toMinutesPart(), time.toSecondsPart());
+    }
+
+    // for clicking loading
+    public static void extractSpecificFrames(String videoPath, String projectPath, Integer index) {
 
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
@@ -124,9 +132,6 @@ public class VideoHandler {
 
         if(cap.isOpened())
         {
-            log.info("Number of Frames: " + videoLength);
-            log.info(framesPerSecond + " Frames per Second");
-
             Mat frame = new Mat();
 
 //          Set extraction starting point
@@ -135,18 +140,12 @@ public class VideoHandler {
             while(cap.read(frame))
             {
                 base64Frames.add(base64FromBufferedImage(toBufferedImage(frame)));
-
-                if(saveFramesToFolder)
-                {
-                    Imgcodecs.imwrite(projectPath + "/" + "frame_" + frameNumberStartPoint +".jpg", frame);
-                    // get time stamp of frame
-                    timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
-                    String outputImagePath = projectPath + "/" + "frame_" + frameNumberStartPoint +".jpg";
-                    frameExtractionMap.put(frameNumberStartPoint, Arrays.asList(outputImagePath, String.valueOf(timeStamp)));
-                }
+                String outputImagePath = projectPath + "/" + "frame_" + frameNumberStartPoint +".jpg";
+                Imgcodecs.imwrite(outputImagePath, frame);
+                timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
+                frameExtractionMap.put(frameNumberStartPoint, Arrays.asList(outputImagePath, String.valueOf(timeStamp)));
 
                 break;
-
             }
 
             cap.release();
@@ -190,15 +189,6 @@ public class VideoHandler {
             return null;
         }
     }
-
-//    public static List<String> getVideoFrames() {
-//
-//        for (Map.Entry<Integer, List<String>> entry : frameExtractionMap.entrySet()){
-//            base64Frames.add(entry.getValue());
-//         }
-//
-//        return base64Frames;
-//    }
 
     public static void saveToProjectTable(@NonNull ProjectLoader loader)
     {

@@ -698,13 +698,12 @@ public class V2Endpoint extends EndpointBase {
 
         int currentTimeStamp = VideoHandler.getTimeStamp();
         int numberOfGeneratedFrame = VideoHandler.getNumOfGeneratedFrames();
-        int videoLength = VideoHandler.getVideoLength();
 
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
 
-        if(numberOfGeneratedFrame >= videoLength) {
+        if(VideoHandler.isFinishedExtraction()) {
             loader.setIsVideoFramesExtractionCompleted(Boolean.TRUE);
         }
 
@@ -720,6 +719,7 @@ public class V2Endpoint extends EndpointBase {
         }
 
         response.put(ParamConfig.getCurrentTimeStampParam(), currentTimeStamp);
+        response.put(ParamConfig.getIsVideoFramesExtractionCompleted(), loader.getIsVideoFramesExtractionCompleted());
 
         HTTPResponseHandler.configureOK(context, response);
     }
