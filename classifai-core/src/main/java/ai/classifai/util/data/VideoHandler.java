@@ -26,42 +26,20 @@ import java.util.stream.Collectors;
 public class VideoHandler {
 
     private static final boolean saveFramesToFolder = true;
-    private static int timeStamp = 0;
+    @Getter private static int timeStamp = 0;
     @Getter private static final int batchSize = 50;
     @Setter private static int frameNumberStartPoint = 0;
-    @Getter @Setter private static int currentTimeStamp;
-    @Getter private static int extractionInterval;
     @Getter @Setter private static int videoLength = 0;
     @Getter private static int numOfGeneratedFrames = 0;
-    @Setter private static int partition = 0;
     @Getter private static Map<Integer, List<String>> frameExtractionMap = new LinkedHashMap<>();
     @Getter private static final List<String> base64Frames = new ArrayList<>();
 
-//    public static void initVideoObject(String videoPath) {
-//
-//        if(extractFrames(videoPath)) {
-//            System.out.println("Video process successful");
-////            return true;
-//        }
-//
-//        System.out.println("Video process fail");
-////        return false;
-//    }
-
-    public static void extractFrames(String videoPath) {
+    public static void extractFrames(String videoPath, Integer extractionPartition, String projectPath) {
 
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
-        extractionInterval = frameNumberStartPoint + batchSize;
+        int extractionInterval = frameNumberStartPoint + batchSize;
         cap.set(Videoio.CAP_PROP_POS_FRAMES, frameNumberStartPoint);
-
-
-        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT);
-        int framesPerSecond = (int) cap.get(Videoio.CAP_PROP_FPS);
-
-
-        log.info("Number of Frames: " + videoLength);
-        log.info(framesPerSecond + " Frames per Second");
 
         frameExtractionMap.clear();
         if(cap.isOpened())
@@ -70,13 +48,11 @@ public class VideoHandler {
 
             int generatedFrames = numOfGeneratedFrames;
 
-            log.info("Current extraction perform from " + frameNumberStartPoint + " to " + extractionInterval);
-
             //for partition use
-            int count = 0;
+            int frameIndex = 0;
 
             log.info("Extracting frames from video....");
-//            log.info("Saving output to " + videoPath);
+            log.info("Saving output to " + projectPath);
 
             while(cap.read(frame)) //the last frame of the movie will be invalid. check for it !
             {
@@ -87,26 +63,23 @@ public class VideoHandler {
                 base64Frames.add(base64FromBufferedImage(toBufferedImage(frame)));
                 // get time stamp of frame
                 timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
-                setCurrentTimeStamp(timeStamp);
 
-                // without partition
-                if(saveFramesToFolder && partition == 0)
+                // using default partition
+                if(saveFramesToFolder && extractionPartition == 1)
                 {
-                    String output = getOutputFolder(videoPath);
-                    Imgcodecs.imwrite(output + "/" + "frame_" + generatedFrames + ".jpg", frame);
-                    String outputImagePath = output + "/" + "frame_" + generatedFrames + ".jpg";
+                    Imgcodecs.imwrite(projectPath + "/" + "frame_" + generatedFrames + ".jpg", frame);
+                    String outputImagePath = projectPath + "/" + "frame_" + generatedFrames + ".jpg";
                     frameExtractionMap.put(generatedFrames, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
                 }
 
                 // set partition for extraction
-                if(saveFramesToFolder && partition > 0)
+                if(saveFramesToFolder && extractionPartition > 1)
                 {
-                    if(generatedFrames % partition == 0) {
-                        String output = getOutputFolder(videoPath);
-                        Imgcodecs.imwrite(output + "/" + "frame_" + generatedFrames + ".jpg", frame);
-                        String outputImagePath = output + "/" + "frame_" + generatedFrames + ".jpg";
-                        frameExtractionMap.put(count, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
-                        count++;
+                    if(generatedFrames % extractionPartition == 0) {
+                        Imgcodecs.imwrite(projectPath + "/" + "frame_" + generatedFrames + ".jpg", frame);
+                        String outputImagePath = projectPath + "/" + "frame_" + generatedFrames + ".jpg";
+                        frameExtractionMap.put(frameIndex, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
+                        frameIndex++;
                     }
                 }
                 generatedFrames++;
@@ -121,6 +94,7 @@ public class VideoHandler {
 
             numOfGeneratedFrames = generatedFrames;
             frameNumberStartPoint = generatedFrames;
+            log.info("Current extracted frames until time: " + timeStamp + "ms");
 
             cap.release();
         }

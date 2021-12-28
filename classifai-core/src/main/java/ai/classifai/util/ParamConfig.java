@@ -157,5 +157,6 @@ public class ParamConfig
     @Getter private static final String videoFramesExtractionMessageParam = "video_frames_extraction_message";
     @Getter private static final String currentTimeStampParam = "current_time_stamp";
     @Getter private static final String isVideoFramesExtractionCompleted = "is_video_frames_extraction_completed";
+    @Getter private static final String extractionPartitionParam = "extraction_partition";
 
 }

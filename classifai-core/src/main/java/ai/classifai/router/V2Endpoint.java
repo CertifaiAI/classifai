@@ -678,14 +678,9 @@ public class V2Endpoint extends EndpointBase {
 
             try {
                 JsonObject requestBody = request.toJsonObject();
-
                 String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
-                Integer currentTimeStamp = requestBody.getInteger(ParamConfig.getCurrentTimeStampParam());
-                VideoHandler.setCurrentTimeStamp(currentTimeStamp);
-
-//                String extractionFrameInterval = requestBody.getString(ParamConfig.getExtractionFrameIntervalParam());
-//                VideoHandler.setPartition(Integer.parseInt(extractionFrameInterval));
-                VideoHandler.extractFrames(videoPath);
+                Integer extractionPartition = requestBody.getInteger(ParamConfig.getExtractionPartitionParam());
+                VideoHandler.extractFrames(videoPath, extractionPartition, loader.getProjectPath().toString());
                 loader.initVideoFolderIteration();
             }
             catch (Exception e)
@@ -701,8 +696,7 @@ public class V2Endpoint extends EndpointBase {
 
     public void videoFramesExtractionStatus(RoutingContext context) {
 
-        // return current extracted index and status
-        int currentTimeStamp = VideoHandler.getCurrentTimeStamp();
+        int currentTimeStamp = VideoHandler.getTimeStamp();
         int numberOfGeneratedFrame = VideoHandler.getNumOfGeneratedFrames();
         int videoLength = VideoHandler.getVideoLength();
 
