@@ -233,6 +233,7 @@ public class V2Endpoint extends EndpointBase {
                         .projectInfra(ProjectInfra.ON_PREMISE)
                         .fileSystemStatus(FileSystemStatus.DATABASE_UPDATED)
                         .isVideoFramesExtractionCompleted(Boolean.FALSE)
+                        .extractedFrameIndex(0)
                         .build();
 
                 ProjectHandler.loadProjectLoader(videoLoader);
@@ -680,7 +681,10 @@ public class V2Endpoint extends EndpointBase {
                 JsonObject requestBody = request.toJsonObject();
                 String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
                 Integer extractionPartition = requestBody.getInteger(ParamConfig.getExtractionPartitionParam());
-                VideoHandler.extractFrames(videoPath, extractionPartition, loader.getProjectPath().toString());
+                Integer extractedFrameIndex = requestBody.getInteger(ParamConfig.getExtractedFrameIndexParam());
+
+                String projectPath = loader.getProjectPath().toString();
+                VideoHandler.extractFrames(videoPath, extractionPartition, projectPath, extractedFrameIndex);
                 loader.initVideoFolderIteration();
             }
             catch (Exception e)
@@ -702,6 +706,8 @@ public class V2Endpoint extends EndpointBase {
         AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+        Integer extractedFrameIndex = VideoHandler.getNumOfGeneratedFrames();
+        loader.setExtractedFrameIndex(extractedFrameIndex);
 
         if(VideoHandler.isFinishedExtraction()) {
             loader.setIsVideoFramesExtractionCompleted(Boolean.TRUE);
@@ -719,7 +725,7 @@ public class V2Endpoint extends EndpointBase {
         }
 
         response.put(ParamConfig.getCurrentTimeStampParam(), currentTimeStamp);
-        response.put(ParamConfig.getIsVideoFramesExtractionCompleted(), loader.getIsVideoFramesExtractionCompleted());
+        response.put(ParamConfig.getIsVideoFramesExtractionCompletedParam(), loader.getIsVideoFramesExtractionCompleted());
 
         HTTPResponseHandler.configureOK(context, response);
     }

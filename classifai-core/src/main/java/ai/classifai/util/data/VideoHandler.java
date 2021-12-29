@@ -33,10 +33,15 @@ public class VideoHandler {
     @Getter private static Map<Integer, List<String>> frameExtractionMap = new LinkedHashMap<>();
     @Getter private static final List<String> base64Frames = new ArrayList<>();
 
-    public static void extractFrames(String videoPath, Integer extractionPartition, String projectPath) {
+    public static void extractFrames(String videoPath, Integer extractionPartition, String projectPath, Integer extractedFrameIndex) {
 
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
+
+        if (extractedFrameIndex > 0) {
+            frameNumberStartPoint = extractedFrameIndex;
+        }
+
         int extractionInterval = frameNumberStartPoint + batchSize;
         cap.set(Videoio.CAP_PROP_POS_FRAMES, frameNumberStartPoint);
 
@@ -102,7 +107,7 @@ public class VideoHandler {
         else {
             log.info("Fail to extract frames from video");
         }
-        log.info("Number of total generated frames: " + numOfGeneratedFrames);
+        log.info("Total generated frames: " + numOfGeneratedFrames);
     }
 
     public static int getVideoLength(String videoPath) {

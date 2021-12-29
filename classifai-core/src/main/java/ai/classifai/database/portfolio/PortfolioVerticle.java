@@ -456,7 +456,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
                 .put(ParamConfig.getVideoLengthParam(), loader.getVideoLength())
                 .put(ParamConfig.getVideoFilePathParam(), loader.getVideoPath())
-                .put(ParamConfig.getIsVideoFramesExtractionCompleted(), loader.getIsVideoFramesExtractionCompleted())
+                .put(ParamConfig.getIsVideoFramesExtractionCompletedParam(), loader.getIsVideoFramesExtractionCompleted())
+                .put(ParamConfig.getExtractedFrameIndexParam(), loader.getExtractedFrameIndex())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
     }
 
@@ -679,7 +680,7 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         response.put(ParamConfig.getUuidParam(), uuid);
         response.put(ParamConfig.getProjectNameParam(), loader.getProjectName());
         response.put(ParamConfig.getVideoFrameIndexParam(), annotation.getVideoFrameIdx());
-        response.put(ParamConfig.getVideoTimeStamp(), annotation.getTimeStamp());
+        response.put(ParamConfig.getVideoTimeStampParam(), annotation.getTimeStamp());
         response.put(ParamConfig.getImgPathParam(), dataPath);
         response.put(ParamConfig.getVideoFilePathParam(), videoPath);
         response.put(annotationKey, version.getAnnotation());

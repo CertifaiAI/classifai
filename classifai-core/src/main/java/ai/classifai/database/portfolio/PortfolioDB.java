@@ -396,7 +396,7 @@ public class PortfolioDB {
             Integer videoFrameIdx = requestBody.getInteger(ParamConfig.getVideoFrameIndexParam());
             annotation.setVideoFrameIdx(videoFrameIdx);
 
-            Integer timeStamp = requestBody.getInteger(ParamConfig.getVideoTimeStamp());
+            Integer timeStamp = requestBody.getInteger(ParamConfig.getVideoTimeStampParam());
             annotation.setTimeStamp(timeStamp);
 
 

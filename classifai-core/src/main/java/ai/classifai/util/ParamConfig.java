@@ -149,14 +149,15 @@ public class ParamConfig
     @Getter private static final String videoFilePathParam = "video_file_path";
     @Getter private static final String videoFramePathParam = "video_frame_path";
     @Getter private static final String videoFrameIndexParam = "video_frame_index";
-    @Getter private static final String videoTimeStamp = "video_time_stamp";
+    @Getter private static final String videoTimeStampParam = "video_time_stamp";
     @Getter private static final String extractionFrameIntervalParam = "extraction_frame_interval";
     @Getter private static final String videoLengthParam = "video_length";
     @Getter private static final String currentExtractedFramesParam = "current_extracted_frames";
     @Getter private static final String videoFramesExtractionStatusParam = "video_frames_extraction_status";
     @Getter private static final String videoFramesExtractionMessageParam = "video_frames_extraction_message";
     @Getter private static final String currentTimeStampParam = "current_time_stamp";
-    @Getter private static final String isVideoFramesExtractionCompleted = "is_video_frames_extraction_completed";
+    @Getter private static final String isVideoFramesExtractionCompletedParam = "is_video_frames_extraction_completed";
     @Getter private static final String extractionPartitionParam = "extraction_partition";
+    @Getter private static final String extractedFrameIndexParam = "extracted_frame_index";
 
 }
