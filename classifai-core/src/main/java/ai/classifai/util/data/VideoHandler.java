@@ -206,14 +206,8 @@ public class VideoHandler {
         }
         else
         {
-            Integer previousFileSysTotalUUIDSize = loader.getTotalUuidMaxLen();
-
             loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
-            if (previousFileSysTotalUUIDSize == 1) {
-                loader.setFileSysTotalUUIDSize(frameMap.size());
-            } else {
-                loader.setFileSysTotalUUIDSize(frameMap.size() + previousFileSysTotalUUIDSize);
-            }
+            loader.setFileSysTotalUUIDSize(numOfGeneratedFrames);
 
             for (Map.Entry<Integer, List<String>> entry : frameMap.entrySet())
             {
