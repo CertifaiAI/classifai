@@ -726,6 +726,7 @@ public class V2Endpoint extends EndpointBase {
 
         response.put(ParamConfig.getCurrentTimeStampParam(), currentTimeStamp);
         response.put(ParamConfig.getIsVideoFramesExtractionCompletedParam(), loader.getIsVideoFramesExtractionCompleted());
+        response.put(ParamConfig.getExtractedFrameIndexParam(), extractedFrameIndex);
 
         HTTPResponseHandler.configureOK(context, response);
     }

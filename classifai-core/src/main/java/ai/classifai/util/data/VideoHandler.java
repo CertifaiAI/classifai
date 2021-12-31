@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -195,11 +196,9 @@ public class VideoHandler {
         }
     }
 
-    public static void saveToProjectTable(@NonNull ProjectLoader loader)
+    private static void saveToProjectTable(@NonNull ProjectLoader loader, Map<Integer, List<String>> frameExtractionMap)
     {
-        Map <Integer, List<String>> frameMap = frameExtractionMap;
-
-        if (frameMap.size() == 0)
+        if (frameExtractionMap.size() == 0)
         {
             PortfolioVerticle.createNewProject(loader.getProjectId());
             loader.setFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
@@ -209,7 +208,7 @@ public class VideoHandler {
             loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
             loader.setFileSysTotalUUIDSize(numOfGeneratedFrames);
 
-            for (Map.Entry<Integer, List<String>> entry : frameMap.entrySet())
+            for (Map.Entry<Integer, List<String>> entry : frameExtractionMap.entrySet())
             {
                 String projectFullPath = loader.getProjectPath().getAbsolutePath();
                 List<String> dataList = new ArrayList<>();
@@ -222,6 +221,33 @@ public class VideoHandler {
             }
         }
 
+    }
+
+    public static boolean loadVideoProjectRootPath(@NonNull ProjectLoader loader)
+    {
+        if(loader.getIsProjectNew())
+        {
+            loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
+        }
+
+        File rootPath = loader.getProjectPath();
+
+        if(!rootPath.exists())
+        {
+            loader.setSanityUuidList(new ArrayList<>());
+            loader.setFileSystemStatus(FileSystemStatus.ABORTED);
+
+            log.info("Project home path of " + rootPath.getAbsolutePath() + " is missing.");
+            return false;
+        }
+
+        loader.setUnsupportedImageList(ImageHandler.getUnsupportedImagesFromFolder(rootPath));
+
+        if (!loader.getIsVideoFramesExtractionCompleted()) {
+            VideoHandler.saveToProjectTable(loader, frameExtractionMap);
+        }
+
+        return true;
     }
 
 }

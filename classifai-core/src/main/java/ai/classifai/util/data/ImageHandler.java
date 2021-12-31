@@ -291,7 +291,7 @@ public class ImageHandler {
         return (FileHandler.isFileSupported(file.getAbsolutePath(), ImageFileType.getImageFileTypes()) && !isImageFileValid(file));
     }
 
-    private static List<String> getUnsupportedImagesFromFolder(File rootPath)
+    public static List<String> getUnsupportedImagesFromFolder(File rootPath)
     {
         return FileHandler.processFolder(rootPath, ImageHandler::isImageUnsupported);
     }
@@ -359,61 +359,6 @@ public class ImageHandler {
                 AnnotationVerticle.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
             }
         }
-
-        return true;
-    }
-
-    public static boolean loadVideoProjectRootPath(@NonNull ProjectLoader loader)
-    {
-        if(loader.getIsProjectNew())
-        {
-            loader.resetFileSysProgress(FileSystemStatus.ITERATING_FOLDER);
-        }
-//        else
-//        {
-//            //refreshing project
-//            loader.resetReloadingProgress(FileSystemStatus.ITERATING_FOLDER);
-//        }
-
-        File rootPath = loader.getProjectPath();
-
-        //scenario 1
-        if(!rootPath.exists())
-        {
-            loader.setSanityUuidList(new ArrayList<>());
-            loader.setFileSystemStatus(FileSystemStatus.ABORTED);
-
-            log.info("Project home path of " + rootPath.getAbsolutePath() + " is missing.");
-            return false;
-        }
-
-//        List<String> dataFullPathList = getValidImagesFromFolder(rootPath);
-//        loader.setUnsupportedImageList(getUnsupportedImagesFromFolder(rootPath));
-
-        //Scenario 2 - 1: root path exist but all images missing
-//        if(dataFullPathList.isEmpty())
-//        {
-//            loader.getSanityUuidList().clear();
-//            loader.setFileSystemStatus(FileSystemStatus.DATABASE_UPDATED);
-//            return false;
-//        }
-
-        Map<Integer, List<String>> frameExtractionTracking = VideoHandler.getFrameExtractionMap();
-//        VideoHandler.saveToProjectTable(loader, frameExtractionTracking);
-        VideoHandler.saveToProjectTable(loader);
-
-        //scenario 3 - 5
-//        if(Boolean.TRUE.equals(loader.getIsProjectNew()))
-//        {
-//            VideoHandler.saveToProjectTable(loader, frameExtractionTracking);
-//        }
-//        else // when refreshing project folder
-//        {
-//            for (int i = 0; i < dataFullPathList.size(); ++i)
-//            {
-//                AnnotationVerticle.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
-//            }
-//        }
 
         return true;
     }
