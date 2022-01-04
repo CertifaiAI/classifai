@@ -31,7 +31,6 @@ import ai.classifai.util.data.StringHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -90,16 +89,9 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
                                 ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectID));
 
-                                if(loader.isCloud())
-                                {
-                                    response.put(ParamConfig.getImgSrcParam(), WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
-                                }
-                                else
-                                {
-                                    File fileImgPath = getDataFullPath(projectID, dataPath);
+                                File fileImgPath = getDataFullPath(projectID, dataPath);
 
-                                    response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
-                                }
+                                response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
 
                                 message.replyAndRequest(response);
 
@@ -443,33 +435,15 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
         Map<String, String> imgData = new HashMap<>();
         String dataPath = "";
 
-        if(loader.isCloud())
+        dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
+
+        try
         {
-            try
-            {
-                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
-
-                //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNailFromCloud(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Unable to write Buffered Image.");
-            }
-
+            imgData = ImageHandler.getThumbNail(new File(dataPath));
         }
-        else
+        catch(Exception e)
         {
-            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
-
-            try
-            {
-                imgData = ImageHandler.getThumbNail(new File(dataPath));
-            }
-            catch(Exception e)
-            {
-                log.debug("Failure in reading image of path " + dataPath, e);
-            }
+            log.debug("Failure in reading image of path " + dataPath, e);
         }
 
         JsonObject response = ReplyHandler.getOkReply();

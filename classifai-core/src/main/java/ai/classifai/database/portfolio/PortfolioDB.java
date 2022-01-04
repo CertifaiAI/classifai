@@ -32,7 +32,6 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
-import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -357,13 +356,8 @@ public class PortfolioDB {
                                 Row row = result.iterator().next();
                                 String dataPath = row.getString(0);
 
-                                if(loader.isCloud()) {
-                                    response.put(ParamConfig.getImgSrcParam(),
-                                            WasabiImageHandler.encodeFileToBase64Binary(loader.getWasabiProject(), dataPath));
-                                } else {
-                                    File fileImgPath = AnnotationVerticle.getDataFullPath(projectId, dataPath);
-                                    response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
-                                }
+                                File fileImgPath = AnnotationVerticle.getDataFullPath(projectId, dataPath);
+                                response.put(ParamConfig.getImgSrcParam(), ImageHandler.encodeFileToBase64Binary(fileImgPath));
                                 promise.complete(response);
                             }
                         },

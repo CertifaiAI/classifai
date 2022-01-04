@@ -52,8 +52,6 @@ public class EndpointRouter extends AbstractVerticle
     V1Endpoint v1 = new V1Endpoint();
     V2Endpoint v2 = new V2Endpoint();
 
-    CloudEndpoint cloud = new CloudEndpoint();
-
     public EndpointRouter()
     {
         Thread projectFolder = new Thread(() -> projectFolderSelector = new ProjectFolderSelector());
@@ -93,8 +91,6 @@ public class EndpointRouter extends AbstractVerticle
         v2.setLabelFileSelector(labelFileSelector);
         v2.setVideoFileSelector(videoFileSelector);
         v2.setPortfolioDB(new PortfolioDB(portFolioPool));
-
-        cloud.setVertx(vertx);
 
         PortfolioVerticle.setFileGenerator(fileGenerator);
     }
@@ -202,9 +198,6 @@ public class EndpointRouter extends AbstractVerticle
         router.put("/v2/videoprojects").handler(v2::createProject);
 
         //*******************************Cloud*******************************
-
-        router.put("/v2/:annotation_type/wasabi/projects/:project_name").handler(cloud::createWasabiCloudProject);
-
 
         vertx.createHttpServer()
                 .requestHandler(router)

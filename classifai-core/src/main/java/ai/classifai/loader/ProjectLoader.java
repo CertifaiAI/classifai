@@ -22,7 +22,6 @@ import ai.classifai.selector.status.FileSystemStatus;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.VideoHandler;
 import ai.classifai.util.project.ProjectInfra;
-import ai.classifai.wasabis3.WasabiProject;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -67,8 +66,6 @@ public class ProjectLoader
 
     @Builder.Default private Boolean isProjectNew = Boolean.TRUE;
     @Builder.Default private Boolean isProjectStarred = Boolean.FALSE;
-
-    @Builder.Default private WasabiProject wasabiProject = null;
 
     @Builder.Default private List<String> labelList = new ArrayList<>();
 
@@ -292,7 +289,7 @@ public class ProjectLoader
 
     public boolean isCloud()
     {
-        return wasabiProject != null;
+        return false;
     }
 
     public void initFolderIteration() throws IOException {

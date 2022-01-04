@@ -47,7 +47,6 @@ import ai.classifai.util.type.AnnotationHandler;
 import ai.classifai.util.type.AnnotationType;
 import ai.classifai.util.type.database.H2;
 import ai.classifai.util.type.database.RelationalDb;
-import ai.classifai.wasabis3.WasabiImageHandler;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -61,10 +60,7 @@ import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
@@ -585,34 +581,17 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         Map<String, String> imgData = new HashMap<>();
         String dataPath = "";
 
-        if(loader.isCloud())
+        dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
+
+        try
         {
-            try
-            {
-                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
-
-                //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNailFromCloud(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Unable to write Buffered Image.");
-            }
-
+            imgData = ImageHandler.getThumbNail(new File(dataPath));
         }
-        else
+        catch(Exception e)
         {
-            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
-
-            try
-            {
-                imgData = ImageHandler.getThumbNail(new File(dataPath));
-            }
-            catch(Exception e)
-            {
-                log.debug("Failure in reading image of path " + dataPath, e);
-            }
+            log.debug("Failure in reading image of path " + dataPath, e);
         }
+
 
         JsonObject response = ReplyHandler.getOkReply();
 
@@ -645,34 +624,16 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
         String dataPath = "";
         String videoPath = "";
 
-        if(loader.isCloud())
+        dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
+        videoPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getVideoPath()).toString();
+
+        try
         {
-            try
-            {
-                BufferedImage img = WasabiImageHandler.getThumbNail(loader.getWasabiProject(), annotation.getImgPath());
-
-                //not checking orientation for on cloud version
-                imgData = ImageHandler.getThumbNailFromCloud(img);
-            }
-            catch(Exception e)
-            {
-                log.debug("Unable to write Buffered Image.");
-            }
-
+            imgData = ImageHandler.getThumbNail(new File(dataPath));
         }
-        else
+        catch(Exception e)
         {
-            dataPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getImgPath()).toString();
-            videoPath = Paths.get(loader.getProjectPath().getAbsolutePath(), annotation.getVideoPath()).toString();
-
-            try
-            {
-                imgData = ImageHandler.getThumbNail(new File(dataPath));
-            }
-            catch(Exception e)
-            {
-                log.debug("Failure in reading image of path " + dataPath, e);
-            }
+            log.debug("Failure in reading image of path " + dataPath, e);
         }
 
         JsonObject response = ReplyHandler.getOkReply();

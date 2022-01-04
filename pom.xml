@@ -28,7 +28,6 @@
         <module>classifai-core</module>
         <module>classifai-api</module>
         <module>classifai-uberjar</module>
-        <module>classifai-cloud</module>
         <!--<module>classifai-test</module>-->
     </modules>
 
@@ -99,7 +98,7 @@
         <classifai.release.version>2.0.0-alpha2</classifai.release.version>
         <classifai.release.name>dev</classifai.release.name>
         <opencv.version>4.5.1-2</opencv.version>
-        <jackson.version>2.12.3</jackson.version>
+        <jackson.version>2.12.2</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -117,11 +116,6 @@
             <dependency>
                 <groupId>ai.classifai</groupId>
                 <artifactId>classifai-api</artifactId>
-                <version>${classifai.release.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ai.classifai</groupId>
-                <artifactId>classifai-cloud</artifactId>
                 <version>${classifai.release.version}</version>
             </dependency>
             <dependency>
@@ -267,6 +261,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
         </dependencies>
