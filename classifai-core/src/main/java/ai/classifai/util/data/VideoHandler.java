@@ -108,7 +108,12 @@ public class VideoHandler {
         else {
             log.info("Fail to extract frames from video");
         }
-        log.info("Total generated frames: " + numOfGeneratedFrames);
+
+        if (extractionPartition > 1) {
+            log.info("Total generated frames: " + currentFrameIndex);
+        } else {
+            log.info("Total generated frames: " + numOfGeneratedFrames);
+        }
     }
 
     public static int getVideoLength(String videoPath) {

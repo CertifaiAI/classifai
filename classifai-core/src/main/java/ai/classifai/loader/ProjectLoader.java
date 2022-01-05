@@ -202,8 +202,6 @@ public class ProjectLoader
     {
         currentUuidMarker = currentSize;
         progressUpdate.set(0, currentUuidMarker);
-        log.info(("current UUID marker: " + currentUuidMarker));
-        log.info(("total UUID Max Len: " + totalUuidMaxLen));
 
         //if done, offload set to list
         if (currentUuidMarker.equals(totalUuidMaxLen))
