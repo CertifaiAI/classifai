@@ -212,12 +212,11 @@ public class V2Endpoint extends EndpointBase {
         if (ProjectHandler.isProjectNameUnique(projectName, annotationInt))
         {
             String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
-
-
             String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
             List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
             String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
             Integer videoLength = VideoHandler.getVideoLength(videoPath);
+            String videoDuration = VideoHandler.getVideoDuration(videoPath);
 
             if(videoPath != null)
             {
@@ -234,6 +233,7 @@ public class V2Endpoint extends EndpointBase {
                         .fileSystemStatus(FileSystemStatus.DATABASE_UPDATED)
                         .isVideoFramesExtractionCompleted(Boolean.FALSE)
                         .extractedFrameIndex(0)
+                        .videoDuration(videoDuration)
                         .build();
 
                 ProjectHandler.loadProjectLoader(videoLoader);
@@ -287,6 +287,7 @@ public class V2Endpoint extends EndpointBase {
 
         if (status.equals(FileSystemStatus.DATABASE_UPDATED))
         {
+            log.info(loader.getUnsupportedImageList().toString());
             response.put(ParamConfig.getUnsupportedImageListParam(), loader.getUnsupportedImageList());
         }
 

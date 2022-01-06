@@ -126,6 +126,17 @@ public class VideoHandler {
         return videoLength;
     }
 
+    public static String getVideoDuration(String videoPath) {
+        VideoCapture cap = new VideoCapture();
+        cap.open(videoPath);
+
+        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT) - 2;
+        int framePerSecond = (int) cap.get(Videoio.CAP_PROP_FPS);
+        int calcVideoDuration = videoLength/framePerSecond;
+
+        return String.format("%02d:%02d:%02d",(calcVideoDuration/3600), ((calcVideoDuration % 3600)/60), (calcVideoDuration % 60));
+    }
+
     private static String timeConvertion(Integer timeStamp) {
         Duration time = Duration.ofMillis(timeStamp);
         return String.format("%02d:%02d:%02d",

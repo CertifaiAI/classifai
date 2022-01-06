@@ -53,6 +53,7 @@ public class ProjectLoader
     private File projectPath;
     private File videoPath;
     private Integer videoLength;
+    private String videoDuration;
     private Boolean isVideoFramesExtractionCompleted;
     private Integer extractedFrameIndex;
 
