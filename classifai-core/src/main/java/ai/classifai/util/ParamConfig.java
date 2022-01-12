@@ -160,5 +160,6 @@ public class ParamConfig
     @Getter private static final String extractionPartitionParam = "extraction_partition";
     @Getter private static final String extractedFrameIndexParam = "extracted_frame_index";
     @Getter private static final String videoDurationParam = "video_duration";
+    @Getter private static final String currentTimeParam = "current_time";
 
 }

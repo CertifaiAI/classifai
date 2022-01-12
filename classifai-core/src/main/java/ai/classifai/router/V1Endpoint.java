@@ -166,6 +166,7 @@ public class V1Endpoint extends EndpointBase
 
             jsonObject.put(ParamConfig.getLabelListParam(), projectLoader.getLabelList());
             jsonObject.put(ParamConfig.getUuidListParam(), projectLoader.getSanityUuidList());
+            log.info(projectLoader.getSanityUuidList().toString());
 
             HTTPResponseHandler.configureOK(context, jsonObject);
 

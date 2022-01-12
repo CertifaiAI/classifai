@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -143,42 +144,39 @@ public class VideoHandler {
                 time.toHours(), time.toMinutesPart(), time.toSecondsPart());
     }
 
-    // for clicking loading
-    public static void extractSpecificFrames(String videoPath, String projectPath, Integer index) {
+    public static void extractSpecificFrames(String videoPath, String projectPath, Double currentTime) {
+        log.info("Extracting frames from video....");
 
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);
 
-        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT);
+        int videoLength = (int) cap.get(Videoio.CAP_PROP_FRAME_COUNT) - 2;
         int framesPerSecond = (int) cap.get(Videoio.CAP_PROP_FPS);
+        int videoDuration = videoLength/framesPerSecond;
+        int frameIndex = (int) Math.floor((currentTime/videoDuration) * videoLength);
 
         if(cap.isOpened())
         {
             Mat frame = new Mat();
-
-//          Set extraction starting point
-            cap.set(Videoio.CAP_PROP_POS_FRAMES, frameNumberStartPoint);
+            cap.set(Videoio.CAP_PROP_POS_FRAMES, frameIndex);
 
             while(cap.read(frame))
             {
                 base64Frames.add(base64FromBufferedImage(toBufferedImage(frame)));
-                String outputImagePath = projectPath + "/" + "frame_" + frameNumberStartPoint +".jpg";
+                String outputImagePath = projectPath + "/" + "frame_" + numOfGeneratedFrames +".jpg";
                 Imgcodecs.imwrite(outputImagePath, frame);
                 timeStamp = (int) Math.round(cap.get(Videoio.CAP_PROP_POS_MSEC));
-                frameExtractionMap.put(frameNumberStartPoint, Arrays.asList(outputImagePath, String.valueOf(timeStamp)));
+                frameExtractionMap.put(numOfGeneratedFrames, Arrays.asList(outputImagePath, String.valueOf(timeStamp), videoPath));
+                numOfGeneratedFrames += 1;
 
                 break;
             }
 
             cap.release();
-
         }
         else {
             log.info("Fail to extract frames from video");
-
         }
-        log.info("Extracting frames from video....");
-        log.info("Number of generated frames: " + numOfGeneratedFrames);
     }
 
     public static BufferedImage toBufferedImage(Mat m) {
@@ -235,6 +233,9 @@ public class VideoHandler {
                 dataList.add(videoSubPath);
                 AnnotationVerticle.saveVideoDataPoint(loader, dataList, entry.getKey());
             }
+
+            frameExtractionMap.clear();
+
         }
 
     }

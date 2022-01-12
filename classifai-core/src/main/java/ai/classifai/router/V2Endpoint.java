@@ -680,16 +680,19 @@ public class V2Endpoint extends EndpointBase {
 
             try {
                 JsonObject requestBody = request.toJsonObject();
+                log.info(requestBody.toString());
                 String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
                 Integer extractionPartition = requestBody.getInteger(ParamConfig.getExtractionPartitionParam());
                 Integer extractedFrameIndex = requestBody.getInteger(ParamConfig.getExtractedFrameIndexParam());
+                Double currentTime = requestBody.getDouble(ParamConfig.getCurrentTimeParam());
 
                 String projectPath = loader.getProjectPath().toString();
-                VideoHandler.extractFrames(videoPath, extractionPartition, projectPath, extractedFrameIndex);
+                VideoHandler.extractSpecificFrames(videoPath, projectPath, currentTime);
                 loader.initVideoFolderIteration();
             }
             catch (Exception e)
             {
+                log.info(String.valueOf(e));
                 log.info("Video extraction fail");
             }
 

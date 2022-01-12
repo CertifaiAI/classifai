@@ -201,12 +201,15 @@ public class ProjectLoader
 
     public void updateFrameLoadingProgress(Integer currentSize)
     {
-        currentUuidMarker = currentSize;
-        progressUpdate.set(0, currentUuidMarker);
+//        currentUuidMarker = currentSize;
+//        progressUpdate.set(0, currentUuidMarker);
+
+//        log.info(String.valueOf(currentSize));
+//        log.info(String.valueOf(totalUuidMaxLen));
 
         //if done, offload set to list
-        if (currentUuidMarker.equals(totalUuidMaxLen))
-        {
+//        if (currentUuidMarker.equals(totalUuidMaxLen))
+//        {
             if (fileSysNewUuidList.isEmpty())
             {
                 fileSystemStatus = FileSystemStatus.DATABASE_NOT_UPDATED;
@@ -216,10 +219,12 @@ public class ProjectLoader
                 sanityUuidList.addAll(fileSysNewUuidList);
                 uuidListFromDb.addAll(fileSysNewUuidList);
 
+                log.info(sanityUuidList.toString());
+
                 projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
                 projectVersion.setCurrentVersionLabelList(labelList);
             }
-        }
+//        }
     }
 
     public void uploadUuidFromRootPath(@NonNull String uuid)

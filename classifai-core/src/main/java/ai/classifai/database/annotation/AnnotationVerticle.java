@@ -468,6 +468,7 @@ public abstract class AnnotationVerticle extends AbstractVerticle implements Ver
 
     public static void saveVideoDataPoint(@NonNull ProjectLoader loader, @NonNull List<String> dataList, @NonNull Integer currentFrameIdx)
     {
+        log.info("save video data" + dataList);
         String uuid = UuidGenerator.generateUuid();
 
         Annotation annotation = Annotation.builder()
