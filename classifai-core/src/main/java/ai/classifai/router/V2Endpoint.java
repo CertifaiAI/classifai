@@ -214,13 +214,14 @@ public class V2Endpoint extends EndpointBase {
             String projectPath = requestBody.getString(ParamConfig.getProjectPathParam());
             String labelPath = requestBody.getString(ParamConfig.getLabelPathParam());
             List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
-            String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
-            Integer videoLength = VideoHandler.getVideoLength(videoPath);
-            String videoDuration = VideoHandler.getVideoDuration(videoPath);
-            Integer framePerSecond = VideoHandler.getFramePerSeconds(videoPath);
 
-            if(videoPath != null)
+            if(annotationInt == 2 || annotationInt == 3)
             {
+                String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
+                Integer videoLength = VideoHandler.getVideoLength(videoPath);
+                String videoDuration = VideoHandler.getVideoDuration(videoPath);
+                Integer framePerSecond = VideoHandler.getFramePerSeconds(videoPath);
+
                 ProjectLoader videoLoader = ProjectLoader.builder()
                         .projectId(UuidGenerator.generateUuid())
                         .projectName(projectName)
