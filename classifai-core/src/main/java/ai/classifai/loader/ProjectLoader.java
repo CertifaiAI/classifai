@@ -56,6 +56,7 @@ public class ProjectLoader
     private String videoDuration;
     private Boolean isVideoFramesExtractionCompleted;
     private Integer extractedFrameIndex;
+    private Integer framesPerSecond;
 
     private ProjectInfra projectInfra;
 

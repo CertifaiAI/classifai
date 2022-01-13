@@ -127,6 +127,12 @@ public class VideoHandler {
         return videoLength;
     }
 
+    public static int getFramePerSeconds(String videoPath) {
+        VideoCapture cap = new VideoCapture();
+        cap.open(videoPath);
+        return (int) cap.get(Videoio.CAP_PROP_FPS);
+    }
+
     public static String getVideoDuration(String videoPath) {
         VideoCapture cap = new VideoCapture();
         cap.open(videoPath);

@@ -217,6 +217,7 @@ public class V2Endpoint extends EndpointBase {
             String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
             Integer videoLength = VideoHandler.getVideoLength(videoPath);
             String videoDuration = VideoHandler.getVideoDuration(videoPath);
+            Integer framePerSecond = VideoHandler.getFramePerSeconds(videoPath);
 
             if(videoPath != null)
             {
@@ -234,6 +235,7 @@ public class V2Endpoint extends EndpointBase {
                         .isVideoFramesExtractionCompleted(Boolean.FALSE)
                         .extractedFrameIndex(0)
                         .videoDuration(videoDuration)
+                        .framesPerSecond(framePerSecond)
                         .build();
 
                 ProjectHandler.loadProjectLoader(videoLoader);
