@@ -193,6 +193,8 @@ public class EndpointRouter extends AbstractVerticle
 
         router.post("/v2/:annotation_type/projects/:project_name/extract").handler(v2::initiateVideoFramesExtraction);
 
+        router.post("/v2/:annotation_type/projects/:project_name/multipleextract").handler(v2::initiateTimeRangeExtraction);
+
         router.get("/v2/:annotation_type/projects/:project_name/extractstatus").handler(v2::videoFramesExtractionStatus);
 
         router.put("/v2/videoprojects").handler(v2::createProject);

@@ -32,6 +32,7 @@ import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.type.AnnotationHandler;
+import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -123,7 +124,7 @@ public class PortfolioDB {
         return promise.future();
     }
 
-    public Future<JsonObject> deleteProjectData(String projectId, JsonArray uuidListArray, JsonArray uuidImgPathList) {
+    public Future<JsonObject> deleteProjectData(String projectId, JsonArray uuidListArray, JsonArray uuidImgPathList, AnnotationType type) {
         ProjectLoader loader = Objects.requireNonNull(ProjectHandler.getProjectLoader(projectId));
         List<String> deleteUUIDList = ConversionHandler.jsonArray2StringList(uuidListArray);
         String uuidQueryParam = String.join(",", deleteUUIDList);
@@ -131,7 +132,15 @@ public class PortfolioDB {
         Tuple params = Tuple.of(projectId, uuidQueryParam);
         Promise<JsonObject> promise = Promise.promise();
 
-        runQuery(AnnotationQuery.getDeleteProjectData(), params, AnnotationHandler.getJDBCPool(loader))
+        String query;
+
+        if (type.ordinal() == 0 || type.ordinal() == 1) {
+            query = AnnotationQuery.getDeleteProjectData();
+        } else {
+            query = AnnotationQuery.getDeleteVideoProjectData();
+        }
+
+        runQuery(query, params, AnnotationHandler.getJDBCPool(loader))
                 .onComplete(DBUtils.handleResponse(
                         result -> {
                             try {

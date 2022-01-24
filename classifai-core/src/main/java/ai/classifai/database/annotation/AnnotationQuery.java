@@ -65,4 +65,7 @@ public class AnnotationQuery
     @Getter private static final String extractVideoProject = "SELECT uuid, img_path, video_frame_index, video_time_stamp, video_file_path, version_list, img_depth, img_ori_w, img_ori_h, file_size FROM VideoProject WHERE project_id = ?";
 
     @Getter private static final String updateVideoData = "UPDATE VideoProject SET version_list = ?, img_depth = ?, img_ori_w = ?, img_ori_h = ?, file_size = ? WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String deleteVideoProjectData = "DELETE FROM VideoProject WHERE project_id = ? AND uuid IN (?)";
+
 }

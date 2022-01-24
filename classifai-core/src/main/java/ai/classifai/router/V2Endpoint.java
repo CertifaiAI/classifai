@@ -605,7 +605,8 @@ public class V2Endpoint extends EndpointBase {
             Future<JsonObject> future = portfolioDB.deleteProjectData(
                     projectID,
                     request.getJsonArray(ParamConfig.getUuidListParam()),
-                    request.getJsonArray(ParamConfig.getImgPathListParam())
+                    request.getJsonArray(ParamConfig.getImgPathListParam()),
+                    type
             );
             ReplyHandler.sendResult(context, future, "Delete project data fail.");
         });
@@ -695,7 +696,6 @@ public class V2Endpoint extends EndpointBase {
             }
             catch (Exception e)
             {
-                log.info(String.valueOf(e));
                 log.info("Video extraction fail");
             }
 
@@ -722,7 +722,7 @@ public class V2Endpoint extends EndpointBase {
 
         JsonObject response;
 
-        if(numberOfGeneratedFrame != 0)
+        if(loader.getIsVideoFramesExtractionCompleted())
         {
             response = compileVideoFramesExtractionResponse(VideoFramesExtractionStatus.VIDEO_FRAMES_EXTRACTION_COMPLETED);
         }
@@ -736,6 +736,35 @@ public class V2Endpoint extends EndpointBase {
         response.put(ParamConfig.getExtractedFrameIndexParam(), extractedFrameIndex);
 
         HTTPResponseHandler.configureOK(context, response);
+    }
+
+    public void initiateTimeRangeExtraction(RoutingContext context) {
+        AnnotationType type = AnnotationHandler.getTypeFromEndpoint(context.request().getParam(ParamConfig.getAnnotationTypeParam()));
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        ProjectLoader loader = ProjectHandler.getProjectLoader(projectName, type);
+
+        context.request().bodyHandler(request -> {
+
+            try {
+                JsonObject requestBody = request.toJsonObject();
+                log.info(requestBody.toString());
+                String videoPath = requestBody.getString(ParamConfig.getVideoFilePathParam());
+                Double startTime = requestBody.getDouble(ParamConfig.getExtractionStartTimeParam());
+                Double endTime = requestBody.getDouble(ParamConfig.getExtractionEndTimeParam());
+                Integer partition = requestBody.getInteger(ParamConfig.getExtractionPartitionParam());
+                String projectPath = loader.getProjectPath().toString();
+
+                VideoHandler.extractFramesForSelectedTimeRange(videoPath, partition, projectPath, startTime, endTime);
+                loader.initVideoFolderIteration();
+            }
+            catch (Exception e)
+            {
+                log.info("Video extraction fail");
+            }
+
+        });
+
+        HTTPResponseHandler.configureOK(context);
     }
 
 }

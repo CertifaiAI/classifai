@@ -162,5 +162,7 @@ public class ParamConfig
     @Getter private static final String videoDurationParam = "video_duration";
     @Getter private static final String currentTimeParam = "current_time";
     @Getter private static final String framePerSecondParam = "frames_per_second";
+    @Getter private static final String extractionStartTimeParam = "extraction_start_time";
+    @Getter private static final String extractionEndTimeParam = "extraction_end_time";
 
 }
