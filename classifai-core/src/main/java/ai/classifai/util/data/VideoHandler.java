@@ -203,7 +203,6 @@ public class VideoHandler {
             generatedFrames++;
         }
 
-        numOfGeneratedFrames = frameCount;
         VideoHandler.setFinishedExtraction(true);
         log.info("Extracted frames from time: " + timeConversion(startTime.longValue()) + " until " + timeConversion(endTime.longValue()));
         log.info("Total generated frames: " + frameCount);
@@ -250,7 +249,6 @@ public class VideoHandler {
         else
         {
             loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
-            log.info(String.valueOf(numOfGeneratedFrames));
             loader.setFileSysTotalUUIDSize(numOfGeneratedFrames);
 
             for (Map.Entry<Integer, List<String>> entry : frameExtractionMap.entrySet())
@@ -290,10 +288,7 @@ public class VideoHandler {
         }
 
         loader.setUnsupportedImageList(ImageHandler.getUnsupportedImagesFromFolder(rootPath));
-
-        if (!loader.getIsVideoFramesExtractionCompleted()) {
-            VideoHandler.saveToProjectTable(loader, frameExtractionMap);
-        }
+        VideoHandler.saveToProjectTable(loader, frameExtractionMap);
 
         return true;
     }

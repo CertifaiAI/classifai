@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Class per project for managing the loading of project
@@ -170,7 +171,6 @@ public class ProjectLoader
 
     public void pushFileSysNewUUIDList(String uuid)
     {
-        log.info("push");
         fileSysNewUuidList.add(uuid);
     }
 
@@ -204,9 +204,7 @@ public class ProjectLoader
     public void updateFrameLoadingProgress(Integer currentSize)
     {
         currentUuidMarker = currentSize;
-        progressUpdate.set(0, currentUuidMarker);
 
-        //if done, offload set to list
         if (currentUuidMarker.equals(totalUuidMaxLen))
         {
             if (fileSysNewUuidList.isEmpty())
@@ -218,7 +216,7 @@ public class ProjectLoader
                 sanityUuidList.addAll(fileSysNewUuidList);
                 uuidListFromDb.addAll(fileSysNewUuidList);
 
-                projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
+                projectVersion.setCurrentVersionUuidList(sanityUuidList);
                 projectVersion.setCurrentVersionLabelList(labelList);
             }
         }

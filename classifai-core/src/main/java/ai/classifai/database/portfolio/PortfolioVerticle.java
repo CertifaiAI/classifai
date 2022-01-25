@@ -450,12 +450,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 .put(ParamConfig.getLastModifiedDate(), currentVersion.getLastModifiedDate().toString())
                 .put(ParamConfig.getCurrentVersionParam(), currentVersion.getVersionUuid())
                 .put(ParamConfig.getTotalUuidParam(), existingDataInDir.size())
-                .put(ParamConfig.getVideoLengthParam(), loader.getVideoLength())
                 .put(ParamConfig.getVideoFilePathParam(), loader.getVideoPath())
-                .put(ParamConfig.getVideoDurationParam(), loader.getVideoDuration())
                 .put(ParamConfig.getFramePerSecondParam(), loader.getFramesPerSecond())
-                .put(ParamConfig.getIsVideoFramesExtractionCompletedParam(), loader.getIsVideoFramesExtractionCompleted())
-                .put(ParamConfig.getExtractedFrameIndexParam(), loader.getExtractedFrameIndex())
                 .put(ParamConfig.getIsRootPathValidParam(), projectPath.exists()));
     }
 
@@ -543,6 +539,8 @@ public class PortfolioVerticle extends AbstractVerticle implements VerticleServi
                 loader.getProjectName(),                    //project_name
                 loader.getAnnotationType(),                 //annotation_type
                 loader.getProjectPath().getAbsolutePath(),  //project_path
+                loader.getVideoPath(),
+                loader.getFramesPerSecond(),
                 loader.getIsProjectNew(),                   //is_new
                 loader.getIsProjectStarred(),               //is_starred
                 loader.getProjectInfra().name(),            //project_infra
