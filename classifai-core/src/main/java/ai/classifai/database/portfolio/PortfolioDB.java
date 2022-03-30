@@ -26,37 +26,48 @@ import ai.classifai.database.DBUtils;
 import ai.classifai.database.JDBCPoolHolder;
 import ai.classifai.database.annotation.AnnotationDB;
 import ai.classifai.database.annotation.AnnotationQuery;
+import ai.classifai.database.annotation.TabularAnnotationQuery;
 import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
+import ai.classifai.dto.api.body.UpdateTabularDataBody;
 import ai.classifai.dto.api.response.ProjectStatisticResponse;
-import ai.classifai.dto.data.DataInfoProperties;
-import ai.classifai.dto.data.ProjectConfigProperties;
-import ai.classifai.dto.data.ProjectMetaProperties;
-import ai.classifai.dto.data.ThumbnailProperties;
+import ai.classifai.dto.data.*;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.LabelListHandler;
 import ai.classifai.util.data.StringHandler;
+import ai.classifai.util.data.TabularHandler;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * To run database query
@@ -113,6 +124,16 @@ public class PortfolioDB {
     }
 
     public Future<Void> renameProject(String projectId, String newProjectName) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        AnnotationType type = AnnotationType.get(loader.getAnnotationType());
+
+        if(type == AnnotationType.TABULAR) {
+            TabularAnnotationQuery.createChangeProjectTableNamePreparedStatement(loader, newProjectName);
+            String query = TabularAnnotationQuery.getChangeProjectTableNameQuery();
+            runQuery(query, this.holder.getJDBCPool(loader))
+                    .map(DBUtils::toVoid);
+        }
+
         Tuple params = Tuple.of(newProjectName, projectId);
 
         return runQuery(PortfolioDbQuery.getRenameProject(), params)
@@ -262,34 +283,43 @@ public class PortfolioDB {
         ProjectLoader loader = Objects.requireNonNull(projectHandler.getProjectLoader(projectId));
         List<String> oriUUIDList = loader.getUuidListFromDb();
         loader.setDbOriUUIDSize(oriUUIDList.size());
+        AnnotationType annotationType = AnnotationType.get(loader.getAnnotationType());
 
         for (int i = 0; i < oriUUIDList.size(); ++i) {
             final Integer currentLength = i + 1;
             final String UUID = oriUUIDList.get(i);
             Tuple params = Tuple.of(projectId, UUID);
 
-            runQuery(AnnotationQuery.getLoadValidProjectUuid(), params, holder.getJDBCPool(loader))
-                    .onComplete(DBUtils.handleResponse(
-                            result -> {
-                                if(result.iterator().hasNext())
-                                {
-                                    Row row = result.iterator().next();
-
-                                    String dataSubPath = row.getString(0);
-                                    File dataFullPath = loader.getDataFullPath(dataSubPath);
-
-                                    if (ImageHandler.isImageReadable(dataFullPath))
+            if (Objects.requireNonNull(annotationType).equals(AnnotationType.TABULAR)) {
+                loader.pushDBValidUUID(UUID);
+                loader.updateDBLoadingProgress(currentLength);
+                if(!promise.future().isComplete()) {
+                    promise.complete();
+                }
+            } else {
+                runQuery(AnnotationQuery.getLoadValidProjectUuid(), params, holder.getJDBCPool(loader))
+                        .onComplete(DBUtils.handleResponse(
+                                result -> {
+                                    if(result.iterator().hasNext())
                                     {
-                                        loader.pushDBValidUUID(UUID);
+                                        Row row = result.iterator().next();
+
+                                        String dataSubPath = row.getString(0);
+                                        File dataFullPath = loader.getDataFullPath(dataSubPath);
+
+                                        if (ImageHandler.isImageReadable(dataFullPath))
+                                        {
+                                            loader.pushDBValidUUID(UUID);
+                                        }
                                     }
-                                }
-                                loader.updateDBLoadingProgress(currentLength);
-                                if(!promise.future().isComplete()) {
-                                    promise.complete();
-                                }
-                            },
-                            promise::fail
-                    ));
+                                    loader.updateDBLoadingProgress(currentLength);
+                                    if(!promise.future().isComplete()) {
+                                        promise.complete();
+                                    }
+                                },
+                                promise::fail
+                        ));
+            }
         }
         return promise.future();
     }
@@ -403,7 +433,22 @@ public class PortfolioDB {
 
     public Future<Void> deleteProjectFromAnnotationDb(String projectId) {
         ProjectLoader loader = Objects.requireNonNull(projectHandler.getProjectLoader(projectId));
+        AnnotationType annotationType = AnnotationType.get(loader.getAnnotationType());
         Tuple params = Tuple.of(projectId);
+
+        if (Objects.requireNonNull(annotationType).equals(AnnotationType.TABULAR)) {
+            TabularAnnotationQuery.createDeleteProjectPreparedStatement(loader);
+            String query = TabularAnnotationQuery.getDeleteProjectQuery();
+//            String query2 = TabularAnnotationQuery.getGetDeleteProjectAttributeQuery();
+//            JDBCPool pool = this.holder.getJDBCPool(loader);
+//            return pool.withConnection(conn ->
+//                    conn.preparedQuery(query).execute()
+//                            .map(DBUtils::toVoid)
+//                            .compose(res ->
+//                                    conn.preparedQuery(query2).execute(params)).map(DBUtils::toVoid));
+            return runQuery(query,holder.getJDBCPool(loader))
+                    .map(DBUtils::toVoid);
+        }
 
         return runQuery(AnnotationQuery.getDeleteProject(), params, holder.getJDBCPool(loader))
                 .map(DBUtils::toVoid);
@@ -660,25 +705,732 @@ public class PortfolioDB {
         return loader.getSanityUuidList();
     }
 
-    public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader)
-    {
-        LabelListHandler labelListHandler = new LabelListHandler();
+    public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader, AnnotationType type)
+            throws ExecutionException, InterruptedException {
+        int labeledData = 0;
+        int unlabeledData = 0;
+        List<LabelNameAndCountProperties> labelPerClassInProject = new ArrayList<>();
 
         File projectPath = projectLoader.getProjectPath();
-
-        labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
-
         if (!projectPath.exists())
         {
             log.info(String.format("Root path of project [%s] is missing! %s does not exist.",
                     projectLoader.getProjectName(), projectLoader.getProjectPath()));
         }
 
+        if(type == AnnotationType.BOUNDINGBOX || type == AnnotationType.SEGMENTATION) {
+            LabelListHandler labelListHandler = new LabelListHandler();
+            labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
+            labeledData = labelListHandler.getNumberOfLabeledImage();
+            unlabeledData = labelListHandler.getNumberOfUnLabeledImage();
+            labelPerClassInProject = labelListHandler.getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader);
+        }
+
+        else if(type == AnnotationType.TABULAR) {
+            CompletableFuture<List<JsonObject>> future = new CompletableFuture<>();
+            getAllTabularData(projectLoader.getProjectId()).onComplete(res -> {
+                if(res.succeeded()) {
+                    future.complete(res.result());
+                }
+
+                else if(res.failed()) {
+                    future.completeExceptionally(res.cause());
+                }
+            });
+            List<Map<String, Integer>> list = new ArrayList<>();
+            for(JsonObject result : future.get()){
+                String labelsListString = result.getString("LABEL");
+                if(labelsListString != null) {
+                    labeledData++;
+                    Map<String, Integer> map = new HashMap<>();
+                    JSONArray labelsJsonArray = new JSONArray(labelsListString);
+                    for(int i = 0; i < labelsJsonArray.length(); i++) {
+                        JSONObject jsonObject = labelsJsonArray.getJSONObject(i);
+                        String labelName = jsonObject.getString("labelName");
+                        if(map.containsKey(labelName)) {
+                            map.put(labelName, map.get(labelName) + 1);
+                        } else {
+                            map.put(labelName, 1);
+                        }
+                    }
+                    list.add(map);
+                } else {
+                    unlabeledData++;
+                }
+            }
+            Map<String, Integer> map = list.stream()
+                    .flatMap(m -> m.entrySet().stream())
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
+
+            labelPerClassInProject = map.entrySet().stream()
+                    .map(m -> LabelNameAndCountProperties.builder().label(m.getKey()).count(m.getValue()).build())
+                    .collect(Collectors.toList());
+        }
+
         return ProjectStatisticResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
-                .numLabeledImage(labelListHandler.getNumberOfLabeledImage())
-                .numUnLabeledImage(labelListHandler.getNumberOfUnLabeledImage())
-                .labelPerClassInProject(labelListHandler.getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader))
+                .numLabeledData(labeledData)
+                .numUnLabeledData(unlabeledData)
+                .labelPerClassInProject(labelPerClassInProject)
                 .build();
     }
+
+    public Future<List<JsonObject>> getAllTabularData(String projectID) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
+        JDBCPool pool = this.holder.getJDBCPool(loader);
+        String query = TabularAnnotationQuery.getProjectAttributeQuery();
+        Tuple params = Tuple.of(projectID);
+
+        return pool.withConnection(conn ->
+                conn.preparedQuery(query)
+                        .execute(params)
+                        .map(res -> {
+                            if(res.size() != 0) {
+                                Row row = res.iterator().next();
+                                TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, row.getString(0));
+
+                                return TabularAnnotationQuery.getGetAllDataQuery();
+                            }
+                            return null;
+                        })
+                        .compose(res -> conn.preparedQuery(res).execute())
+                        .map(res -> {
+                            if (res.size() != 0) {
+                                List<JsonObject> list = new ArrayList<>();
+                                for(Row row : res.value()) {
+                                    list.add(row.toJson());
+                                }
+                                return list;
+                            }
+                            return null;
+                        })
+                )
+                .onSuccess(res -> log.info("Retrieve data success"))
+                .onFailure(res -> log.info("Fail to retrieve data from database. " + res.getCause().getMessage()));
+    }
+
+    public Future<Void> updateTabularLabel(String projectID, UpdateTabularDataBody requestBody) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
+        TabularAnnotationQuery.createUpdateDataPreparedStatement(loader);
+        String query = TabularAnnotationQuery.getUpdateDataQuery();
+
+        String uuid = requestBody.getUuid();
+        String labelList = requestBody.getLabel();
+
+        Tuple params = Tuple.of(labelList, uuid, projectID);
+        return runQuery(query, params, this.holder.getJDBCPool(loader))
+                .map(DBUtils::toVoid);
+    }
+
+    public Future<JsonObject> getTabularDataByUuid(String projectID, String uuid) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
+        String projectAttributeQuery = TabularAnnotationQuery.getProjectAttributeQuery();
+        JDBCPool pool = this.holder.getJDBCPool(loader);
+
+        Tuple params = Tuple.of(projectID);
+        Tuple params2 = Tuple.of(uuid, projectID);
+
+        return pool.withConnection(conn ->
+            conn.preparedQuery(projectAttributeQuery)
+                    .execute(params)
+                    .map(res -> {
+                        if(res.size() != 0) {
+                            Row row = res.iterator().next();
+                            TabularAnnotationQuery.createGetSpecificDataPreparedStatement(loader, row.getString(0));
+
+                            return TabularAnnotationQuery.getGetDataQuery();
+                        }
+                        return null;
+                    })
+                    .compose(res -> conn.preparedQuery(res).execute(params2))
+                    .map(res -> {
+                        if (res.size() != 0) {
+                            conn.close();
+                            return res.iterator().next().toJson();
+                        }
+                        conn.close();
+                        return null;
+                    })
+            )
+            .onSuccess(res -> log.info("Retrieve data success"))
+            .onFailure(res -> log.info("Fail to retrieve data from database. " + res.getCause().getMessage()));
+
+    }
+
+    public Future<JsonObject> getAttributeTypeMap(String projectId) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String query = TabularAnnotationQuery.getAttributeTypeMapQuery();
+        Tuple params = Tuple.of(projectId);
+
+        return runQuery(query, params, this.holder.getJDBCPool(loader)).map(result -> {
+            JsonObject jsonObject;
+            if(result.size() != 0) {
+                Row row = result.iterator().next();
+                jsonObject = new JsonObject(row.getString(0));
+
+                return jsonObject;
+            }
+
+            log.info("Fail to retrieve the attribute type map from database");
+            return null;
+        });
+    }
+
+    public Future<JsonArray> getLabel(String projectId, String uuid) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        TabularAnnotationQuery.createGetLabelPreparedStatement(loader);
+        String query = TabularAnnotationQuery.getGetLabelQuery();
+        Tuple params = Tuple.of(uuid, projectId);
+
+        return runQuery(query, params, this.holder.getJDBCPool(loader)).map(result -> {
+            JsonArray labelsListJsonArray = new JsonArray();
+            if(result.size() != 0) {
+                Row row = result.iterator().next();
+                String labelsJsonString = row.getString(0);
+
+                if(labelsJsonString == null) {
+                    JsonObject emptyLabelJson = new JsonObject().put("labelName", "").put("tagColor", "");
+                    labelsListJsonArray.add(emptyLabelJson);
+                }
+                else {
+                    JSONArray labelsJsonArray = new JSONArray(labelsJsonString);
+                    TabularHandler.processJSONArrayToJsonArray(labelsJsonArray, labelsListJsonArray);
+                }
+                return labelsListJsonArray;
+            }
+            log.info("Fail to query label");
+            return null;
+        });
+    }
+
+    public void updateLabel(String projectID, JsonObject requestBody) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
+        TabularAnnotationQuery.createUpdateDataPreparedStatement(loader);
+        String query = TabularAnnotationQuery.getUpdateDataQuery();
+
+        String uuid = requestBody.getString("uuid");
+        String labelList = requestBody.getString("labels");
+        Tuple params = Tuple.of(labelList, uuid, projectID);
+
+        runQuery(query, params, this.holder.getJDBCPool(loader))
+                .map(DBUtils::toVoid);
+    }
+
+    public Future<Void> writeFile(String projectId, String format, boolean isFilterInvalidData) throws InterruptedException, ExecutionException, IOException {
+        switch(format) {
+            case "csv" -> {
+                return writeCsvFile(projectId, isFilterInvalidData);
+            }
+            case "excel" -> {
+                return writeExcelFile(projectId, isFilterInvalidData);
+            }
+            case "json" -> {
+                return writeJsonFile(projectId, isFilterInvalidData);
+            }
+        }
+        return null;
+    }
+
+    public Future<Void> writeCsvFile(String projectId, boolean isFilterInvalidData) throws IOException, ExecutionException, InterruptedException {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String query = TabularAnnotationQuery.getProjectAttributeQuery();
+        Tuple params = Tuple.of(projectId);
+        JDBCPool pool = this.holder.getJDBCPool(loader);
+        List<String> extractedColumnNames = new ArrayList<>();
+        Promise<Void> promise = Promise.promise();
+
+        return pool.withConnection(conn -> {
+            conn.preparedQuery(query).execute(params).map(res -> {
+                if(res.size() != 0) {
+                    Row row = res.iterator().next();
+                    String columnNames = row.getString(0) + ",fileName,label";
+                    String[] columnNamesArray = columnNames.split(",");
+                    extractedColumnNames.addAll(Arrays.asList(columnNamesArray));
+                    TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, row.getString(0));
+
+                    return TabularAnnotationQuery.getGetAllDataQuery();
+                }
+                return null;
+            }).compose(res -> conn.preparedQuery(res).execute())
+            .map(result -> {
+                if(result.size() != 0) {
+                    return listOfObjectOfTabularData(result.value(), extractedColumnNames, isFilterInvalidData);
+                }
+                return null;
+            }).onComplete(res -> {
+                if(res.succeeded()) {
+                    try {
+                        log.info("Generating csv file...");
+                        csvOutputFileWriter(res.result(), projectId);
+                        promise.complete();
+                    } catch (IOException e) {
+                        promise.fail("Error in generating csv file");
+                    }
+                }
+
+                if(res.failed()) {
+                    promise.fail(res.cause());
+                }
+            });
+            return promise.future();
+        });
+
+//        CompletableFuture<String> future = new CompletableFuture<>();
+//        pool.preparedQuery(query).execute(params).onComplete(res -> {
+//            if(res.succeeded()) {
+//                future.complete(res.result().iterator().next().getString(0));
+//            } else {
+//                future.completeExceptionally(res.cause());
+//            }
+//        });
+//
+//        String columnNames = future.get() + ",fileName,label";
+//        String[] arr = columnNames.split(",");
+//        List<String> list1 = Arrays.asList(arr);
+//
+//        TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, future.get());
+//        String query2 = TabularAnnotationQuery.getGetAllDataQuery();
+//
+//        CompletableFuture<List<Object[]>> future1 = new CompletableFuture<>();
+//        pool.preparedQuery(query2).execute().onComplete(res -> {
+//            if(res.succeeded()) {
+//                List<Object[]> listOfStringArray = new ArrayList<>();
+//                listOfStringArray.add(arr);
+//                for(Row row : res.result()) {
+//                    List<Object> tempList = new ArrayList<>();
+//                    for(int i = 0; i < list1.size(); i++) {
+//                        Object value = row.toJson().getValue(list1.get(i).toUpperCase());
+//                        tempList.add(Objects.requireNonNullElse(value, ""));
+//                    }
+//                    Object[] result = tempList.toArray(Object[]::new);
+//                    listOfStringArray.add(result);
+//                    tempList.clear();
+//                }
+//                future1.complete(listOfStringArray);
+//            } else {
+//                future1.completeExceptionally(res.cause());
+//            }
+//        });
+//
+//        csvOutputFileWriter(future1.get(), projectId);
+    }
+
+    private static String extractLabelsFromArrayToString(Object value) {
+        JSONArray labelsJsonArray = new JSONArray(value.toString());
+        List<String> labelList = new ArrayList<>();
+        for(int i = 0; i < labelsJsonArray.length(); i++) {
+            labelList.add((String) labelsJsonArray.getJSONObject(i).get("labelName"));
+        }
+        String labelListString = StringUtils.join(labelList, " ");
+        List<String> list = new ArrayList<>();
+        list.add(labelListString);
+        return list.toString();
+    }
+
+    private List<Object[]> listOfObjectOfTabularData(RowSet<Row> result, List<String> extractedColumnNames,
+                                                     boolean isFilteredInvalidData)
+    {
+        List<Object[]> resultArrayList = new ArrayList<>();
+        resultArrayList.add(extractedColumnNames.toArray());
+        for(Row row : result.value()) {
+            List<Object> tempList = new ArrayList<>();
+            if(isFilteredInvalidData) {
+                if(!checkContainInvalidData(row)) {
+                    getListOfTabularObject(extractedColumnNames, resultArrayList, row, tempList);
+                }
+            } else {
+                getListOfTabularObject(extractedColumnNames, resultArrayList, row, tempList);
+            }
+        }
+        return resultArrayList;
+    }
+
+    private void getListOfTabularObject(List<String> extractedColumnNames, List<Object[]> resultArrayList, Row row, List<Object> tempList) {
+        for (String extractedColumnName : extractedColumnNames) {
+            String columnName = extractedColumnName.toUpperCase();
+            Object value = row.toJson().getValue(columnName);
+            if (columnName.equals("LABEL")) {
+                if (value == null) {
+                    tempList.add("No Label");
+                } else {
+                    tempList.add(extractLabelsFromArrayToString(value));
+                }
+            } else {
+                tempList.add(value);
+            }
+        }
+        Object[] resultArray = tempList.toArray(Object[]::new);
+        resultArrayList.add(resultArray);
+        tempList.clear();
+    }
+
+    private boolean checkContainInvalidData(Row row){
+        Object value = row.toJson().getValue("LABEL");
+        if(value != null) {
+            JSONArray jsonArray = new JSONArray(value.toString());
+            for(int i = 0; i < jsonArray.length(); i++) {
+                String label = jsonArray.getJSONObject(i).getString("labelName");
+                if(label.equals("Invalid")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<Map<String, Object>> mapOfObjectOfTabularData(RowSet<Row> result, List<String> extractedColumnNames,
+                                                               boolean isFilterInvalidData)
+    {
+        List<Map<String, Object>> resultMapList = new ArrayList<>();
+        Map<String, Object> tempMap = new LinkedHashMap<>();
+
+        for(String name : extractedColumnNames) {
+            tempMap.put(name, name);
+        }
+        resultMapList.add(tempMap);
+        tempMap.clear();
+
+        for(Row row : result.value()) {
+            if(isFilterInvalidData) {
+                if(checkContainInvalidData(row)) {
+                    getMapOfTabularObject(extractedColumnNames, resultMapList, tempMap, row);
+                }
+            } else {
+                getMapOfTabularObject(extractedColumnNames, resultMapList, tempMap, row);
+            }
+        }
+        return resultMapList;
+    }
+
+    private void getMapOfTabularObject(List<String> extractedColumnNames, List<Map<String, Object>> resultMapList,
+                                       Map<String, Object> tempMap, Row row) {
+        for (String extractedColumnName : extractedColumnNames) {
+            String columnName = extractedColumnName.toUpperCase();
+            Object value = row.toJson().getValue(columnName);
+            if (columnName.equals("LABEL")) {
+                if (value == null) {
+                    tempMap.put(columnName,"No Label");
+                } else {
+                    tempMap.put(columnName, extractLabelsFromArrayToString(value));
+                }
+            } else {
+                tempMap.put(columnName, value);
+            }
+        }
+        resultMapList.add(tempMap);
+        tempMap.clear();
+    }
+
+    private List<JsonObject> lisOfJsonObjectOfTabularData(RowSet<Row> result, List<String> extractedColumnNames, boolean isFilterInvalidData) {
+        List<JsonObject> resultList = new ArrayList<>();
+
+        for(Row row : result.value()) {
+            JsonObject jsonObject = new JsonObject();
+            if(isFilterInvalidData) {
+                if(checkContainInvalidData(row)){
+                    getTabularJsonObject(extractedColumnNames, resultList, row, jsonObject);
+                }
+            } else {
+                getTabularJsonObject(extractedColumnNames, resultList, row, jsonObject);
+            }
+
+        }
+
+        return resultList;
+    }
+
+    private void getTabularJsonObject(List<String> extractedColumnNames, List<JsonObject> resultList, Row row, JsonObject jsonObject) {
+        for (String extractedColumnName : extractedColumnNames) {
+            String columnName = extractedColumnName.toUpperCase();
+            Object value = row.toJson().getValue(columnName);
+            if (columnName.equals("LABEL")) {
+                if (value == null) {
+                    jsonObject.put(extractedColumnName,"No Label");
+                } else {
+                    jsonObject.put(extractedColumnName, extractLabelsFromArrayToString(value));
+                }
+            } else {
+                jsonObject.put(extractedColumnName, value);
+            }
+        }
+        resultList.add(jsonObject);
+    }
+
+    private void csvOutputFileWriter(List<Object[]> retrievedDataList, String projectId) throws IOException {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String projectPath = loader.getProjectPath().getAbsolutePath();
+        File projectDirectory = new File(projectPath);
+        String tempFilePath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".text";
+        String csvFilePath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".csv";
+        File csvFile = new File(csvFilePath);
+        File tempFile = new File(tempFilePath);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile));
+
+        if (projectDirectory.mkdirs()) {
+            log.info("Project folder " + projectDirectory.getName() + " is created");
+        } else {
+            log.info("Project folder " + projectDirectory.getName() + " is exist");
+        }
+
+        for (Object[] objArr : retrievedDataList) {
+            for (int i = 0; i < objArr.length; i++) {
+                if (i != objArr.length - 1) {
+                    writer.write(objArr[i].toString());
+                    writer.write(",");
+                } else {
+                    writer.write(objArr[i].toString());
+                }
+            }
+            writer.newLine();
+        }
+        writer.close();
+        tempFile.renameTo(csvFile);
+
+        if (csvFile.exists()) {
+            log.info(csvFile.getName() + " is generated in project folder");
+        } else {
+            log.info("Fail to generate csv file for project " + loader.getProjectName());
+        }
+    }
+
+    private Future<Void> writeExcelFile(String projectId, boolean isFilterInvalidData) throws ExecutionException, InterruptedException {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String query = TabularAnnotationQuery.getProjectAttributeQuery();
+        Tuple params = Tuple.of(projectId);
+        JDBCPool pool = this.holder.getJDBCPool(loader);
+        List<String> extractedColumnNames = new ArrayList<>();
+        Promise<Void> promise = Promise.promise();
+
+        return pool.withConnection(conn -> {
+            conn.preparedQuery(query).execute(params).map(res -> {
+                if(res.size() != 0) {
+                    Row row = res.iterator().next();
+                    String columnNames = row.getString(0) + ",fileName,label";
+                    String[] columnNamesArray = columnNames.split(",");
+                    extractedColumnNames.addAll(Arrays.asList(columnNamesArray));
+                    TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, row.getString(0));
+
+                    return TabularAnnotationQuery.getGetAllDataQuery();
+                }
+                return null;
+            }).compose(res -> conn.preparedQuery(res).execute())
+                    .map(result -> {
+                        if(result.size() != 0) {
+                            return mapOfObjectOfTabularData(result.value(), extractedColumnNames, isFilterInvalidData);
+                        }
+                        return null;
+                    })
+            .onComplete(res -> {
+                if(res.succeeded()) {
+                    try {
+                        log.info("Generating excel file...");
+                        excelOutputFileWriter(res.result(), projectId);
+                        promise.complete();
+                    } catch (ExecutionException | InterruptedException | FileNotFoundException e) {
+                        promise.fail("Error in generating excel file");
+                    }
+                }
+                if(res.failed()) {
+                    promise.fail(res.cause());
+                }
+            });
+            return promise.future();
+        });
+    }
+
+    private void excelOutputFileWriter(List<Map<String, Object>> retrievedDataList, String projectId)
+            throws ExecutionException, InterruptedException, FileNotFoundException {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String projectPath = loader.getProjectPath().getAbsolutePath();
+        File projectDirectory = new File(projectPath);
+        String excelFilePath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".xlsx";
+        XSSFWorkbook excelWorkbook = new XSSFWorkbook();
+        XSSFSheet excelSpreadSheet = excelWorkbook.createSheet(loader.getProjectName() + "_data");
+        JsonObject attributeMap;
+
+        if(projectDirectory.mkdirs()) {
+            log.info("Project folder " + projectDirectory.getName() + " is created");
+        } else {
+            log.info("Project folder " + projectDirectory.getName() + " is exist");
+        }
+
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        getAttributeTypeMap(projectId)
+                .onComplete(res -> {
+                    if(res.succeeded()) {
+                        future.complete(res.result());
+                    } else {
+                        future.completeExceptionally(res.cause());
+                    }
+                });
+        attributeMap = future.get();
+
+        for(int i = 0; i < retrievedDataList.size(); i++) {
+            XSSFRow row = excelSpreadSheet.createRow(i++);
+            Map<String, Object> data = retrievedDataList.get(i);
+            int columnCount = 0;
+            for(Map.Entry<String, Object> entry : data.entrySet()) {
+                Cell cell = row.createCell(columnCount++);
+                String attributeType = attributeMap.getString(entry.getKey());
+                String dataType = TabularHandler.checkAttributeType(attributeType);
+                switch (dataType) {
+                    case "Integer" -> cell.setCellValue((Integer) entry.getValue());
+                    case "Double" -> cell.setCellValue((Double) entry.getValue());
+                    case "String" -> cell.setCellValue((String) entry.getValue());
+                    case "Date" -> cell.setCellValue((Date) entry.getValue());
+                }
+            }
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
+            excelWorkbook.write(outputStream);
+            log.info(loader.getProjectName() + ".xlsx" + " is generated in project folder");
+        } catch (IOException e) {
+            log.info("Fail to generate excel file for project " + loader.getProjectName());
+        }
+    }
+
+    private Future<Void> writeJsonFile(String projectId, boolean isFilterInvalidData) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String query = TabularAnnotationQuery.getProjectAttributeQuery();
+        Tuple params = Tuple.of(projectId);
+        JDBCPool pool = this.holder.getJDBCPool(loader);
+        List<String> extractedColumnNames = new ArrayList<>();
+        Promise<Void> promise = Promise.promise();
+
+        return pool.withConnection(conn -> {
+            conn.preparedQuery(query).execute(params).map(res -> {
+                if(res.size() != 0) {
+                    Row row = res.iterator().next();
+                    String columnNames = row.getString(0) + ",fileName,label";
+                    String[] columnNamesArray = columnNames.split(",");
+                    extractedColumnNames.addAll(Arrays.asList(columnNamesArray));
+                    TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, row.getString(0));
+
+                    return TabularAnnotationQuery.getGetAllDataQuery();
+                }
+                return null;
+            }).compose(res -> conn.preparedQuery(res).execute())
+                    .map(result -> {
+                        if(result.size() != 0) {
+                            return lisOfJsonObjectOfTabularData(result.value(), extractedColumnNames, isFilterInvalidData);
+                        }
+                        return null;
+                    })
+                    .onComplete(res -> {
+                        if(res.succeeded()) {
+                            try {
+                                log.info("Generating Json file...");
+                                jsonFileWriter(res.result(), projectId);
+                                promise.complete();
+                            } catch (IOException e) {
+                                promise.fail("Error in generating json file");
+                            }
+                        }
+
+                        if(res.failed()) {
+                            promise.fail(res.cause());
+                        }
+                    });
+            return promise.future();
+        });
+    }
+
+    private void jsonFileWriter(List<JsonObject> result, String projectId) throws IOException {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String projectPath = loader.getProjectPath().getAbsolutePath();
+        File projectDirectory = new File(projectPath);
+        String jsonFilePath = loader.getProjectPath() + File.separator + loader.getProjectName() + ".json";
+        FileWriter writer = new FileWriter(jsonFilePath);
+
+        if(projectDirectory.mkdirs()) {
+            log.info("Project folder " + projectDirectory.getName() + " is created");
+        } else {
+            log.info("Project folder " + projectDirectory.getName() + " is exist");
+        }
+
+        try {
+            writer.write(result.toString());
+            log.info(loader.getProjectName() + ".json is generated in project folder");
+        }
+        catch (IOException e) {
+            log.info("Fail to generate json file for project " + loader.getProjectName());
+        }
+        finally {
+            writer.flush();
+            writer.close();
+        }
+    }
+
+//    public Future<JsonObject> automateTabularLabelling(String projectId, JsonObject preLabellingConditions,
+//                                                       String currentUuid, PortfolioDB portfolioDB) throws Exception {
+//        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+//        List<String> uuidList = loader.getUuidListFromDb();
+//        TabularHandler tabularHandler = new TabularHandler();
+//        tabularHandler.initiateAutomaticLabellingForTabular(projectId, preLabellingConditions, uuidList, portfolioDB);
+//        log.info("initiate");
+//        Promise<JsonObject> promise = Promise.promise();
+//
+//        if(tabularHandler.checkIsCurrentUuidFinished(currentUuid)) {
+//            getTabularDataByUuid(projectId, currentUuid).onComplete(res -> {
+//                if(res.succeeded()) {
+//                    promise.complete(res.result());
+//                }
+//
+//                if(res.failed()) {
+//                    promise.fail(res.cause());
+//                }
+//            });
+//        }
+//        return promise.future();
+//    }
+
+    public Future<List<String>> getAllInvalidData(String projectID) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
+        JDBCPool pool = this.holder.getJDBCPool(loader);
+        String query = TabularAnnotationQuery.getProjectAttributeQuery();
+        Tuple params = Tuple.of(projectID);
+
+        return pool.withConnection(conn ->
+                conn.preparedQuery(query)
+                        .execute(params)
+                        .map(res -> {
+                            if(res.size() != 0) {
+                                Row row = res.iterator().next();
+                                TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, row.getString(0));
+
+                                return TabularAnnotationQuery.getGetAllDataQuery();
+                            }
+                            return null;
+                        })
+                        .compose(res -> conn.preparedQuery(res).execute())
+                        .map(res -> {
+                            if (res.size() != 0) {
+                                List<String> listOfInvalidUUID = new ArrayList<>();
+                                for(Row row : res.value()) {
+                                    boolean invalidLabels = false;
+                                    JsonObject resultObject = row.toJson();
+                                    String labelsJsonString = resultObject.getString("LABEL");
+                                    if(labelsJsonString != null) {
+                                        JSONArray labelsJsonArray = new JSONArray(labelsJsonString);
+                                        for(int i = 0; i < labelsJsonArray.length(); i++) {
+                                            JSONObject object = labelsJsonArray.getJSONObject(i);
+                                            if(object.getString("labelName").equals("Invalid")) {
+                                                invalidLabels = true;
+                                            }
+                                        }
+                                        if(invalidLabels) {
+                                            listOfInvalidUUID.add(resultObject.getString("UUID"));
+                                        }
+                                    }
+                                }
+                                return listOfInvalidUUID;
+                            }
+                            return null;
+                        })
+        )
+                .onSuccess(res -> log.info("Retrieve data success"))
+                .onFailure(res -> log.info("Fail to retrieve data from database. " + res.getCause().getMessage()));
+    }
+
 }

@@ -22,19 +22,25 @@ import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.TabularHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
+import com.opencsv.exceptions.CsvException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -53,6 +59,7 @@ public class ProjectLoader
 
     private Integer annotationType;
     private File projectPath;
+    private File tabularFilePath;
 
     private ProjectInfra projectInfra;
 
@@ -302,5 +309,21 @@ public class ProjectLoader
         } else {
             return ParamConfig.getSegmentationParam();
         }
+    }
+
+    public void parseCsvFile(String filePath) throws IOException, CsvException {
+        TabularHandler tabularHandler = new TabularHandler();
+        tabularHandler.readCsvFile(filePath, this, annotationDB);
+//        tabularHandler.parseCsvToJson(filePath);
+    }
+
+    public void parseExcelFile(String filePath) throws IOException, ParserConfigurationException, SAXException, OpenXML4JException {
+        TabularHandler tabularHandler = new TabularHandler();
+        tabularHandler.readExcelFile(filePath, this, annotationDB);
+//        tabularHandler.readLargeExcelFile(filePath, this, annotationDB);
+    }
+
+    public void saveDataToTabularProjectTable() {
+        TabularHandler.saveToTabularProjectTable(annotationDB, this);
     }
 }

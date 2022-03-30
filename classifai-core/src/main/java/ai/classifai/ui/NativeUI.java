@@ -23,4 +23,9 @@ public interface NativeUI {
     SelectionWindowStatus getProjectFolderSelectorWindowStatus();
     String getProjectFolderSelectedPath();
 
+    void showTabularFileSelector();
+    boolean isTabularFileSelectorOpen();
+    SelectionWindowStatus getTabularFileSelectorWindowStatus();
+    String getTabularFileSelectedPath();
+
 }

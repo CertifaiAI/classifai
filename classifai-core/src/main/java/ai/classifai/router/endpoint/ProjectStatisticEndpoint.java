@@ -13,6 +13,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,8 +35,7 @@ public class ProjectStatisticEndpoint {
     @GET
     @Path("/v2/{annotation_type}/projects/{project_name}/statistic")
     public ProjectStatisticResponse getProjectStatistic (@PathParam("annotation_type") String annotationType,
-                                                         @PathParam("project_name") String projectName)
-    {
+                                                         @PathParam("project_name") String projectName) throws ExecutionException, InterruptedException {
         AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
 
         log.info("Get project statistic : " + projectName + " of annotation type: " + type.name());
@@ -49,7 +49,7 @@ public class ProjectStatisticEndpoint {
                     .build();
         }
 
-        return portfolioDB.getProjectStatistic(projectLoader);
+        return portfolioDB.getProjectStatistic(projectLoader, type);
 
     }
 }

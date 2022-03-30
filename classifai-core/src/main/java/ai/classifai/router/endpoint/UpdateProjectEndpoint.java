@@ -1,5 +1,6 @@
 package ai.classifai.router.endpoint;
 
+import ai.classifai.database.annotation.TabularAnnotationQuery;
 import ai.classifai.database.portfolio.PortfolioDB;
 import ai.classifai.dto.api.body.ProjectStatusBody;
 import ai.classifai.dto.api.response.ReloadProjectStatus;

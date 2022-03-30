@@ -29,7 +29,8 @@ import java.util.Locale;
 public enum AnnotationType
 {
     BOUNDINGBOX,
-    SEGMENTATION;
+    SEGMENTATION,
+    TABULAR;
     //ADD WHEN HAVE NEW ANNOTATION TYPE
 
     public static AnnotationType getTypeFromEndpoint(@NonNull String annotation)
@@ -44,18 +45,23 @@ public enum AnnotationType
         {
             type = SEGMENTATION;
         }
+        else if(annotation.equals("tabular"))
+        {
+            type = TABULAR;
+        }
         return type;
     }
 
     public static boolean checkSanity(@NonNull Integer annotationTypeInt)
     {
-        if (annotationTypeInt.equals(BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(SEGMENTATION.ordinal()))
+        if (annotationTypeInt.equals(BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(SEGMENTATION.ordinal())
+                || annotationTypeInt.equals(TABULAR.ordinal()))
         {
             return true;
         }
         else
         {
-            log.debug("Annotation unmatched in AnnotationType. AnnotationType only accepts [boundingbox/segmentation]");
+            log.debug("Annotation unmatched in AnnotationType. AnnotationType only accepts [boundingbox/segmentation/tabular]");
             return false;
         }
     }
@@ -72,6 +78,10 @@ public enum AnnotationType
         {
             return SEGMENTATION;
         }
+        else if (caseInsensitive.equals(TABULAR.name()))
+        {
+            return TABULAR;
+        }
 
         log.debug("Annotation type from string resulted in failure: " + caseInsensitive);
 
@@ -87,6 +97,10 @@ public enum AnnotationType
         else if (ordinal.equals(SEGMENTATION.ordinal()))
         {
             return SEGMENTATION;
+        }
+        else if (ordinal.equals(TABULAR.ordinal()))
+        {
+            return TABULAR;
         }
 
         log.debug("Annotation type from integer resulted in failure: " + ordinal);

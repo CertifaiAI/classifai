@@ -99,4 +99,24 @@ public class ContainerUI implements NativeUI {
     public String getProjectFolderSelectedPath() {
         return null;
     }
+
+    @Override
+    public void showTabularFileSelector() {
+
+    }
+
+    @Override
+    public boolean isTabularFileSelectorOpen() {
+        return false;
+    }
+
+    @Override
+    public SelectionWindowStatus getTabularFileSelectorWindowStatus() {
+        return null;
+    }
+
+    @Override
+    public String getTabularFileSelectedPath() {
+        return null;
+    }
 }

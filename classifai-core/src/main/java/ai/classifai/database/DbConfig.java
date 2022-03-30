@@ -45,6 +45,7 @@ public class DbConfig
     @Getter private static String portfolioKey;
     @Getter private static String bndBoxKey;
     @Getter private static String segKey;
+    @Getter private static String tabularKey;
 
     @Getter private static List<String> tableKeys;
 
@@ -60,9 +61,10 @@ public class DbConfig
         portfolioKey = "portfolio";
         bndBoxKey = "bbproject";
         segKey  = "segproject";
+        tabularKey  = "tabularproject";
 
         //add more database tables here if created
-        tableKeys = Arrays.asList(portfolioKey, bndBoxKey, segKey);
+        tableKeys = Arrays.asList(portfolioKey, bndBoxKey, segKey, tabularKey);
 
         tableFolderPathDict = new HashMap<>();
         tableAbsPathDict = new HashMap<>();

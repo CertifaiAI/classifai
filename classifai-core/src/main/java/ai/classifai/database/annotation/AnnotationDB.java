@@ -27,6 +27,7 @@ import ai.classifai.util.collection.UuidGenerator;
 import ai.classifai.util.data.FileHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.StringHandler;
+import ai.classifai.util.data.TabularHandler;
 import ai.classifai.util.project.ProjectHandler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -40,9 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Implementation of Functionalities for each annotation type
@@ -252,4 +251,74 @@ public class AnnotationDB
                 cause -> log.info("Fail to create UUID")
         ));
     }
+
+    public void createTabularProjectTable(ProjectLoader loader) {
+        String createProjectAttributeTableQuery = TabularAnnotationQuery.getCreateProjectAttributeTableQuery();
+        String updateProjectAttributeTableQuery = TabularAnnotationQuery.getUpdateProjectAttributeTableQuery();
+        String createProjectTableQuery = TabularAnnotationQuery.getCreateProjectTableQuery();
+
+        JDBCPool tabularPool = holder.getJDBCPool(loader);
+        Tuple params = Tuple.of(loader.getProjectId(), TabularHandler.getColumnNames(), TabularHandler.getAttributeTypesJsonString());
+
+        tabularPool.getConnection()
+                .compose(conn ->
+                    conn.preparedQuery(createProjectAttributeTableQuery).execute()
+                        .compose(res ->
+                            conn.preparedQuery(updateProjectAttributeTableQuery)
+                                .execute(params)
+                                .onComplete(response -> {
+                                    if(response.succeeded()) {
+                                        log.info("Project attribute table created and updated");
+                                    }
+
+                                    else if (response.failed()) {
+                                        log.info("Fail to create project attribute table." + response.cause().getMessage());
+                                    }
+                            })
+                        )
+                .compose(res ->
+                    conn.preparedQuery(createProjectTableQuery)
+                            .execute()
+                            .onComplete(fetch -> {
+                                if(fetch.succeeded()) {
+                                    log.info("Tabular table " + loader.getProjectName() + " created");
+                                    loader.saveDataToTabularProjectTable();
+                                }
+
+                                else if(fetch.failed()) {
+                                    log.info("Fail to create tabular table." + fetch.cause().getMessage());
+                                }
+                            })
+                    )
+                );
+    }
+
+    public void saveTabularData(@NonNull ProjectLoader loader, String[] rowsData, String filePath, Integer currentIndex) {
+        String query = TabularAnnotationQuery.getCreateDataQuery();
+        String uuid = UuidGenerator.generateUuid();
+        List<Object> tabularDataPoint = createTabularDataPoint(loader, uuid, rowsData, filePath);
+
+        Tuple params = Tuple.from(tabularDataPoint);
+        runQuery(loader,query, params, DBUtils.handleEmptyResponse(
+            () -> {
+                loader.pushFileSysNewUUIDList(uuid);
+                loader.updateLoadingProgress(currentIndex);
+            },
+            cause -> log.error("Push tabular data point with file path " + filePath + " failed: " + cause)
+        ));
+    }
+
+    private List<Object> createTabularDataPoint(ProjectLoader loader, String uuid, String[] rowsData, String filePath) {
+        List<Object> list = new ArrayList<>();
+        String projectID = loader.getProjectId();
+        list.add(uuid);
+        list.add(projectID);
+        list.add(loader.getProjectName());
+        list.addAll(Arrays.asList(rowsData));
+        list.add(filePath);
+        list.add(null);
+
+        return list;
+    }
+
 }

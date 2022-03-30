@@ -10,6 +10,7 @@ import ai.classifai.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.ui.selector.project.LabelFileSelector;
 import ai.classifai.ui.selector.project.ProjectFolderSelector;
 import ai.classifai.ui.selector.project.ProjectImportSelector;
+import ai.classifai.ui.selector.project.TabularFileSelector;
 import ai.classifai.ui.utils.UIResources;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +25,7 @@ public class DesktopUI implements NativeUI {
     private final ProjectImportSelector projectImportSelector;
     private final ProjectFolderSelector projectFolderSelector;
     private final LabelFileSelector labelFileSelector;
+    private final TabularFileSelector tabularFileSelector;
 
     public DesktopUI(Runnable serverShutdownCallback, ProjectImport projectImport){
         LookFeelSetter.setDarkMode();
@@ -32,6 +34,7 @@ public class DesktopUI implements NativeUI {
         projectImportSelector = new ProjectImportSelector(this, projectImport);
         projectFolderSelector = new ProjectFolderSelector(this);
         labelFileSelector = new LabelFileSelector(this);
+        tabularFileSelector = new TabularFileSelector(this);
     }
 
     @Override
@@ -105,6 +108,26 @@ public class DesktopUI implements NativeUI {
     @Override
     public String getProjectFolderSelectedPath() {
         return projectFolderSelector.getProjectFolderPath();
+    }
+
+    @Override
+    public void showTabularFileSelector() {
+        tabularFileSelector.run();
+    }
+
+    @Override
+    public boolean isTabularFileSelectorOpen() {
+        return tabularFileSelector.isWindowOpen();
+    }
+
+    @Override
+    public SelectionWindowStatus getTabularFileSelectorWindowStatus() {
+        return tabularFileSelector.getWindowStatus();
+    }
+
+    @Override
+    public String getTabularFileSelectedPath() {
+        return tabularFileSelector.getTabularFilePath();
     }
 
     public void ensureWelcomeLauncherStaysInBackground(){

@@ -20,12 +20,17 @@ import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
+import com.opencsv.exceptions.CsvException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -136,32 +141,62 @@ public class ProjectEndpoint {
 
     protected ActionStatus createRawProject(CreateProjectBody requestBody) throws IOException {
         String projectName = requestBody.getProjectName();
-
         String annotationName = requestBody.getAnnotationType();
         Integer annotationInt = AnnotationType.get(annotationName).ordinal();
+        String projectPath = requestBody.getProjectPath();
+        String labelPath = requestBody.getLabelFilePath();
+        List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
 
         if (projectHandler.isProjectNameUnique(projectName, annotationInt))
         {
-            String projectPath = requestBody.getProjectPath();
+            switch (annotationInt) {
+                case 0, 1 -> {
+                    ProjectLoader loader = ProjectLoader.builder()
+                            .projectId(UuidGenerator.generateUuid())
+                            .projectName(projectName)
+                            .annotationType(annotationInt)
+                            .projectPath(new File(projectPath))
+                            .labelList(labelList)
+                            .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                            .projectInfra(ProjectInfra.ON_PREMISE)
+                            .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                            .portfolioDB(portfolioDB)
+                            .annotationDB(annotationDB)
+                            .build();
+                    projectHandler.loadProjectLoader(loader);
+                    loader.initFolderIteration();
+                }
+                case 2 -> {
+                    String tabularFilePath = requestBody.getTabularFilePath();
 
-            String labelPath = requestBody.getLabelFilePath();
-            List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+                    ProjectLoader loader = ProjectLoader.builder()
+                            .projectId(UuidGenerator.generateUuid())
+                            .projectName(projectName)
+                            .annotationType(annotationInt)
+                            .projectPath(new File(tabularFilePath).getParentFile())
+                            .tabularFilePath(new File(tabularFilePath))
+                            .labelList(labelList)
+                            .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                            .projectInfra(ProjectInfra.ON_PREMISE)
+                            .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                            .portfolioDB(portfolioDB)
+                            .annotationDB(annotationDB)
+                            .build();
+                    projectHandler.loadProjectLoader(loader);
 
-            ProjectLoader loader = ProjectLoader.builder()
-                    .projectId(UuidGenerator.generateUuid())
-                    .projectName(projectName)
-                    .annotationType(annotationInt)
-                    .projectPath(new File(projectPath))
-                    .labelList(labelList)
-                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                    .projectInfra(ProjectInfra.ON_PREMISE)
-                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                    .portfolioDB(portfolioDB)
-                    .annotationDB(annotationDB)
-                    .build();
-
-            projectHandler.loadProjectLoader(loader);
-            loader.initFolderIteration();
+                    try {
+                        String extension = FilenameUtils.getExtension(tabularFilePath);
+                        switch(extension) {
+                            case "xlsx" -> loader.parseExcelFile(tabularFilePath);
+                            case "csv" ->  loader.parseCsvFile(tabularFilePath);
+                        }
+                    } catch (CsvException | OpenXML4JException e) {
+                        log.info("Cannot parse the csv file");
+                    } catch (SAXException | ParserConfigurationException e) {
+                        log.info("File parse error. The selected file is not csv or excel file");
+                    }
+                }
+            }
 
             return ActionStatus.ok();
         }
@@ -430,6 +465,52 @@ public class ProjectEndpoint {
         if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
         {
             response.setProjectPath(ui.getProjectFolderSelectedPath());
+        }
+
+        return response;
+    }
+
+    /**
+     * Open folder selector to choose project folder
+     * PUT http://localhost:{port}/v2/folders
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/folders
+     */
+    @PUT
+    @Path("/v2/tabularfile")
+    public ActionStatus selectTabularFile()
+    {
+        if(!ui.isTabularFileSelectorOpen())
+        {
+            ui.showTabularFileSelector();
+        }
+
+        return ActionStatus.ok();
+    }
+
+    /**
+     * Get status of choosing a project folder
+     * GET http://localhost:{port}/v2/folders
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/folders
+     */
+    @GET
+    @Path("/v2/tabularfile")
+    public SelectionStatusResponse selectTabularFileStatus()
+    {
+        SelectionWindowStatus status = ui.getTabularFileSelectorWindowStatus();
+
+        SelectionStatusResponse response = SelectionStatusResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .windowStatus(status.ordinal())
+                .windowMessage(status.name())
+                .build();
+
+        if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
+        {
+            response.setTabularFilePath(ui.getTabularFileSelectedPath());
         }
 
         return response;

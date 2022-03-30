@@ -19,4 +19,7 @@ public class CreateProjectBody {
 
     @JsonProperty
     String status;
+
+    @JsonProperty("tabular_file_path")
+    String tabularFilePath;
 }

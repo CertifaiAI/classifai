@@ -49,6 +49,9 @@ public class JDBCPoolHolder {
         createInitialTable(segPool, AnnotationQuery.getCreateProject());
         addJDBCPool(AnnotationType.SEGMENTATION, segPool);
 
+        JDBCPool tabularPool = createPoolForTable(vertx, db, DbConfig.getTabularKey());
+        addJDBCPool(AnnotationType.TABULAR, tabularPool);
+
         portfolioPool = createPoolForTable(vertx, db, DbConfig.getPortfolioKey());
         createInitialTable(portfolioPool, PortfolioDbQuery.getCreatePortfolioTable());
 
