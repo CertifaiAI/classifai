@@ -65,7 +65,7 @@ import java.util.stream.Stream;
 @NoArgsConstructor
 public class TabularHandler {
     private static String delimiter;
-    private static List<String> headerNames = new ArrayList<>();
+    private static List<String> headerNames = new LinkedList<>();
     private static Map<String, String> headers = new LinkedHashMap<>();
     private static Integer columnNumbers = 0;
     private static List<String[]> rowsData = new ArrayList<>();
@@ -97,44 +97,42 @@ public class TabularHandler {
 
     private static Map<String, String> mapHeaderNamesToHeaderTypes(List<String> keys, List<String> values) {
         return IntStream.range(0, keys.size())
-                .collect(LinkedHashMap::new, (x, i) -> x.put(keys.get(i), values.get(i)), Map::putAll );
+                .collect(LinkedHashMap::new, (x, i) -> x.put(keys.get(i), values.get(i)), Map::putAll);
     }
 
     private static List<String[]> readAllData(String filePath) {
         try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
-            return stream.map(x -> x.split(delimiter, -1)).collect(Collectors.toList());
+            return stream.map(x -> x.split(delimiter, -1)).collect(Collectors.toCollection(LinkedList::new));
         } catch (IOException e) {
             log.info("Error in reading file");
         }
         return null;
     }
 
-    private static boolean isDateObject(Object obj) {
+    private static boolean isDateObject(String obj) {
         String regex = "(([0-9][0-9]){2})?([0-2]?[0-9])?[/|-][0-1]?[0-9][/|-]([0-9]{2})?[0-9]{2}";
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(obj.toString());
+        Matcher matcher = pattern.matcher(obj);
         return matcher.matches();
     }
 
-    public static Map<Object, String> identifyEachDataType(String[] dataList) {
-        Map<Object, String> identifyDataType = new HashMap<>();
+    public static Map<String, String> identifyEachDataType(String[] dataList) {
+        Map<String, String> identifyDataType = new LinkedHashMap<>();
 
-        for (Object object : dataList) {
-            if (isDateObject(object))
+        for (String object : dataList) {
+            if (object != null && isDateObject(object))
             {
                 identifyDataType.put(object, "DATE");
             }
 
-            else {
-                if (NumberUtils.isCreatable(object.toString())) {
+            else if(object != null && !isDateObject(object)) {
+                if (NumberUtils.isCreatable(object)) {
                     try {
-                        if (Integer.valueOf(object.toString()).equals(Integer.parseInt(object.toString())))
-                        {
+                        if (Integer.valueOf(object).equals(Integer.parseInt(object))) {
                             identifyDataType.put(object, "INT");
                         }
                     } catch (NumberFormatException e) {
-                        if (Double.valueOf(object.toString()).equals(Double.parseDouble(object.toString())))
-                        {
+                        if (Double.valueOf(object).equals(Double.parseDouble(object))) {
                             identifyDataType.put(object, "DECIMAL");
                         } else {
                             log.info("Number format error. Data is not numeric");
@@ -142,27 +140,27 @@ public class TabularHandler {
                     }
                 }
 
-                else if (object instanceof String)
-                {
+                else {
                     identifyDataType.put(object, "VARCHAR(2000)");
                 }
-
-                else {
-                    log.info(object.toString() + " type is not supported");
-                }
             }
+
+            if(object == null) {
+                identifyDataType.put(null, "VARCHAR(2000)");
+            }
+
         }
 
         return identifyDataType;
     }
 
     private static void identifyHeadersTypes(List<String[]> dataFromFile) {
-        Map<Object, String> mapDataType;
+        Map<String, String> mapDataType;
         List<String> headerTypes = new LinkedList<>();
 
         for(String[] array : dataFromFile) {
             mapDataType = identifyEachDataType(array);
-            headerTypes = Arrays.stream(array).map(mapDataType::get).collect(Collectors.toList());
+            headerTypes = Arrays.stream(array).map(mapDataType::get).collect(Collectors.toCollection(LinkedList::new));
         }
         headers =  mapHeaderNamesToHeaderTypes(headerNames, headerTypes);
         columnNumbers = headers.size() + 5;
@@ -459,7 +457,9 @@ public class TabularHandler {
                     if(labelsFromConditionSetting != null) {
                         // update labels directly if labels from database is null or selected mode is overwrite
                         if(listOfLabelsFromDataBase.size() == 0 || labellingMode.equals("overwrite")) {
-                            updateTabularDataLabelInDatabase(projectId, uuid, labelsFromConditionSetting, portfolioDB);
+                            if(!isContainInvalidData(getLabelFromDataBase(projectId,uuid, portfolioDB))) {
+                                updateTabularDataLabelInDatabase(projectId, uuid, labelsFromConditionSetting, portfolioDB);
+                            }
                         }
 
                         // update labels on appending the labels
@@ -548,21 +548,38 @@ public class TabularHandler {
     {
         List<String> listOfLabelsFromDataBase = getLabelList(labelsFromDataBaseJsonArray);
         List<String> listOfLabelsFromConditionSetting = getLabelList(labelsFromConditionSettingJsonArray);
+        String labelsListJsonString;
         JsonArray filteredArray = new JsonArray();
+        boolean containInvalidData = isContainInvalidData(labelsFromDataBaseJsonArray);
 
-        List<String> filteredLabels = listOfLabelsFromConditionSetting
-                .stream()
-                .filter(label -> !listOfLabelsFromDataBase.contains(label))
-                .collect(Collectors.toList());
+        if(!containInvalidData) {
+            List<String> filteredLabels = listOfLabelsFromConditionSetting
+                    .stream()
+                    .filter(label -> !listOfLabelsFromDataBase.contains(label))
+                    .collect(Collectors.toList());
 
-        for(int i = 0; i < labelsFromConditionSettingJsonArray.size(); i++){
-            String label = labelsFromConditionSettingJsonArray.getJsonObject(i).getString("labelName");
-            if(filteredLabels.contains(label)) {
-                filteredArray.add(labelsFromConditionSettingJsonArray.getJsonObject(i));
+            for(int i = 0; i < labelsFromConditionSettingJsonArray.size(); i++){
+                String label = labelsFromConditionSettingJsonArray.getJsonObject(i).getString("labelName");
+                if(filteredLabels.contains(label)) {
+                    filteredArray.add(labelsFromConditionSettingJsonArray.getJsonObject(i));
+                }
             }
+            labelsListJsonString = labelsFromDataBaseJsonArray.addAll(filteredArray).encode();
+        } else {
+            labelsListJsonString = labelsFromDataBaseJsonArray.encode();
         }
 
-        return labelsFromDataBaseJsonArray.addAll(filteredArray).encode();
+        return labelsListJsonString;
+    }
+
+    private boolean isContainInvalidData(JsonArray labelsFromDataBaseJsonArray) {
+        for(int i = 0; i < labelsFromDataBaseJsonArray.size(); i++){
+            String label = labelsFromDataBaseJsonArray.getJsonObject(i).getString("labelName");
+            if(label.equals("Invalid")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String parsePreLabellingCondition(Map<String, Object> conditionMap, JsonObject attributeTypeMap,
