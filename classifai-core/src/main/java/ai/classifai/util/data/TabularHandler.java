@@ -447,28 +447,28 @@ public class TabularHandler {
         List<String> uuidList = loader.getUuidListFromDb();
         if(preLabellingConditions != null)
         {
-//            for(String uuid : uuidList)
-//            {
+            for(String uuid : uuidList)
+            {
                 for(int i = 0; i < preLabellingConditions.size(); i++)
                 {
-                    JsonObject tabularDataFromDataBase = getTabularDataFromDataBase(projectId, uuidList.get(0), portfolioDB);
+                    JsonObject tabularDataFromDataBase = getTabularDataFromDataBase(projectId, uuid, portfolioDB);
                     JsonObject condition = preLabellingConditions.getJsonObject(String.valueOf(i));
                     String labelsFromConditionSetting = parsePreLabellingCondition(condition.getMap(), attributeTypeMap,tabularDataFromDataBase);
-                    List<String> listOfLabelsFromDataBase = getListOfLabelsFromDataBase(projectId, uuidList.get(0), portfolioDB);
+                    List<String> listOfLabelsFromDataBase = getListOfLabelsFromDataBase(projectId, uuid, portfolioDB);
 
                     if(labelsFromConditionSetting != null) {
                         // update labels directly if labels from database is null or selected mode is overwrite
                         if(listOfLabelsFromDataBase.size() == 0 || labellingMode.equals("overwrite")) {
-                            updateTabularDataLabelInDatabase(projectId, uuidList.get(0), labelsFromConditionSetting, portfolioDB);
+                            updateTabularDataLabelInDatabase(projectId, uuid, labelsFromConditionSetting, portfolioDB);
                         }
 
                         // update labels on appending the labels
                         else if (labellingMode.equals("append")){
-                            JsonArray labelsFromDataBaseJsonArray = getLabelFromDataBase(projectId, uuidList.get(0), portfolioDB);
+                            JsonArray labelsFromDataBaseJsonArray = getLabelFromDataBase(projectId, uuid, portfolioDB);
                             JsonArray labelsFromConditionSettingJsonArray = parseLabelsJsonStringToJsonArray(labelsFromConditionSetting);
                             String distinctLabels = processExistedLabelsAndConditionLabels(labelsFromDataBaseJsonArray,
                                     labelsFromConditionSettingJsonArray);
-                            updateTabularDataLabelInDatabase(projectId, uuidList.get(0), distinctLabels, portfolioDB);
+                            updateTabularDataLabelInDatabase(projectId, uuid, distinctLabels, portfolioDB);
                         }
                     }
                 }
@@ -476,8 +476,8 @@ public class TabularHandler {
 //                if(currentUuid.equals(uuid)) {
 //                    returnCurrentUuidFinished(projectId, currentUuid, portfolioDB);
 //                }
-//            }
-            processingUuid = "";
+            }
+//            processingUuid = "";
         }
     }
 
