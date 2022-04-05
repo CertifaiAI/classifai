@@ -140,15 +140,12 @@ public class TabularHandler {
     }
 
     public static List<Map<String, String>> identifyEachDataType(String[] dataList) {
-//        log.info(Arrays.toString(dataList));
         List<Map<String, String>> list = new LinkedList<>();
-        Map<String, String> identifyDataType = new LinkedHashMap<>();
 
         for (String object : dataList) {
             Map<String, String> map = new HashMap<>();
             if (object != null && isDateObject(object))
             {
-//                identifyDataType.put(object, "DATE");
                 map.put(object, "VARCHAR(100)");
             }
 
@@ -156,12 +153,10 @@ public class TabularHandler {
                 if (NumberUtils.isCreatable(object)) {
                     try {
                         if (Integer.valueOf(object).equals(Integer.parseInt(object))) {
-//                            identifyDataType.put(object, "INT");
                             map.put(object, "INT");
                         }
                     } catch (NumberFormatException e) {
                         if (Double.valueOf(object).equals(Double.parseDouble(object))) {
-//                            identifyDataType.put(object, "DECIMAL");
                             map.put(object, "DECIMAL");
                         } else {
                             log.info("Number format error. Data is not numeric");
@@ -170,33 +165,24 @@ public class TabularHandler {
                 }
 
                 else {
-//                    identifyDataType.put(object, "VARCHAR(2000)");
                     map.put(object, "VARCHAR(2000)");
                 }
             }
 
             if(object == null) {
-//                identifyDataType.put(null, "VARCHAR(2000)");
                 map.put(null, "VARCHAR(2000)");
             }
             list.add(map);
         }
 
-//        log.info("list: " + list.toString());
-//        return identifyDataType;
         return list;
     }
 
     private static void identifyHeadersTypes(List<String[]> dataFromFile) {
-        Map<String, String> mapDataType = null;
         List<String> headerTypes;
         List<Map<String, String>> listOfMap = new LinkedList<>();
 
         for(String[] array : dataFromFile) {
-//            mapDataType = identifyEachDataType(array);
-//            log.info(mapDataType.toString());
-//            headerTypes = Arrays.stream(array).map(mapDataType::get).collect(Collectors.toCollection(LinkedList::new));
-//            listofMap.add(extractTypes(mapDataType, dataFromFile));
             listOfMap.add(extractTypes(identifyEachDataType(array), dataFromFile));
         }
 
@@ -270,8 +256,6 @@ public class TabularHandler {
             }
 
         }
-        log.info("countMap: " + countMap.toString());
-        log.info("nameMap: " + nameMap.toString());
         return new LinkedList<>(nameMap.values());
     }
 
@@ -318,39 +302,28 @@ public class TabularHandler {
     private static String typeCheckingPushedData(String data, Integer currentIndex) {
         String currentName = headerNames.get(currentIndex);
         String type = checkAttributeType(headers.get(currentName));
-        String currentData = null;
-
-        boolean isCorrectType;
+        String currentData = data;
 
         switch (type) {
             case "Integer" -> {
                 try {
-                    isCorrectType = Integer.valueOf(data).equals(Integer.parseInt(data));
-                    if(!isCorrectType) {
-                        currentData = returnAdjustData("Integer");
-                    } else {
-                        currentData = data;
-                    }
-                } catch (Exception ignore) {}
+                    Integer.valueOf(data).equals(Integer.parseInt(data));
+                } catch (Exception ignore) {
+                    currentData = "0";
+                }
             }
 
             case "Double" -> {
                 try {
-                    isCorrectType = Double.valueOf(data).equals(Double.parseDouble(data));
-                    if(!isCorrectType) {
-                        currentData = returnAdjustData("Double");
-                    } else {
-                        currentData = data;
-                    }
+                    Double.valueOf(data).equals(Double.parseDouble(data));
                 } catch (Exception ignore) {
+                    currentData = "0.0";
                 }
             }
 
             case "String" -> {
                 if(data.isEmpty() || data.isBlank()) {
                     currentData = "Empty data";
-                } else {
-                    currentData = data;
                 }
             }
         }
@@ -360,19 +333,12 @@ public class TabularHandler {
 
     private static String[] ensureCorrectTypeInList(String[] rowsData) {
         String[] data = new String[rowsData.length];
+        log.info(Arrays.toString(rowsData));
         for(int i = 0; i < rowsData.length; i++) {
             data[i] = typeCheckingPushedData(rowsData[i], i);
         }
+        log.info(Arrays.toString(data));
         return data;
-    }
-
-    private static String returnAdjustData(String type) {
-        String adjustData = null;
-        switch (type) {
-            case "Integer" -> adjustData = String.valueOf(0);
-            case "Double" -> adjustData = String.valueOf(0.0);
-        }
-        return adjustData;
     }
 
     private static void createTabularProjectTable(ProjectLoader loader, AnnotationDB annotationDB) {
@@ -601,7 +567,7 @@ public class TabularHandler {
         Map<String, String> map = new LinkedHashMap<>();
 
         for(Map.Entry<String, String> entry : headers.entrySet()) {
-            map.put(entry.getKey().toUpperCase(), entry.getValue());
+            map.put(entry.getKey().replace("\"", ""), entry.getValue());
         }
 
         String jsonString = "";
