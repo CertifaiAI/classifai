@@ -286,7 +286,7 @@ public class AnnotationDB
                                 }
 
                                 else if(fetch.failed()) {
-                                    log.info("Fail to create tabular table." + fetch.cause().getMessage());
+                                    log.info("Fail to create tabular table. " + fetch.cause().getMessage());
                                 }
                             })
                     )

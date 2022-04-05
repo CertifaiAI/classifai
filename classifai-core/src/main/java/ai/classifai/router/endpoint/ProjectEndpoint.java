@@ -185,10 +185,11 @@ public class ProjectEndpoint {
                     projectHandler.loadProjectLoader(loader);
 
                     try {
-                        String extension = FilenameUtils.getExtension(tabularFilePath);
-                        switch(extension) {
-                            case "xlsx" -> loader.parseExcelFile(tabularFilePath);
+                        String fileExtension = FilenameUtils.getExtension(tabularFilePath);
+                        switch(fileExtension) {
+                            case "xlsx", "xls" -> loader.parseExcelFile(tabularFilePath, fileExtension);
                             case "csv" ->  loader.parseCsvFile(tabularFilePath);
+                            default -> throw new IllegalStateException("Unsupported file extension: " + fileExtension);
                         }
                     } catch (CsvException | OpenXML4JException e) {
                         log.info("Cannot parse the csv file");

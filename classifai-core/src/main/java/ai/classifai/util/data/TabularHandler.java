@@ -9,9 +9,11 @@ import ai.classifai.util.project.ProjectHandler;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencsv.*;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -36,15 +38,10 @@ import org.simpleflatmapper.lightningcsv.CsvReader;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.sound.sampled.Port;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -79,20 +76,46 @@ public class TabularHandler {
         if (headerString.contains(",")) {
             delimiter = ",";
             headerNames = Arrays.asList(headerString.split(",", -1));
+            modifyColumnNameString();
         }
+
         else if (headerString.contains(";")) {
             delimiter = ";";
             headerNames = Arrays.asList(headerString.split(";", -1));
+            modifyColumnNameString();
         }
         else if (headerString.contains("|")) {
             delimiter = "|";
             headerNames = Arrays.asList(headerString.split("\\|", -1));
+            modifyColumnNameString();
         }
+
         else if (headerString.contains("\t")) {
             delimiter = "\t";
             headerNames = Arrays.asList(headerString.split("\t", -1));
+            modifyColumnNameString();
         }
 
+    }
+
+    private static void modifyColumnNameString() {
+        for(int i = 0; i < headerNames.size(); i++) {
+            if(detectSpaceInString(headerNames.get(i)) || detectParenthesisInString(headerNames.get(i))) {
+                headerNames.set(i, "\"" + headerNames.get(i) + "\"");
+            }
+        }
+    }
+
+    private static boolean detectSpaceInString(String headerName) {
+        Pattern pattern = Pattern.compile("[\\w\\s]+");
+        Matcher matcher = pattern.matcher(headerName);
+        return matcher.matches();
+    }
+
+    private static boolean detectParenthesisInString(String headerName) {
+        Pattern pattern = Pattern.compile("\\w+\\s\\(?(\\w+)?(\\s)?(\\p{Sc})?\\)?");
+        Matcher matcher = pattern.matcher(headerName);
+        return matcher.matches();
     }
 
     private static Map<String, String> mapHeaderNamesToHeaderTypes(List<String> keys, List<String> values) {
@@ -104,7 +127,7 @@ public class TabularHandler {
         try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
             return stream.map(x -> x.split(delimiter, -1)).collect(Collectors.toCollection(LinkedList::new));
         } catch (IOException e) {
-            log.info("Error in reading file");
+            log.info("Error in reading csv file");
         }
         return null;
     }
@@ -116,24 +139,30 @@ public class TabularHandler {
         return matcher.matches();
     }
 
-    public static Map<String, String> identifyEachDataType(String[] dataList) {
+    public static List<Map<String, String>> identifyEachDataType(String[] dataList) {
+//        log.info(Arrays.toString(dataList));
+        List<Map<String, String>> list = new LinkedList<>();
         Map<String, String> identifyDataType = new LinkedHashMap<>();
 
         for (String object : dataList) {
+            Map<String, String> map = new HashMap<>();
             if (object != null && isDateObject(object))
             {
-                identifyDataType.put(object, "DATE");
+//                identifyDataType.put(object, "DATE");
+                map.put(object, "VARCHAR(100)");
             }
 
             else if(object != null && !isDateObject(object)) {
                 if (NumberUtils.isCreatable(object)) {
                     try {
                         if (Integer.valueOf(object).equals(Integer.parseInt(object))) {
-                            identifyDataType.put(object, "INT");
+//                            identifyDataType.put(object, "INT");
+                            map.put(object, "INT");
                         }
                     } catch (NumberFormatException e) {
                         if (Double.valueOf(object).equals(Double.parseDouble(object))) {
-                            identifyDataType.put(object, "DECIMAL");
+//                            identifyDataType.put(object, "DECIMAL");
+                            map.put(object, "DECIMAL");
                         } else {
                             log.info("Number format error. Data is not numeric");
                         }
@@ -141,29 +170,109 @@ public class TabularHandler {
                 }
 
                 else {
-                    identifyDataType.put(object, "VARCHAR(2000)");
+//                    identifyDataType.put(object, "VARCHAR(2000)");
+                    map.put(object, "VARCHAR(2000)");
                 }
             }
 
             if(object == null) {
-                identifyDataType.put(null, "VARCHAR(2000)");
+//                identifyDataType.put(null, "VARCHAR(2000)");
+                map.put(null, "VARCHAR(2000)");
             }
-
+            list.add(map);
         }
 
-        return identifyDataType;
+//        log.info("list: " + list.toString());
+//        return identifyDataType;
+        return list;
     }
 
     private static void identifyHeadersTypes(List<String[]> dataFromFile) {
-        Map<String, String> mapDataType;
-        List<String> headerTypes = new LinkedList<>();
+        Map<String, String> mapDataType = null;
+        List<String> headerTypes;
+        List<Map<String, String>> listOfMap = new LinkedList<>();
 
         for(String[] array : dataFromFile) {
-            mapDataType = identifyEachDataType(array);
-            headerTypes = Arrays.stream(array).map(mapDataType::get).collect(Collectors.toCollection(LinkedList::new));
+//            mapDataType = identifyEachDataType(array);
+//            log.info(mapDataType.toString());
+//            headerTypes = Arrays.stream(array).map(mapDataType::get).collect(Collectors.toCollection(LinkedList::new));
+//            listofMap.add(extractTypes(mapDataType, dataFromFile));
+            listOfMap.add(extractTypes(identifyEachDataType(array), dataFromFile));
         }
+
+        headerTypes = extractTypesFromLoop(listOfMap);
         headers =  mapHeaderNamesToHeaderTypes(headerNames, headerTypes);
         columnNumbers = headers.size() + 5;
+    }
+
+    private static Map<String, String> extractTypes(List<Map<String, String>> mapDataType, List<String[]> dataFromFile) {
+        List<String> columnName = Arrays.asList(dataFromFile.get(0));
+        List<String> list = new LinkedList<>();
+        Map<String, String> map = new LinkedHashMap<>();
+        for(Map<String, String> dataTypeMap : mapDataType) {
+            for(Map.Entry<String, String> entry : dataTypeMap.entrySet()) {
+                list.add(entry.getValue());
+            }
+        }
+
+        for(int i = 0; i < list.size(); i++) {
+            map.put(columnName.get(i), list.get(i));
+        }
+        return map;
+    }
+
+    private static LinkedList<String> extractTypesFromLoop(List<Map<String, String>> listOfMap) {
+        Map<String, Map<String, Integer>> countMap = new LinkedHashMap<>();
+        Map<String, String> nameMap = new LinkedHashMap<>();
+
+        // name : {value: count, value: count}
+        for(Map<String, String> map : listOfMap) {
+            for(Map.Entry<String, String> entry : map.entrySet()) {
+                Map<String, Integer> temp = new LinkedHashMap<>();
+                if(!countMap.containsKey(entry.getKey())) {
+                    temp.put(entry.getValue(), 1);
+                    countMap.put(entry.getKey(), temp);
+                } else {
+                    Map<String, Integer> value = countMap.get(entry.getKey());
+                    if(value.containsKey(entry.getValue())) {
+                        Integer count = value.get(entry.getValue()) + 1;
+                        value.put(entry.getValue(), count);
+                        countMap.put(entry.getKey(), value);
+                    }
+                    else if(!value.containsKey(entry.getKey())){
+                        value.put(entry.getValue(), 1);
+                        countMap.put(entry.getKey(), value);
+                    }
+                }
+            }
+        }
+
+        for(Map.Entry<String, Map<String, Integer>> entry : countMap.entrySet()) {
+            Map<String, Integer> valueCount = entry.getValue();
+
+            if(valueCount.containsKey("DECIMAL")) {
+                nameMap.put(entry.getKey(), "DECIMAL");
+            }
+
+            else if(valueCount.containsKey("INT") && !valueCount.containsKey("DECIMAL")) {
+                nameMap.put(entry.getKey(), "INT");
+            }
+
+            else {
+                Map.Entry<String, Integer> map = null;
+                for(Map.Entry<String, Integer> entryMap : valueCount.entrySet()){
+                    if(map == null || entryMap.getValue().compareTo(map.getValue()) > 0) {
+                        map = entryMap;
+                    }
+                }
+                assert map != null;
+                nameMap.put(entry.getKey(), map.getKey());
+            }
+
+        }
+        log.info("countMap: " + countMap.toString());
+        log.info("nameMap: " + nameMap.toString());
+        return new LinkedList<>(nameMap.values());
     }
 
     /**
@@ -171,15 +280,19 @@ public class TabularHandler {
      */
     public void readCsvFile(String filePath, ProjectLoader loader, AnnotationDB annotationDB) throws IOException, CsvException {
         checkDelimiter(filePath);
-        List<String[]> dataFromFile = readAllData(filePath);
-
-        assert dataFromFile != null;
-        identifyHeadersTypes(dataFromFile);
-
         char separator = delimiter.charAt(0);
-        CSVParser csvParser = new CSVParserBuilder().withSeparator(separator).build();
-        CSVReader csvReader = new CSVReaderBuilder(new FileReader(filePath)).withCSVParser(csvParser).build();
+
+        CSVParser csvParser = new CSVParserBuilder()
+                .withSeparator(separator)
+                .build();
+
+        CSVReader csvReader = new CSVReaderBuilder(Files.newBufferedReader(Paths.get(filePath)))
+                .withCSVParser(csvParser)
+                .build();
+
         rowsData = csvReader.readAll();
+        identifyHeadersTypes(rowsData);
+
         TabularAnnotationQuery.createProjectTablePreparedStatement(headers, loader);
         createTabularProjectTable(loader, annotationDB);
     }
@@ -193,9 +306,73 @@ public class TabularHandler {
 
         for (int i = 1; i < rowsData.size(); i++) {
             String dataSubPath = FilenameUtils.getName(tabularFilePath.toString());
-            annotationDB.saveTabularData(loader, rowsData.get(i), dataSubPath, i);
+            annotationDB.saveTabularData(loader, ensureCorrectTypeInList(rowsData.get(i)), dataSubPath, i);
         }
 
+    }
+
+    /* Not handling date type is due to user may set date value to such as none or empty for the date
+    * so, stay with string to store in database and do the parse when retrieve
+    */
+
+    private static String typeCheckingPushedData(String data, Integer currentIndex) {
+        String currentName = headerNames.get(currentIndex);
+        String type = checkAttributeType(headers.get(currentName));
+        String currentData = null;
+
+        boolean isCorrectType;
+
+        switch (type) {
+            case "Integer" -> {
+                try {
+                    isCorrectType = Integer.valueOf(data).equals(Integer.parseInt(data));
+                    if(!isCorrectType) {
+                        currentData = returnAdjustData("Integer");
+                    } else {
+                        currentData = data;
+                    }
+                } catch (Exception ignore) {}
+            }
+
+            case "Double" -> {
+                try {
+                    isCorrectType = Double.valueOf(data).equals(Double.parseDouble(data));
+                    if(!isCorrectType) {
+                        currentData = returnAdjustData("Double");
+                    } else {
+                        currentData = data;
+                    }
+                } catch (Exception ignore) {
+                }
+            }
+
+            case "String" -> {
+                if(data.isEmpty() || data.isBlank()) {
+                    currentData = "Empty data";
+                } else {
+                    currentData = data;
+                }
+            }
+        }
+
+        return currentData;
+    }
+
+    private static String[] ensureCorrectTypeInList(String[] rowsData) {
+        String[] data = new String[rowsData.length];
+        for(int i = 0; i < rowsData.length; i++) {
+            data[i] = typeCheckingPushedData(rowsData[i], i);
+        }
+        return data;
+    }
+
+    private static String returnAdjustData(String type) {
+        String adjustData = null;
+        switch (type) {
+            case "Integer" -> adjustData = String.valueOf(0);
+            case "Double" -> adjustData = String.valueOf(0.0);
+        }
+        return adjustData;
     }
 
     private static void createTabularProjectTable(ProjectLoader loader, AnnotationDB annotationDB) {
@@ -205,8 +382,8 @@ public class TabularHandler {
     /**
      * Parse Excel File
      */
-    public void readExcelFile(String filePath, ProjectLoader loader, AnnotationDB annotationDB) throws IOException {
-        String fileExtension = FilenameUtils.getExtension(filePath);
+    public void readExcelFile(String filePath, ProjectLoader loader, AnnotationDB annotationDB, String fileExtension) throws IOException {
+        String fileName = new File(filePath).getName();
         FileInputStream fileInputStream = new FileInputStream(filePath);
         Workbook workbook;
         Map<String, String> headersTypeMap = new LinkedHashMap<>();
@@ -219,7 +396,6 @@ public class TabularHandler {
 
         try {
             Sheet sheet = workbook.getSheetAt(0);
-//            List<String> headersName = new ArrayList<>();
 
             // to get a list of headers
             int first = sheet.getFirstRowNum();
@@ -230,54 +406,62 @@ public class TabularHandler {
 
             int firstRow = sheet.getFirstRowNum();
             int lastRow = sheet.getLastRowNum();
-            List<Object> objectArrayList = new ArrayList<>();
+            List<String> objectArrayList = new ArrayList<>();
 
             for (int i = firstRow + 1; i <= lastRow; i++) {
                 Row row = sheet.getRow(i);
                 for (int j = row.getFirstCellNum(); j < row.getLastCellNum(); j++) {
                     Cell cell = row.getCell(j, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    CellType cellType;
 
-                    switch (cell.getCellType()) {
+                    if(cell.getCellType() == CellType.FORMULA) {
+                        cellType = cell.getCachedFormulaResultType();
+                    } else {
+                        cellType = cell.getCellType();
+                    }
+
+                    switch (cellType) {
                         case STRING:
                         case BLANK:
-                            objectArrayList.add(cell.getStringCellValue());
+                            objectArrayList.add(String.valueOf(cell.getStringCellValue()));
                             headersTypeMap.put(headerNames.get(j), "VARCHAR(2000)");
                             break;
                         case NUMERIC:
                             if (DateUtil.isCellDateFormatted(cell)) {
-                                objectArrayList.add(cell.getDateCellValue());
+                                objectArrayList.add(String.valueOf(cell.getDateCellValue()));
                                 headersTypeMap.put(headerNames.get(j), "DATE");
                             } else {
                                 int value = (int) cell.getNumericCellValue();
                                 if (cell.getNumericCellValue() - value == 0.0) {
-                                    objectArrayList.add(value);
+                                    objectArrayList.add(String.valueOf(value));
                                     headersTypeMap.put(headerNames.get(j), "INT");
                                 } else {
-                                    objectArrayList.add(cell.getNumericCellValue());
+                                    objectArrayList.add(String.valueOf(cell.getNumericCellValue()));
                                     headersTypeMap.put(headerNames.get(j), "DECIMAL");
                                 }
                             }
                             break;
                         case BOOLEAN:
-                            objectArrayList.add(cell.getBooleanCellValue());
+                            objectArrayList.add(String.valueOf(cell.getBooleanCellValue()));
                             headersTypeMap.put(headerNames.get(j), "VARCHAR(5)");
                             break;
                         case ERROR:
                             FormulaError formulaError = FormulaError.forInt(cell.getErrorCellValue());
-                            objectArrayList.add((formulaError == null) ? null : formulaError.toString());
-                            headersTypeMap.put(headerNames.get(j), "VARCHAR(20)");
-                            break;
+                            log.error("Error happens when processing " +  fileName + ". Identified formula error: " + formulaError.toString());
+                            log.error("Please correct the error found in " + fileName);
+                            return;
+//                            objectArrayList.add((formulaError == null) ? null : formulaError.toString());
+//                            headersTypeMap.put(headerNames.get(j), "VARCHAR(20)");
                     }
                 }
-                Object[] array = objectArrayList.toArray();
-                String[] stringArray = Arrays.copyOf(array, array.length, String[].class);
+                String[] stringArray = objectArrayList.toArray(String[]::new);
                 rowsData.add(stringArray);
                 objectArrayList.clear();
             }
             headers.putAll(headersTypeMap);
             fileInputStream.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.info("Excel file not found");
         }
 

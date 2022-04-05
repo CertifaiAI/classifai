@@ -317,9 +317,9 @@ public class ProjectLoader
 //        tabularHandler.parseCsvToJson(filePath);
     }
 
-    public void parseExcelFile(String filePath) throws IOException, ParserConfigurationException, SAXException, OpenXML4JException {
+    public void parseExcelFile(String filePath, String fileExtension) throws IOException, ParserConfigurationException, SAXException, OpenXML4JException {
         TabularHandler tabularHandler = new TabularHandler();
-        tabularHandler.readExcelFile(filePath, this, annotationDB);
+        tabularHandler.readExcelFile(filePath, this, annotationDB, fileExtension);
 //        tabularHandler.readLargeExcelFile(filePath, this, annotationDB);
     }
 

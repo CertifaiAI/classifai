@@ -45,17 +45,12 @@ public class TabularAnnotationQuery
         String columnNames = "uuid UUID, project_id UUID, project_name VARCHAR(100), ";
 
         for (String headerName : headers.keySet()) {
-            String type = headers.get(headerName);
-            if(type.equals("DATE")) {
-                attributes.add(headerName + " " + "VARCHAR(2000)" + ", ");
-            } else {
-                attributes.add(headerName + " " + headers.get(headerName) + ", ");
-            }
+            attributes.add(headerName + " " + headers.get(headerName));
         }
 
-        String attributesString = String.join(" ", attributes);
+        String attributesString = String.join(", ", attributes);
         columnNames += attributesString;
-        columnNames += "fileName VARCHAR(2000), label CLOB DEFAULT NULL, PRIMARY KEY(uuid, project_id)";
+        columnNames += ", fileName VARCHAR(2000), label CLOB DEFAULT NULL, PRIMARY KEY(uuid, project_id)";
 
         createProjectTableQuery = "CREATE TABLE IF NOT EXISTS " + projectName + " (" + columnNames + ")";
     }
@@ -72,6 +67,7 @@ public class TabularAnnotationQuery
         }
         String attributesString = String.join(",", attributes);
         createDataQuery += attributesString;
+        createDataQuery = createDataQuery.strip();
         createDataQuery += ")";
     }
 

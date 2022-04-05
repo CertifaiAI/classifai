@@ -101,8 +101,9 @@
         <jackson.version>2.12.3</jackson.version>
         <version.com.zandero.rest.vertx>1.0.5</version.com.zandero.rest.vertx>
         <com.opencsv.version>5.5.2</com.opencsv.version>
-        <apache.poi.version>5.2.0</apache.poi.version>
+        <apache.poi.version>5.2.2</apache.poi.version>
         <simple.flat.mapper.version>8.2.3</simple.flat.mapper.version>
+        <log4j.to.sl4j.version>2.17.2</log4j.to.sl4j.version>
     </properties>
 
     <dependencyManagement>
@@ -291,6 +292,11 @@
                 <groupId>org.simpleflatmapper</groupId>
                 <artifactId>sfm-csv</artifactId>
                 <version>${simple.flat.mapper.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>${log4j.to.sl4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
