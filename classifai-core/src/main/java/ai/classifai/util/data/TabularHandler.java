@@ -768,7 +768,14 @@ public class TabularHandler {
         String labels = thresholdCondition.getJsonArray("label").toString();
         String dateFormat = thresholdCondition.getString("dateFormat");
 
-        boolean matchCondition = checkTrueNessOfCondition(attributeValue, checkAttributeType(attributeType), "threshold",
+        String type;
+        if(attributeName.equals("Date")) {
+            type = "Date";
+        } else {
+            type = checkAttributeType(attributeType);
+        }
+
+        boolean matchCondition = checkTrueNessOfCondition(attributeValue, type, "threshold",
                 Collections.singletonList(conditionValue), Collections.singletonList(conditionOperator), dateFormat);
         return matchCondition ? labels : null;
     }
@@ -886,7 +893,7 @@ public class TabularHandler {
     }
 
     private static String convertDateFormat(String date) {
-        String regex = "(([0-9][0-9]){2})?([0-2]?[0-9])?[/.-][0-1]?[0-9][/.-]([0-9]{2})?[0-9]{2}";
+        String regex = "(([0-9][0-9]){2})?([0-2]?[0-9])?[/.-][0-3]?[0-9][/.-]([0-9]{2})?[0-9]{2}";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(date);
 
