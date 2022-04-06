@@ -1362,28 +1362,28 @@ public class PortfolioDB {
         }
     }
 
-//    public Future<JsonObject> automateTabularLabelling(String projectId, JsonObject preLabellingConditions,
-//                                                       String currentUuid, PortfolioDB portfolioDB) throws Exception {
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
-//        List<String> uuidList = loader.getUuidListFromDb();
-//        TabularHandler tabularHandler = new TabularHandler();
-//        tabularHandler.initiateAutomaticLabellingForTabular(projectId, preLabellingConditions, uuidList, portfolioDB);
-//        log.info("initiate");
-//        Promise<JsonObject> promise = Promise.promise();
-//
-//        if(tabularHandler.checkIsCurrentUuidFinished(currentUuid)) {
-//            getTabularDataByUuid(projectId, currentUuid).onComplete(res -> {
-//                if(res.succeeded()) {
-//                    promise.complete(res.result());
-//                }
-//
-//                if(res.failed()) {
-//                    promise.fail(res.cause());
-//                }
-//            });
-//        }
-//        return promise.future();
-//    }
+    public Future<JsonObject> automateTabularLabelling(String projectId, JsonObject preLabellingConditions,
+                                                       String currentUuid, String labellingMode,PortfolioDB portfolioDB) throws Exception {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        List<String> uuidList = loader.getUuidListFromDb();
+        TabularHandler tabularHandler = new TabularHandler();
+//        tabularHandler.initiateAutomaticLabellingForTabular(projectId, preLabellingConditions, uuidList, labellingMode,portfolioDB);
+        log.info("initiate");
+        Promise<JsonObject> promise = Promise.promise();
+        log.info(String.valueOf(tabularHandler.checkIsCurrentUuidFinished(currentUuid)));
+        if(tabularHandler.checkIsCurrentUuidFinished(currentUuid)) {
+            getTabularDataByUuid(projectId, currentUuid).onComplete(res -> {
+                if(res.succeeded()) {
+                    promise.complete(res.result());
+                }
+
+                if(res.failed()) {
+                    promise.fail(res.cause());
+                }
+            });
+        }
+        return promise.future();
+    }
 
     public Future<List<String>> getAllInvalidData(String projectID) {
         ProjectLoader loader = projectHandler.getProjectLoader(projectID);

@@ -585,7 +585,7 @@ public class TabularHandler {
      * Automated Labelling
      *
      */
-//    public void initiateAutomaticLabellingForTabular(String projectId, JsonObject preLabellingConditions, List<String> uuidList,
+//    public void initiateAutomaticLabellingForTabular(String projectId, JsonObject preLabellingConditions, List<String> uuidList, String labellingMode,
 //                                                     PortfolioDB portfolioDB) throws Exception {
     public void initiateAutomaticLabellingForTabular(String projectId, JsonObject preLabellingConditions, String labellingMode,
                                                      PortfolioDB portfolioDB, ProjectHandler projectHandler) throws Exception {
@@ -622,23 +622,13 @@ public class TabularHandler {
                     }
                 }
 //                processingUuid = uuid;
-//                if(currentUuid.equals(uuid)) {
-//                    returnCurrentUuidFinished(projectId, currentUuid, portfolioDB);
-//                }
             }
 //            processingUuid = "";
         }
     }
 
-    public Future<JsonObject> returnCurrentUuidFinished(String projectId, String currentUuid, PortfolioDB portfolioDB) {
-        log.info("processing uuid: " + processingUuid);
-        log.info("current uuid: " + currentUuid);
-        return portfolioDB.getTabularDataByUuid(projectId, currentUuid).map(res -> {
-            if(res.size() != 0) {
-                return res;
-            }
-            return null;
-        });
+    public Boolean checkIsCurrentUuidFinished(String currentUuid) {
+        return currentUuid.equals(processingUuid);
     }
 
     private JsonArray parseLabelsJsonStringToJsonArray(String labelsJsonString) {

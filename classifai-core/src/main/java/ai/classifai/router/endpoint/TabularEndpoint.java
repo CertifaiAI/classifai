@@ -103,29 +103,22 @@ public class TabularEndpoint {
     public ActionStatus preLabellingCondition(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName,
                                               TabularPreLabellingConditionsBody requestBody)
+//    public Future<TabularDataResponse> preLabellingCondition(@PathParam("annotation_type") String annotationType,
+//                                                             @PathParam("project_name") String projectName,
+//                                                             TabularPreLabellingConditionsBody requestBody)
             throws Exception {
         AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
         String projectId = projectHandler.getProjectId(projectName, type.ordinal());
 
         TabularHandler tabularHandler = new TabularHandler();
         JsonObject preLabellingConditions = new JsonObject(requestBody.getConditions());
-//        String currentUuid = requestBody.getCurrentUuid();
+        String currentUuid = requestBody.getCurrentUuid();
         String labellingMode = requestBody.getLabellingMode();
 
         tabularHandler.initiateAutomaticLabellingForTabular(projectId, preLabellingConditions, labellingMode, portfolioDB, projectHandler);
         return ActionStatus.ok();
 
-//        return portfolioDB.automateTabularLabelling(projectId, preLabellingConditions, currentUuid, portfolioDB)
-//                .map(result -> TabularDataResponse.builder()
-//                        .message(ReplyHandler.SUCCESSFUL)
-//                        .tabularData(result)
-//                        .build())
-//                .otherwise(TabularDataResponse.builder()
-//                        .message(ReplyHandler.FAILED)
-//                        .errorMessage("Failed to retrieve data")
-//                        .build());
-
-//        return tabularHandler.returnCurrentUuidFinished(projectId, currentUuid, portfolioDB)
+//        return portfolioDB.automateTabularLabelling(projectId, preLabellingConditions, currentUuid, labellingMode, portfolioDB)
 //                .map(result -> TabularDataResponse.builder()
 //                        .message(ReplyHandler.SUCCESSFUL)
 //                        .tabularData(result)
