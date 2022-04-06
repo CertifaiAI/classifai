@@ -295,15 +295,16 @@ public class TabularHandler {
 
     }
 
-    /* Not handling date type is due to user may set date value to such as none or empty for the date
-    * so, stay with string to store in database and do the parse when retrieve
+    /* Handling missing data:
+    *Not handling date type is due to user may set date value to such as none or empty for the date
+    * so, stay with string to store in database and do the parse whenX retrieve
     */
 
     private static String typeCheckingPushedData(String data, Integer currentIndex) {
         String currentName = headerNames.get(currentIndex);
         String type = checkAttributeType(headers.get(currentName));
         String currentData = data;
-
+        // Missing value handling
         switch (type) {
             case "Integer" -> {
                 try {
@@ -333,11 +334,9 @@ public class TabularHandler {
 
     private static String[] ensureCorrectTypeInList(String[] rowsData) {
         String[] data = new String[rowsData.length];
-        log.info(Arrays.toString(rowsData));
         for(int i = 0; i < rowsData.length; i++) {
             data[i] = typeCheckingPushedData(rowsData[i], i);
         }
-        log.info(Arrays.toString(data));
         return data;
     }
 
