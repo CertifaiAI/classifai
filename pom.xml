@@ -1,323 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~  Copyright (c) 2020-2021 CertifAI Sdn. Bhd.
-  ~
-  ~  This program and the accompanying materials are made available under the
-  ~  terms of the Apache License, Version 2.0 which is available at
-  ~  https://www.apache.org/licenses/LICENSE-2.0.
-  ~
-  ~  Unless required by applicable law or agreed to in writing, software
-  ~  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-  ~  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-  ~  License for the specific language governing permissions and limitations
-  ~  under the License.
-  ~
-  ~  SPDX-License-Identifier: Apache-2.0
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>ai.classifai</groupId>
     <artifactId>classifai</artifactId>
-    <packaging>pom</packaging>
-    <version>2.0.0-alpha3</version>
-
-    <modules>
-        <module>classifai-core</module>
-        <module>classifai-api</module>
-        <module>classifai-uberjar</module>
-        <!--<module>classifai-test</module>-->
-    </modules>
+    <packaging>jar</packaging>
+    <version>2.0.0</version>
 
     <name>classifai</name>
-    <description>
-        The most comprehensive open-source data annotation toolkit
-    </description>
-    <url>http://classifai.ai/</url>
+    <url>http://maven.apache.org</url>
 
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.12.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.12.2</version>
+        </dependency>
+    </dependencies>
 
-    <developers>
-        <developer>
-            <id>codenamewei</id>
-            <name>Chiawei Lim</name>
-        </developer>
-        <developer>
-            <id>BobbyLCW</id>
-            <name>Bobby Lee Chun Wei</name>
-        </developer>
-        <developer>
-            <id>Toh</id>
-            <name>Toh Sie Hung</name>
-        </developer>
-        <developer>
-            <id>Daniel</id>
-            <name>Daniel Lim Heng Jie</name>
-        </developer>
-        <developer>
-            <id>YCCertifai</id>
-            <name>Sum Yin Chuang</name>
-        </developer>
-    </developers>
-
-    <properties>
-        <vertx.version>4.0.2</vertx.version>
-        <lombok.version>1.18.16</lombok.version>
-        <slf4j.version>1.7.30</slf4j.version>
-        <hsqldb.version>2.5.1</hsqldb.version>
-        <h2.version>1.4.200</h2.version>
-        <jbig.version>3.0.3</jbig.version>
-        <fontbox.version>2.0.22</fontbox.version>
-        <jai.imageio.version>1.4.0</jai.imageio.version>
-        <flatlaf.version>0.46</flatlaf.version>
-        <commons.io.version>2.8.0</commons.io.version>
-        <pdfbox.version>2.0.22</pdfbox.version>
-        <junit5.version>5.7.1</junit5.version>
-        <junit.version>4.13.1</junit.version>
-        <logback.version>1.2.3</logback.version>
-        <org.json.version>20201115</org.json.version>
-        <google.json.version>1.1.1</google.json.version>
-        <aws.java.sdk.version>2.16.18</aws.java.sdk.version>
-        <aws.lambda.java.version>1.2.1</aws.lambda.java.version>
-        <commons.collections4.version>4.1</commons.collections4.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <apache.commons.version>3.8.1</apache.commons.version>
-        <metadata.extractor.version>2.15.0</metadata.extractor.version>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>14</maven.compiler.target>
-        <classifai.release.version>2.0.0-alpha3</classifai.release.version>
-        <classifai.release.name>dev</classifai.release.name>
-        <opencv.version>4.5.1-2</opencv.version>
-        <jackson.version>2.12.3</jackson.version>
-        <version.com.zandero.rest.vertx>1.0.5</version.com.zandero.rest.vertx>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>ai.classifai</groupId>
-                <artifactId>classifai-uberjar</artifactId>
-                <version>${classifai.release.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ai.classifai</groupId>
-                <artifactId>classifai-core</artifactId>
-                <version>${classifai.release.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ai.classifai</groupId>
-                <artifactId>classifai-api</artifactId>
-                <version>${classifai.release.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-core</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-jdbc-client</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-web</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-sql-client</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-unit</artifactId>
-                <version>${vertx.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.formdev</groupId>
-                <artifactId>flatlaf</artifactId>
-                <version>${flatlaf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit5.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-web-client</artifactId>
-                <version>${vertx.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hsqldb</groupId>
-                <artifactId>hsqldb</artifactId>
-                <version>${hsqldb.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${commons.io.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.json</groupId>
-                <artifactId>json</artifactId>
-                <version>${org.json.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.json-simple</groupId>
-                <artifactId>json-simple</artifactId>
-                <version>${google.json.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${aws.java.sdk.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${apache.commons.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-collections4</artifactId>
-                <version>${commons.collections4.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>fontbox</artifactId>
-                <version>${fontbox.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox-tools</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>jbig2-imageio</artifactId>
-                <version>${jbig.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.jai-imageio</groupId>
-                <artifactId>jai-imageio-jpeg2000</artifactId>
-                <version>${jai.imageio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.drewnoakes</groupId>
-                <artifactId>metadata-extractor</artifactId>
-                <version>${metadata.extractor.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openpnp</groupId>
-                <artifactId>opencv</artifactId>
-                <version>${opencv.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zandero</groupId>
-                <artifactId>rest.vertx</artifactId>
-                <version>${version.com.zandero.rest.vertx}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <profiles>
-        <profile>
-            <id>test</id>
-            <modules>
-                <module>classifai-test</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>uberjar</id>
-            <modules>
-                <module>classifai-uberjar</module>
-            </modules>
-        </profile>
-    </profiles>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${maven-compiler-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>${maven-shade-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven-surefire-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                        <archive>
-                            <manifest>
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                            </manifest>
-                        </archive>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 </project>
