@@ -5,7 +5,7 @@ import ai.classifai.data.ProjectInfra;
 
 import java.util.List;
 
-public class TabularProject extends Project {
+public final class TabularProject extends Project {
     private String tabularFilePath;
 
     TabularProject(String projectName, String projectId, String projectPath,

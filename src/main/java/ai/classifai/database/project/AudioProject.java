@@ -5,7 +5,7 @@ import ai.classifai.data.ProjectInfra;
 
 import java.util.List;
 
-public class AudioProject extends Project {
+public final class AudioProject extends Project {
     private String audioFilePath;
 
     AudioProject(String projectName, String projectId, String projectPath,

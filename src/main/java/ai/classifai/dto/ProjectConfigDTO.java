@@ -1,16 +1,18 @@
-package ai.classifai.dto.data;
+package ai.classifai.dto;
 
+import ai.classifai.dto.properties.ImageDataProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.Map;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @NonNull
-public class ProjectConfigProperties {
+public class ProjectConfigDTO extends ProjectDTO {
     @JsonProperty("tool")
     String toolName;
 
@@ -18,28 +20,13 @@ public class ProjectConfigProperties {
     String toolVersion;
 
     @JsonProperty("updated_date")
-    String updateDate;
-
-    @JsonProperty("project_id")
-    String projectID;
-
-    @JsonProperty("project_name")
-    String projectName;
+    String updatedDate;
 
     @JsonProperty("annotation_type")
     String annotationType;
 
     @JsonProperty("project_path")
     String projectPath;
-
-    @JsonProperty("is_new")
-    Boolean isNew;
-
-    @JsonProperty("is_starred")
-    Boolean isStarred;
-
-    @JsonProperty("project_infra")
-    String projectInfra;
 
     @JsonProperty("current_version")
     String currentVersion;
@@ -50,9 +37,11 @@ public class ProjectConfigProperties {
     @JsonProperty("uuid_version_list")
     String uuidVersionList;
 
-    @JsonProperty("label_version_list")
-    String labelVersionList;
+    // will see if this is needed
+//    @JsonProperty("label_version_list")
+//    String labelVersionList;
 
+    // will add later
     @JsonProperty
     Map<String, ImageDataProperties> content;
 }

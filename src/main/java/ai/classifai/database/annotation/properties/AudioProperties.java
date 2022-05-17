@@ -1,11 +1,13 @@
 package ai.classifai.database.annotation.properties;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@NonNull
 public class AudioProperties {
-    String audioProperties;
-
     Integer frameSize;
 
     Integer frameRate;

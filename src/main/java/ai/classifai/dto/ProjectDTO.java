@@ -1,20 +1,20 @@
-package ai.classifai.dto.data;
+package ai.classifai.dto;
 
-import ai.classifai.util.project.ProjectInfra;
+import ai.classifai.data.ProjectInfra;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @NonNull
-public class ProjectMetaProperties {
+public class ProjectDTO {
+    @JsonProperty("project_id")
+    String projectId;
+
     @JsonProperty("project_name")
     String projectName;
-
-    @JsonProperty("project_path")
-    String projectPath;
 
     @JsonProperty("is_new")
     Boolean isNewParam;
@@ -24,9 +24,6 @@ public class ProjectMetaProperties {
 
     @JsonProperty("is_loaded")
     Boolean isLoadedParam;
-
-    @JsonProperty("is_cloud")
-    Boolean isCloud;
 
     @JsonProperty("project_infra")
     ProjectInfra projectInfraParam;
@@ -42,7 +39,4 @@ public class ProjectMetaProperties {
 
     @JsonProperty("total_uuid")
     int totalUuidParam;
-
-    @JsonProperty("root_path_valid")
-    Boolean isRootPathValidParam;
 }

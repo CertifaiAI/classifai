@@ -1,22 +1,18 @@
 package ai.classifai.database.annotation;
 
-import ai.classifai.database.annotation.properties.ImageProperties;
-
-public class ImageAnnotation extends Annotation implements AnnotationProps<ImageProperties> {
-    private ImageProperties imageProperties;
+public class ImageAnnotation {
+    private String uuid;
     private Integer imgDepth;
     private Integer imgOriW;
     private Integer imgOriH;
+    private Integer fileSize;
 
-    ImageAnnotation(String projectId, Integer fileSize, Integer imgDepth, Integer imgOriH, Integer imgOriW) {
-        super(projectId, fileSize);
+    ImageAnnotation(String uuid, Integer imgDepth, Integer imgOriH, Integer imgOriW, Integer fileSize) {
+        this.uuid = uuid;
         this.imgDepth = imgDepth;
         this.imgOriH = imgOriH;
         this.imgOriW = imgOriW;
-    }
-
-    public ImageProperties getAnnotationProperties() {
-        return imageProperties;
+        this.fileSize = fileSize;
     }
 
 }

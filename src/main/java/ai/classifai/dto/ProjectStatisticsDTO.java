@@ -1,20 +1,12 @@
-package ai.classifai.dto.api.response;
+package ai.classifai.dto;
 
-import ai.classifai.dto.data.LabelNameAndCountProperties;
+import ai.classifai.dto.properties.LabelNameAndCountProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProjectStatisticResponse {
+public class ProjectStatisticsDTO {
     @JsonProperty
     int message;
 

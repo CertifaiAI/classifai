@@ -5,8 +5,8 @@ import ai.classifai.data.ProjectInfra;
 
 import java.util.List;
 
-public class VideoProject extends Project{
-    private String videoPath;
+public final class VideoProject extends Project {
+    private String videoFilePath;
     private Integer videoLength;
     private Integer extractedFrameIndex;
     private String videoDuration;
@@ -14,11 +14,11 @@ public class VideoProject extends Project{
 
     VideoProject(String projectName, String projectId, String projectPath,
                  AnnotationType projectType, List<String> labelList, ProjectInfra projectInfra,
-                 String videoPath, Integer videoLength, Integer extractedFrameIndex,
+                 String videoFilePath, Integer videoLength, Integer extractedFrameIndex,
                  String videoDuration, Integer framePerSecond)
     {
         super(projectName, projectId, projectPath, projectType, labelList, projectInfra);
-        this.videoPath = videoPath;
+        this.videoFilePath = videoFilePath;
         this.videoLength = videoLength;
         this.extractedFrameIndex = extractedFrameIndex;
         this.videoDuration = videoDuration;

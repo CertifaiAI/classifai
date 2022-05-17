@@ -1,13 +1,15 @@
 package ai.classifai.database.annotation;
 
-public class TabularAnnotation extends Annotation implements AnnotationProps {
-    String tabularAnnotationProperties;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 
-    TabularAnnotation(String projectId, Integer fileSize) {
-        super(projectId, fileSize);
+public class TabularAnnotation {
+    JSONPObject tabularAnnotationProperties;
+    String uuid;
+    Integer fileSize;
+
+    TabularAnnotation(String uuid, Integer fileSize) {
+        this.uuid = uuid;
+        this.fileSize = fileSize;
     }
 
-    public String getAnnotationProperties() {
-        return tabularAnnotationProperties;
-    }
 }

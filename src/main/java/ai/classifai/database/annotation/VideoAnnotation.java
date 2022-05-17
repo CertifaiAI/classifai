@@ -1,17 +1,14 @@
 package ai.classifai.database.annotation;
 
-import ai.classifai.database.annotation.properties.ImageProperties;
+public class VideoAnnotation {
+    String uuid;
+    Integer fileSize;
 
-public class VideoAnnotation extends ImageAnnotation implements AnnotationProps<ImageProperties> {
-    ImageProperties videoAnnotationProperties;
-
-    VideoAnnotation(String projectId, Integer fileSize, Integer imgDepth,
-                    Integer imgOriH, Integer imgOriW)
+    VideoAnnotation(String uuid, Integer fileSize)
     {
-        super(projectId, fileSize, imgDepth, imgOriH, imgOriW);
+        this.uuid = uuid;
+        this.fileSize = fileSize;
+
     }
 
-    public ImageProperties getAnnotationProperties() {
-        return videoAnnotationProperties;
-    }
 }

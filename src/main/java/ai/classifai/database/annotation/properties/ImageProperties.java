@@ -1,11 +1,13 @@
 package ai.classifai.database.annotation.properties;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@NonNull
 public class ImageProperties {
-    String projectId;
-
     Integer fileSize;
 
     Integer imgDepth;
