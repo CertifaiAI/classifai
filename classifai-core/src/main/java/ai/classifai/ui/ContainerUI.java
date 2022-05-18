@@ -99,4 +99,24 @@ public class ContainerUI implements NativeUI {
     public String getProjectFolderSelectedPath() {
         return null;
     }
+
+    @Override
+    public void showAudioFileSelector() {
+
+    }
+
+    @Override
+    public boolean isAudioFileSelectorOpen() {
+        return false;
+    }
+
+    @Override
+    public SelectionWindowStatus getAudioFileSelectorWindowStatus() {
+        return null;
+    }
+
+    @Override
+    public String getAudioFileSelectedPath() {
+        return null;
+    }
 }

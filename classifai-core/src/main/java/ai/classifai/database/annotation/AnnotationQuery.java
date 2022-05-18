@@ -24,7 +24,7 @@ import lombok.Getter;
  */
 public class AnnotationQuery
 {
-
+    /** Image project queries */
     @Getter private static final String createProject = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, project_id UUID, img_path VARCHAR(2000), version_list CLOB, img_depth INT, " +
             "img_ori_w INT, img_ori_h INT, file_size INT, PRIMARY KEY(uuid, project_id))";
 
@@ -51,4 +51,22 @@ public class AnnotationQuery
 
     @Getter private static final String renameProjectData = "UPDATE Project SET img_path = ? WHERE uuid = ? AND project_id = ?";
 
+    /** Audio project queries */
+    @Getter private static final String createWaveFormData = "INSERT INTO AudioWaveFormPeaks VALUES (?, ?, ?, ?, ?)";
+
+    @Getter private static final String retrieveWavePeaks = "SELECT wave_peak FROM AudioWaveFormPeaks WHERE project_id = ?";
+
+    @Getter private static final String createAudioProject = "CREATE TABLE IF NOT EXISTS AudioProject (uuid UUID, project_id UUID, audio_path VARCHAR(2000), regions_props CLOB," +
+            "PRIMARY KEY(uuid, project_id))";
+
+    @Getter private static final String createWaveFormTable = "CREATE TABLE IF NOT EXISTS AudioWaveFormPeaks (uuid UUID, project_id UUID, time_stamp DECIMAL, wave_peak INT, audio_path VARCHAR(2000)," +
+            "PRIMARY KEY(uuid, project_id))";
+
+    @Getter private static final String retrieveAudioData = "SELECT regions_props FROM AudioProject WHERE project_id = ?";
+
+    @Getter private static final String createAudioData = "INSERT INTO AudioProject VALUES (?, ?, ?, ?)";
+
+    @Getter private static final String updateAudioData = "UPDATE AudioProject SET regions_props = ? WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String deleteAudioData = "DELETE FROM AudioProject WHERE uuid = ? AND project_id = ?";
 }

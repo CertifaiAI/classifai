@@ -30,22 +30,23 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.database.versioning.Version;
 import ai.classifai.dto.api.response.ProjectStatisticResponse;
-import ai.classifai.dto.data.DataInfoProperties;
-import ai.classifai.dto.data.ProjectConfigProperties;
-import ai.classifai.dto.data.ProjectMetaProperties;
-import ai.classifai.dto.data.ThumbnailProperties;
+import ai.classifai.dto.data.*;
 import ai.classifai.loader.ProjectLoader;
 import ai.classifai.loader.ProjectLoaderStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.data.LabelListHandler;
 import ai.classifai.util.data.StringHandler;
+import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.message.ReplyHandler;
 import ai.classifai.util.project.ProjectHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -53,10 +54,15 @@ import io.vertx.sqlclient.Tuple;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * To run database query
@@ -260,6 +266,14 @@ public class PortfolioDB {
         Promise<Void> promise = Promise.promise();
 
         ProjectLoader loader = Objects.requireNonNull(projectHandler.getProjectLoader(projectId));
+
+        if (loader.getAnnotationType() == AnnotationType.AUDIO.ordinal()) {
+            loader.updateDBLoadingProgress(0);
+            loader.setDbOriUUIDSize(0);
+            promise.complete();
+            return promise.future();
+        }
+
         List<String> oriUUIDList = loader.getUuidListFromDb();
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
@@ -537,12 +551,17 @@ public class PortfolioDB {
 
         File projectPath = loader.getProjectPath();
 
+        AnnotationType annotationType = AnnotationType.get(loader.getAnnotationType());
+
         if (!projectPath.exists())
         {
             log.info(String.format("Root path of project [%s] is missing! %s does not exist.", loader.getProjectName(), loader.getProjectPath()));
         }
 
-        List<String> existingDataInDir = ImageHandler.getValidImagesFromFolder(projectPath);
+        List<String> existingDataInDir = new ArrayList<>();
+        if(annotationType == AnnotationType.BOUNDINGBOX || annotationType == AnnotationType.SEGMENTATION) {
+            existingDataInDir = ImageHandler.getValidImagesFromFolder(projectPath);
+        }
 
         result.add(ProjectMetaProperties.builder()
                 .projectName(loader.getProjectName())
@@ -660,13 +679,11 @@ public class PortfolioDB {
         return loader.getSanityUuidList();
     }
 
-    public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader)
-    {
-        LabelListHandler labelListHandler = new LabelListHandler();
-
+    public ProjectStatisticResponse getProjectStatistic(ProjectLoader projectLoader, AnnotationType type) throws ExecutionException, InterruptedException {
+        int labeledData = 0;
+        int unlabeledData = 0;
+        List<LabelNameAndCountProperties> labelPerClassInProject = new ArrayList<>();
         File projectPath = projectLoader.getProjectPath();
-
-        labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
 
         if (!projectPath.exists())
         {
@@ -674,11 +691,192 @@ public class PortfolioDB {
                     projectLoader.getProjectName(), projectLoader.getProjectPath()));
         }
 
+        if(type == AnnotationType.BOUNDINGBOX || type == AnnotationType.SEGMENTATION) {
+            LabelListHandler labelListHandler = new LabelListHandler();
+            labelListHandler.getImageLabeledStatus(projectLoader.getUuidAnnotationDict());
+            labeledData = labelListHandler.getNumberOfLabeledImage();
+            unlabeledData = labelListHandler.getNumberOfUnLabeledImage();
+            labelPerClassInProject = labelListHandler.getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader);
+        }
+
+        else if(type == AnnotationType.AUDIO) {
+            CompletableFuture<List<AudioRegionsProperties>> future = new CompletableFuture<>();
+
+            getAudioRegions(projectLoader).onComplete(res -> {
+                if (res.succeeded()) {
+                    future.complete(res.result());
+                }
+
+                else if (res.failed()) {
+                    future.completeExceptionally(res.cause());
+                    log.info("Fail to retrieve data from database for " + projectLoader.getProjectName());
+                }
+            });
+
+            List<Map<String, Integer>> list = new ArrayList<>();
+            Map<String, Integer> map = new HashMap<>();
+            for(AudioRegionsProperties audioRegionsProperties : future.get()){
+                String labelName = audioRegionsProperties.getLabelName();
+                if(labelName != null) {
+                    labeledData++;
+                    // If support multiple labels:
+//                    Map<String, Integer> map = new HashMap<>();
+//                    JSONArray labelsJsonArray = new JSONArray(labelsListString);
+//                    for(int i = 0; i < labelsJsonArray.length(); i++) {
+//                        JSONObject jsonObject = labelsJsonArray.getJSONObject(i);
+//                        String labelName = jsonObject.getString("labelName");
+                        if(map.containsKey(labelName)) {
+                            map.put(labelName, map.get(labelName) + 1);
+                        } else {
+                            map.put(labelName, 1);
+//                        }
+                    }
+                    list.add(map);
+                } else {
+                    unlabeledData++;
+                }
+            }
+            Map<String, Integer> labelCountMap = list.stream()
+                    .flatMap(m -> m.entrySet().stream())
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Integer::sum));
+
+            labelPerClassInProject = labelCountMap.entrySet().stream()
+                    .map(m -> LabelNameAndCountProperties.builder().label(m.getKey()).count(m.getValue()).build())
+                    .collect(Collectors.toList());
+        }
+
         return ProjectStatisticResponse.builder()
                 .message(ReplyHandler.SUCCESSFUL)
-                .numLabeledImage(labelListHandler.getNumberOfLabeledImage())
-                .numUnLabeledImage(labelListHandler.getNumberOfUnLabeledImage())
-                .labelPerClassInProject(labelListHandler.getLabelPerClassInProject(projectLoader.getUuidAnnotationDict(), projectLoader))
+                .numLabeledData(labeledData)
+                .numUnLabeledData(unlabeledData)
+                .labelPerClassInProject(labelPerClassInProject)
                 .build();
+    }
+
+    public Future<Void> createRegion(ProjectLoader loader, AudioRegionsProperties audioRegionsProperties) throws JsonProcessingException {
+        String regionId = audioRegionsProperties.getRegionId();
+        String projectId = loader.getProjectId();
+        String audioPath = loader.getProjectPath().getName();
+        String audioPropsString = new ObjectMapper().writeValueAsString(audioRegionsProperties);
+
+        Tuple params = Tuple.of(regionId, projectId, audioPath, audioPropsString);
+        return runQuery(AnnotationQuery.getCreateAudioData(), params, holder.getJDBCPool(loader))
+                .map(DBUtils::toVoid);
+    }
+
+    public Future<List<Integer>> getWaveFormPeaks(ProjectLoader loader) {
+        Tuple params = Tuple.of(loader.getProjectId());
+
+        return runQuery(AnnotationQuery.getRetrieveWavePeaks(), params, holder.getJDBCPool(loader)).map(res -> {
+            if (res.size() != 0) {
+                List<Integer> list = new ArrayList<>();
+                RowSet<Row> rows = res.value();
+                for (Row row : rows) {
+                    list.add(row.getInteger("WAVE_PEAK"));
+                }
+                return list;
+            }
+            return null;
+        });
+    }
+
+    public Future<List<AudioRegionsProperties>> getAudioRegions(ProjectLoader loader) {
+        Tuple params = Tuple.of(loader.getProjectId());
+
+        return runQuery(AnnotationQuery.getRetrieveAudioData(), params, holder.getJDBCPool(loader)).map(res -> {
+            if (res.size() != 0) {
+                List<AudioRegionsProperties> list = new ArrayList<>();
+                for (Row row : res.value()) {
+                    JsonObject regionJson = new JsonObject(row.getString("REGIONS_PROPS"));
+                    AudioRegionsProperties regionsProperties = AudioRegionsProperties.builder()
+                            .regionId(regionJson.getString("regionId"))
+                            .labelName(regionJson.getString("labelName"))
+                            .startTime(regionJson.getDouble("startTime"))
+                            .endTime(regionJson.getDouble("endTime"))
+                            .loop(regionJson.getBoolean("loop"))
+                            .labelColor(regionJson.getString("labelColor"))
+                            .draggable(regionJson.getBoolean("draggable"))
+                            .isPlaying(regionJson.getBoolean("isPlaying"))
+                            .resizable(regionJson.getBoolean("resizable"))
+                            .build();
+                    list.add(regionsProperties);
+                }
+                return list;
+            }
+            return null;
+        });
+    }
+
+    public ActionStatus deleteAudioRegion(ProjectLoader loader, String regionId) {
+        Tuple params = Tuple.of(regionId, loader.getProjectId());
+
+        runQuery(AnnotationQuery.getDeleteAudioData(), params, holder.getJDBCPool(loader))
+                .onComplete(res -> {
+                    if(res.succeeded()) {
+                        log.info("Delete selected region");
+                    }
+
+                    else if(res.failed()) {
+                        log.info(res.cause().getMessage());
+                    }
+                });
+
+        return ActionStatus.ok();
+    }
+
+    public Future<Void> updateAudioRegion(ProjectLoader loader, AudioRegionsProperties audioRegionsProperties) throws JsonProcessingException {
+        String regionId = audioRegionsProperties.getRegionId();
+        String projectId = loader.getProjectId();
+        String audioPropsString = new ObjectMapper().writeValueAsString(audioRegionsProperties);
+
+        Tuple params = Tuple.of(audioPropsString, regionId, projectId);
+        return runQuery(AnnotationQuery.getUpdateAudioData(), params, holder.getJDBCPool(loader))
+                .map(DBUtils::toVoid);
+    }
+
+    public Future<Void> exportAudioAnnotation(ProjectLoader loader) {
+        Promise<Void> promise = Promise.promise();
+
+        getAudioRegions(loader).onComplete(res -> {
+            if (res.succeeded()) {
+                try {
+                    writeAudioAnnotationTextFile(loader, res.result());
+                    log.info("Annotation file is generated at " + loader.getProjectPath().getParent());
+                } catch (IOException e) {
+                    log.info("Fail to generate audio annotation file for " + loader.getProjectName());
+                }
+                promise.complete();
+            }
+
+            else if (res.failed()) {
+                promise.fail("Fail");
+            }
+        });
+
+        return promise.future();
+    }
+
+    private void writeAudioAnnotationTextFile(ProjectLoader loader, List<AudioRegionsProperties> audioRegionsPropertiesList) throws IOException {
+        String outputFilePath = loader.getProjectPath().getParent() + File.separator + loader.getProjectName() + "_annotation" + ".txt";
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+
+        writer.write("Start(s)");
+        writer.write("\t");
+        writer.write("End(s)");
+        writer.write("\t");
+        writer.write("Labels");
+        writer.newLine();
+
+        for (AudioRegionsProperties audioRegionsProperties : audioRegionsPropertiesList) {
+            writer.write(String.valueOf(audioRegionsProperties.getStartTime()));
+            writer.write("\t");
+            writer.write(String.valueOf(audioRegionsProperties.getEndTime()));
+            writer.write("\t");
+            writer.write(String.valueOf(audioRegionsProperties.getLabelName()));
+            writer.newLine();
+        }
+
+        writer.flush();
+        writer.close();
     }
 }

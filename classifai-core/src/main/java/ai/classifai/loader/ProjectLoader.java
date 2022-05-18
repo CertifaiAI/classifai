@@ -21,6 +21,7 @@ import ai.classifai.database.versioning.Annotation;
 import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
+import ai.classifai.util.data.AudioHandler;
 import ai.classifai.util.data.ImageHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
@@ -302,5 +303,13 @@ public class ProjectLoader
         } else {
             return ParamConfig.getSegmentationParam();
         }
+    }
+
+    public void createWaveFormTable() {
+        annotationDB.createWaveFormPeaksTable(this);
+    }
+
+    public void saveWaveFormPeaks() {
+        AudioHandler.saveWaveFormPeaksToDataBase(this, annotationDB, projectPath);
     }
 }

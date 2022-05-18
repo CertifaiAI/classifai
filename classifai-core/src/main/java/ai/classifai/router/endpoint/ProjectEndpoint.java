@@ -14,6 +14,7 @@ import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.ui.enums.NewProjectStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
 import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.data.AudioHandler;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -23,11 +24,15 @@ import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -134,35 +139,69 @@ public class ProjectEndpoint {
         return response;
     }
 
-    protected ActionStatus createRawProject(CreateProjectBody requestBody) throws IOException {
+    protected ActionStatus createRawProject(CreateProjectBody requestBody) throws IOException, UnsupportedAudioFileException {
         String projectName = requestBody.getProjectName();
-
         String annotationName = requestBody.getAnnotationType();
         Integer annotationInt = AnnotationType.get(annotationName).ordinal();
+        String projectPath = requestBody.getProjectPath();
+        String labelPath = requestBody.getLabelFilePath();
+        List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
 
         if (projectHandler.isProjectNameUnique(projectName, annotationInt))
         {
-            String projectPath = requestBody.getProjectPath();
+            switch(annotationInt) {
+                case 0, 1 -> {
+                    ProjectLoader loader = ProjectLoader.builder()
+                            .projectId(UuidGenerator.generateUuid())
+                            .projectName(projectName)
+                            .annotationType(annotationInt)
+                            .projectPath(new File(projectPath))
+                            .labelList(labelList)
+                            .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                            .projectInfra(ProjectInfra.ON_PREMISE)
+                            .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                            .portfolioDB(portfolioDB)
+                            .annotationDB(annotationDB)
+                            .build();
 
-            String labelPath = requestBody.getLabelFilePath();
-            List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
+                    projectHandler.loadProjectLoader(loader);
+                    loader.initFolderIteration();
+                }
+                case 2 -> {
+                    String audioFilePath = requestBody.getAudioFilePath();
+                    File audioFile = new File(audioFilePath);
+                    File audioParentDirectory = new File(audioFilePath).getParentFile();
+                    String projectDirectoryPath = audioParentDirectory.getAbsolutePath() + File.separator
+                            + FilenameUtils.getBaseName(audioFile.getName());
+                    File projectDirectory = new File(projectDirectoryPath);
+                    String targetAudioFilePath = projectDirectory.getAbsolutePath() + File.separator + audioFile.getName();
 
-            ProjectLoader loader = ProjectLoader.builder()
-                    .projectId(UuidGenerator.generateUuid())
-                    .projectName(projectName)
-                    .annotationType(annotationInt)
-                    .projectPath(new File(projectPath))
-                    .labelList(labelList)
-                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                    .projectInfra(ProjectInfra.ON_PREMISE)
-                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                    .portfolioDB(portfolioDB)
-                    .annotationDB(annotationDB)
-                    .build();
+                    if (projectDirectory.exists()) {
+                        projectDirectory = new File(projectDirectoryPath + "_classifai");
+                    }
 
-            projectHandler.loadProjectLoader(loader);
-            loader.initFolderIteration();
+                    Files.createDirectory(Paths.get(projectDirectory.getPath()));
+                    log.info("Project directory: " + projectDirectory.getName() + " is created at " + projectDirectory.getParent());
+                    Files.move(audioFile.toPath(), Paths.get(targetAudioFilePath));
+                    log.info(audioFile.getName() + " has move to directory: " + projectDirectory.getName());
 
+                    ProjectLoader loader = ProjectLoader.builder()
+                            .projectId(UuidGenerator.generateUuid())
+                            .projectName(projectName)
+                            .annotationType(annotationInt)
+                            .projectPath(new File(targetAudioFilePath))
+                            .labelList(labelList)
+                            .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                            .projectInfra(ProjectInfra.ON_PREMISE)
+                            .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                            .portfolioDB(portfolioDB)
+                            .annotationDB(annotationDB)
+                            .build();
+
+                    AudioHandler.generateWaveFormPeaks(targetAudioFilePath, loader);
+                    projectHandler.loadProjectLoader(loader);
+                }
+            }
             return ActionStatus.ok();
         }
 
@@ -460,4 +499,49 @@ public class ProjectEndpoint {
         return ActionStatus.ok();
     }
 
+    /**
+     * Open folder selector to choose project folder
+     * PUT http://localhost:{port}/v2/folders
+     *
+     * Example:
+     * PUT http://localhost:{port}/v2/folders
+     */
+    @PUT
+    @Path("/v2/audiofile")
+    public ActionStatus selectTabularFile()
+    {
+        if(!ui.isAudioFileSelectorOpen())
+        {
+            ui.showAudioFileSelector();
+        }
+
+        return ActionStatus.ok();
+    }
+
+    /**
+     * Get status of choosing a project folder
+     * GET http://localhost:{port}/v2/folders
+     *
+     * Example:
+     * GET http://localhost:{port}/v2/folders
+     */
+    @GET
+    @Path("/v2/audiofile")
+    public SelectionStatusResponse selectAudioFileStatus()
+    {
+        SelectionWindowStatus status = ui.getAudioFileSelectorWindowStatus();
+
+        SelectionStatusResponse response = SelectionStatusResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .windowStatus(status.ordinal())
+                .windowMessage(status.name())
+                .build();
+
+        if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
+        {
+            response.setAudioFilePath(ui.getAudioFileSelectedPath());
+        }
+
+        return response;
+    }
 }

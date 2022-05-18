@@ -18,11 +18,11 @@ public class ProjectStatisticResponse {
     @JsonProperty
     int message;
 
-    @JsonProperty("labeled_image")
-    int numLabeledImage;
+    @JsonProperty("labeled_data")
+    int numLabeledData;
 
-    @JsonProperty("unlabeled_image")
-    int numUnLabeledImage;
+    @JsonProperty("unlabeled_data")
+    int numUnLabeledData;
 
     @JsonProperty("label_per_class_in_project")
     List<LabelNameAndCountProperties> labelPerClassInProject;

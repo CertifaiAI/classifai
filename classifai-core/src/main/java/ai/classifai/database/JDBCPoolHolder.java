@@ -49,6 +49,10 @@ public class JDBCPoolHolder {
         createInitialTable(segPool, AnnotationQuery.getCreateProject());
         addJDBCPool(AnnotationType.SEGMENTATION, segPool);
 
+        JDBCPool audioPool = createPoolForTable(vertx, db, DbConfig.getAudioKey());
+        createInitialTable(audioPool, AnnotationQuery.getCreateAudioProject());
+        addJDBCPool(AnnotationType.AUDIO, audioPool);
+
         portfolioPool = createPoolForTable(vertx, db, DbConfig.getPortfolioKey());
         createInitialTable(portfolioPool, PortfolioDbQuery.getCreatePortfolioTable());
 

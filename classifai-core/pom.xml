@@ -124,6 +124,10 @@
             <groupId>com.zandero</groupId>
             <artifactId>rest.vertx</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.marc7806</groupId>
+            <artifactId>audiowaveform</artifactId>
+        </dependency>
     </dependencies>
 
 

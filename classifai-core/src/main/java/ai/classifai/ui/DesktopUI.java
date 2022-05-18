@@ -7,6 +7,7 @@ import ai.classifai.ui.enums.RunningStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
 import ai.classifai.ui.launcher.WelcomeLauncher;
 import ai.classifai.ui.launcher.conversion.ConverterLauncher;
+import ai.classifai.ui.selector.project.AudioFileSelector;
 import ai.classifai.ui.selector.project.LabelFileSelector;
 import ai.classifai.ui.selector.project.ProjectFolderSelector;
 import ai.classifai.ui.selector.project.ProjectImportSelector;
@@ -24,6 +25,7 @@ public class DesktopUI implements NativeUI {
     private final ProjectImportSelector projectImportSelector;
     private final ProjectFolderSelector projectFolderSelector;
     private final LabelFileSelector labelFileSelector;
+    private final AudioFileSelector audioFileSelector;
 
     public DesktopUI(Runnable serverShutdownCallback, ProjectImport projectImport){
         LookFeelSetter.setDarkMode();
@@ -32,6 +34,7 @@ public class DesktopUI implements NativeUI {
         projectImportSelector = new ProjectImportSelector(this, projectImport);
         projectFolderSelector = new ProjectFolderSelector(this);
         labelFileSelector = new LabelFileSelector(this);
+        audioFileSelector = new AudioFileSelector(this);
     }
 
     @Override
@@ -95,6 +98,26 @@ public class DesktopUI implements NativeUI {
     @Override
     public boolean isProjectFolderSelectorOpen() {
         return projectFolderSelector.isWindowOpen();
+    }
+
+    @Override
+    public void showAudioFileSelector() {
+        audioFileSelector.run();
+    }
+
+    @Override
+    public boolean isAudioFileSelectorOpen() {
+        return audioFileSelector.isWindowOpen();
+    }
+
+    @Override
+    public SelectionWindowStatus getAudioFileSelectorWindowStatus() {
+        return audioFileSelector.getWindowStatus();
+    }
+
+    @Override
+    public String getAudioFileSelectedPath() {
+        return audioFileSelector.getAudioFilePath();
     }
 
     @Override

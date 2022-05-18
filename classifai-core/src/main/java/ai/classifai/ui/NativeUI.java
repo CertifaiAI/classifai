@@ -23,4 +23,8 @@ public interface NativeUI {
     SelectionWindowStatus getProjectFolderSelectorWindowStatus();
     String getProjectFolderSelectedPath();
 
+    void showAudioFileSelector();
+    boolean isAudioFileSelectorOpen();
+    SelectionWindowStatus getAudioFileSelectorWindowStatus();
+    String getAudioFileSelectedPath();
 }

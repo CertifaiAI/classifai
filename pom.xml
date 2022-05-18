@@ -100,6 +100,7 @@
         <opencv.version>4.5.1-2</opencv.version>
         <jackson.version>2.12.3</jackson.version>
         <version.com.zandero.rest.vertx>1.0.5</version.com.zandero.rest.vertx>
+        <audiowaveform.version>1.1</audiowaveform.version>
     </properties>
 
     <dependencyManagement>
@@ -268,6 +269,11 @@
                 <groupId>com.zandero</groupId>
                 <artifactId>rest.vertx</artifactId>
                 <version>${version.com.zandero.rest.vertx}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.marc7806</groupId>
+                <artifactId>audiowaveform</artifactId>
+                <version>${audiowaveform.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

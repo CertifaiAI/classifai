@@ -19,4 +19,7 @@ public class CreateProjectBody {
 
     @JsonProperty
     String status;
+
+    @JsonProperty("audio_file_path")
+    String audioFilePath;
 }

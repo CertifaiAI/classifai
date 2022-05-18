@@ -40,9 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Implementation of Functionalities for each annotation type
@@ -251,5 +249,49 @@ public class AnnotationDB
                 },
                 cause -> log.info("Fail to create UUID")
         ));
+    }
+
+    public void createWaveFormPeaksTable(ProjectLoader loader) {
+        JDBCPool audioPool = this.holder.getJDBCPool(loader);
+
+        audioPool.preparedQuery(AnnotationQuery.getCreateWaveFormTable())
+                .execute()
+                .onComplete(res -> {
+                    if(res.succeeded()) {
+                        log.info("wave form table created");
+                        loader.saveWaveFormPeaks();
+                    }
+
+                    else if (res.failed()) {
+                        log.error(res.cause().getMessage());
+                    }
+                });
+    }
+
+    public void saveWavePeaksData(ProjectLoader loader, Double timeStamp, Integer peak, String dataPath, Integer currentLength)
+    {
+        String uuid = UuidGenerator.generateUuid();
+        List<Object> wavePeaksDataPoint = createAudioDataPoint(loader, uuid, timeStamp, dataPath, peak);
+        Tuple params = Tuple.from(wavePeaksDataPoint);
+
+        runQuery(loader,AnnotationQuery.getCreateWaveFormData(), params,
+                DBUtils.handleEmptyResponse(
+                        () -> {
+                            loader.pushFileSysNewUUIDList(uuid);
+                            loader.updateLoadingProgress(currentLength);
+                        },
+                        cause -> log.error("Push data point with path " + dataPath + " failed: " + cause)
+                ));
+    }
+
+    private List<Object> createAudioDataPoint(ProjectLoader loader, String uuid, Double timeStamp, String dataPath, Integer peak) {
+        List<Object> list = new ArrayList<>();
+        list.add(uuid);
+        list.add(loader.getProjectId());
+        list.add(timeStamp);
+        list.add(peak);
+        list.add(dataPath);
+
+        return list;
     }
 }
