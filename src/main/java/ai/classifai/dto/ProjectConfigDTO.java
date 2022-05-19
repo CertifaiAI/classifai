@@ -37,11 +37,9 @@ public class ProjectConfigDTO extends ProjectDTO {
     @JsonProperty("uuid_version_list")
     String uuidVersionList;
 
-    // will see if this is needed
-//    @JsonProperty("label_version_list")
-//    String labelVersionList;
+    @JsonProperty("label_version_list")
+    String labelVersionList;
 
-    // will add later
     @JsonProperty
     Map<String, ImageDataProperties> content;
 }

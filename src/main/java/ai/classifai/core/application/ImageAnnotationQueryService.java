@@ -1,19 +1,19 @@
-package ai.classifai.core.services;
+package ai.classifai.core.application;
 
-import ai.classifai.core.application.AnnotationService;
+import ai.classifai.core.services.annotation.AnnotationQueryService;
 import ai.classifai.database.annotation.ImageAnnotation;
 import lombok.NonNull;
 
 import java.util.List;
 
-public class ImageAnnotationService implements AnnotationService<ImageAnnotation> {
+public class ImageAnnotationQueryService implements AnnotationQueryService<ImageAnnotation> {
     @Override
     public List<ImageAnnotation> getAllAnnotation() {
         return null;
     }
 
     @Override
-    public ImageAnnotation filterAnnotationById(@NonNull String annotationId) {
+    public ImageAnnotation getAnnotationById(@NonNull String annotationId) {
         return null;
     }
 

@@ -4,5 +4,5 @@ public enum AnnotationType {
     IMAGE,
     TABULAR,
     VIDEO,
-    AUDIO;
+    AUDIO
 }

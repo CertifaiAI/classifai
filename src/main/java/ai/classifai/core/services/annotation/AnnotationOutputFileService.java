@@ -1,4 +1,4 @@
-package ai.classifai.core.application;
+package ai.classifai.core.services.annotation;
 
 import lombok.NonNull;
 

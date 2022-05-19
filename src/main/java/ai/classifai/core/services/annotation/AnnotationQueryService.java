@@ -1,13 +1,13 @@
-package ai.classifai.core.application;
+package ai.classifai.core.services.annotation;
 
 import lombok.NonNull;
 
 import java.util.List;
 
-public interface AnnotationService<T> {
+public interface AnnotationQueryService<T> {
     List<T> getAllAnnotation();
 
-    T filterAnnotationById(@NonNull String annotationId);
+    T getAnnotationById(@NonNull String annotationId);
 
     void createAnnotation(@NonNull T annotationProperties);
 

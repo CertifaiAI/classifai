@@ -8,10 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @NonNull
-public class LabelNameAndCountProperties {
+public class DistanceToImageProperties {
     @JsonProperty
-    String label;
+    int x;
 
     @JsonProperty
-    Integer count;
+    int y;
 }
