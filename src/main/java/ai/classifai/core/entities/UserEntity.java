@@ -1,6 +1,6 @@
 package ai.classifai.core.entities;
 
-import ai.classifai.data.UserType;
+import ai.classifai.data.enumeration.UserType;
 
 public interface UserEntity {
     String getUserId();

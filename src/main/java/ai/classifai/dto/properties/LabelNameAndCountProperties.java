@@ -13,5 +13,5 @@ public class LabelNameAndCountProperties {
     String label;
 
     @JsonProperty
-    Integer count;
+    int count;
 }

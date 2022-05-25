@@ -3,16 +3,17 @@ package ai.classifai.dto;
 import ai.classifai.dto.properties.ImageDataProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @NonNull
-public class ProjectConfigDTO extends ProjectDTO {
+public class ProjectConfigDTO extends ProjectInfoDTO {
     @JsonProperty("tool")
     String toolName;
 

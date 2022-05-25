@@ -1,8 +1,10 @@
 package ai.classifai.dto;
 
-import ai.classifai.data.ProjectInfra;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import ai.classifai.data.enumeration.ProjectInfra;
+import ai.classifai.data.enumeration.ProjectType;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -10,33 +12,32 @@ import lombok.*;
 @NoArgsConstructor
 @NonNull
 public class ProjectDTO {
-    @JsonProperty("project_id")
-    String projectId;
-
-    @JsonProperty("project_name")
     String projectName;
 
-    @JsonProperty("is_new")
-    Boolean isNewParam;
+    String projectId;
 
-    @JsonProperty("is_starred")
-    Boolean isStarredParam;
+    String projectPath;
 
-    @JsonProperty("is_loaded")
-    Boolean isLoadedParam;
+    ProjectType projectType;
 
-    @JsonProperty("project_infra")
-    ProjectInfra projectInfraParam;
+    List<String> labelList;
 
-    @JsonProperty("created_date")
-    String createdDateParam;
+    ProjectInfra projectInfra;
 
-    @JsonProperty("last_modified_date")
-    String lastModifiedDate;
+    // extra video parameters
+//    String videoFilePath;
+//
+//    String videoDuration;
+//
+//    int videoLength;
+//
+//    int extractedFrameIndex;
+//
+//    int framePerSecond;
 
-    @JsonProperty("current_version")
-    String currentVersionParam;
+    // extra tabular parameters
+//    String tabularFilePath;
 
-    @JsonProperty("total_uuid")
-    int totalUuidParam;
+    // extra audio parameters
+//    String audioFilePath;
 }

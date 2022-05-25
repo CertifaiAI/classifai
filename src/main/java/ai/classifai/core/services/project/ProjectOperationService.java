@@ -1,7 +1,7 @@
 package ai.classifai.core.services.project;
 
-import ai.classifai.core.entities.ProjectEntity;
 import ai.classifai.dto.ProjectConfigDTO;
+import ai.classifai.repository.project.ProjectEntity;
 import lombok.NonNull;
 
 import java.io.IOException;

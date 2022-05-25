@@ -20,14 +20,14 @@ public class ImageDataProperties {
 //    List<VersionConfigProperties> versionList;
 
     @JsonProperty("img_depth")
-    Integer imgDepth;
+    int imgDepth;
 
     @JsonProperty("img_ori_w")
-    Integer imgOriW;
+    int imgOriW;
 
     @JsonProperty("img_ori_h")
-    Integer imgOriH;
+    int imgOriH;
 
     @JsonProperty("file_size")
-    Integer fileSize;
+    int fileSize;
 }
