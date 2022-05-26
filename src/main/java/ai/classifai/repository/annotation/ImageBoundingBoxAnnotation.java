@@ -1,60 +1,60 @@
 package ai.classifai.repository.annotation;
 
 import ai.classifai.dto.BoundingBoxDTO;
+import ai.classifai.dto.properties.BoundingBox;
+import ai.classifai.dto.properties.ImageProperties;
 import lombok.Data;
 import lombok.Getter;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
-public class ImageBoundingBoxAnnotation implements AnnotationType<BoundingBox>{
-    private String imgUuid;
-    private String imgPath;
-    private Integer imgDepth;
-    private Integer imgOriW;
-    private Integer imgOriH;
-    private Integer fileSize;
-    private Map<String, BoundingBox> boundingBoxMap;
+public class ImageBoundingBoxAnnotation extends AnnotationAbstract<BoundingBoxDTO, BoundingBox> implements AnnotationType<BoundingBox>{
+    private ImageProperties imageProperties;
+    private List<BoundingBox> boundingBoxList;
     @Getter
     private BoundingBoxDTO boundingBoxDTO;
 
-    ImageBoundingBoxAnnotation(String imgUuid, String imgPath, Integer imgDepth,
-                               Integer imgOriH, Integer imgOriW, Integer fileSize) {
-        this.imgUuid = imgUuid;
-        this.imgPath = imgPath;
-        this.imgDepth = imgDepth;
-        this.imgOriH = imgOriH;
-        this.imgOriW = imgOriW;
-        this.fileSize = fileSize;
+    ImageBoundingBoxAnnotation(ImageProperties imageProperties) {
+        this.imageProperties = imageProperties;
     }
 
     @Override
     public BoundingBox createAnnotation(BoundingBox boundingBox) {
-        return boundingBoxMap.put(boundingBox.getUuid(), boundingBox);
+        this.boundingBoxList.add(boundingBox);
+        return boundingBox;
     }
 
     @Override
-    public BoundingBox getAnnotationById(String annotationUuid) {
-        return boundingBoxMap.get(annotationUuid);
+    public BoundingBox getAnnotationById(String uuid) {
+        BoundingBox boundingBoxById = this.boundingBoxList.stream()
+                .filter(boundingBox -> boundingBox.getUuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
+        return boundingBoxById;
     }
 
     @Override
     public void deleteAnnotationById(String id) {
-
+        this.boundingBoxList.removeIf(boundingBox -> boundingBox.getUuid().equals(id));
     }
 
     @Override
-    public void toDTO(BoundingBox annotation) {
+    public BoundingBoxDTO toDTO(BoundingBox boundingBox) {
         this.boundingBoxDTO = BoundingBoxDTO.builder()
-                .uuid(annotation.getUuid())
-                .label(annotation.getLabel())
-                .color(annotation.getColor())
-                .subLabel(annotation.getSubLabel())
-                .img_x(annotation.getImg_x())
-                .img_y(annotation.getImg_y())
-                .img_w(annotation.getImg_w())
-                .img_h(annotation.getImg_h())
-                .lineWidth(annotation.getLineWidth())
+                .imgUuid(imageProperties.getImgUuid())
+                .imgPath(imageProperties.getImgPath())
+                .imgOriginalWidth(imageProperties.getImgOriginalWidth())
+                .imgOriginalHeight(imageProperties.getImgOriginalHeight())
+                .imgX(imageProperties.getImgX())
+                .imgY(imageProperties.getImgY())
+                .imgW(imageProperties.getImgW())
+                .imgH(imageProperties.getImgH())
+                .boundingBoxList(this.boundingBoxList)
+                .fileSize(imageProperties.getFileSize())
+                .imgThumbnail(imageProperties.getImageThumbnail())
                 .build();
+
+        return boundingBoxDTO;
     }
 }

@@ -1,43 +1,58 @@
 package ai.classifai.repository.annotation;
 
-import java.util.Map;
+import ai.classifai.dto.SegmentationDTO;
+import ai.classifai.dto.properties.ImageProperties;
+import ai.classifai.dto.properties.Segmentation;
+import lombok.Getter;
 
-public class ImageSegmentationAnnotation implements AnnotationType<Segmentation>{
-    private String imgUuid;
-    private String imgPath;
-    private Integer imgDepth;
-    private Integer imgOriW;
-    private Integer imgOriH;
-    private Integer fileSize;
-    private Map<String, Segmentation> segmentationMap;
+import java.util.List;
 
-    ImageSegmentationAnnotation(String imgUuid, String imgPath, Integer imgDepth,
-                                Integer imgOriH, Integer imgOriW, Integer fileSize) {
-        this.imgUuid = imgUuid;
-        this.imgPath = imgPath;
-        this.imgDepth = imgDepth;
-        this.imgOriH = imgOriH;
-        this.imgOriW = imgOriW;
-        this.fileSize = fileSize;
+public class ImageSegmentationAnnotation extends AnnotationAbstract<SegmentationDTO, Segmentation> implements AnnotationType<Segmentation>{
+    private ImageProperties imageProperties;
+    private List<Segmentation> segmentationList;
+    @Getter
+    private SegmentationDTO segmentationDTO;
+
+    ImageSegmentationAnnotation(ImageProperties imageProperties) {
+        this.imageProperties = imageProperties;
     }
 
     @Override
     public Segmentation createAnnotation(Segmentation segmentation) {
-        return segmentationMap.put(segmentation.getUuid(), segmentation);
+        this.segmentationList.add(segmentation);
+        return segmentation;
     }
 
     @Override
-    public Segmentation getAnnotationById(String annotationUuid) {
-        return this.segmentationMap.get(annotationUuid);
+    public Segmentation getAnnotationById(String uuid) {
+        Segmentation segmentationById = segmentationList.stream()
+                .filter(segmentation -> segmentation.getUuid().equals(uuid))
+                .findFirst()
+                .orElse(null);
+        return segmentationById;
     }
 
     @Override
     public void deleteAnnotationById(String id) {
-
+        this.segmentationList.removeIf(segmentation -> segmentation.getUuid().equals(id));
     }
 
     @Override
-    public void toDTO(Segmentation annotation) {
+    public SegmentationDTO toDTO(Segmentation annotation) {
+        this.segmentationDTO = SegmentationDTO.builder()
+                .imgPath(imageProperties.getImgUuid())
+                .imgPath(imageProperties.getImgPath())
+                .imgOriginalWidth(imageProperties.getImgOriginalWidth())
+                .imgOriginalHeight(imageProperties.getImgOriginalHeight())
+                .imgX(imageProperties.getImgX())
+                .imgY(imageProperties.getImgY())
+                .imgW(imageProperties.getImgW())
+                .imgH(imageProperties.getImgH())
+                .segmentationList(this.segmentationList)
+                .fileSize(imageProperties.getFileSize())
+                .imgThumbnail(imageProperties.getImageThumbnail())
+                .build();
 
+        return segmentationDTO;
     }
 }

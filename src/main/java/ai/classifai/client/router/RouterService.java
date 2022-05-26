@@ -16,7 +16,6 @@ public class RouterService extends AbstractVerticle {
     }
 
     private void configureEndpoints() {
-        log.info("configure");
         this.projectController = new ProjectController();
     }
 
@@ -39,15 +38,7 @@ public class RouterService extends AbstractVerticle {
                 .requestHandler(router)
                 .exceptionHandler(Throwable::printStackTrace)
                 .listen(8080, r -> {
-                        log.info("listening to 8080");
-//                    if (r.succeeded())
-//                    {
-//                        promise.complete();
-//                    }
-//                    else {
-//                        log.debug("Failure in creating HTTPServer in ServerVerticle. " + r.cause().getMessage());
-//                        promise.fail(r.cause());
-//                    }
+                    log.info("listening to 8080");
                 });
     }
 

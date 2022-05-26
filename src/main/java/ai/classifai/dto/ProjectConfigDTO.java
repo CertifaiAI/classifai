@@ -1,11 +1,8 @@
 package ai.classifai.dto;
 
-import ai.classifai.dto.properties.ImageDataProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -41,6 +38,4 @@ public class ProjectConfigDTO extends ProjectInfoDTO {
     @JsonProperty("label_version_list")
     String labelVersionList;
 
-    @JsonProperty
-    Map<String, ImageDataProperties> content;
 }

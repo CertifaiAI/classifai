@@ -1,6 +1,6 @@
 package ai.classifai.dto;
 
-import ai.classifai.dto.properties.LabelNameAndCountProperties;
+import ai.classifai.dto.properties.LabelNameAndCount;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -17,7 +17,7 @@ public class ProjectStatisticsDTO {
     int numUnLabeledData;
 
     @JsonProperty("label_per_class_in_project")
-    List<LabelNameAndCountProperties> labelPerClassInProject;
+    List<LabelNameAndCount> labelPerClassInProject;
 
     @JsonProperty("error_message")
     @JsonInclude(JsonInclude.Include.NON_NULL)

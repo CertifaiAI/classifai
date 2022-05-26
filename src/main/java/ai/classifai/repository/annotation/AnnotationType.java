@@ -7,5 +7,4 @@ public interface AnnotationType<T> {
 
     void deleteAnnotationById(String id);
 
-    void toDTO(T annotation);
 }

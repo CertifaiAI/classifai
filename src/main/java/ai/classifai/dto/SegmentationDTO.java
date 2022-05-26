@@ -1,6 +1,6 @@
 package ai.classifai.dto;
 
-import ai.classifai.dto.properties.BoundingBox;
+import ai.classifai.dto.properties.Segmentation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -11,9 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @NonNull
-public class BoundingBoxDTO {
+public class SegmentationDTO {
     @JsonProperty
-    String imgUuid;
+    String uuid;
 
     @JsonProperty
     String imgPath;
@@ -37,7 +37,7 @@ public class BoundingBoxDTO {
     int imgOriginalHeight;
 
     @JsonProperty
-    List<BoundingBox> boundingBoxList;
+    List<Segmentation> segmentationList;
 
     @JsonProperty
     String imgThumbnail;

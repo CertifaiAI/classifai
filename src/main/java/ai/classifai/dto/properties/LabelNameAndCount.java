@@ -8,13 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @NonNull
-public class CoordinatePointsProperties {
+public class LabelNameAndCount {
     @JsonProperty
-    int x;
+    String label;
 
     @JsonProperty
-    int y;
-
-    @JsonProperty
-    DistanceToImageProperties distanceToImageProperties;
+    int count;
 }
