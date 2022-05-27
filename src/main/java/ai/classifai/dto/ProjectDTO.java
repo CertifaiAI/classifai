@@ -18,11 +18,11 @@ public class ProjectDTO {
 
     String projectPath;
 
-    ProjectType projectType;
+    Integer projectType;
 
     List<String> labelList;
 
-    ProjectInfra projectInfra;
+    Integer projectInfra;
 
     // extra video parameters
 //    String videoFilePath;

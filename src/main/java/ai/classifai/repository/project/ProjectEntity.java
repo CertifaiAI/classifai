@@ -14,9 +14,9 @@ import java.util.List;
 public class ProjectEntity {
     private String projectName;
     private String projectId;
-    private ProjectType projectType;
+    private int projectType;
     private String projectPath;
-    private ProjectInfra projectInfra;
+    private int projectInfra;
     private List<String> labelList;
 
     ProjectEntity(ProjectDTO projectDTO) {

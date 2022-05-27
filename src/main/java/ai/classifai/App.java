@@ -1,6 +1,5 @@
 package ai.classifai;
 
-import ai.classifai.client.router.RouterService;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -22,6 +21,6 @@ public class App
         opt.setWorker(true);
 
         Vertx vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(new RouterService(), opt);
+        vertx.deployVerticle(new MainVerticle(), opt);
     }
 }

@@ -16,6 +16,7 @@ public class ImageBoundingBoxAnnotation extends AnnotationAbstract<BoundingBoxDT
     private BoundingBoxDTO boundingBoxDTO;
 
     ImageBoundingBoxAnnotation(ImageProperties imageProperties) {
+        super();
         this.imageProperties = imageProperties;
     }
 

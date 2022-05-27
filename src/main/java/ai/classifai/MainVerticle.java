@@ -1,6 +1,7 @@
 package ai.classifai;
 
 import ai.classifai.client.router.RouterService;
+import ai.classifai.repository.JdbcHolder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,8 @@ public class MainVerticle extends AbstractVerticle {
         vertx.deployVerticle(routerService, deploy);
 
         deploy.future().onComplete(res -> {
+            JdbcHolder.init(vertx);
+
             if (res.succeeded()) {
                 log.info("start");
             }
@@ -33,6 +36,8 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void stop() {
         routerService.stop();
+        JdbcHolder.stop();
+
         vertx.close(voidAsyncResult -> {
             log.info("verticle close");
         });

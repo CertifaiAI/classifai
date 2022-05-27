@@ -1,7 +1,9 @@
 package ai.classifai.data.enumeration;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public enum ProjectType {
     IMAGEBOUNDINGBOX,
     IMAGESEGMENTATION,
@@ -10,15 +12,15 @@ public enum ProjectType {
     TABULAR,
     AUDIO;
 
-    public static ProjectType getProjectType(@NonNull String annotationType)
+    public static Integer getProjectType(@NonNull String annotationType)
     {
         ProjectType projectType = null;
 
         switch (annotationType) {
-            case "bndbox" -> {
+            case "imgbndbox" -> {
                 projectType = IMAGEBOUNDINGBOX;
             }
-            case "seg" -> {
+            case "imgseg" -> {
                 projectType = IMAGESEGMENTATION;
             }
             case "videobndbox" -> {
@@ -35,6 +37,6 @@ public enum ProjectType {
             }
         }
 
-        return  projectType;
+        return  projectType.ordinal();
     }
 }

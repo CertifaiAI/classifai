@@ -1,10 +1,13 @@
 package ai.classifai.data.enumeration;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public enum ProjectInfra {
     ONPREMISE,
     CLOUD;
 
-    public static ProjectInfra getProjectInfra(String projectInfra) {
+    public static Integer getProjectInfra(String projectInfra) {
         ProjectInfra infra = null;
 
         switch(projectInfra) {
@@ -12,6 +15,6 @@ public enum ProjectInfra {
             case "cloud" -> infra = CLOUD;
         }
 
-        return infra;
+        return infra.ordinal();
     }
 }

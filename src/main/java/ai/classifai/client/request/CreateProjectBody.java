@@ -5,9 +5,6 @@ import lombok.Data;
 
 @Data
 public class CreateProjectBody {
-    @JsonProperty
-    String status;
-
     @JsonProperty("annotation_type")
     String annotationType;
 
