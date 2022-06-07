@@ -104,6 +104,11 @@
             <artifactId>h2</artifactId>
             <version>1.4.200</version>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <version>3.15.3.Final</version>
+        </dependency>
     </dependencies>
 
     <build>

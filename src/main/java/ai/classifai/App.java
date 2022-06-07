@@ -1,5 +1,6 @@
 package ai.classifai;
 
+import ai.classifai.core.MainVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -21,6 +22,6 @@ public class App
         opt.setWorker(true);
 
         Vertx vertx = Vertx.vertx(vertxOptions);
-        vertx.deployVerticle(new MainVerticle(), opt);
+        vertx.deployVerticle(new MainVerticle(vertx), opt);
     }
 }
