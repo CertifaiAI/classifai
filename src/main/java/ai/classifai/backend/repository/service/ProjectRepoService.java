@@ -1,12 +1,12 @@
 package ai.classifai.backend.repository.service;
 
-import ai.classifai.backend.data.enumeration.ProjectType;
-import ai.classifai.backend.dto.ProjectDTO;
+import ai.classifai.core.enumeration.ProjectType;
+import ai.classifai.core.dto.ProjectDTO;
 import ai.classifai.backend.repository.SqlQueries;
-import ai.classifai.backend.repository.entity.project.ProjectEntity;
+import ai.classifai.core.entity.project.ProjectEntity;
 import ai.classifai.backend.utility.StringUtility;
 import ai.classifai.backend.repository.JdbcHolder;
-import ai.classifai.core.services.project.ProjectRepository;
+import ai.classifai.core.service.project.ProjectRepository;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.jdbcclient.JDBCPool;
@@ -24,11 +24,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProjectRepoService implements ProjectRepository {
     private final JDBCPool projectPool;
-    private final JDBCPool annotationPool;
 
     public ProjectRepoService(JdbcHolder jdbcHolder) {
         this.projectPool = jdbcHolder.getProjectPool();
-        this.annotationPool = jdbcHolder.getAnnotationPool();
     }
 
     private Future<RowSet<Row>> runQuery(String query, Tuple params, JDBCPool pool) {
@@ -106,7 +104,7 @@ public class ProjectRepoService implements ProjectRepository {
     }
 
     @Override
-    public Future<List<ProjectEntity>> listProjects(Integer projectType) {
+    public Future<List<ProjectEntity>> listProjects(@NonNull Integer projectType) {
         return runQuery(SqlQueries.getListAllProject(), projectPool)
                 .map(response -> {
                     if (response.size() != 0) {

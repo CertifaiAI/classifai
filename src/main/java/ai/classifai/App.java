@@ -1,6 +1,6 @@
 package ai.classifai;
 
-import ai.classifai.core.MainVerticle;
+import ai.classifai.frontend.MainVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;

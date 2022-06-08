@@ -1,12 +1,9 @@
 package ai.classifai.frontend.api;
 
-import ai.classifai.backend.data.enumeration.ProjectInfra;
-import ai.classifai.backend.data.enumeration.ProjectType;
-import ai.classifai.backend.dto.ProjectDTO;
-import ai.classifai.backend.utility.UuidGenerator;
-import ai.classifai.core.services.project.ProjectRepository;
-import ai.classifai.core.services.project.ProjectService;
-import ai.classifai.core.services.project.ProjectServiceImpl;
+import ai.classifai.core.dto.ProjectDTO;
+import ai.classifai.core.enumeration.ProjectInfra;
+import ai.classifai.core.enumeration.ProjectType;
+import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.frontend.request.CreateProjectBody;
 import ai.classifai.frontend.response.ActionStatus;
 import io.vertx.core.Future;
@@ -22,15 +19,14 @@ import java.util.Arrays;
 public class ProjectController {
     private final ProjectService projectService;
 
-    public ProjectController(ProjectRepository projectRepository) {
-        this.projectService = new ProjectServiceImpl(projectRepository);
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
     }
 
     @POST
     @Path("/projects")
     public Future<ActionStatus> createProject(CreateProjectBody createProjectBody) {
         ProjectDTO projectDTO = ProjectDTO.builder()
-                .projectId(UuidGenerator.generateUuid())
                 .projectName(createProjectBody.getProjectName())
                 .projectPath(createProjectBody.getProjectPath())
                 .projectType(ProjectType.getProjectType(createProjectBody.getAnnotationType()))

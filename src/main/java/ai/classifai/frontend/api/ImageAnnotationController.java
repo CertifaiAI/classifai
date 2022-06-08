@@ -1,10 +1,10 @@
 package ai.classifai.frontend.api;
 
+import ai.classifai.core.dto.BoundingBoxDTO;
+import ai.classifai.core.dto.properties.BoundingBoxProperties;
+import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.service.annotation.AnnotationService;
 import ai.classifai.frontend.request.ImageAnnotationBody;
-import ai.classifai.core.services.project.ProjectService;
-import ai.classifai.core.services.project.ProjectServiceImpl;
-import ai.classifai.backend.repository.entity.annotation.ImageBoundingBoxAnnotation;
-import ai.classifai.core.services.project.ProjectRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.Consumes;
@@ -17,19 +17,16 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ImageAnnotationController {
-    private ProjectService projectService;
+    private final AnnotationService<BoundingBoxDTO, BoundingBoxProperties, ImageProperties> annotationService;
 
-    public ImageAnnotationController(ProjectRepository projectRepository) {
-        this.projectService = new ProjectServiceImpl(projectRepository);
+    public ImageAnnotationController(AnnotationService<BoundingBoxDTO, BoundingBoxProperties, ImageProperties> annotationService) {
+        this.annotationService = annotationService;
     }
 
     @POST
     @Path("/imglabel/bndbox")
     public void createAnnotation(ImageAnnotationBody imageAnnotationBody) {
-        ImageBoundingBoxAnnotation imageBoundingBoxAnnotation =
-                new ImageBoundingBoxAnnotation(imageAnnotationBody.getImageProperties());
-
-        imageBoundingBoxAnnotation.createAnnotation(imageAnnotationBody.getBoundingBoxProperties());
-        projectService.createAnnotation(imageBoundingBoxAnnotation);
+        annotationService.setProperties(imageAnnotationBody.getImageProperties());
+        annotationService.createAnnotation(imageAnnotationBody.getBoundingBoxProperties());
     }
 }

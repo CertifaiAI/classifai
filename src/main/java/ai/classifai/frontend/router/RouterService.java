@@ -1,6 +1,10 @@
 package ai.classifai.frontend.router;
 
-import ai.classifai.core.services.project.ProjectRepository;
+import ai.classifai.core.dto.BoundingBoxDTO;
+import ai.classifai.core.dto.properties.BoundingBoxProperties;
+import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.service.annotation.AnnotationService;
+import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.frontend.api.ImageAnnotationController;
 import ai.classifai.frontend.api.ProjectController;
 import com.zandero.rest.RestRouter;
@@ -12,17 +16,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RouterService extends AbstractVerticle {
+    private final ProjectService projectService;
+    private final AnnotationService<BoundingBoxDTO, BoundingBoxProperties, ImageProperties> imageBoundingBoxService;
     private ProjectController projectController;
     private ImageAnnotationController imageAnnotationController;
-    private final ProjectRepository projectRepository;
 
-    public RouterService(ProjectRepository projectRepository) {
-        this.projectRepository = projectRepository;
+    public RouterService(
+            ProjectService projectService,
+            AnnotationService<BoundingBoxDTO, BoundingBoxProperties, ImageProperties> imageBoundingBoxService
+    ) {
+        this.projectService = projectService;
+        this.imageBoundingBoxService = imageBoundingBoxService;
     }
 
     private void configureEndpoints() {
-        this.projectController = new ProjectController(projectRepository);
-        this.imageAnnotationController = new ImageAnnotationController(projectRepository);
+        this.projectController = new ProjectController(projectService);
+        this.imageAnnotationController = new ImageAnnotationController(imageBoundingBoxService);
     }
 
     private void addNoCacheHeader(RoutingContext ctx)
@@ -35,7 +44,7 @@ public class RouterService extends AbstractVerticle {
     public void start() {
         configureEndpoints();
 
-        Router router = RestRouter.register(vertx, projectController);
+        Router router = RestRouter.register(vertx, projectController, imageAnnotationController);
 
         router.route().handler(this::addNoCacheHeader);
         router.route().handler(StaticHandler.create());
