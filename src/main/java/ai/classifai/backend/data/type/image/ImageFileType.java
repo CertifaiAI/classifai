@@ -37,14 +37,13 @@ public class ImageFileType {
     private static final Integer FIXED_THUMBNAIL_HEIGHT = 100;
 
     @Getter
-    private static final Map<String, String> BASE_64_HEADER;
+    private static final Map<String, String> BASE_64_HEADER = new HashMap<>();
 
     @Getter
     private static final String[] ALLOWED_FILE_TYPES = new String[]{"jpg", "png", "jpeg", "bmp", "JPG", "PNG", "JPEG", "webp"}; //{"jpg", "png", "jpeg", "pdf", "bmp", "JPG", "PNG", "JPEG"};
 
     static
     {
-        BASE_64_HEADER = new HashMap();
         BASE_64_HEADER.put("jpg", "data:image/jpeg;base64,");
         BASE_64_HEADER.put("JPG", "data:image/jpeg;base64,");
         BASE_64_HEADER.put("jpeg", "data:image/png;base64,");
@@ -60,7 +59,7 @@ public class ImageFileType {
         return ALLOWED_FILE_TYPES;
     }
 
-    public static Map getBase64Header()
+    public static Map<String, String> getBase64Header()
     {
         return BASE_64_HEADER;
     }

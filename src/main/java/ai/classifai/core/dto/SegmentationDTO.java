@@ -12,11 +12,11 @@ import java.util.List;
 @NoArgsConstructor
 @NonNull
 public class SegmentationDTO {
-    @JsonProperty
-    String uuid;
+    @JsonProperty("project_name")
+    String projectName;
 
-    @JsonProperty
-    String imgPath;
+    @JsonProperty("img_uuid")
+    String imgUuid;
 
     @JsonProperty("img_x")
     int imgX;
@@ -30,18 +30,22 @@ public class SegmentationDTO {
     @JsonProperty("img_h")
     int imgH;
 
+    @JsonProperty("img_depth")
+    int imgDepth;
+
     @JsonProperty("img_ori_w")
     int imgOriginalWidth;
 
     @JsonProperty("img_ori_h")
     int imgOriginalHeight;
 
-    @JsonProperty
+    @JsonProperty("bnd_box")
     List<SegmentationProperties> segmentationPropertiesList;
 
-    @JsonProperty
-    String imgThumbnail;
+    @JsonProperty("img_thumbnail")
+    String imgBase64;
 
-    @JsonProperty
-    Integer fileSize;
+    @JsonProperty("file_size")
+    Long fileSize;
+
 }

@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Builder
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class BoundingBoxProperties {
     @JsonProperty
     String uuid;
@@ -25,6 +27,9 @@ public class BoundingBoxProperties {
 
     @JsonProperty
     int y2;
+
+    @JsonProperty
+    DistanceToImageProperties distanceToImageProperties;
 
     @JsonProperty
     String label;

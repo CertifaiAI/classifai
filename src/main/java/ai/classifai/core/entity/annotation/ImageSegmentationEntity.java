@@ -1,21 +1,17 @@
 package ai.classifai.core.entity.annotation;
 
-import ai.classifai.core.dto.properties.BoundingBoxProperties;
+import ai.classifai.core.dto.properties.SegmentationProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.sqlclient.Tuple;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class ImageBoundingBoxEntity {
+public class ImageSegmentationEntity {
     @JsonProperty
     String projectId;
 
@@ -56,7 +52,8 @@ public class ImageBoundingBoxEntity {
     @Builder.Default Integer imgH = 0;
 
     @JsonProperty
-    @Builder.Default List<BoundingBoxProperties> boundingBoxPropertiesList = new ArrayList<>();
+    @Builder.Default
+    List<SegmentationProperties> segmentationPropertiesList = new ArrayList<>();
 
     public Tuple getTuple() {
         return Tuple.of(
@@ -71,10 +68,9 @@ public class ImageBoundingBoxEntity {
                 imgY,
                 imgW,
                 imgH,
-                boundingBoxPropertiesList,
+                segmentationPropertiesList,
                 fileSize,
                 imgBase64
         );
     }
-
 }

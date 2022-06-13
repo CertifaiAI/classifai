@@ -59,4 +59,19 @@ public class FileHandler {
 
         return outputList;
     }
+
+    public static boolean isFileSupported(String file, String[] formatTypes)
+    {
+        for (String format : formatTypes)
+        {
+            Integer beginIndex = file.length() - format.length();
+            Integer endIndex = file.length();
+
+            if (file.substring(beginIndex, endIndex).equals(format))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

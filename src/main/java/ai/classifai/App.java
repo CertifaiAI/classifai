@@ -13,6 +13,8 @@ public class App
 {
     public static void main( String[] args )
     {
+        // Load native library to implement OpenCV Java
+        nu.pattern.OpenCV.loadLocally();
         VertxOptions vertxOptions = new VertxOptions();
 
         vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.SECONDS);

@@ -1,12 +1,52 @@
 package ai.classifai.frontend.request;
 
 import ai.classifai.core.dto.properties.BoundingBoxProperties;
-import ai.classifai.core.dto.properties.ImageProperties;
-import lombok.Value;
+import ai.classifai.core.dto.properties.SegmentationProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Data;
 
-@Value
+import java.util.List;
+
+@Data
+@Builder
 public class ImageAnnotationBody {
-    ImageProperties imageProperties;
+    @JsonProperty("project_name")
+    String projectName;
 
-    BoundingBoxProperties boundingBoxProperties;
+    @JsonProperty("img_uuid")
+    String imgUuid;
+
+    @JsonProperty("img_x")
+    int imgX;
+
+    @JsonProperty("img_y")
+    int imgY;
+
+    @JsonProperty("img_w")
+    int imgW;
+
+    @JsonProperty("img_h")
+    int imgH;
+
+    @JsonProperty("img_depth")
+    int imgDepth;
+
+    @JsonProperty("img_ori_w")
+    int imgOriginalWidth;
+
+    @JsonProperty("img_ori_h")
+    int imgOriginalHeight;
+
+    @JsonProperty("bnd_box")
+    List<BoundingBoxProperties> boundingBoxPropertiesList;
+
+    @JsonProperty("seg")
+    List<SegmentationProperties> segmentationPropertiesList;
+
+    @JsonProperty("img_thumbnail")
+    String imgBase64;
+
+    @JsonProperty("file_size")
+    Long fileSize;
 }

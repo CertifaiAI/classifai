@@ -1,14 +1,12 @@
 package ai.classifai.frontend;
 
 import ai.classifai.backend.repository.JdbcHolder;
-import ai.classifai.backend.repository.service.ImageBoundingBoxRepoService;
-import ai.classifai.backend.repository.service.ImageBoundingBoxService;
-import ai.classifai.backend.repository.service.ProjectRepoService;
-import ai.classifai.backend.repository.service.ProjectServiceImpl;
+import ai.classifai.backend.repository.service.*;
 import ai.classifai.core.dto.BoundingBoxDTO;
-import ai.classifai.core.dto.properties.BoundingBoxProperties;
+import ai.classifai.core.dto.SegmentationDTO;
 import ai.classifai.core.dto.properties.ImageProperties;
 import ai.classifai.core.entity.annotation.ImageBoundingBoxEntity;
+import ai.classifai.core.entity.annotation.ImageSegmentationEntity;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import ai.classifai.core.service.annotation.AnnotationService;
 import ai.classifai.core.service.project.ProjectRepository;
@@ -21,11 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MainVerticle extends AbstractVerticle {
-    // every injection should done here
     private final ProjectRepository projectRepoService;
     private final ProjectService projectService;
-    private final AnnotationService<BoundingBoxDTO, BoundingBoxProperties, ImageProperties> imageBoundingBoxService;
-    private final AnnotationRepository<ImageBoundingBoxEntity, BoundingBoxDTO> imageBoundingBoxRepoService;
+    private final AnnotationService<BoundingBoxDTO, ImageProperties> imageBoundingBoxService;
+    private final AnnotationRepository<ImageBoundingBoxEntity, BoundingBoxDTO, ImageProperties> imageBoundingBoxRepoService;
+    private final AnnotationService<SegmentationDTO, ImageProperties> imageSegmentationService;
+    private final AnnotationRepository<ImageSegmentationEntity, SegmentationDTO, ImageProperties> imageSegmentationRepoService;
     private final RouterService routerService;
     private final JdbcHolder jdbcHolder;
 
@@ -34,8 +33,10 @@ public class MainVerticle extends AbstractVerticle {
         this.projectRepoService = new ProjectRepoService(jdbcHolder);
         this.projectService = new ProjectServiceImpl(projectRepoService);
         this.imageBoundingBoxRepoService = new ImageBoundingBoxRepoService(jdbcHolder);
-        this.imageBoundingBoxService = new ImageBoundingBoxService(imageBoundingBoxRepoService);
-        this.routerService = new RouterService(projectService, imageBoundingBoxService);
+        this.imageBoundingBoxService = new ImageBoundingBoxService(imageBoundingBoxRepoService, projectService);
+        this.imageSegmentationRepoService = new ImageSegmentationRepoService(jdbcHolder);
+        this.imageSegmentationService = new ImageSegmentationService(imageSegmentationRepoService, projectService);
+        this.routerService = new RouterService(projectService, imageBoundingBoxService, imageSegmentationService);
     }
 
     @Override

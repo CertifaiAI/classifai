@@ -1,21 +1,23 @@
 package ai.classifai.core.service.annotation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.Future;
 import lombok.NonNull;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface AnnotationRepository<T, U> {
-    Future<T> createAnnotation(@NonNull U annotationDTO);
+public interface AnnotationRepository<T, U, K> {
+    Future<T> createAnnotation(@NonNull U annotationDTO) throws JsonProcessingException;
 
-    Future<List<T>> listAnnotation();
+    Future<List<T>> listAnnotation(@NonNull String projectName);
 
-    Future<T> updateAnnotation(@NonNull U annotationDTO);
+    Future<Void> updateAnnotation(@NonNull U annotationDTO) throws Exception;
 
-    Future<Optional<T>> getAnnotationById(@NonNull String id);
+    Future<Void> saveFilesMetaData(K property);
 
-    Future<Void> deleteProjectById(@NonNull U annotationDTO);
+    Future<Void> deleteData(@NonNull String projectName, @NonNull String uuid);
 
-    T toAnnotationEntity(@NonNull U annotationDTO);
+    Future<Void> createAnnotationProject();
+
+    Future<Void> deleteProjectByName(@NonNull String projectName);
 }

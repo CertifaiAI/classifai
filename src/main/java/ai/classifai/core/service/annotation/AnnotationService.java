@@ -1,21 +1,24 @@
 package ai.classifai.core.service.annotation;
 
+import io.vertx.core.Future;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface AnnotationService<T, U, K> {
-    T toDTO(U type);
+public interface AnnotationService<T, U> {
+    Future<Void> parseData(U properties) ;
 
-    List<T> listAnnotations();
+    Future<T> createAnnotation(T annotationDTO) throws Exception;
 
-    T createAnnotation(U annotation);
+    Future<List<T>> listAnnotations(String projectName);
 
-    T getAnnotationById(String id);
+    Future<Optional<T>> getAnnotationById(String projectName, String uuid);
 
-    T updateAnnotation(@NonNull U annotation);
+    Future<Void> updateAnnotation(@NonNull T annotationDTO) throws Exception;
 
-    K setProperties(K properties);
+    Future<Void> deleteData(@NonNull String projectName, @NonNull String uuid);
 
-    void deleteAnnotationById(String id);
+    Future<Void> deleteProjectByName(@NonNull String projectName);
+
 }

@@ -17,6 +17,8 @@ public interface ProjectRepository {
 
     Future<Optional<ProjectEntity>> getProjectById(@NonNull String projectId);
 
+    Future<Optional<ProjectEntity>> getProjectByNameAndType(@NonNull ProjectEntity projectEntity);
+
     Future<Void> deleteProjectById(@NonNull ProjectEntity projectEntity);
 
     ProjectEntity toProjectEntity(@NonNull ProjectDTO projectDTO);

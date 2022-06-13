@@ -1,4 +1,4 @@
-package ai.classifai.core.service;
+package ai.classifai.core.service.data;
 
 import com.fasterxml.jackson.databind.util.JSONPObject;
 
