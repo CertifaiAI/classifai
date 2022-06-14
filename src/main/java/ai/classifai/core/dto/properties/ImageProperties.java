@@ -46,17 +46,4 @@ public class ImageProperties {
     @JsonProperty
     Long fileSize;
 
-    public static ImageProperties getImageProperties(ImageProperties imageProperties, File imageFile) throws Exception {
-        Map<String, String> imageMetaData = ImageHandler.getImageMetaData(imageFile);
-
-        imageProperties.setFileSize(FileUtils.sizeOf(imageFile));
-        imageProperties.setImgUuid(UuidGenerator.generateUuid());
-        imageProperties.setImgOriginalHeight(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriHParam())));
-        imageProperties.setImgOriginalWidth(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriWParam())));
-        imageProperties.setImgDepth(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriWParam())));
-        imageProperties.setImgBase64(imageMetaData.get(ParamConfig.getImgThumbnailParam()));
-        imageProperties.setImgPath(imageFile.getPath());
-
-        return imageProperties;
-    }
 }

@@ -1,5 +1,11 @@
 package ai.classifai.backend.data.handler;
 
+import ai.classifai.backend.repository.TabularAnnotationQuery;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvException;
 import io.vertx.core.json.JsonArray;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -229,24 +235,24 @@ public class TabularHandler {
     /**
      * Parse CSV File
      */
-//    public void readCsvFile(String filePath, ProjectLoader loader, AnnotationDB annotationDB) throws IOException, CsvException {
-//        checkDelimiter(filePath);
-//        char separator = delimiter.charAt(0);
-//
-//        CSVParser csvParser = new CSVParserBuilder()
-//                .withSeparator(separator)
-//                .build();
-//
-//        CSVReader csvReader = new CSVReaderBuilder(Files.newBufferedReader(Paths.get(filePath)))
-//                .withCSVParser(csvParser)
-//                .build();
-//
-//        rowsData = csvReader.readAll();
-//        identifyHeadersTypes(rowsData);
-//
-//        TabularAnnotationQuery.createProjectTablePreparedStatement(headers, loader);
+    public void readCsvFile(String filePath) throws IOException, CsvException {
+        checkDelimiter(filePath);
+        char separator = delimiter.charAt(0);
+
+        CSVParser csvParser = new CSVParserBuilder()
+                .withSeparator(separator)
+                .build();
+
+        CSVReader csvReader = new CSVReaderBuilder(Files.newBufferedReader(Paths.get(filePath)))
+                .withCSVParser(csvParser)
+                .build();
+
+        rowsData = csvReader.readAll();
+        identifyHeadersTypes(rowsData);
+
+        TabularAnnotationQuery.createProjectTablePreparedStatement(headers, "");
 //        createTabularProjectTable(loader, annotationDB);
-//    }
+    }
 //
 //    public static void saveToTabularProjectTable(@NonNull AnnotationDB annotationDB, @NonNull ProjectLoader loader)
 //    {
@@ -423,72 +429,6 @@ public class TabularHandler {
 //        }
 //        else if (cellType.equals(CellType.BOOLEAN)) {
 //            log.info(cell.getBooleanCellValue() + "\t\t");
-//        }
-//    }
-//
-//    /**
-//     * Parse Large Excel File
-//     */
-//    public void readLargeExcelFile(String filePath, ProjectLoader loader, AnnotationDB annotationDB) throws IOException,
-//            OpenXML4JException, SAXException, ParserConfigurationException {
-//        OPCPackage opcPackage = OPCPackage.open(new File(filePath));
-//        XSSFReader xssfReader = new XSSFReader(opcPackage);
-//        SharedStrings sharedStringsTable = xssfReader.getSharedStringsTable();
-//
-//        XMLReader parser = fetchSheetParser(sharedStringsTable);
-//        InputStream sheet1 = xssfReader.getSheet("rId1");
-//        InputSource sheetSource = new InputSource(sheet1);
-//        parser.parse(sheetSource);
-//        sheet1.close();
-//
-//    }
-//
-//    public static XMLReader fetchSheetParser(SharedStrings sst) throws SAXException, ParserConfigurationException {
-//        XMLReader parser = XMLHelper.newXMLReader();
-//        ContentHandler handler = new SheetHandler(sst);
-//        parser.setContentHandler(handler);
-//        return parser;
-//    }
-//
-//    private static class SheetHandler extends DefaultHandler {
-//        private final SharedStrings sst;
-//        private String lastContents;
-//        private boolean nextIsString;
-//
-//        private SheetHandler(SharedStrings sst) {
-//            this.sst = sst;
-//        }
-//
-//        public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
-//            // c => cell
-//            if(name.equals("c")) {
-//                // Print the cell reference
-//                System.out.print(attributes.getValue("r") + " - ");
-//                // Figure out if the value is an index in the SST
-//                String cellType = attributes.getValue("t");
-//                nextIsString = cellType != null && cellType.equals("s");
-//            }
-//            // Clear contents cache
-//            lastContents = "";
-//        }
-//
-//        public void endElement(String uri, String localName, String name) throws SAXException {
-//            // Process the last contents as required.
-//            // Do now, as characters() may be called more than once
-//            if(nextIsString) {
-//                int idx = Integer.parseInt(lastContents);
-//                lastContents = sst.getItemAt(idx).getString();
-//                nextIsString = false;
-//            }
-//            // v => contents of a cell
-//            // Output after we've seen the string contents
-//            if(name.equals("v")) {
-//                System.out.println(lastContents);
-//            }
-//        }
-//
-//        public void characters(char[] ch, int start, int length) {
-//            lastContents += new String(ch, start, length);
 //        }
 //    }
 //

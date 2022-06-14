@@ -1,36 +1,12 @@
 package ai.classifai.core.dto.properties;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+@Builder
 public class AudioProperties {
-    @JsonProperty
-    String regionId;
+    String projectName;
 
-    @JsonProperty
-    String labelName;
-
-    @JsonProperty
-    double startTime;
-
-    @JsonProperty
-    double endTime;
-
-    @JsonProperty
-    boolean loop;
-
-    @JsonProperty
-    String labelColor;
-
-    @JsonProperty
-    boolean draggable;
-
-    @JsonProperty
-    boolean resizable;
-
-    @JsonProperty
-    boolean isPlaying;
+    String projectPath;
 }

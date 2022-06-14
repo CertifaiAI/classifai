@@ -4,6 +4,8 @@ import ai.classifai.backend.data.type.image.ImageData;
 import ai.classifai.backend.data.type.image.ImageFileType;
 import ai.classifai.backend.utility.FileHandler;
 import ai.classifai.backend.utility.ParamConfig;
+import ai.classifai.backend.utility.UuidGenerator;
+import ai.classifai.core.dto.properties.ImageProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -280,5 +282,19 @@ public class ImageHandler {
                 return;
             }
         }
+    }
+
+    public static ImageProperties getImageProperties(ImageProperties imageProperties, File imageFile) throws Exception {
+        Map<String, String> imageMetaData = getImageMetaData(imageFile);
+
+        imageProperties.setFileSize(FileUtils.sizeOf(imageFile));
+        imageProperties.setImgUuid(UuidGenerator.generateUuid());
+        imageProperties.setImgOriginalHeight(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriHParam())));
+        imageProperties.setImgOriginalWidth(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriWParam())));
+        imageProperties.setImgDepth(Integer.parseInt(imageMetaData.get(ParamConfig.getImgDepth())));
+        imageProperties.setImgBase64(imageMetaData.get(ParamConfig.getBase64Param()));
+        imageProperties.setImgPath(imageFile.getPath());
+
+        return imageProperties;
     }
 }

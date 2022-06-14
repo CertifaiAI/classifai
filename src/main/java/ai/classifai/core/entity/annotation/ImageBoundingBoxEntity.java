@@ -56,7 +56,7 @@ public class ImageBoundingBoxEntity {
     @Builder.Default Integer imgH = 0;
 
     @JsonProperty
-    @Builder.Default List<BoundingBoxProperties> boundingBoxPropertiesList = new ArrayList<>();
+    @Builder.Default List<BoundingBoxProperties> boundingBoxPropertiesList = null;
 
     public Tuple getTuple() {
         return Tuple.of(

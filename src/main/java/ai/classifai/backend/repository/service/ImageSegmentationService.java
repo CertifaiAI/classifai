@@ -2,8 +2,6 @@ package ai.classifai.backend.repository.service;
 
 import ai.classifai.backend.data.handler.ImageHandler;
 import ai.classifai.backend.repository.DBUtils;
-import ai.classifai.backend.utility.ParamConfig;
-import ai.classifai.backend.utility.UuidGenerator;
 import ai.classifai.core.dto.SegmentationDTO;
 import ai.classifai.core.dto.properties.ImageProperties;
 import ai.classifai.core.entity.annotation.ImageSegmentationEntity;
@@ -11,17 +9,18 @@ import ai.classifai.core.enumeration.ProjectType;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import ai.classifai.core.service.annotation.AnnotationService;
 import ai.classifai.core.service.project.ProjectService;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import lombok.NonNull;
-import org.apache.commons.io.FileUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ImageSegmentationService implements AnnotationService<SegmentationDTO, ImageProperties> {
     private final ProjectService projectService;
     private final AnnotationRepository<ImageSegmentationEntity, SegmentationDTO, ImageProperties> annotationRepository;
@@ -32,45 +31,32 @@ public class ImageSegmentationService implements AnnotationService<SegmentationD
         this.projectService = projectService;
     }
 
-    private ImageProperties getImageProperties(ImageProperties imageProperties, File imageFile) throws Exception {
-        Map<String, String> imageMetaData = ImageHandler.getImageMetaData(imageFile);
-
-        imageProperties.setFileSize(FileUtils.sizeOf(imageFile));
-        imageProperties.setImgUuid(UuidGenerator.generateUuid());
-        imageProperties.setImgOriginalHeight(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriHParam())));
-        imageProperties.setImgOriginalWidth(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriWParam())));
-        imageProperties.setImgDepth(Integer.parseInt(imageMetaData.get(ParamConfig.getImgOriWParam())));
-        imageProperties.setImgBase64(imageMetaData.get(ParamConfig.getImgThumbnailParam()));
-        imageProperties.setImgPath(imageFile.getPath());
-
-        return imageProperties;
-    }
-
     @Override
     public Future<Void> parseData(ImageProperties imageProperties) {
-        List<String> validImages = ImageHandler.getValidImagesFromFolder(new File(imageProperties.getProjectPath()));
-
         return annotationRepository.createAnnotationProject()
-                .compose(res -> projectService.getProjectById(imageProperties.getProjectName(), ProjectType.IMAGEBOUNDINGBOX.ordinal())
+                .compose(res -> projectService.getProjectById(imageProperties.getProjectName(), ProjectType.IMAGESEGMENTATION.ordinal())
                         .map(response -> response.get().getProjectId())
                 )
-                .compose(res -> {
-                    Promise<ImageProperties> promise1 = Promise.promise();
+                .compose(res -> Future.future(promise -> {
                     imageProperties.setProjectId(res);
-                    promise1.complete(imageProperties);
-                    return promise1.future();
-                })
+                    promise.complete(imageProperties);
+                }))
                 .compose(res -> {
-                    Promise<Void> promise = Promise.promise();
-                    for (String imgPath: validImages) {
+                    List<String> validImages = ImageHandler.getValidImagesFromFolder(new File(imageProperties.getProjectPath()));
+                    List<Future> futures = new ArrayList<>();
+                    validImages.forEach(path -> {
                         try {
-                            annotationRepository.saveFilesMetaData(getImageProperties(imageProperties, new File(imgPath)));
+                            futures.add(annotationRepository
+                                    .saveFilesMetaData(ImageHandler.getImageProperties(imageProperties, new File(path))));
                         } catch (Exception e) {
-                            promise.fail(e.getMessage());
+                            log.info(e.getMessage());
                         }
-                    }
-                    promise.complete(null);
-                    return promise.future();
+                    });
+                    return Future.future(promise -> {
+                        CompositeFuture.all(futures)
+                                .onFailure(promise::fail)
+                                .onSuccess(promise::complete);
+                    });
                 })
                 .map(DBUtils::toVoid);
     }

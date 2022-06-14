@@ -2,9 +2,12 @@ package ai.classifai.frontend;
 
 import ai.classifai.backend.repository.JdbcHolder;
 import ai.classifai.backend.repository.service.*;
+import ai.classifai.core.dto.AudioDTO;
 import ai.classifai.core.dto.BoundingBoxDTO;
 import ai.classifai.core.dto.SegmentationDTO;
+import ai.classifai.core.dto.properties.AudioProperties;
 import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.entity.annotation.AudioEntity;
 import ai.classifai.core.entity.annotation.ImageBoundingBoxEntity;
 import ai.classifai.core.entity.annotation.ImageSegmentationEntity;
 import ai.classifai.core.service.annotation.AnnotationRepository;
@@ -25,6 +28,8 @@ public class MainVerticle extends AbstractVerticle {
     private final AnnotationRepository<ImageBoundingBoxEntity, BoundingBoxDTO, ImageProperties> imageBoundingBoxRepoService;
     private final AnnotationService<SegmentationDTO, ImageProperties> imageSegmentationService;
     private final AnnotationRepository<ImageSegmentationEntity, SegmentationDTO, ImageProperties> imageSegmentationRepoService;
+    private final AnnotationRepository<AudioEntity, AudioDTO, AudioProperties> audioRepoService;
+    private final AnnotationService<AudioDTO, AudioProperties> audioService;
     private final RouterService routerService;
     private final JdbcHolder jdbcHolder;
 
@@ -36,7 +41,9 @@ public class MainVerticle extends AbstractVerticle {
         this.imageBoundingBoxService = new ImageBoundingBoxService(imageBoundingBoxRepoService, projectService);
         this.imageSegmentationRepoService = new ImageSegmentationRepoService(jdbcHolder);
         this.imageSegmentationService = new ImageSegmentationService(imageSegmentationRepoService, projectService);
-        this.routerService = new RouterService(projectService, imageBoundingBoxService, imageSegmentationService);
+        this.audioRepoService = new AudioRepoService(jdbcHolder);
+        this.audioService = new AudioService(audioRepoService, projectService);
+        this.routerService = new RouterService(projectService, imageBoundingBoxService, imageSegmentationService, audioService);
     }
 
     @Override

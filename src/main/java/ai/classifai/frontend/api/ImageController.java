@@ -15,13 +15,13 @@ import javax.ws.rs.core.MediaType;
 @Slf4j
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class ImageAnnotationController {
+public class ImageController {
 
     private final AnnotationService<BoundingBoxDTO, ImageProperties> boundingBoxService;
     private final AnnotationService<SegmentationDTO, ImageProperties> segmentationService;
 
-    public ImageAnnotationController(AnnotationService<BoundingBoxDTO, ImageProperties> boundingBoxService,
-                                     AnnotationService<SegmentationDTO, ImageProperties> segmentationService) {
+    public ImageController(AnnotationService<BoundingBoxDTO, ImageProperties> boundingBoxService,
+                           AnnotationService<SegmentationDTO, ImageProperties> segmentationService) {
         this.boundingBoxService = boundingBoxService;
         this.segmentationService = segmentationService;
     }

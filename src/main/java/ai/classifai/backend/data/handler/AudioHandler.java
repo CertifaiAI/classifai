@@ -1,7 +1,12 @@
 package ai.classifai.backend.data.handler;
 
+import ai.classifai.core.dto.properties.ImageProperties;
+import com.github.marc7806.wrapper.AWFBit;
+import com.github.marc7806.wrapper.AWFCommand;
+import com.github.marc7806.wrapper.BBCAudioWaveform;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,6 +22,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,35 +31,34 @@ public class AudioHandler {
     private static List<Integer> waveFormPeaks = new ArrayList<>();
     private static List<Double> timeStampList = new ArrayList<>();
 
-//    public static void generateWaveFormPeaks(String filePath, ProjectLoader loader) throws IOException, UnsupportedAudioFileException {
-//        String audioWaveFormExecutable = Objects.requireNonNull(
-//                AudioHandler.class.getClassLoader().getResource("audiowaveform.exe")
-//        ).getPath();
-//        log.info(AudioHandler.class.getClassLoader().getName());
-//        log.info(audioWaveFormExecutable);
-//        File audioFile = new File(filePath);
-//        String outputFileString = audioFile.getParent() + File.separator + FilenameUtils.getBaseName(audioFile.getName()) + ".json";
-//        File outputFile = new File(outputFileString);
-//
-//        BBCAudioWaveform bbcAudioWaveform = new BBCAudioWaveform(audioWaveFormExecutable);
-//        AWFCommand command = AWFCommand.builder()
-//                .setInput(audioFile)
-//                .setOutput(outputFile)
-//                .setBits(AWFBit.EIGHT)
-//                .build();
-//
-//        if (bbcAudioWaveform.run(command)) {
-//           log.info("Json file generated");
-//        } else {
-//            log.info("fail to generate json file");
-//        }
-//
-//        if (outputFile.exists()) {
-//            getAudioDuration(new File(filePath));
-//            getWaveFormPeaks(outputFile);
-//            loader.createWaveFormTable();
-//        }
-//    }
+    public static void generateWaveFormPeaks(String filePath) throws IOException, UnsupportedAudioFileException {
+        String audioWaveFormExecutable = Objects.requireNonNull(
+                AudioHandler.class.getClassLoader().getResource("audiowaveform.exe")
+        ).getPath();
+        log.info(AudioHandler.class.getClassLoader().getName());
+        log.info(audioWaveFormExecutable);
+        File audioFile = new File(filePath);
+        String outputFileString = audioFile.getParent() + File.separator + FilenameUtils.getBaseName(audioFile.getName()) + ".json";
+        File outputFile = new File(outputFileString);
+
+        BBCAudioWaveform bbcAudioWaveform = new BBCAudioWaveform(audioWaveFormExecutable);
+        AWFCommand command = AWFCommand.builder()
+                .setInput(audioFile)
+                .setOutput(outputFile)
+                .setBits(AWFBit.EIGHT)
+                .build();
+
+        if (bbcAudioWaveform.run(command)) {
+           log.info("Json file generated");
+        } else {
+            log.info("fail to generate json file");
+        }
+
+        if (outputFile.exists()) {
+            getAudioDuration(new File(filePath));
+            getWaveFormPeaks(outputFile);
+        }
+    }
 
     private static void getWaveFormPeaks(File outputFile) throws IOException {
         FileReader fileReader = new FileReader(outputFile);
@@ -73,7 +78,7 @@ public class AudioHandler {
         long audioFileLength = file.length();
         int frameSize = format.getFrameSize();
         float frameRate = format.getFrameRate();
-        audioDuration = audioFileLength / (frameSize * frameRate);
+        float audioDuration = audioFileLength / (frameSize * frameRate);
 
         log.info(String.valueOf(format.getFrameSize()));
         log.info(String.valueOf(format.getChannels()));

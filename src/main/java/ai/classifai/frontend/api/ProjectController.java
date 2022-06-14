@@ -1,9 +1,11 @@
 package ai.classifai.frontend.api;
 
 import ai.classifai.backend.utility.LabelListImport;
+import ai.classifai.core.dto.AudioDTO;
 import ai.classifai.core.dto.BoundingBoxDTO;
 import ai.classifai.core.dto.ProjectDTO;
 import ai.classifai.core.dto.SegmentationDTO;
+import ai.classifai.core.dto.properties.AudioProperties;
 import ai.classifai.core.dto.properties.ImageProperties;
 import ai.classifai.core.enumeration.ProjectInfra;
 import ai.classifai.core.enumeration.ProjectType;
@@ -26,13 +28,16 @@ public class ProjectController {
     private final ProjectService projectService;
     private final AnnotationService<BoundingBoxDTO, ImageProperties> imageBoundingBoxService;
     private final AnnotationService<SegmentationDTO, ImageProperties> imageSegmentationService;
+    private final AnnotationService<AudioDTO, AudioProperties> audioService;
 
     public ProjectController(ProjectService projectService,
                              AnnotationService<BoundingBoxDTO, ImageProperties> imageBoundingBoxService,
-                             AnnotationService<SegmentationDTO, ImageProperties> imageSegmentationService) {
+                             AnnotationService<SegmentationDTO, ImageProperties> imageSegmentationService,
+                             AnnotationService<AudioDTO, AudioProperties> audioService) {
         this.projectService = projectService;
         this.imageBoundingBoxService = imageBoundingBoxService;
         this.imageSegmentationService = imageSegmentationService;
+        this.audioService = audioService;
     }
 
     @POST
@@ -108,22 +113,32 @@ public class ProjectController {
 
     private void initAnnotationProjectByType(ProjectDTO projectDTO) {
         Integer projectType = projectDTO.getProjectType();
+        String projectName = projectDTO.getProjectName();
+        String projectPath = projectDTO.getProjectPath();
 
         switch (projectType) {
             case 0 -> {
                 ImageProperties imageProperties = ImageProperties.builder()
-                        .projectName(projectDTO.getProjectName())
-                        .projectPath(projectDTO.getProjectPath())
+                        .projectName(projectName)
+                        .projectPath(projectPath)
                         .build();
                 this.imageBoundingBoxService.parseData(imageProperties);
             }
 
             case 1 -> {
                 ImageProperties imageProperties = ImageProperties.builder()
-                        .projectName(projectDTO.getProjectName())
-                        .projectPath(projectDTO.getProjectPath())
+                        .projectName(projectName)
+                        .projectPath(projectPath)
                         .build();
                 this.imageSegmentationService.parseData(imageProperties);
+            }
+
+            case 2 -> {
+                AudioProperties audioProperties = AudioProperties.builder()
+                        .projectName(projectName)
+                        .projectPath(projectPath)
+                        .build();
+                this.audioService.parseData(audioProperties);
             }
         }
     }
