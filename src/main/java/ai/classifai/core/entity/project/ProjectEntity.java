@@ -1,64 +1,31 @@
 package ai.classifai.core.entity.project;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.vertx.sqlclient.Tuple;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.experimental.SuperBuilder;
+import ai.classifai.core.dto.ProjectDTO;
 
 import java.util.List;
 
-@NonNull
-@SuperBuilder
-@NoArgsConstructor
-@Data
-public class ProjectEntity {
-    @JsonProperty("project_name")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String projectName;
+public interface ProjectEntity {
+    String getProjectName();
 
-    @JsonProperty("project_id")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String projectId;
+    String getProjectId();
 
-    @JsonProperty("annotation_type")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    Integer projectType;
+    Integer getAnnotationType();
 
-    @JsonProperty("project_path")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String projectPath;
+    String getProjectPath();
 
-    @JsonProperty("project_infra")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    Integer projectInfra;
+    Integer getProjectInfra();
 
-    @JsonProperty("label_list")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    List<String> labelList;
+    List<String> getLabelList();
 
-    public Tuple getTuple() {
-        return Tuple.of(
-                projectId,
-                projectName,
-                projectType,
-                projectPath,
-                projectInfra,
-                labelList.toString()
-        );
+    default ProjectDTO toDto() {
+        return ProjectDTO.builder()
+                .projectName(getProjectName())
+                .projectId(getProjectId())
+                .annotationType(getAnnotationType())
+                .projectPath(getProjectPath())
+                .projectInfra(getProjectInfra())
+                .labelList(getLabelList())
+                .build();
     }
 
-    @Override
-    public String toString() {
-        return "Project{" +
-                "projectName='" + projectName + '\'' +
-                ", projectId='" + projectId + '\'' +
-                ", projectType=" + projectType +
-                ", projectPath='" + projectPath + '\'' +
-                ", projectInfra=" + projectInfra +
-                ", labelList=" + labelList +
-                '}';
-    }
 }

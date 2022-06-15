@@ -13,12 +13,10 @@ public interface ProjectService {
 
     Future<List<ProjectDTO>> listProjects(@NonNull Integer projectType);
 
+    Future<Optional<ProjectDTO>> getProjectById(@NonNull String projectId);
+
     Future<ProjectDTO> updateProject(@NonNull ProjectDTO projectDTO);
 
     Future<Void> deleteProject(@NonNull ProjectDTO projectDTO);
-
-    Future<Optional<ProjectDTO>> getProjectByNameAndType(@NonNull ProjectDTO projectDTO);
-
-    Future<Optional<ProjectDTO>> getProjectById(@NonNull String projectName, @NonNull Integer projectType);
 
 }

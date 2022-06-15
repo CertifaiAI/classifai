@@ -1,6 +1,6 @@
 package ai.classifai.core.entity.annotation;
 
-import ai.classifai.core.dto.properties.SegmentationProperties;
+import ai.classifai.core.properties.SegmentationProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.sqlclient.Tuple;
 import lombok.Builder;

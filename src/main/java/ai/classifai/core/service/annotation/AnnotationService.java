@@ -19,6 +19,6 @@ public interface AnnotationService<T, U> {
 
     Future<Void> deleteData(@NonNull String projectName, @NonNull String uuid);
 
-    Future<Void> deleteProjectByName(@NonNull String projectName);
+    Future<Void> deleteProjectById(@NonNull String projectId);
 
 }

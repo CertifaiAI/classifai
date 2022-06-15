@@ -1,14 +1,12 @@
 package ai.classifai.backend.repository.service;
 
-import ai.classifai.backend.repository.DBUtils;
+import ai.classifai.backend.repository.database.DBUtils;
 import ai.classifai.backend.repository.JdbcHolder;
-import ai.classifai.backend.repository.QueryOps;
+import ai.classifai.backend.repository.query.QueryOps;
 import ai.classifai.backend.repository.SqlQueries;
 import ai.classifai.core.dto.SegmentationDTO;
-import ai.classifai.core.dto.properties.BoundingBoxProperties;
-import ai.classifai.core.dto.properties.ImageProperties;
-import ai.classifai.core.dto.properties.SegmentationProperties;
-import ai.classifai.core.entity.annotation.ImageBoundingBoxEntity;
+import ai.classifai.core.properties.ImageProperties;
+import ai.classifai.core.properties.SegmentationProperties;
 import ai.classifai.core.entity.annotation.ImageSegmentationEntity;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;

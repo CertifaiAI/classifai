@@ -1,6 +1,6 @@
 package ai.classifai.core.dto;
 
-import ai.classifai.core.dto.properties.BoundingBoxProperties;
+import ai.classifai.core.properties.BoundingBoxProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 

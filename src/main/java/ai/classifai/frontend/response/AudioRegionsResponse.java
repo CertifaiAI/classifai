@@ -1,6 +1,6 @@
 package ai.classifai.frontend.response;
 
-import ai.classifai.core.dto.properties.AudioRegionsProperties;
+import ai.classifai.core.properties.AudioRegionsProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

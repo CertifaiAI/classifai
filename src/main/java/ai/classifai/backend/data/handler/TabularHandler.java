@@ -1,6 +1,6 @@
 package ai.classifai.backend.data.handler;
 
-import ai.classifai.backend.repository.TabularAnnotationQuery;
+import ai.classifai.backend.repository.query.TabularAnnotationQuery;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;

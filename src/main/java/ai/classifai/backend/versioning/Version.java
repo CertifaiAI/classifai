@@ -15,9 +15,9 @@
  */
 package ai.classifai.backend.versioning;
 
-import ai.classifai.backend.utility.ActionOps;
 import ai.classifai.backend.utility.ParamConfig;
 import ai.classifai.backend.utility.UuidGenerator;
+import ai.classifai.backend.utility.action.ActionOps;
 import ai.classifai.backend.utility.datetime.DateTime;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;

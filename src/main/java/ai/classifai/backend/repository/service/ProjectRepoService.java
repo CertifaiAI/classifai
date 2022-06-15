@@ -1,14 +1,15 @@
 package ai.classifai.backend.repository.service;
 
+import ai.classifai.backend.repository.database.DBUtils;
 import ai.classifai.backend.repository.JdbcHolder;
-import ai.classifai.backend.repository.QueryOps;
+import ai.classifai.backend.repository.query.QueryOps;
 import ai.classifai.backend.repository.SqlQueries;
-import ai.classifai.backend.utility.StringUtility;
+import ai.classifai.backend.utility.JsonUtility;
 import ai.classifai.core.dto.ProjectDTO;
-import ai.classifai.core.entity.annotation.ImageBoundingBoxEntity;
-import ai.classifai.core.entity.project.ProjectEntity;
-import ai.classifai.core.enumeration.ProjectType;
+import ai.classifai.core.entity.project.Project;
+import ai.classifai.core.enumeration.AnnotationType;
 import ai.classifai.core.service.project.ProjectRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.Future;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -24,113 +25,111 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProjectRepoService implements ProjectRepository {
     private final JDBCPool projectPool;
-    private QueryOps queryOps = new QueryOps();
+    private final QueryOps queryOps = new QueryOps();
 
     public ProjectRepoService(JdbcHolder jdbcHolder) {
         this.projectPool = jdbcHolder.getProjectPool();
     }
 
     @Override
-    public ProjectEntity toProjectEntity(@NonNull ProjectDTO projectDTO) {
-        return ProjectEntity.builder()
+    public Future<Project> createProject(@NonNull ProjectDTO projectDTO) {
+        Tuple params = getTuple(projectDTO);
+        return queryOps.runQuery(SqlQueries.getCreateProject(), params, projectPool)
+                .map(response -> {
+                    log.info("Project " + projectDTO.getProjectName() + " created");
+                    return toProjectEntity(projectDTO);
+                });
+    }
+
+    @Override
+    public Future<List<Project>> listProjects(@NonNull Integer annotationType) {
+        return queryOps.runQuery(SqlQueries.getListAllProject(), projectPool)
+                .map(response -> {
+                    if (response.size() != 0) {
+                        List<Project> projectEntityList = new ArrayList<>();
+                        for (Row row : response) {
+                            try {
+                                projectEntityList.add(toProjectEntity(row));
+                            } catch (JsonProcessingException exception) {
+                                exception.printStackTrace();
+                            }
+                        }
+                        return projectEntityList.stream()
+                                .filter(res -> res.getAnnotationType().equals(annotationType))
+                                .collect(Collectors.toList());
+                    }
+                    log.info("Fail to retrieve all project for project type: " + AnnotationType.get(annotationType).name());
+                    return null;
+                });
+    }
+
+    @Override
+    public Future<Optional<Project>> getProjectById(@NonNull String projectId) {
+        Tuple params = Tuple.of(projectId);
+        return queryOps.runQuery(SqlQueries.getRetrieveProjectById(), params, projectPool)
+                .map(res -> {
+                    Optional<Project> project = Optional.empty();
+                    if (res.size() != 0) {
+                        try {
+                            project = Optional.ofNullable(toProjectEntity(res.iterator().next()));
+                        } catch (JsonProcessingException exception) {
+                            exception.printStackTrace();
+                        }
+                        return project;
+                    }
+                    return project;
+                });
+    }
+
+    @Override
+    public Future<Project> updateProject(@NonNull Project projectEntity, @NonNull ProjectDTO projectDTO) {
+        Tuple params = getTuple(projectDTO);
+        return queryOps.runQuery(SqlQueries.getUpdateProject(), params, projectPool)
+                .map(res -> projectEntity);
+    }
+
+    @Override
+    public Future<Void> deleteProjectById(@NonNull Project projectEntity) {
+        Tuple params = Tuple.of(projectEntity.getProjectId());
+        return queryOps.runQuery(SqlQueries.getDeleteProjectById(), params, projectPool)
+                .map(res -> {
+                    log.info("Delete project " + projectEntity.getProjectName());
+                    return DBUtils.toVoid(null);
+                })
+                .onFailure(res -> log.info(res.getCause().getMessage()));
+    }
+
+    private Project toProjectEntity(@NonNull ProjectDTO projectDTO) {
+        return Project.builder()
                 .projectId(projectDTO.getProjectId())
                 .projectName(projectDTO.getProjectName())
-                .projectType(projectDTO.getProjectType())
                 .projectPath(projectDTO.getProjectPath())
+                .annotationType(projectDTO.getAnnotationType())
                 .projectInfra(projectDTO.getProjectInfra())
                 .labelList(projectDTO.getLabelList())
                 .build();
     }
 
-    private ProjectEntity toProjectEntity(@NonNull Row row) {
-        return ProjectEntity.builder()
-                    .projectId(row.getString("PROJECT_ID"))
-                    .projectName(row.getString("PROJECT_NAME"))
-                    .projectType(row.getInteger("ANNOTATION_TYPE"))
-                    .labelList(StringUtility.convertStringListToListString(row.getString("LABEL_LIST")))
-                    .build();
-    }
-
-    private ProjectEntity createProjectEntityFromDTO(@NonNull ProjectDTO projectDTO) {
-        return ProjectEntity.builder()
-                .projectName(projectDTO.getProjectName())
-                .projectType(projectDTO.getProjectType())
-                .labelList(projectDTO.getLabelList())
+    private Project toProjectEntity(Row row) throws JsonProcessingException {
+        return Project.builder()
+                .projectId(row.getString("project_id"))
+                .projectName(row.getString("project_name"))
+                .projectPath(row.getString("project_path"))
+                .annotationType(row.getInteger("annotation_type"))
+                .projectInfra(row.getInteger("project_infra"))
+                .labelList(JsonUtility.parseJsonToList(row.getString("label_list")))
                 .build();
     }
 
-    @Override
-    public Future<ProjectEntity> createProject(@NonNull ProjectDTO projectDTO) {
-        ProjectEntity projectEntity = toProjectEntity(projectDTO);
-        Tuple params = projectEntity.getTuple();
-        return queryOps.runQuery(SqlQueries.getCreateProject(), params, projectPool)
-                .map(response -> {
-                    log.info("Project " + projectDTO.getProjectName() + " created");
-                    return ProjectEntity.builder()
-                            .projectName(projectDTO.getProjectName())
-                            .projectType(projectDTO.getProjectType())
-                            .labelList(projectDTO.getLabelList())
-                            .build();
-                });
-    }
-
-    @Override
-    public Future<List<ProjectEntity>> listProjects(@NonNull Integer projectType) {
-        return queryOps.runQuery(SqlQueries.getListAllProject(), projectPool)
-                .map(response -> {
-                    if (response.size() != 0) {
-                        List<ProjectEntity> projectEntityList = new ArrayList<>();
-                        for (Row row : response) {
-                            projectEntityList.add(toProjectEntity(row));
-                        }
-                        return projectEntityList.stream()
-                                .filter(res -> res.getProjectType().equals(projectType))
-                                .collect(Collectors.toList());
-                    }
-                    log.info("Fail to retrieve all project for project type: " + ProjectType.getProjectTypeName(projectType));
-                    return null;
-                });
-    }
-
-    @Override
-    public Future<Optional<ProjectEntity>> getProjectById(@NonNull String projectId) {
-        Tuple params = Tuple.of(projectId);
-        return queryOps.runQuery(SqlQueries.getRetrieveProjectById(), params, projectPool)
-                .map(res -> {
-                    if (res.size() != 0) {
-                        return Optional.ofNullable(toProjectEntity(res.iterator().next()));
-                    }
-                    return Optional.empty();
-                });
-    }
-
-    @Override
-    public Future<Optional<ProjectEntity>> getProjectByNameAndType(@NonNull ProjectEntity projectEntity) {
-        Tuple params = Tuple.of(projectEntity.getProjectName(), projectEntity.getProjectType());
-        return queryOps.runQuery(SqlQueries.getRetrieveProjectByNameAndType(), params, projectPool)
-                .map(res -> {
-                    if (res.size() != 0) {
-                        return Optional.ofNullable(toProjectEntity(res.iterator().next()));
-                    }
-                    return Optional.empty();
-                });
-    }
-
-    @Override
-    public Future<ProjectEntity> updateProject(@NonNull ProjectEntity projectEntity, @NonNull ProjectDTO projectDTO) {
-        Tuple params = projectEntity.getTuple();
-        return queryOps.runQuery(SqlQueries.getUpdateProject(), params, projectPool)
-                .map(res -> createProjectEntityFromDTO(projectDTO));
-    }
-
-    @Override
-    public Future<Void> deleteProjectById(@NonNull ProjectEntity projectEntity) {
-        Tuple params = Tuple.of(projectEntity.getProjectId());
-        return queryOps.runQuery(SqlQueries.getDeleteProjectById(), params, projectPool)
-                .map(res -> {
-                    log.info("Delete project " + projectEntity.getProjectName());
-                    return null;
-                });
+    private Tuple getTuple(ProjectDTO projectDTO) {
+        return Tuple.of(
+                projectDTO.getProjectId(),
+                projectDTO.getProjectName(),
+                projectDTO.getAnnotationType(),
+                projectDTO.getProjectPath(),
+                projectDTO.getProjectInfra(),
+                projectDTO.getLabelList()
+        );
     }
 
 }

@@ -1,6 +1,6 @@
 package ai.classifai.core.dto;
 
-import ai.classifai.core.dto.properties.LabelNameAndCount;
+import ai.classifai.core.properties.LabelNameAndCount;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

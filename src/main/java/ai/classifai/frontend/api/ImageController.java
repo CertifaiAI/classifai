@@ -2,7 +2,7 @@ package ai.classifai.frontend.api;
 
 import ai.classifai.core.dto.BoundingBoxDTO;
 import ai.classifai.core.dto.SegmentationDTO;
-import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.properties.ImageProperties;
 import ai.classifai.core.service.annotation.AnnotationService;
 import ai.classifai.frontend.request.ImageAnnotationBody;
 import ai.classifai.frontend.response.ActionStatus;
@@ -60,8 +60,24 @@ public class ImageController {
                 .build();
     }
 
+    @GET
+    @Path("/imglabel/bndbox/projects/{project_name}")
+    public Future<ActionStatus> getAllBoundingBoxAnnotation(@PathParam("project_name") String projectName) {
+        return boundingBoxService.listAnnotations(projectName)
+                .map(ActionStatus::okWithResponse)
+                .otherwise(res -> ActionStatus.failedWithMessage("Fail to get all annotations for bounding box"));
+    }
+
+    @GET
+    @Path("/imglabel/bndbox/projects/{project_name}")
+    public Future<ActionStatus> getAllSegmentationAnnotation(@PathParam("project_name") String projectName) {
+        return segmentationService.listAnnotations(projectName)
+                .map(ActionStatus::okWithResponse)
+                .otherwise(res -> ActionStatus.failedWithMessage("Fail to get all annotations for bounding box"));
+    }
+
     @POST
-    @Path("/imglabel/bndbox")
+    @Path("/imglabel/bndbox/projects/{project_name}")
     public Future<ActionStatus> createBoundingBoxAnnotation(ImageAnnotationBody imageAnnotationBody) throws Exception {
         return boundingBoxService.createAnnotation(toBoundingBoxDto(imageAnnotationBody))
                 .map(ActionStatus::okWithResponse)
@@ -69,7 +85,7 @@ public class ImageController {
     }
 
     @POST
-    @Path("/imglabel/seg")
+    @Path("/imglabel/seg/projects/{project_name}")
     public Future<ActionStatus> createSegmentationAnnotation(ImageAnnotationBody imageAnnotationBody) throws Exception {
         return segmentationService.createAnnotation(toSegmentationDto(imageAnnotationBody))
                 .map(ActionStatus::okWithResponse)

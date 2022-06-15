@@ -1,14 +1,14 @@
 package ai.classifai.frontend.api;
 
-import ai.classifai.backend.utility.LabelListImport;
+import ai.classifai.backend.utility.action.LabelListImport;
 import ai.classifai.core.dto.AudioDTO;
 import ai.classifai.core.dto.BoundingBoxDTO;
 import ai.classifai.core.dto.ProjectDTO;
 import ai.classifai.core.dto.SegmentationDTO;
-import ai.classifai.core.dto.properties.AudioProperties;
-import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.properties.AudioProperties;
+import ai.classifai.core.properties.ImageProperties;
 import ai.classifai.core.enumeration.ProjectInfra;
-import ai.classifai.core.enumeration.ProjectType;
+import ai.classifai.core.enumeration.AnnotationType;
 import ai.classifai.core.service.annotation.AnnotationService;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.frontend.request.CreateProjectBody;
@@ -48,7 +48,7 @@ public class ProjectController {
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .projectName(createProjectBody.getProjectName())
                 .projectPath(createProjectBody.getProjectPath())
-                .projectType(ProjectType.getProjectType(createProjectBody.getAnnotationType()))
+                .annotationType(AnnotationType.getType(createProjectBody.getAnnotationType()).ordinal())
                 .labelList(new LabelListImport(new File(createProjectBody.getLabelFilePath())).getValidLabelList())
                 .projectInfra(ProjectInfra.getProjectInfra(createProjectBody.getProjectInfra()))
                 .build();
@@ -71,7 +71,7 @@ public class ProjectController {
     @GET
     @Path("/{annotation_type}/projects/meta")
     public Future<ActionStatus> listProjectsMeta(@PathParam("annotation_type") String annotationType) {
-        return projectService.listProjects(ProjectType.getProjectType(annotationType))
+        return projectService.listProjects(AnnotationType.getAnnotationType(annotationType))
                 .map(ActionStatus::okWithResponse)
                 .otherwise(cause -> ActionStatus.failedWithMessage("Failed to retrieve projects meta data"));
     }
@@ -82,9 +82,10 @@ public class ProjectController {
                                                    @PathParam("project_name") String projectName) {
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .projectName(projectName)
-                .projectType(ProjectType.getProjectType(annotationType))
+                .annotationType(AnnotationType.getAnnotationType(annotationType))
                 .build();
-        return projectService.getProjectByNameAndType(projectDTO)
+
+        return projectService.getProjectById(projectDTO.getProjectId())
                 .map(res -> ActionStatus.okWithResponse(res.get()))
                 .otherwise(cause -> ActionStatus.failedWithMessage("Failed to retrieve project meta data for " + projectName));
     }
@@ -93,8 +94,8 @@ public class ProjectController {
     @Path("/{annotation_type}/projects/{project_name}")
     public Future<ActionStatus> updateProject(@PathParam("annotation_type") String annotationType,
                                               @PathParam("project_name") String projectName) {
-        Integer projectType = ProjectType.getProjectType(annotationType);
-        ProjectDTO projectDTO = ProjectDTO.builder().projectName(projectName).projectType(projectType).build();
+        Integer projectType = AnnotationType.getAnnotationType(annotationType);
+        ProjectDTO projectDTO = ProjectDTO.builder().projectName(projectName).annotationType(projectType).build();
         return projectService.updateProject(projectDTO)
                 .map(ActionStatus::okWithResponse)
                 .otherwise(cause -> ActionStatus.failedWithMessage("Failed to update project meta data for " + projectName));
@@ -103,16 +104,21 @@ public class ProjectController {
     @DELETE
     @Path("/{annotation_type}/projects/{project_name}")
     public Future<ActionStatus> deleteProject(@PathParam("annotation_type") String annotationType,
-                                           @PathParam("project_name") String projectName) {
-        Integer projectType = ProjectType.getProjectType(annotationType);
-        ProjectDTO projectDTO = ProjectDTO.builder().projectName(projectName).projectType(projectType).build();
+                                              @PathParam("project_name") String projectName) {
+        Integer projectType = AnnotationType.getAnnotationType(annotationType);
+        ProjectDTO projectDTO = ProjectDTO.builder()
+                .projectName(projectName)
+                .annotationType(projectType)
+                .build();
+
         return projectService.deleteProject(projectDTO)
+                .compose(res -> deleteAnnotationProject(projectDTO))
                 .map(ActionStatus::okWithResponse)
                 .otherwise(cause -> ActionStatus.failedWithMessage("Failed to delete project " + projectName));
     }
 
     private void initAnnotationProjectByType(ProjectDTO projectDTO) {
-        Integer projectType = projectDTO.getProjectType();
+        Integer projectType = projectDTO.getAnnotationType();
         String projectName = projectDTO.getProjectName();
         String projectPath = projectDTO.getProjectPath();
 
@@ -141,5 +147,53 @@ public class ProjectController {
                 this.audioService.parseData(audioProperties);
             }
         }
+    }
+
+    private Future<Void> deleteAnnotationProject(ProjectDTO projectDTO) {
+        Integer projectType = projectDTO.getAnnotationType();
+        Promise<Void> promise = Promise.promise();
+
+        switch(projectType) {
+            case 0 -> {
+                 imageBoundingBoxService.deleteProjectById(projectDTO.getProjectName())
+                         .onComplete(res -> {
+                             if (res.succeeded()) {
+                                 promise.complete(res.result());
+                             }
+
+                             else if (res.failed()) {
+                                 promise.fail(res.cause());
+                             }
+                         });
+            }
+
+            case 1 -> {
+                imageSegmentationService.deleteProjectById(projectDTO.getProjectName())
+                        .onComplete(res -> {
+                            if (res.succeeded()) {
+                                promise.complete(res.result());
+                            }
+
+                            else if (res.failed()) {
+                                promise.fail(res.cause());
+                            }
+                        });
+            }
+
+            case 2 -> {
+                audioService.deleteProjectById(projectDTO.getProjectName())
+                        .onComplete(res -> {
+                            if (res.succeeded()) {
+                                promise.complete(res.result());
+                            }
+
+                            else if (res.failed()) {
+                                promise.fail(res.cause());
+                            }
+                        });
+            }
+        }
+
+        return promise.future();
     }
  }

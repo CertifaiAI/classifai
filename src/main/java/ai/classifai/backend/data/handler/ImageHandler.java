@@ -2,10 +2,10 @@ package ai.classifai.backend.data.handler;
 
 import ai.classifai.backend.data.type.image.ImageData;
 import ai.classifai.backend.data.type.image.ImageFileType;
-import ai.classifai.backend.utility.FileHandler;
+import ai.classifai.backend.utility.handler.FileHandler;
 import ai.classifai.backend.utility.ParamConfig;
 import ai.classifai.backend.utility.UuidGenerator;
-import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.properties.ImageProperties;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

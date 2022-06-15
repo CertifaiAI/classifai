@@ -26,7 +26,7 @@ public class ProjectDTO {
 
     @JsonProperty("annotation_type")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    Integer projectType;
+    Integer annotationType;
 
     @JsonProperty("label_list")
     @JsonInclude(JsonInclude.Include.NON_NULL)

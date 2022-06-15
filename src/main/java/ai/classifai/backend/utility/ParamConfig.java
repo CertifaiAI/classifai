@@ -15,6 +15,7 @@
  */
 package ai.classifai.backend.utility;
 
+import ai.classifai.backend.repository.database.DbConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,7 +39,7 @@ public class ParamConfig
     public static String getBrowserURL(){ return "http://localhost:" + ParamConfig.getHostingPort(); }
 
     @Getter private static final File rootSearchPath = new File(System.getProperty("user.home"));
-//    @Getter private static final String logFilePath = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
+    @Getter private static final String logFilePath = DbConfig.getDbRootPath() + File.separator + "logs" + File.separator + "classifai.log";
 
     @Getter private static final String dateTimeFormat = "yyyy/MM/dd hh:mm:ss a";
 

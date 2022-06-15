@@ -1,6 +1,5 @@
 package ai.classifai.backend.data.handler;
 
-import ai.classifai.core.dto.properties.ImageProperties;
 import com.github.marc7806.wrapper.AWFBit;
 import com.github.marc7806.wrapper.AWFCommand;
 import com.github.marc7806.wrapper.BBCAudioWaveform;

@@ -1,20 +1,17 @@
 package ai.classifai.frontend.api;
 
-import ai.classifai.backend.utility.ReplyHandler;
 import ai.classifai.core.dto.AudioDTO;
-import ai.classifai.core.dto.properties.AudioProperties;
-import ai.classifai.core.dto.properties.AudioRegionsProperties;
+import ai.classifai.core.properties.AudioProperties;
+import ai.classifai.core.properties.AudioRegionsProperties;
 import ai.classifai.core.entity.annotation.AudioEntity;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.frontend.response.ActionStatus;
-import ai.classifai.frontend.response.AudioRegionsResponse;
-import ai.classifai.frontend.response.WaveFormPeaksResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.Future;
 
-import javax.ws.rs.*;
-import java.util.concurrent.ExecutionException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 public class AudioController {
 

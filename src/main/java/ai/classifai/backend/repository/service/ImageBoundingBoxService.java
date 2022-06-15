@@ -1,11 +1,10 @@
 package ai.classifai.backend.repository.service;
 
 import ai.classifai.backend.data.handler.ImageHandler;
-import ai.classifai.backend.repository.DBUtils;
+import ai.classifai.backend.repository.database.DBUtils;
 import ai.classifai.core.dto.BoundingBoxDTO;
-import ai.classifai.core.dto.properties.ImageProperties;
+import ai.classifai.core.properties.ImageProperties;
 import ai.classifai.core.entity.annotation.ImageBoundingBoxEntity;
-import ai.classifai.core.enumeration.ProjectType;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import ai.classifai.core.service.annotation.AnnotationService;
 import ai.classifai.core.service.project.ProjectService;
@@ -36,7 +35,7 @@ public class ImageBoundingBoxService implements AnnotationService<BoundingBoxDTO
     @Override
     public Future<Void> parseData(ImageProperties imageProperties) {
         return annotationRepository.createAnnotationProject()
-                .compose(res -> projectService.getProjectById(imageProperties.getProjectName(), ProjectType.IMAGEBOUNDINGBOX.ordinal())
+                .compose(res -> projectService.getProjectById(imageProperties.getProjectId())
                         .map(response -> response.get().getProjectId())
                 )
                 .compose(res -> Future.future(promise -> {
@@ -97,8 +96,8 @@ public class ImageBoundingBoxService implements AnnotationService<BoundingBoxDTO
     }
 
     @Override
-    public Future<Void> deleteProjectByName(String projectName) {
-        return projectService.getProjectById(projectName, ProjectType.IMAGEBOUNDINGBOX.ordinal())
+    public Future<Void> deleteProjectById(@NonNull String projectId) {
+        return projectService.getProjectById(projectId)
                         .map(response -> response.get().getProjectId())
                 .compose(annotationRepository::deleteProjectByName)
                 .map(DBUtils::toVoid);

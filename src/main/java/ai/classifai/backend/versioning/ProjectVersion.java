@@ -15,7 +15,7 @@
  */
 package ai.classifai.backend.versioning;
 
-import ai.classifai.backend.utility.ActionOps;
+import ai.classifai.backend.utility.action.ActionOps;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;

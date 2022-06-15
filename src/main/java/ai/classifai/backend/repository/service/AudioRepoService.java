@@ -1,11 +1,11 @@
 package ai.classifai.backend.repository.service;
 
-import ai.classifai.backend.repository.DBUtils;
+import ai.classifai.backend.repository.database.DBUtils;
 import ai.classifai.backend.repository.JdbcHolder;
-import ai.classifai.backend.repository.QueryOps;
+import ai.classifai.backend.repository.query.QueryOps;
 import ai.classifai.backend.repository.SqlQueries;
 import ai.classifai.core.dto.AudioDTO;
-import ai.classifai.core.dto.properties.AudioProperties;
+import ai.classifai.core.properties.AudioProperties;
 import ai.classifai.core.entity.annotation.AudioEntity;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import io.vertx.core.Future;

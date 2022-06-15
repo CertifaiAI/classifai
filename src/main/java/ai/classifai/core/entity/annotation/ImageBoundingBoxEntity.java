@@ -1,6 +1,6 @@
 package ai.classifai.core.entity.annotation;
 
-import ai.classifai.core.dto.properties.BoundingBoxProperties;
+import ai.classifai.core.properties.BoundingBoxProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.sqlclient.Tuple;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data

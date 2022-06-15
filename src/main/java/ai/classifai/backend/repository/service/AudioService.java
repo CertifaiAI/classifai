@@ -1,7 +1,7 @@
 package ai.classifai.backend.repository.service;
 
 import ai.classifai.core.dto.AudioDTO;
-import ai.classifai.core.dto.properties.AudioProperties;
+import ai.classifai.core.properties.AudioProperties;
 import ai.classifai.core.entity.annotation.AudioEntity;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import ai.classifai.core.service.annotation.AnnotationService;
@@ -70,7 +70,7 @@ public class AudioService implements AnnotationService<AudioDTO, AudioProperties
     }
 
     @Override
-    public Future<Void> deleteProjectByName(@NonNull String projectName) {
+    public Future<Void> deleteProjectById(@NonNull String projectId) {
         return null;
     }
 

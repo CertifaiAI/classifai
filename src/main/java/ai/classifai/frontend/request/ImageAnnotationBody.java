@@ -1,7 +1,7 @@
 package ai.classifai.frontend.request;
 
-import ai.classifai.core.dto.properties.BoundingBoxProperties;
-import ai.classifai.core.dto.properties.SegmentationProperties;
+import ai.classifai.core.properties.BoundingBoxProperties;
+import ai.classifai.core.properties.SegmentationProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
