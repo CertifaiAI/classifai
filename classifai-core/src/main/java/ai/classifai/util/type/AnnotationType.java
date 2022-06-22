@@ -29,7 +29,9 @@ import java.util.Locale;
 public enum AnnotationType
 {
     BOUNDINGBOX,
-    SEGMENTATION;
+    SEGMENTATION,
+    VIDEOBOUNDINGBOX,
+    VIDEOSEGMENTATION;
     //ADD WHEN HAVE NEW ANNOTATION TYPE
 
     public static AnnotationType getTypeFromEndpoint(@NonNull String annotation)
@@ -44,12 +46,24 @@ public enum AnnotationType
         {
             type = SEGMENTATION;
         }
+        else if(annotation.equals("videobndbox"))
+        {
+            type = AnnotationType.VIDEOBOUNDINGBOX;
+        }
+        else if(annotation.equals("videoseg"))
+        {
+            type = AnnotationType.VIDEOSEGMENTATION;
+        }
         return type;
     }
 
     public static boolean checkSanity(@NonNull Integer annotationTypeInt)
     {
         if (annotationTypeInt.equals(BOUNDINGBOX.ordinal()) || annotationTypeInt.equals(SEGMENTATION.ordinal()))
+        {
+            return true;
+        }
+        else if (annotationTypeInt.equals(VIDEOBOUNDINGBOX.ordinal()) || annotationTypeInt.equals(VIDEOSEGMENTATION.ordinal()))
         {
             return true;
         }
@@ -72,6 +86,14 @@ public enum AnnotationType
         {
             return SEGMENTATION;
         }
+        else if(caseInsensitive.equals(VIDEOBOUNDINGBOX.name()))
+        {
+            return VIDEOBOUNDINGBOX;
+        }
+        else if(caseInsensitive.equals(VIDEOSEGMENTATION.name()))
+        {
+            return VIDEOSEGMENTATION;
+        }
 
         log.debug("Annotation type from string resulted in failure: " + caseInsensitive);
 
@@ -87,6 +109,14 @@ public enum AnnotationType
         else if (ordinal.equals(SEGMENTATION.ordinal()))
         {
             return SEGMENTATION;
+        }
+        else if (ordinal.equals(VIDEOBOUNDINGBOX.ordinal()))
+        {
+            return VIDEOBOUNDINGBOX;
+        }
+        else if (ordinal.equals(VIDEOSEGMENTATION.ordinal()))
+        {
+            return VIDEOSEGMENTATION;
         }
 
         log.debug("Annotation type from integer resulted in failure: " + ordinal);

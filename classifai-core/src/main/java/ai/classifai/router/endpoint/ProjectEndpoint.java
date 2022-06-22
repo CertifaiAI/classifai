@@ -13,7 +13,9 @@ import ai.classifai.ui.NativeUI;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.ui.enums.NewProjectStatus;
 import ai.classifai.ui.enums.SelectionWindowStatus;
+import ai.classifai.util.ParamConfig;
 import ai.classifai.util.collection.UuidGenerator;
+import ai.classifai.util.data.VideoHandler;
 import ai.classifai.util.http.ActionStatus;
 import ai.classifai.util.http.HTTPResponseHandler;
 import ai.classifai.util.message.ReplyHandler;
@@ -23,11 +25,14 @@ import ai.classifai.util.type.AnnotationType;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -147,21 +152,68 @@ public class ProjectEndpoint {
             String labelPath = requestBody.getLabelFilePath();
             List<String> labelList = new LabelListImport(new File(labelPath)).getValidLabelList();
 
-            ProjectLoader loader = ProjectLoader.builder()
-                    .projectId(UuidGenerator.generateUuid())
-                    .projectName(projectName)
-                    .annotationType(annotationInt)
-                    .projectPath(new File(projectPath))
-                    .labelList(labelList)
-                    .projectLoaderStatus(ProjectLoaderStatus.LOADED)
-                    .projectInfra(ProjectInfra.ON_PREMISE)
-                    .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
-                    .portfolioDB(portfolioDB)
-                    .annotationDB(annotationDB)
-                    .build();
+            if(annotationInt == 2 || annotationInt == 3)
+            {
+                String audioFilePath = requestBody.getVideoFilePath();
+                File audioFile = new File(audioFilePath);
+                File audioParentDirectory = new File(audioFilePath).getParentFile();
+                String projectDirectoryPath = audioParentDirectory.getAbsolutePath() + File.separator
+                        + FilenameUtils.getBaseName(audioFile.getName());
+                File projectDirectory = new File(projectDirectoryPath);
+                String targetAudioFilePath = projectDirectory.getAbsolutePath() + File.separator + audioFile.getName();
 
-            projectHandler.loadProjectLoader(loader);
-            loader.initFolderIteration();
+                if (projectDirectory.exists()) {
+                    projectDirectory = new File(projectDirectoryPath + "_classifai");
+                }
+
+                Files.createDirectory(Paths.get(projectDirectory.getPath()));
+                log.info("Project directory: " + projectDirectory.getName() + " is created at " + projectDirectory.getParent());
+                Files.move(audioFile.toPath(), Paths.get(targetAudioFilePath));
+                log.info(audioFile.getName() + " has move to directory: " + projectDirectory.getName());
+
+                String videoPath = requestBody.getVideoFilePath();
+                Integer videoLength = VideoHandler.getVideoLength(videoPath);
+                String videoDuration = VideoHandler.getVideoDuration(videoPath);
+                Integer framePerSecond = VideoHandler.getFramePerSeconds(videoPath);
+
+                ProjectLoader videoLoader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationInt)
+                        .projectPath(new File(projectPath))
+                        .videoPath(new File(videoPath))
+                        .labelList(labelList)
+                        .videoLength(videoLength)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .fileSystemStatus(FileSystemStatus.DATABASE_UPDATED)
+                        .isVideoFramesExtractionCompleted(Boolean.FALSE)
+                        .extractedFrameIndex(0)
+                        .videoDuration(videoDuration)
+                        .framesPerSecond(framePerSecond)
+                        .build();
+
+                projectHandler.loadProjectLoader(videoLoader);
+                videoLoader.initVideoFolderIteration();
+            }
+
+            else {
+                ProjectLoader loader = ProjectLoader.builder()
+                        .projectId(UuidGenerator.generateUuid())
+                        .projectName(projectName)
+                        .annotationType(annotationInt)
+                        .projectPath(new File(projectPath))
+                        .labelList(labelList)
+                        .projectLoaderStatus(ProjectLoaderStatus.LOADED)
+                        .projectInfra(ProjectInfra.ON_PREMISE)
+                        .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
+                        .portfolioDB(portfolioDB)
+                        .annotationDB(annotationDB)
+                        .build();
+
+                projectHandler.loadProjectLoader(loader);
+                loader.initFolderIteration();
+            }
 
             return ActionStatus.ok();
         }

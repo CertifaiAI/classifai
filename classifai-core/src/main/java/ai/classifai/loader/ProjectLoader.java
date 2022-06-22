@@ -22,6 +22,7 @@ import ai.classifai.database.versioning.ProjectVersion;
 import ai.classifai.ui.enums.FileSystemStatus;
 import ai.classifai.util.ParamConfig;
 import ai.classifai.util.data.ImageHandler;
+import ai.classifai.util.data.VideoHandler;
 import ai.classifai.util.project.ProjectInfra;
 import ai.classifai.util.type.AnnotationType;
 import lombok.Builder;
@@ -53,6 +54,12 @@ public class ProjectLoader
 
     private Integer annotationType;
     private File projectPath;
+    private File videoPath;
+    private Integer videoLength;
+    private Boolean isVideoFramesExtractionCompleted;
+    private Integer extractedFrameIndex;
+    private String videoDuration;
+    private Integer framesPerSecond;
 
     private ProjectInfra projectInfra;
 
@@ -301,6 +308,35 @@ public class ProjectLoader
             return ParamConfig.getBoundingBoxParam();
         } else {
             return ParamConfig.getSegmentationParam();
+        }
+    }
+
+    public void initVideoFolderIteration()
+    {
+        if(!VideoHandler.loadVideoProjectRootPath(this, portfolioDB, annotationDB))
+        {
+            log.debug("Loading files in project folder failed");
+        }
+    }
+
+    public void updateFrameLoadingProgress(Integer currentSize)
+    {
+        currentUuidMarker = currentSize;
+
+        if (currentUuidMarker.equals(totalUuidMaxLen))
+        {
+            if (fileSysNewUuidList.isEmpty())
+            {
+                fileSystemStatus = FileSystemStatus.DATABASE_NOT_UPDATED;
+            }
+            else
+            {
+                sanityUuidList.addAll(fileSysNewUuidList);
+                uuidListFromDb.addAll(fileSysNewUuidList);
+
+                projectVersion.setCurrentVersionUuidList(sanityUuidList);
+                projectVersion.setCurrentVersionLabelList(labelList);
+            }
         }
     }
 }

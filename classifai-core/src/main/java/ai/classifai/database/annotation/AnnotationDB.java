@@ -252,4 +252,31 @@ public class AnnotationDB
                 cause -> log.info("Fail to create UUID")
         ));
     }
+
+    public void saveVideoDataPoint(@NonNull ProjectLoader loader, @NonNull List<String> dataList, @NonNull Integer currentFrameIdx)
+    {
+        String uuid = UuidGenerator.generateUuid();
+
+        Annotation annotation = Annotation.builder()
+                .uuid(uuid)
+                .projectId(loader.getProjectId())
+                .videoFrameIdx(currentFrameIdx)
+                .timeStamp(Integer.parseInt(dataList.get(1)))
+                .imgPath(dataList.get(0))
+                .videoPath(dataList.get(2))
+                .annotationDict(ProjectParser.buildAnnotationDict(loader))
+                .build();
+
+        loader.getUuidAnnotationDict().put(uuid, annotation);
+
+        Tuple param = annotation.getVideoTuple();
+
+        runQuery(loader, AnnotationQuery.getCreateVideoData(), param, DBUtils.handleEmptyResponse(
+                        () -> {
+                            loader.pushFileSysNewUUIDList(uuid);
+                            loader.updateFrameLoadingProgress(currentFrameIdx + 1); // because frame index start at 0
+                        },
+                        cause -> log.error("Push data point with path " + dataList.get(0) + " failed: " + cause)
+                ));
+    }
 }

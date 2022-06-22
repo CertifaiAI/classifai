@@ -276,7 +276,7 @@ public class ImageHandler {
         return (FileHandler.isFileSupported(file.getAbsolutePath(), ImageFileType.getImageFileTypes()) && !isImageFileValid(file));
     }
 
-    private static List<String> getUnsupportedImagesFromFolder(File rootPath)
+    static List<String> getUnsupportedImagesFromFolder(File rootPath)
     {
         return FileHandler.processFolder(rootPath, ImageHandler::isImageUnsupported);
     }

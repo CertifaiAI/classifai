@@ -19,4 +19,7 @@ public class CreateProjectBody {
 
     @JsonProperty
     String status;
+
+    @JsonProperty("video_file_path")
+    String videoFilePath;
 }
