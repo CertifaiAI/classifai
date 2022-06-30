@@ -15,7 +15,7 @@
  */
 package ai.classifai.backend.utility.action;
 
-import ai.classifai.backend.utility.ParamConfig;
+import ai.classifai.core.utility.ParamConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 

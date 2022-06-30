@@ -16,6 +16,7 @@
 package ai.classifai.backend.utility;
 
 import ai.classifai.core.enumeration.AnnotationType;
+import ai.classifai.core.utility.NameGenerator;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

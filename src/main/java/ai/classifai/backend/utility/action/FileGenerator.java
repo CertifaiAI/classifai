@@ -15,8 +15,10 @@
  */
 package ai.classifai.backend.utility.action;
 
-import ai.classifai.backend.loader.ProjectLoader;
+import ai.classifai.core.loader.ProjectLoader;
 import ai.classifai.core.properties.ProjectConfigProperties;
+import ai.classifai.core.utility.ActionConfig;
+import ai.classifai.core.utility.ProjectExport;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 

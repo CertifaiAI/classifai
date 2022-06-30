@@ -15,7 +15,7 @@
  */
 package ai.classifai.backend.repository.database;
 
-import ai.classifai.backend.utility.handler.ReplyHandler;
+import ai.classifai.core.utility.handler.ReplyHandler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;

@@ -16,12 +16,11 @@
 package ai.classifai.frontend.ui.launcher;
 
 
-import ai.classifai.backend.utility.ParamConfig;
+import ai.classifai.core.utility.ParamConfig;
 import ai.classifai.frontend.ui.component.LookFeelSetter;
 import ai.classifai.frontend.ui.component.OSManager;
-import ai.classifai.frontend.ui.enums.RunningStatus;
-import ai.classifai.frontend.ui.launcher.conversion.ConverterLauncher;
-import ai.classifai.frontend.ui.utils.UIResources;
+import ai.classifai.core.enumeration.RunningStatus;
+import ai.classifai.frontend.ui.UIResources;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;

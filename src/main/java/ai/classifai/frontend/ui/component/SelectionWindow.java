@@ -15,8 +15,8 @@
  */
 package ai.classifai.frontend.ui.component;
 
-import ai.classifai.backend.status.SelectionWindowStatus;
-import ai.classifai.backend.utility.ParamConfig;
+import ai.classifai.core.status.SelectionWindowStatus;
+import ai.classifai.core.utility.ParamConfig;
 import ai.classifai.frontend.ui.DesktopUI;
 import lombok.Getter;
 import lombok.Setter;

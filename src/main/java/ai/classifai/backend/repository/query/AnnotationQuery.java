@@ -24,32 +24,52 @@ import lombok.Getter;
  */
 public class AnnotationQuery
 {
-
-    @Getter private static final String createProject = "CREATE TABLE IF NOT EXISTS Project (uuid UUID, project_id UUID, img_path VARCHAR(2000), version_list CLOB, img_depth INT, " +
+    /** Image project queries */
+    @Getter private static final String createImageProject = "CREATE TABLE IF NOT EXISTS ImageProject (uuid UUID, project_id UUID, img_path VARCHAR(2000), version_list CLOB, img_depth INT, " +
             "img_ori_w INT, img_ori_h INT, file_size INT, PRIMARY KEY(uuid, project_id))";
 
     @Getter private static final String queryData = "Get data from cache";
 
-    @Getter private static final String updateData = "UPDATE Project SET version_list = ?, img_depth = ?, img_ori_w = ?, img_ori_h = ?, file_size = ? WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String updateImageData = "UPDATE ImageProject SET version_list = ?, img_depth = ?, img_ori_w = ?, img_ori_h = ?, file_size = ? WHERE uuid = ? AND project_id = ?";
 
-    @Getter private static final String createData = "INSERT INTO Project VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    @Getter private static final String createImageData = "INSERT INTO ImageProject VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-    @Getter private static final String retrieveDataPath = "SELECT img_path FROM Project WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String retrieveDataPathFromImageProject = "SELECT img_path FROM ImageProject WHERE uuid = ? AND project_id = ?";
 
-    @Getter private static final String loadValidProjectUuid = "SELECT img_path FROM Project WHERE project_id = ? AND uuid = ?";
+    @Getter private static final String loadValidProjectUuid = "SELECT img_path FROM ImageProject WHERE project_id = ? AND uuid = ?";
 
-    @Getter private static final String deleteProject = "DELETE FROM Project WHERE project_id = ?";
+    @Getter private static final String deleteImageProject = "DELETE FROM ImageProject WHERE project_id = ?";
 
-    @Getter private static final String deleteProjectData = "DELETE FROM Project WHERE project_id = ? AND uuid IN (?)";
+    @Getter private static final String deleteImageProjectData = "DELETE FROM ImageProject WHERE project_id = ? AND uuid IN (?)";
 
-    @Getter private static final String retrieveAllProjects = "SELECT * FROM Project";
+    @Getter private static final String retrieveAllImageProjects = "SELECT * FROM ImageProject";
+
+    @Getter private static final String retrieveImageProjectById = "SELECT * FROM ImageProject WHERE project_id = ?";
 
     //v2
-    @Getter private static final String queryUuid = "SELECT uuid FROM Project WHERE img_path = ? AND project_id = ?";
+    @Getter private static final String queryImageUuid = "SELECT uuid FROM ImageProject WHERE img_path = ? AND project_id = ?";
 
-    @Getter private static final String extractProject = "SELECT uuid, img_path, version_list, img_depth, img_ori_w, img_ori_h, file_size FROM Project WHERE project_id = ?";
+    @Getter private static final String  extractImageProject = "SELECT uuid, img_path, version_list, img_depth, img_ori_w, img_ori_h, file_size FROM ImageProject WHERE project_id = ?";
 
-    @Getter private static final String renameProjectData = "UPDATE Project SET img_path = ? WHERE uuid = ? AND project_id = ?";
+    @Getter private static final String renameImageProjectData = "UPDATE ImageProject SET img_path = ? WHERE uuid = ? AND project_id = ?";
+
+    /** Video project queries */
+    @Getter private static final String createVideoProject = "CREATE TABLE IF NOT EXISTS VideoProject (uuid UUID, project_id UUID, video_frame_index INT, video_time_stamp INT, img_path VARCHAR(2000), video_file_path VARCHAR(2000), " +
+            " version_list CLOB, img_depth INT, img_ori_w INT, img_ori_h INT, file_size INT, PRIMARY KEY(uuid, project_id))";
+
+    @Getter private static final String createVideoData = "INSERT INTO VideoProject VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    @Getter private static final String retrieveVideoDataPath = "SELECT img_path FROM VideoProject WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String loadValidVideoProjectUuid = "SELECT img_path FROM VideoProject WHERE project_id = ? AND uuid = ?";
+
+    @Getter private static final String deleteVideoProject = "DELETE FROM VideoProject WHERE project_id = ?";
+
+    @Getter private static final String extractVideoProject = "SELECT uuid, img_path, video_frame_index, video_time_stamp, video_file_path, version_list, img_depth, img_ori_w, img_ori_h, file_size FROM VideoProject WHERE project_id = ?";
+
+    @Getter private static final String updateVideoData = "UPDATE VideoProject SET version_list = ?, img_depth = ?, img_ori_w = ?, img_ori_h = ?, file_size = ? WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String deleteVideoProjectData = "DELETE FROM VideoProject WHERE project_id = ? AND uuid IN (?)";
 
     /** Audio project queries */
     @Getter private static final String createWaveFormData = "INSERT INTO AudioWaveFormPeaks VALUES (?, ?, ?, ?, ?)";
@@ -69,5 +89,7 @@ public class AnnotationQuery
     @Getter private static final String updateAudioData = "UPDATE AudioProject SET regions_props = ? WHERE uuid = ? AND project_id = ?";
 
     @Getter private static final String deleteAudioData = "DELETE FROM AudioProject WHERE uuid = ? AND project_id = ?";
+
+    @Getter private static final String deleteAudioProject = "DELETE FROM AudioProject WHERE project_id = ?";
 
 }

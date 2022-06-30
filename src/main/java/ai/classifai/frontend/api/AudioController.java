@@ -1,27 +1,30 @@
 package ai.classifai.frontend.api;
 
 import ai.classifai.core.dto.AudioDTO;
-import ai.classifai.core.properties.AudioProperties;
-import ai.classifai.core.properties.AudioRegionsProperties;
-import ai.classifai.core.entity.annotation.AudioEntity;
-import ai.classifai.core.service.annotation.AnnotationRepository;
-import ai.classifai.core.service.project.ProjectService;
+import ai.classifai.core.enumeration.AnnotationType;
+import ai.classifai.core.loader.ProjectHandler;
+import ai.classifai.core.loader.ProjectLoader;
+import ai.classifai.core.properties.audio.AudioProperties;
+import ai.classifai.core.properties.audio.AudioRegionsProperties;
+import ai.classifai.core.service.annotation.AnnotationService;
+import ai.classifai.core.utility.handler.ReplyHandler;
 import ai.classifai.frontend.response.ActionStatus;
+import ai.classifai.frontend.response.AudioRegionsResponse;
+import ai.classifai.frontend.response.WaveFormPeaksResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.Future;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 
 public class AudioController {
 
-    private final AnnotationRepository<AudioEntity, AudioDTO, AudioProperties> audioRepoService;
-    private final ProjectService projectService;
+    private final AnnotationService<AudioDTO, AudioProperties> audioService;
+    private final ProjectHandler projectHandler;
 
-    AudioController(AnnotationRepository<AudioEntity, AudioDTO, AudioProperties> audioRepoService,
-                    ProjectService projectService) {
-        this.audioRepoService = audioRepoService;
-        this.projectService = projectService;
+    public AudioController(AnnotationService<AudioDTO, AudioProperties> audioService,
+                           ProjectHandler projectHandler) {
+        this.audioService = audioService;
+        this.projectHandler = projectHandler;
     }
 
     @POST
@@ -31,7 +34,7 @@ public class AudioController {
                                              AudioRegionsProperties audioRegionsProperties) throws Exception
     {
         AudioDTO audioDTO = AudioDTO.builder().build();
-        return audioRepoService.createAnnotation(audioDTO)
+        return audioService.createAnnotation(audioDTO)
                 .map(ActionStatus.ok())
                 .otherwise(ActionStatus.failedWithMessage("Fail to update labels: " + projectName));
     }
@@ -41,11 +44,11 @@ public class AudioController {
 //    public Future<AudioRegionsResponse> getAudioRegions(@PathParam("annotation_type") String annotationType,
 //                                                        @PathParam("project_name") String projectName)
 //    {
-//        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
 //        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 //        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
 //
-//        return portfolioDB.getAudioRegions(loader)
+//        return audioService.getAnnotationById(loader)
 //                .map(result -> AudioRegionsResponse.builder()
 //                        .message(ReplyHandler.SUCCESSFUL)
 //                        .listOfRegions(result)
@@ -61,7 +64,7 @@ public class AudioController {
 //    public Future<WaveFormPeaksResponse> getWaveFormPeaks(@PathParam("annotation_type") String annotationType,
 //                                                          @PathParam("project_name") String projectName)
 //    {
-//        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
 //        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 //        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
 //
@@ -82,11 +85,11 @@ public class AudioController {
 //                                          @PathParam("project_name") String projectName,
 //                                          @PathParam("uuid") String regionId)
 //    {
-//        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
 //        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 //        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
 //
-//        return portfolioDB.deleteAudioRegion(loader, regionId);
+//        return audioService.deleteData(loader, regionId);
 //    }
 //
 //    @PUT
@@ -95,19 +98,19 @@ public class AudioController {
 //                                          @PathParam("project_name") String projectName,
 //                                          AudioRegionsProperties audioRegionsProperties) throws JsonProcessingException
 //    {
-//        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
 //        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 //        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
 //
-//        return portfolioDB.updateAudioRegion(loader, audioRegionsProperties);
+//        return audioService.updateAnnotation(loader, audioRegionsProperties);
 //    }
-//
+
 //    @POST
 //    @Path("/v2/{annotation_type}/projects/{project_name}/saveannotation")
 //    public Future<ActionStatus> exportAudioAnnotationFile(@PathParam("annotation_type") String annotationType,
 //                                                          @PathParam("project_name") String projectName) throws ExecutionException, InterruptedException
 //    {
-//        AnnotationType type = AnnotationType.getTypeFromEndpoint(annotationType);
+//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
 //        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 //        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
 //

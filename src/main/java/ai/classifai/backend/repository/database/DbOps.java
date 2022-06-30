@@ -16,8 +16,9 @@
 package ai.classifai.backend.repository.database;
 
 import ai.classifai.backend.repository.database.migration.DbMigration;
-import ai.classifai.backend.utility.handler.FileHandler;
-import ai.classifai.frontend.ui.NativeUI;
+import ai.classifai.core.utility.handler.FileHandler;
+import ai.classifai.core.utility.DbConfig;
+import ai.classifai.core.service.NativeUI;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -43,7 +44,7 @@ public class DbOps {
     public void configureDatabase() {
         migrateDbIfExist();
 
-        setupDb();
+//        setupDb();
     }
 
     //hsqldb v1 -> h2 v2 database migration

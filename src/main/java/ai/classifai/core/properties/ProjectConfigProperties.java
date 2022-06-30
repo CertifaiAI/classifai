@@ -1,5 +1,6 @@
 package ai.classifai.core.properties;
 
+import ai.classifai.core.properties.image.ImageDataProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 

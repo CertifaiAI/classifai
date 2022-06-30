@@ -17,6 +17,6 @@ public class CreateProjectBody {
     @JsonProperty("label_file_path")
     String labelFilePath;
 
-    @JsonProperty("project_infra")
-    String projectInfra;
+    @JsonProperty("status")
+    String status;
 }

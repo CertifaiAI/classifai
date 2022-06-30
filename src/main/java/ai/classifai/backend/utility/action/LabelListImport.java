@@ -34,7 +34,7 @@ import java.util.List;
 public class LabelListImport
 {
     @Getter
-    private List<String> validLabelList = null;
+    private List<String> validLabelList = new ArrayList<>();
 
     public LabelListImport(File labelFile)
     {

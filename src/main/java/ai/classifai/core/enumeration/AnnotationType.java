@@ -17,7 +17,7 @@ public enum AnnotationType {
     TABULAR,
     AUDIO;
 
-    public static AnnotationType getType(@NonNull String annotation)
+    public static AnnotationType getTypeFromEndPoint(@NonNull String annotation)
     {
         AnnotationType type;
 
@@ -47,13 +47,9 @@ public enum AnnotationType {
         }
         else
         {
-            throw new IllegalArgumentException("Annotation unmatched with AnnotationType");
+            throw new IllegalStateException("Annotation unmatched with AnnotationType");
         }
         return type;
-    }
-
-    public static Integer getAnnotationType(String annotationType) {
-        return getType(annotationType).ordinal();
     }
 
     public static boolean checkSanity(@NonNull Integer annotationTypeInt)
@@ -105,7 +101,7 @@ public enum AnnotationType {
         else
         {
             log.debug("Annotation type from string resulted in failure: " + caseInsensitive);
-            throw new IllegalArgumentException("Annotation unmatched with AnnotationType");
+            throw new IllegalStateException("Annotation unmatched with AnnotationType");
         }
 
     }
@@ -139,7 +135,7 @@ public enum AnnotationType {
         else
         {
             log.debug("Annotation type from integer resulted in failure: " + ordinal);
-            throw new IllegalArgumentException("Annotation unmatched with AnnotationType");
+            throw new IllegalStateException("Annotation unmatched with AnnotationType");
         }
 
     }

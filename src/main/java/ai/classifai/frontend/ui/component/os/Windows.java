@@ -1,6 +1,6 @@
 package ai.classifai.frontend.ui.component.os;
 
-import ai.classifai.backend.utility.ParamConfig;
+import ai.classifai.core.utility.ParamConfig;
 import lombok.SneakyThrows;
 
 import java.util.List;

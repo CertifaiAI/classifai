@@ -6,7 +6,7 @@ import java.util.Locale;
 
 @Slf4j
 public enum ProjectInfra {
-    ONPREMISE,
+    ON_PREMISE,
     CLOUD;
 
     public static ProjectInfra get(String caseInsensitive){
@@ -20,10 +20,10 @@ public enum ProjectInfra {
     }
 
     public static Integer getProjectInfra(String projectInfra) {
-        Integer infra = null;
+        Integer infra;
 
-        if (projectInfra.equals(ONPREMISE.name())) {
-            infra = ONPREMISE.ordinal();
+        if (projectInfra.equals(ON_PREMISE.name())) {
+            infra = ON_PREMISE.ordinal();
         }
 
         else if (projectInfra.equals(CLOUD.name())) {
@@ -40,8 +40,8 @@ public enum ProjectInfra {
     public static String getProjectInfraName(String projectInfra) {
         String projectInfraName = null;
 
-        if (projectInfra.equals(ONPREMISE.name())) {
-            projectInfraName = ONPREMISE.name();
+        if (projectInfra.equals(ON_PREMISE.name())) {
+            projectInfraName = ON_PREMISE.name();
         }
 
         else if (projectInfra.equals(CLOUD.name())) {
@@ -53,5 +53,23 @@ public enum ProjectInfra {
         }
 
         return projectInfraName;
+    }
+
+    public static ProjectInfra getType(String projectInfra) {
+        ProjectInfra infra;
+
+        if (projectInfra.equals("on_premise")) {
+            infra = ON_PREMISE;
+        }
+
+        else if (projectInfra.equals("cloud")) {
+            infra = CLOUD;
+        }
+
+        else {
+            throw new IllegalArgumentException("Project Infra not found");
+        }
+
+        return infra;
     }
 }

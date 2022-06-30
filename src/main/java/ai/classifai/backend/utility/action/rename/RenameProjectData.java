@@ -15,11 +15,15 @@
  */
 package ai.classifai.backend.utility.action.rename;
 
-import ai.classifai.backend.loader.ProjectLoader;
+import ai.classifai.core.loader.ProjectLoader;
+import ai.classifai.core.properties.image.ImageDTO;
+import ai.classifai.core.utility.handler.ReplyHandler;
+import ai.classifai.frontend.response.RenameDataResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,83 +35,83 @@ import java.util.regex.Pattern;
 @Slf4j
 public final class RenameProjectData {
 
-//    private final ProjectLoader loader;
-//    private Annotation annotation;
-//
-//    public RenameProjectData(ProjectLoader loader) {
-//        this.loader = loader;
-//    }
-//
-//    public boolean containIllegalChars(String filename) {
-//        Pattern pattern = Pattern.compile("[ `&:;'?$~#@=*+%{}<>/\\[\\]|\"^]");
-//        Matcher matcher = pattern.matcher(filename);
-//
-//        return matcher.find();
-//    }
-//
-//    public boolean renameDataPath(File newDataPath, String oldDataFileName)
-//    {
-//        File oldDataPath = new File(oldDataFileName);
-//
-//        log.debug("Rename file:\nFrom: " + oldDataPath + "\nTo: " + newDataPath);
-//
-//        return oldDataPath.renameTo(newDataPath);
-//    }
-//
-//    public String getOldDataFileName()
-//    {
-//        return Paths.get(loader.getProjectPath().toString(), annotation.getImgPath()).toString();
-//    }
-//
-//    public String modifyFileNameFromCache(String newFileName)
-//    {
-//        String oldDataPath = annotation.getImgPath();
-//        // get only the filename after last slash before file extension
-//        String oldDataPathFileName = oldDataPath.substring(oldDataPath.lastIndexOf(File.separator) + 1, oldDataPath.lastIndexOf("."));
-//
-//        String newDataPathFName = newFileName.substring(newFileName.lastIndexOf(File.separator) + 1, newFileName.lastIndexOf("."));
-//
-//        // Rename old data path filename
-//        String newDataPathModified = oldDataPath.replace(oldDataPathFileName, newDataPathFName);
-//        log.debug("New modified path: " + newDataPathModified);
-//
-//        return newDataPathModified;
-//    }
-//
-//    public File createNewDataPath(String newDataFileName)
-//    {
-//        File newDataPath = Paths.get(
-//                loader.getProjectPath().toString(), newDataFileName).toFile();
-//        log.debug("New data path: " + newDataPath);
-//
-//        return newDataPath;
-//    }
-//
-//    public void getAnnotationVersion(String dataUUID)
-//    {
-//        Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
-//        annotation = uuidAnnotationDict.get(dataUUID);
-//    }
-//
-//    public void updateAnnotationCache(String newImagePath, String dataUUID)
-//    {
-//        Map<String, Annotation> uuidAnnotationDict = loader.getUuidAnnotationDict();
-//
-//        annotation.setImgPath(newImagePath);
-//        uuidAnnotationDict.put(dataUUID, annotation);
-//
-//        loader.setUuidAnnotationDict(uuidAnnotationDict);
-//
-//    }
-//
-//    public static RenameDataResponse reportRenameError(String errorKeyStr)
-//    {
-//        RenameDataErrorCode errorKey = RenameDataErrorCode.valueOf(errorKeyStr);
-//
-//        return RenameDataResponse.builder()
-//                .message(ReplyHandler.FAILED)
-//                .errorCode(errorKey.ordinal())
-//                .errorMessage(errorKey.getErrorMessage())
-//                .build();
-//    }
+    private final ProjectLoader loader;
+    private ImageDTO imageDTO;
+
+    public RenameProjectData(ProjectLoader loader) {
+        this.loader = loader;
+    }
+
+    public boolean containIllegalChars(String filename) {
+        Pattern pattern = Pattern.compile("[ `&:;'?$~#@=*+%{}<>/\\[\\]|\"^]");
+        Matcher matcher = pattern.matcher(filename);
+
+        return matcher.find();
+    }
+
+    public boolean renameDataPath(File newDataPath, String oldDataFileName)
+    {
+        File oldDataPath = new File(oldDataFileName);
+
+        log.debug("Rename file:\nFrom: " + oldDataPath + "\nTo: " + newDataPath);
+
+        return oldDataPath.renameTo(newDataPath);
+    }
+
+    public String getOldDataFileName()
+    {
+        return Paths.get(loader.getProjectPath().toString(), imageDTO.getImgPath()).toString();
+    }
+
+    public String modifyFileNameFromCache(String newFileName)
+    {
+        String oldDataPath = imageDTO.getImgPath();
+        // get only the filename after last slash before file extension
+        String oldDataPathFileName = oldDataPath.substring(oldDataPath.lastIndexOf(File.separator) + 1, oldDataPath.lastIndexOf("."));
+
+        String newDataPathFName = newFileName.substring(newFileName.lastIndexOf(File.separator) + 1, newFileName.lastIndexOf("."));
+
+        // Rename old data path filename
+        String newDataPathModified = oldDataPath.replace(oldDataPathFileName, newDataPathFName);
+        log.debug("New modified path: " + newDataPathModified);
+
+        return newDataPathModified;
+    }
+
+    public File createNewDataPath(String newDataFileName)
+    {
+        File newDataPath = Paths.get(
+                loader.getProjectPath().toString(), newDataFileName).toFile();
+        log.debug("New data path: " + newDataPath);
+
+        return newDataPath;
+    }
+
+    public void getAnnotationVersion(String dataUUID)
+    {
+        Map<String, ImageDTO> uuidAnnotationDict = loader.getUuidAnnotationDict();
+        imageDTO = uuidAnnotationDict.get(dataUUID);
+    }
+
+    public void updateAnnotationCache(String newImagePath, String dataUUID)
+    {
+        Map<String, ImageDTO> uuidAnnotationDict = loader.getUuidAnnotationDict();
+
+        imageDTO.setImgPath(newImagePath);
+        uuidAnnotationDict.put(dataUUID, imageDTO);
+
+        loader.setUuidAnnotationDict(uuidAnnotationDict);
+
+    }
+
+    public static RenameDataResponse reportRenameError(String errorKeyStr)
+    {
+        RenameDataErrorCode errorKey = RenameDataErrorCode.valueOf(errorKeyStr);
+
+        return RenameDataResponse.builder()
+                .message(ReplyHandler.FAILED)
+                .errorCode(errorKey.ordinal())
+                .errorMessage(errorKey.getErrorMessage())
+                .build();
+    }
 }

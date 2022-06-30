@@ -1,55 +1,65 @@
 package ai.classifai.core.dto;
 
+import ai.classifai.core.enumeration.ProjectInfra;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.*;
+
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @NonNull
 public class ProjectDTO {
-    @JsonProperty("project_name")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String projectName;
-
     @JsonProperty("project_id")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(Include.NON_NULL)
     String projectId;
 
-    @JsonProperty("project_path")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    String projectPath;
-
     @JsonProperty("annotation_type")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(Include.NON_NULL)
     Integer annotationType;
 
     @JsonProperty("label_list")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(Include.NON_NULL)
     List<String> labelList;
 
+    @JsonProperty("project_name")
+    String projectName;
+
+    @JsonProperty("project_path")
+    String projectPath;
+
+    @JsonProperty("is_new")
+    Boolean isNewParam;
+
+    @JsonProperty("is_starred")
+    Boolean isStarredParam;
+
+    @JsonProperty("is_loaded")
+    Boolean isLoadedParam;
+
+    @JsonProperty("is_cloud")
+    Boolean isCloud;
+
     @JsonProperty("project_infra")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    Integer projectInfra;
+    ProjectInfra projectInfraParam;
 
-    // extra video parameters
-//    String videoFilePath;
-//
-//    String videoDuration;
-//
-//    int videoLength;
-//
-//    int extractedFrameIndex;
-//
-//    int framePerSecond;
+    @JsonProperty("created_date")
+    String createdDateParam;
 
-    // extra tabular parameters
-//    String tabularFilePath;
+    @JsonProperty("last_modified_date")
+    String lastModifiedDate;
 
-    // extra audio parameters
-//    String audioFilePath;
+    @JsonProperty("current_version")
+    String currentVersionParam;
+
+    @JsonProperty("total_uuid")
+    int totalUuidParam;
+
+    @JsonProperty("root_path_valid")
+    Boolean isRootPathValidParam;
 }

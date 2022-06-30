@@ -1,6 +1,9 @@
 package ai.classifai.backend.repository.query;
 
+import ai.classifai.core.loader.ProjectLoader;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -36,6 +39,12 @@ public class QueryOps {
                     }
                 });
         return promise.future();
+    }
+
+    public void runQuery(ProjectLoader loader, String query, Tuple params, JDBCPool pool,Handler<AsyncResult<RowSet<Row>>> handler){
+        pool.preparedQuery(query)
+                .execute(params)
+                .onComplete(handler);
     }
 
 }

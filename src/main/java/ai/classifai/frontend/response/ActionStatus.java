@@ -20,6 +20,8 @@ public interface ActionStatus {
     static ActionStatus failedWithMessage(String msg){
         return new ActionFailed(msg);
     }
+
+    static ActionStatus nullProjectResponse() { return new NullProjectResponse(); }
 }
 
 @Data
@@ -46,4 +48,9 @@ class ActionFailed implements ActionStatus {
     private final int message = 0;
     private final int errorCode = 1;
     private final String errorMessage;
+}
+
+class NullProjectResponse implements ActionStatus {
+    private final int message = 0;
+    private final String errorMessage = "Project not exist";
 }

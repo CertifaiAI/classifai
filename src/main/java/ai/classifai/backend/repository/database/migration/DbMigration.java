@@ -15,15 +15,15 @@
  */
 package ai.classifai.backend.repository.database.migration;
 
-import ai.classifai.backend.repository.database.DbConfig;
-import ai.classifai.backend.repository.database.type.RelationalDb;
+import ai.classifai.core.utility.DbConfig;
+import ai.classifai.core.utility.type.RelationalDb;
 import ai.classifai.backend.repository.query.AnnotationQuery;
 import ai.classifai.backend.repository.query.PortfolioDbQuery;
-import ai.classifai.backend.utility.handler.ConversionHandler;
-import ai.classifai.backend.utility.handler.FileHandler;
-import ai.classifai.backend.utility.ParamConfig;
-import ai.classifai.backend.utility.UuidGenerator;
-import ai.classifai.backend.utility.datetime.DateTime;
+import ai.classifai.core.utility.handler.ConversionHandler;
+import ai.classifai.core.utility.handler.FileHandler;
+import ai.classifai.core.utility.ParamConfig;
+import ai.classifai.core.utility.UuidGenerator;
+import ai.classifai.core.utility.datetime.DateTime;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -102,9 +102,10 @@ public class DbMigration
         }
 
         //Create h2 tables
-//        createH2(h2ConnDict.get(DbConfig.getPortfolioKey()), PortfolioDbQuery.getCreatePortfolioTable());
-//        createH2(h2ConnDict.get(DbConfig.getBndBoxKey()), BoundingBoxDbQuery.getCreateProject());
-//        createH2(h2ConnDict.get(DbConfig.getSegKey()), SegDbQuery.getCreateProject());
+        createH2(h2ConnDict.get(DbConfig.getPortfolioKey()), PortfolioDbQuery.getCreatePortfolioTable());
+        createH2(h2ConnDict.get(DbConfig.getAnnotationKey()), AnnotationQuery.getCreateImageProject());
+        createH2(h2ConnDict.get(DbConfig.getAnnotationKey()), AnnotationQuery.getCreateVideoProject());
+        createH2(h2ConnDict.get(DbConfig.getAnnotationKey()), AnnotationQuery.getCreateAudioProject());
 
         //read Json file to H2
         json2H2();
@@ -266,7 +267,7 @@ public class DbMigration
             {
                 JSONArray arr = new JSONArray();
 
-                String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getRetrieveAllProjects() : AnnotationQuery.getRetrieveAllProjects();
+                String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getRetrieveAllProjects() : AnnotationQuery.getRetrieveAllImageProjects();
 
                 ResultSet rs = st.executeQuery(query);
 
@@ -335,7 +336,7 @@ public class DbMigration
             Connection con = entry.getValue();
 
             File file = new File(tempJsonDict.get(key));
-            String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getCreateNewProject() : AnnotationQuery.getCreateData();
+            String query = key.equals(DbConfig.getPortfolioKey()) ? PortfolioDbQuery.getCreateNewProject() : AnnotationQuery.getCreateImageData();
 
             try
             (

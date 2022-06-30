@@ -15,7 +15,7 @@
  */
 package ai.classifai.backend.repository.database.migration;
 
-import ai.classifai.backend.repository.database.DbConfig;
+import ai.classifai.core.utility.DbConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 

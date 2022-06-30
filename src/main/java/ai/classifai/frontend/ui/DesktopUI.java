@@ -1,17 +1,17 @@
 package ai.classifai.frontend.ui;
 
-import ai.classifai.backend.status.FileSystemStatus;
-import ai.classifai.backend.status.SelectionWindowStatus;
-import ai.classifai.backend.utility.action.ProjectImport;
+import ai.classifai.core.status.FileSystemStatus;
+import ai.classifai.core.status.SelectionWindowStatus;
+import ai.classifai.core.utility.ProjectImport;
+import ai.classifai.core.service.NativeUI;
 import ai.classifai.frontend.ui.component.LookFeelSetter;
-import ai.classifai.frontend.ui.enums.RunningStatus;
+import ai.classifai.core.enumeration.RunningStatus;
+import ai.classifai.frontend.ui.launcher.ConverterLauncher;
 import ai.classifai.frontend.ui.launcher.WelcomeLauncher;
-import ai.classifai.frontend.ui.launcher.conversion.ConverterLauncher;
 import ai.classifai.frontend.ui.selector.project.LabelFileSelector;
 import ai.classifai.frontend.ui.selector.project.ProjectFolderSelector;
 import ai.classifai.frontend.ui.selector.project.ProjectImportSelector;
 import ai.classifai.frontend.ui.selector.project.TabularFileSelector;
-import ai.classifai.frontend.ui.utils.UIResources;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;

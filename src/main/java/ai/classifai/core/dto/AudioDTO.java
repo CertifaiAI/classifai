@@ -1,6 +1,6 @@
 package ai.classifai.core.dto;
 
-import ai.classifai.core.properties.AudioRegionsProperties;
+import ai.classifai.core.properties.audio.AudioRegionsProperties;
 import io.vertx.sqlclient.Tuple;
 import lombok.Builder;
 import lombok.Data;

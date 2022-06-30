@@ -1,8 +1,9 @@
 package ai.classifai.frontend.ui;
 
-import ai.classifai.backend.status.FileSystemStatus;
-import ai.classifai.backend.status.SelectionWindowStatus;
-import ai.classifai.frontend.ui.enums.RunningStatus;
+import ai.classifai.core.status.FileSystemStatus;
+import ai.classifai.core.status.SelectionWindowStatus;
+import ai.classifai.core.service.NativeUI;
+import ai.classifai.core.enumeration.RunningStatus;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
