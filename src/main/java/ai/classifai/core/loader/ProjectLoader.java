@@ -45,6 +45,7 @@ public class ProjectLoader
     private File projectPath;
     private ProjectInfra projectInfra;
     private ProjectLoaderStatus projectLoaderStatus;
+    @Builder.Default private File projectFilePath = new File("");
 
     private Integer extractedFrameIndex;
     private Boolean isVideoExtractionComplete;
@@ -159,7 +160,6 @@ public class ProjectLoader
                 uuidListFromDb.addAll(fileSysNewUuidList);
 
                 projectVersion.setCurrentVersionUuidList(fileSysNewUuidList);
-                log.info("set uuid list: " + projectVersion.getUuidListDict());
                 projectVersion.setCurrentVersionLabelList(labelList);
 
                 fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
@@ -218,8 +218,6 @@ public class ProjectLoader
         {
             sanityUuidList.removeAll(dbListBuffer);
             reloadDeletionList = dbListBuffer;
-
-//            portfolioDB.updateFileSystemUuidList(projectId);
             fileSystemStatus = FileSystemStatus.DATABASE_UPDATED;
         }
     }

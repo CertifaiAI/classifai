@@ -29,4 +29,14 @@ public interface NativeUI {
     SelectionWindowStatus getTabularFileSelectorWindowStatus();
     String getTabularFileSelectedPath();
 
+    void showAudioFileSelector();
+    boolean isAudioFileSelectorOpen();
+    SelectionWindowStatus getAudioFileSelectorWindowStatus();
+    String getAudioFileSelectedPath();
+
+    void showVideoFileSelector();
+    boolean isVideoFileSelectorOpen();
+    SelectionWindowStatus getVideoFileSelectorWindowStatus();
+    String getVideoFileSelectedPath();
+
 }

@@ -1,5 +1,7 @@
 package ai.classifai.core.data.handler;
 
+import ai.classifai.core.dto.AudioDTO;
+import ai.classifai.core.loader.ProjectLoader;
 import com.github.marc7806.wrapper.AWFBit;
 import com.github.marc7806.wrapper.AWFCommand;
 import com.github.marc7806.wrapper.BBCAudioWaveform;
@@ -18,19 +20,21 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class AudioHandler {
-    private static float audioDuration = 0;
-    private static List<Integer> waveFormPeaks = new ArrayList<>();
-    private static List<Double> timeStampList = new ArrayList<>();
+    private float audioDuration = 0f;
+    private float frameRate = 0;
+    private int frameSize = 0;
+    private int channel = 0;
+    private float sampleRate = 0;
+    private int sampleSizeInBits = 0;
+    private List<Double> timeStampList;
 
-    public static void generateWaveFormPeaks(String filePath) throws IOException, UnsupportedAudioFileException {
-        String audioWaveFormExecutable = "/executable/audiowaveform.exe";
+    public List<Integer> generateWaveFormPeaks(String filePath) throws IOException, UnsupportedAudioFileException {
+        String audioWaveFormExecutable = getAudioWaveformExecutable();
         File audioFile = new File(filePath);
         String outputFileString = audioFile.getParent() + File.separator + FilenameUtils.getBaseName(audioFile.getName()) + ".json";
         File outputFile = new File(outputFileString);
@@ -42,47 +46,58 @@ public class AudioHandler {
                 .setBits(AWFBit.EIGHT)
                 .build();
 
-        if (bbcAudioWaveform.run(command)) {
+        if (bbcAudioWaveform.run(command))
+        {
            log.info("audio metadata json file generated");
-        } else {
+        }
+        else
+        {
             log.info("Fail to execute waveform peaks decoding");
         }
 
-        if (outputFile.exists()) {
+        if (outputFile.exists())
+        {
             getAudioDuration(new File(filePath));
-            getWaveFormPeaks(outputFile);
+            return getWaveFormPeaks(outputFile);
+        }
+        else
+        {
+            throw new IllegalStateException("Fail to generated wave form peaks");
         }
     }
 
-    private static void getWaveFormPeaks(File outputFile) throws IOException {
+    private String getAudioWaveformExecutable() {
+        return Objects.requireNonNull(AudioHandler.class.getResource("/executable/audiowaveform.exe")).getPath();
+    }
+
+    private List<Integer> getWaveFormPeaks(File outputFile) throws IOException {
         FileReader fileReader = new FileReader(outputFile);
         JsonObject jsonObject = new JsonObject(IOUtils.toString(fileReader));
         String dataListString = jsonObject.getString("data");
         String modifyDataListString = StringUtils.removeStart(StringUtils.removeEnd(dataListString, "]"), "[");
         List<String> arr = Arrays.asList(modifyDataListString.split(","));
-
-        waveFormPeaks = arr.stream().map(String::strip).map(Integer::parseInt).collect(Collectors.toList());
         timeStampList = generateListOfTimeStamp(arr.size());
+        return arr.stream().map(String::strip).map(Integer::parseInt).collect(Collectors.toList());
     }
 
-    private static void getAudioDuration(File file) throws IOException, UnsupportedAudioFileException {
+    public List<Double> getTimeStamp() {
+        return this.timeStampList;
+    }
+
+    private void getAudioDuration(File file) throws IOException, UnsupportedAudioFileException {
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
         AudioFormat format = audioInputStream.getFormat();
 
         long audioFileLength = file.length();
-        int frameSize = format.getFrameSize();
-        float frameRate = format.getFrameRate();
-        float audioDuration = audioFileLength / (frameSize * frameRate);
-
-        log.info(String.valueOf(format.getFrameSize()));
-        log.info(String.valueOf(format.getChannels()));
-        log.info(String.valueOf(format.getFrameRate()));
-        log.info(String.valueOf(format.getSampleSizeInBits()));
-        log.info(String.valueOf(format.getSampleRate()));
-        log.info(String.valueOf(format.getEncoding()));
+        this.frameSize = format.getFrameSize();
+        this.frameRate = format.getFrameRate();
+        this.audioDuration = audioFileLength / (frameSize * frameRate);
+        this.sampleRate = format.getSampleRate();
+        this.sampleSizeInBits = format.getSampleSizeInBits();
+        this.channel = format.getChannels();
     }
 
-    private static List<Double> generateListOfTimeStamp(Integer dataPointLength) {
+    private List<Double> generateListOfTimeStamp(Integer dataPointLength) {
         double timeGap = roundNumber(audioDuration / dataPointLength);
         double currentTime = roundNumber(0.00000);
         List<Double> timeStampList = new ArrayList<>();
@@ -104,9 +119,17 @@ public class AudioHandler {
         return new BigDecimal(value).setScale(5, RoundingMode.UP).doubleValue();
     }
 
-//    public static void saveWaveFormPeaksToDataBase(ProjectLoader loader, AnnotationDB annotationDB, File audioFilePath) {
-//        for(int i = 0; i < timeStampList.size(); i++) {
-//            annotationDB.saveWavePeaksData(loader, timeStampList.get(i), waveFormPeaks.get(i), audioFilePath.getName(), i);
-//        }
-//    }
+    public AudioDTO toDTO(ProjectLoader loader) {
+        return AudioDTO.builder()
+                .projectId(loader.getProjectId())
+                .audioPath(loader.getProjectFilePath().toString())
+                .audioDuration(audioDuration)
+                .frameRate(frameRate)
+                .frameSize(frameSize)
+                .channel(channel)
+                .sampleRate(sampleRate)
+                .sampleSizeInBit(sampleSizeInBits)
+                .audioRegionsPropertiesList(Collections.emptyList())
+                .build();
+    }
 }

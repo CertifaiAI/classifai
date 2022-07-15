@@ -1,3 +1,3 @@
-call mvn clean install
+call mvn clean install -DskipTests
 
 call mvn compile exec:java

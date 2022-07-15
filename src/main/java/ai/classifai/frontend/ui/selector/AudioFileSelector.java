@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2021 CertifAI Sdn. Bhd.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- */
 package ai.classifai.frontend.ui.selector;
 
 import ai.classifai.core.status.SelectionWindowStatus;
@@ -27,20 +12,19 @@ import java.awt.*;
 import java.io.File;
 
 @Slf4j
-public class TabularFileSelector extends SelectionWindow
-{
-    private static final FileNameExtensionFilter TABULAR_FILE_FILTER = new FileNameExtensionFilter(
-            "Tabular Files", "csv", "xlsx");
+public class AudioFileSelector extends SelectionWindow {
+    private static final FileNameExtensionFilter AUDIO_FILE_FILTER = new FileNameExtensionFilter(
+            "Tabular Files", "mp3", "wav");
 
-    @Setter private File tabularFile = null;
+    @Setter private File audioFile = null;
 
-    public TabularFileSelector(DesktopUI ui) {
+    public AudioFileSelector(DesktopUI ui) {
         super(ui);
     }
 
-    public String getTabularFilePath()
+    public String getAudioFilePath()
     {
-        return (tabularFile != null) ? tabularFile.getAbsolutePath() : "";
+        return (audioFile != null) ? audioFile.getAbsolutePath() : "";
     }
 
     public void run()
@@ -53,12 +37,12 @@ public class TabularFileSelector extends SelectionWindow
                 {
                     windowStatus = SelectionWindowStatus.WINDOW_OPEN;
 
-                    tabularFile = null;
+                    audioFile = null;
 
                     JFrame frame = ui.getFrameAtMousePointer();
-                    String title = "Select Label File (*.csv, *.xlsx)";
+                    String title = "Select Label File (*.mp3, *.wav)";
                     JFileChooser chooser = initChooser(JFileChooser.FILES_ONLY, title);
-                    chooser.setFileFilter(TABULAR_FILE_FILTER);
+                    chooser.setFileFilter(AUDIO_FILE_FILTER);
 
                     //Important: prevent Welcome Console from popping out
                     ui.ensureWelcomeLauncherStaysInBackground();
@@ -68,7 +52,7 @@ public class TabularFileSelector extends SelectionWindow
 
                     if (res == JFileChooser.APPROVE_OPTION)
                     {
-                        tabularFile = chooser.getSelectedFile();
+                        audioFile = chooser.getSelectedFile();
                     }
                     else
                     {
@@ -90,4 +74,3 @@ public class TabularFileSelector extends SelectionWindow
     }
 
 }
-

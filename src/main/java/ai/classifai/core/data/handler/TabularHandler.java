@@ -1,5 +1,6 @@
 package ai.classifai.core.data.handler;
 
+import ai.classifai.backend.repository.query.TabularAnnotationQuery;
 import ai.classifai.core.data.type.tabular.CsvData;
 import ai.classifai.core.data.type.tabular.ExcelData;
 import ai.classifai.core.data.type.tabular.TabularQueryGen;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,45 +33,48 @@ import java.util.regex.Pattern;
 public class TabularHandler {
     private final TabularQueryGen tabularQueryGen = new TabularQueryGen();
     private final TabularUtils tabularUtils = new TabularUtils();
-    private List<String[]> data;
     private List<String> headerNames;
-
-    @Getter
     private Map<String, String> headers;
     @Getter
-    private Integer columnNumbers = 0;
-
+    private List<String[]> data;
 
     public void parseFile(ProjectDTO projectDTO) throws IOException, CsvException {
-        String filePath = projectDTO.getProjectPath();
+        String filePath = projectDTO.getProjectFilePath();
         String fileType = FilenameUtils.getExtension(filePath);
 
-        if (fileType.equals("csv")) {
+        if (fileType.equals("csv"))
+        {
             CsvData csvData = new CsvData();
             data = csvData.readCsvFile(filePath);
             headerNames = csvData.getHeaderNames();
         }
 
-        else if (fileType.equals("xlsx")) {
+        else if (fileType.equals("xlsx"))
+        {
             ExcelData excelData = new ExcelData();
             data = excelData.readExcelFile(filePath, fileType);
             headerNames = excelData.getHeaderNames();
         }
 
-        else if (fileType.equals("xls")) {
+        else if (fileType.equals("xls"))
+        {
             ExcelData excelData = new ExcelData();
             data = excelData.readExcelFile(filePath, fileType);
             headerNames = excelData.getHeaderNames();
         }
 
-        else {
+        else
+        {
             throw new IllegalArgumentException("File type not supported. Only support csv, xlsx and xls.");
         }
 
         headers = tabularQueryGen.extractHeaders(data, headerNames);
+        int columnNumbers = headers.size() + 5;
+        TabularAnnotationQuery.createProjectTablePreparedStatement(headers, projectDTO.getProjectName());
+        TabularAnnotationQuery.createDataPreparedStatement(projectDTO.getProjectName(), columnNumbers);
     }
 
-    private String[] ensureCorrectTypeInList(String[] rowsData) {
+    public String[] ensureCorrectTypeInList(String[] rowsData) {
         String[] data = new String[rowsData.length];
         for(int i = 0; i < rowsData.length; i++) {
             data[i] = tabularUtils.typeCheckingPushedData(rowsData[i], i, headerNames, headers);
@@ -77,24 +82,8 @@ public class TabularHandler {
         return data;
     }
 
-//    public void saveToTabularProjectTable(@NonNull ProjectDTO projectDTO, @NonNull List<String[]> data)
-//    {
-//        TabularAnnotationQuery.createDataPreparedStatement(projectDTO.getProjectName(), columnNumbers);
-//        loader.resetFileSysProgress(FileSystemStatus.DATABASE_UPDATING);
-//        loader.setFileSysTotalUUIDSize(data.size() - 1);
-//
-//        for (int i = 1; i < data.size(); i++) {
-//            String dataSubPath = FilenameUtils.getName(projectDTO.getProjectPath());
-//            annotationDB.saveTabularData(loader, ensureCorrectTypeInList(data.get(i)), dataSubPath, i);
-//        }
-//    }
-
-//    private void createTabularProjectTable(ProjectLoader loader) {
-//        annotationDB.createTabularProjectTable(loader);
-//    }
-
     public String getColumnNames() {
-        return StringUtils.join(headerNames, ',');
+        return String.join(", ", headerNames.toArray(new String[0]));
     }
 
     public String getAttributeTypesJsonString() {

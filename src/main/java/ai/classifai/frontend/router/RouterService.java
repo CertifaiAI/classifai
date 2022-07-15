@@ -9,8 +9,7 @@ import ai.classifai.core.properties.image.ImageDTO;
 import ai.classifai.core.properties.tabular.TabularProperties;
 import ai.classifai.core.properties.video.VideoProperties;
 import ai.classifai.core.service.NativeUI;
-import ai.classifai.core.service.annotation.AnnotationService;
-import ai.classifai.core.service.annotation.ImageAnnotationService;
+import ai.classifai.core.service.annotation.*;
 import ai.classifai.core.service.project.ProjectDataService;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.core.utility.ParamConfig;
@@ -31,9 +30,9 @@ import java.util.Set;
 public class RouterService extends AbstractVerticle {
     private final ProjectService projectService;
     private final ImageAnnotationService<ImageDTO, ThumbnailProperties> imageService;
-    private final AnnotationService<VideoDTO, VideoProperties> videoService;
-    private final AnnotationService<AudioDTO, AudioProperties> audioService;
-    private final AnnotationService<TabularDTO, TabularProperties> tabularService;
+    private final VideoAnnotationService<VideoDTO, VideoProperties> videoService;
+    private final AudioAnnotationService<AudioDTO, AudioProperties> audioService;
+    private final TabularAnnotationService<TabularDTO, TabularProperties> tabularService;
     private final ProjectDataService projectDataService;
     private final ProjectHandler projectHandler;
     private final NativeUI ui;
@@ -46,9 +45,9 @@ public class RouterService extends AbstractVerticle {
     public RouterService(
             ProjectService projectService,
             ImageAnnotationService<ImageDTO, ThumbnailProperties> imageService,
-            AnnotationService<VideoDTO, VideoProperties> videoService,
-            AnnotationService<AudioDTO, AudioProperties> audioService,
-            AnnotationService<TabularDTO, TabularProperties> tabularService,
+            VideoAnnotationService<VideoDTO, VideoProperties> videoService,
+            AudioAnnotationService<AudioDTO, AudioProperties> audioService,
+            TabularAnnotationService<TabularDTO, TabularProperties> tabularService,
             ProjectDataService projectDataService,
             ProjectHandler projectHandler,
             NativeUI ui

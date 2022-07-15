@@ -33,4 +33,12 @@ public class SelectionStatusResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     String tabularFilePath;
 
+    @JsonProperty("audio_file_path")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    String audioFilePath;
+
+    @JsonProperty("video_file_path")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    String videoFilePath;
+
 }

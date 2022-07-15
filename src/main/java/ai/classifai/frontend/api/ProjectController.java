@@ -11,9 +11,7 @@ import ai.classifai.core.service.project.ProjectDataService;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.core.status.FileSystemStatus;
 import ai.classifai.core.status.SelectionWindowStatus;
-import ai.classifai.core.utility.datetime.DateTime;
 import ai.classifai.core.utility.handler.ReplyHandler;
-import ai.classifai.core.versioning.Version;
 import ai.classifai.frontend.request.CreateProjectBody;
 import ai.classifai.frontend.request.LabelListBody;
 import ai.classifai.frontend.request.ProjectStatusBody;
@@ -80,7 +78,7 @@ public class ProjectController {
         catch(Exception e)
         {
             String errorMessage = "Parameter of status with " + NewProjectStatus.getParamList() + " is compulsory in request body";
-
+            log.info("error: " + e);
             promise.complete(ActionStatus.failedWithMessage(errorMessage));
         }
 
@@ -89,11 +87,12 @@ public class ProjectController {
 
     private Future<ActionStatus> createRawProject(CreateProjectBody createProjectBody) {
         Promise<ActionStatus> promise = Promise.promise();
-
         List<String> labelList = new LabelListImport(new File(createProjectBody.getLabelFilePath())).getValidLabelList();
+
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .projectName(createProjectBody.getProjectName())
                 .projectPath(createProjectBody.getProjectPath())
+                .projectFilePath(createProjectBody.getProjectFilePath())
                 .annotationType(AnnotationType.get(createProjectBody.getAnnotationType()).ordinal())
                 .labelList(labelList)
                 .build();
@@ -187,7 +186,7 @@ public class ProjectController {
         }
 
         return projectService.getProjectById(loader)
-                .map(res -> ActionStatus.okWithResponse(res.get()))
+                .map(res -> ActionStatus.okWithResponse(res.orElseThrow()))
                 .otherwise(cause -> ActionStatus.failedWithMessage("Failed to retrieve project meta data for " + projectName));
     }
 
@@ -253,7 +252,6 @@ public class ProjectController {
     public LoadingStatusResponse loadProjectStatus(@PathParam("annotation_type") String annotationType,
                                                    @PathParam("project_name") String projectName)
     {
-        log.info("loading status");
         AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
         ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
 
@@ -265,7 +263,6 @@ public class ProjectController {
         }
 
         ProjectLoaderStatus projectLoaderStatus = loader.getProjectLoaderStatus();
-        log.info("status: " + projectLoaderStatus.name());
 
         if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADING)) {
             return LoadingStatusResponse.builder()
@@ -424,6 +421,70 @@ public class ProjectController {
         if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
         {
             response.setTabularFilePath(ui.getTabularFileSelectedPath());
+        }
+
+        return response;
+    }
+
+    @PUT
+    @Path("/v2/audiofile")
+    public ActionStatus selectAudioFile()
+    {
+        if(!ui.isAudioFileSelectorOpen())
+        {
+            ui.showAudioFileSelector();
+        }
+
+        return ActionStatus.ok();
+    }
+
+    @GET
+    @Path("/v2/audiofile")
+    public SelectionStatusResponse selectAudioFileStatus()
+    {
+        SelectionWindowStatus status = ui.getAudioFileSelectorWindowStatus();
+
+        SelectionStatusResponse response = SelectionStatusResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .windowStatus(status.ordinal())
+                .windowMessage(status.name())
+                .build();
+
+        if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
+        {
+            response.setAudioFilePath(ui.getAudioFileSelectedPath());
+        }
+
+        return response;
+    }
+
+    @PUT
+    @Path("/v2/videofile")
+    public ActionStatus selectVideoFile()
+    {
+        if(!ui.isVideoFileSelectorOpen())
+        {
+            ui.showVideoFileSelector();
+        }
+
+        return ActionStatus.ok();
+    }
+
+    @GET
+    @Path("/v2/videofile")
+    public SelectionStatusResponse selectVideoFileStatus()
+    {
+        SelectionWindowStatus status = ui.getVideoFileSelectorWindowStatus();
+
+        SelectionStatusResponse response = SelectionStatusResponse.builder()
+                .message(ReplyHandler.SUCCESSFUL)
+                .windowStatus(status.ordinal())
+                .windowMessage(status.name())
+                .build();
+
+        if(status.equals(SelectionWindowStatus.WINDOW_CLOSE))
+        {
+            response.setVideoFilePath(ui.getVideoFileSelectedPath());
         }
 
         return response;

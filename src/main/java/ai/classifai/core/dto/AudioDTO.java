@@ -10,7 +10,11 @@ import java.util.List;
 @Data
 @Builder
 public class AudioDTO {
-    String projectName;
+    String uuid;
+
+    String projectId;
+
+    String audioPath;
 
     Float audioDuration;
 
@@ -20,7 +24,7 @@ public class AudioDTO {
 
     Integer channel;
 
-    Integer sampleRate;
+    Float sampleRate;
 
     Integer sampleSizeInBit;
 
@@ -28,7 +32,9 @@ public class AudioDTO {
 
     public Tuple getTuple() {
         return Tuple.of(
-                projectName,
+                uuid,
+                projectId,
+                audioPath,
                 audioDuration,
                 frameSize,
                 frameRate,

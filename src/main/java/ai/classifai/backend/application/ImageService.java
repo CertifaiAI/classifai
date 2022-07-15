@@ -12,7 +12,6 @@ import ai.classifai.core.properties.image.DataInfoProperties;
 import ai.classifai.core.properties.image.ImageDTO;
 import ai.classifai.core.service.annotation.ImageAnnotationService;
 import ai.classifai.core.service.annotation.ImageDataRepository;
-import ai.classifai.core.service.project.ProjectLoadService;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.core.status.FileSystemStatus;
 import ai.classifai.core.utility.datetime.DateTime;
@@ -22,7 +21,6 @@ import ai.classifai.frontend.request.ThumbnailProperties;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.sqlclient.Tuple;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -38,15 +36,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailProperties> {
 
-    private final ImageDataRepository<ImageEntity, ImageDTO> annotationRepository;
+    private final ImageDataRepository<ImageEntity, ImageDTO> imageDataRepository;
     private final ProjectService projectService;
     private final ProjectHandler projectHandler;
 
-    public ImageService(ImageDataRepository<ImageEntity, ImageDTO> annotationRepository,
+    public ImageService(ImageDataRepository<ImageEntity, ImageDTO> imageDataRepository,
                         ProjectService projectService,
-                        ProjectLoadService projectLoadService,
                         ProjectHandler projectHandler) {
-        this.annotationRepository = annotationRepository;
+        this.imageDataRepository = imageDataRepository;
         this.projectService = projectService;
         this.projectHandler = projectHandler;
     }
@@ -56,7 +53,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
         AnnotationType type = AnnotationType.get(projectDTO.getAnnotationType());
         ProjectLoader projectLoader = projectHandler.getProjectLoader(projectDTO.getProjectName(), type);
 
-        return annotationRepository.createAnnotationProject()
+        return imageDataRepository.createAnnotationProject()
                 .compose(res -> {
                     List<String> validImages = ImageHandler.getValidImagesFromFolder(new File(projectDTO.getProjectPath()));
                     List<Future> futures = new ArrayList<>();
@@ -78,7 +75,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
                         {
                             ImageDTO imageDTO = ImageHandler.getAnnotation(new File(imagePath), projectDTO.getProjectId());
                             imageDTO.setAnnotationDict(ProjectParser.buildAnnotationDict(projectLoader));
-                            futures.add(annotationRepository.saveFilesMetaData(imageDTO));
+                            futures.add(imageDataRepository.saveFilesMetaData(imageDTO));
                             projectLoader.getUuidAnnotationDict().put(imageDTO.getUuid(), imageDTO);
                             projectLoader.pushFileSysNewUUIDList(imageDTO.getUuid());
                             projectLoader.updateLoadingProgress(currentIndex);
@@ -101,13 +98,13 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
 
     @Override
     public Future<ImageDTO> createAnnotation(ImageDTO boundingBoxDTO) throws Exception {
-        return annotationRepository.createAnnotation(boundingBoxDTO)
+        return imageDataRepository.createAnnotation(boundingBoxDTO)
                 .map(ImageEntity::toDto);
     }
 
     @Override
     public Future<List<ImageDTO>> listAnnotations(String projectName) {
-        return annotationRepository.listAnnotation(projectName)
+        return imageDataRepository.listAnnotation(projectName)
                 .map(res -> res.stream().map(ImageEntity::toDto).collect(Collectors.toList()));
     }
 
@@ -122,7 +119,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
 
     @Override
     public Future<Void> updateAnnotation(@NonNull ImageDTO imageDTO, @NonNull ProjectLoader loader) {
-        return annotationRepository.updateAnnotation(imageDTO)
+        return imageDataRepository.updateAnnotation(imageDTO)
                 .map(res -> {
                     Version version = loader.getProjectVersion().getCurrentVersion();
                     version.setLastModifiedDate(new DateTime());
@@ -135,7 +132,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
 
     @Override
     public Future<Void> deleteData(@NonNull String projectName, @NonNull String uuid) {
-        return annotationRepository.deleteData(projectName, uuid)
+        return imageDataRepository.deleteData(projectName, uuid)
                 .map(DBUtils::toVoid);
     }
 
@@ -143,7 +140,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
     public Future<Void> deleteProjectById(@NonNull ProjectDTO projectDTO) {
         AnnotationType type = AnnotationType.get(projectDTO.getAnnotationType());
         ProjectLoader loader = projectHandler.getProjectLoader(projectDTO.getProjectName(), type);
-        return annotationRepository.deleteProjectById(loader.getProjectId())
+        return imageDataRepository.deleteProjectById(loader.getProjectId())
                 .map(DBUtils::toVoid);
     }
 
@@ -151,7 +148,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
     public Future<ProjectLoaderStatus> loadProject(ProjectLoader projectLoader) {
         Promise<ProjectLoaderStatus> promise = Promise.promise();
 
-        annotationRepository.loadAnnotationProject(projectLoader)
+        imageDataRepository.loadAnnotationProject(projectLoader)
                 .onComplete(res -> {
                     if (res.succeeded()) {
                         if (projectLoader.getIsProjectNew()) {
@@ -172,7 +169,7 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
 
     @Override
     public Future<String> renameData(@NonNull ProjectLoader loader, String uuid, String newFilename) {
-        return annotationRepository.renameData(loader, uuid, newFilename);
+        return imageDataRepository.renameData(loader, uuid, newFilename);
     }
 
     @Override
@@ -213,15 +210,15 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
 
     @Override
     public Future<ThumbnailProperties> getThumbnail(@NonNull ProjectLoader projectLoader, @NonNull String uuid) {
-        return annotationRepository.getThumbnail(projectLoader, uuid);
+        return imageDataRepository.getThumbnail(projectLoader, uuid);
     }
 
     @Override
     public Future<String> getImageSource(@NonNull ProjectLoader projectLoader, @NonNull String uuid) {
-        return annotationRepository.getImageSource(projectLoader, uuid);
+        return imageDataRepository.getImageSource(projectLoader, uuid);
     }
 
-    private static boolean loadProjectRootPath(@NonNull ProjectLoader loader, @NonNull List<String> dataFullPathList)
+    private boolean loadProjectRootPath(@NonNull ProjectLoader loader, @NonNull List<String> dataFullPathList)
     {
         if(loader.getIsProjectNew())
         {
@@ -260,15 +257,11 @@ public class ImageService implements ImageAnnotationService<ImageDTO, ThumbnailP
         loader.setFileSysTotalUUIDSize(dataFullPathList.size());
 
         //scenario 3 - 5
-//        if(loader.getIsProjectNew())
-//        {
-//            saveToProjectTable(annotationDB, loader, dataFullPathList);
-//        }
-//        else // when refreshing project folder
+//        if(!loader.getIsProjectNew())
 //        {
 //            for (int i = 0; i < dataFullPathList.size(); ++i)
 //            {
-//                annotationDB.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
+//                imageDataRepository.createUuidIfNotExist(loader, new File(dataFullPathList.get(i)), i + 1);
 //            }
 //        }
 

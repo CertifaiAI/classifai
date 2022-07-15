@@ -36,7 +36,7 @@ public class AnnotationQuery
 
     @Getter private static final String retrieveDataPathFromImageProject = "SELECT img_path FROM ImageProject WHERE uuid = ? AND project_id = ?";
 
-    @Getter private static final String loadValidProjectUuid = "SELECT img_path FROM ImageProject WHERE project_id = ? AND uuid = ?";
+    @Getter private static final String loadValidImageProjectUuid = "SELECT img_path FROM ImageProject WHERE project_id = ? AND uuid = ?";
 
     @Getter private static final String deleteImageProject = "DELETE FROM ImageProject WHERE project_id = ?";
 
@@ -79,12 +79,12 @@ public class AnnotationQuery
     @Getter private static final String createWaveFormTable = "CREATE TABLE IF NOT EXISTS AudioWaveFormPeaks (uuid UUID, project_id UUID, time_stamp DECIMAL, wave_peak INT, audio_path VARCHAR(2000)," +
             "PRIMARY KEY(uuid, project_id))";
 
-    @Getter private static final String createAudioProject = "CREATE TABLE IF NOT EXISTS AudioProject (uuid UUID, project_id UUID, audio_path VARCHAR(2000), regions_props CLOB," +
+    @Getter private static final String createAudioProject = "CREATE TABLE IF NOT EXISTS AudioProject (uuid UUID, project_id UUID, audio_path VARCHAR(2000), audio_duration FLOAT, frame_rate FLOAT, frame_size INT, channel INT, sample_rate FLOAT, bit INT, regions_props CLOB," +
             "PRIMARY KEY(uuid, project_id))";
 
-    @Getter private static final String retrieveAudioData = "SELECT regions_props FROM AudioProject WHERE project_id = ?";
+    @Getter private static final String retrieveAudioData = "SELECT * FROM AudioProject WHERE project_id = ?";
 
-    @Getter private static final String createAudioData = "INSERT INTO AudioProject VALUES (?, ?, ?, ?)";
+    @Getter private static final String createAudioData = "INSERT INTO AudioProject VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     @Getter private static final String updateAudioData = "UPDATE AudioProject SET regions_props = ? WHERE uuid = ? AND project_id = ?";
 

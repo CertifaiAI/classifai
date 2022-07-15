@@ -34,11 +34,11 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @Slf4j
-public class ImageRepoRepository implements ImageDataRepository<ImageEntity, ImageDTO> {
+public class ImageRepoService implements ImageDataRepository<ImageEntity, ImageDTO> {
     private final JDBCPool annotationPool;
     private final QueryOps queryOps = new QueryOps();
 
-    public ImageRepoRepository(JDBCPoolHolder jdbcHolder) {
+    public ImageRepoService(JDBCPoolHolder jdbcHolder) {
         this.annotationPool = jdbcHolder.getAnnotationPool();
     }
 
@@ -61,13 +61,14 @@ public class ImageRepoRepository implements ImageDataRepository<ImageEntity, Ima
     @Override
     public Future<Void> saveFilesMetaData(ImageDTO imageDTO) {
         Tuple params = Tuple.of(
+                imageDTO.getUuid(),
+                imageDTO.getProjectId(),
+                imageDTO.getImgPath(),
                 imageDTO.getAnnotationDictDbFormat(),
                 imageDTO.getImgDepth(),
                 imageDTO.getImgOriW(),
                 imageDTO.getImgOriH(),
-                imageDTO.getFileSize(),
-                imageDTO.getUuid(),
-                imageDTO.getProjectId()
+                imageDTO.getFileSize()
         );
 
         return queryOps.runQuery(AnnotationQuery.getCreateImageData(), params, annotationPool)
@@ -146,10 +147,13 @@ public class ImageRepoRepository implements ImageDataRepository<ImageEntity, Ima
             if (res.succeeded()) {
                 ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
 
-                if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED) || projectLoaderStatus.equals(ProjectLoaderStatus.LOADED))
+                if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED))
                 {
                     projectLoader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
                     promise.complete(ProjectLoaderStatus.LOADING);
+                }
+                else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
+                    promise.complete(ProjectLoaderStatus.LOADED);
                 }
                 else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
                 {
@@ -172,7 +176,6 @@ public class ImageRepoRepository implements ImageDataRepository<ImageEntity, Ima
 
     private Future<Void> loadProject(ProjectLoader loader) {
         Promise<Void> promise = Promise.promise();
-
         List<String> oriUUIDList = loader.getUuidListFromDb();
         loader.setDbOriUUIDSize(oriUUIDList.size());
 
@@ -181,7 +184,7 @@ public class ImageRepoRepository implements ImageDataRepository<ImageEntity, Ima
             final String UUID = oriUUIDList.get(i);
             Tuple params = Tuple.of(loader.getProjectId(), UUID);
 
-            queryOps.runQuery(AnnotationQuery.getLoadValidProjectUuid(), params, annotationPool)
+            queryOps.runQuery(AnnotationQuery.getLoadValidImageProjectUuid(), params, annotationPool)
                     .onComplete(DBUtils.handleResponse(
                             result -> {
                                 if(result.iterator().hasNext())
@@ -353,7 +356,6 @@ public class ImageRepoRepository implements ImageDataRepository<ImageEntity, Ima
                                 //remove uuid which is not readable
                                 loader.getSanityUuidList().remove(row.getString(0));
                             }
-
                         }
                     }
                 },
@@ -364,7 +366,7 @@ public class ImageRepoRepository implements ImageDataRepository<ImageEntity, Ima
 //    public Future<Void> exportProject(String projectId, int exportType) {
 //        Tuple params = Tuple.of(projectId);
 //        Promise<Void> promise = Promise.promise();
-//        queryOps.runQuery(PortfolioDbQuery.getExportProject(), params)
+//        queryOps.runQuery(PortfolioDbQuery.getExportProject(), params, annotationPool)
 //                .onComplete(DBUtils.handleResponse(
 //                        result -> {
 //                            // export project table relevant

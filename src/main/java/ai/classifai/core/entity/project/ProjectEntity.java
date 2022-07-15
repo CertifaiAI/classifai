@@ -14,6 +14,8 @@ public interface ProjectEntity {
 
     String getProjectPath();
 
+    String getProjectFilePath();
+
     ProjectInfra getProjectInfra();
 
     Boolean getIsRootPathValidParam();
@@ -43,6 +45,7 @@ public interface ProjectEntity {
                 .projectId(getProjectId())
                 .projectName(getProjectName())
                 .projectPath(getProjectPath())
+                .projectFilePath(getProjectFilePath())
                 .isCloud(getIsCloud())
                 .isNewParam(getIsProjectNew())
                 .isStarredParam(getIsProjectStarred())

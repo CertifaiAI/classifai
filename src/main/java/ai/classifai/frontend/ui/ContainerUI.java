@@ -120,4 +120,44 @@ public class ContainerUI implements NativeUI {
     public String getTabularFileSelectedPath() {
         return null;
     }
+
+    @Override
+    public void showAudioFileSelector() {
+
+    }
+
+    @Override
+    public boolean isAudioFileSelectorOpen() {
+        return false;
+    }
+
+    @Override
+    public SelectionWindowStatus getAudioFileSelectorWindowStatus() {
+        return null;
+    }
+
+    @Override
+    public String getAudioFileSelectedPath() {
+        return null;
+    }
+
+    @Override
+    public void showVideoFileSelector() {
+
+    }
+
+    @Override
+    public boolean isVideoFileSelectorOpen() {
+        return false;
+    }
+
+    @Override
+    public SelectionWindowStatus getVideoFileSelectorWindowStatus() {
+        return null;
+    }
+
+    @Override
+    public String getVideoFileSelectedPath() {
+        return null;
+    }
 }

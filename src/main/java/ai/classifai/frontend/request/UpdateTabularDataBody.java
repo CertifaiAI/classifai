@@ -8,6 +8,6 @@ public class UpdateTabularDataBody {
     @JsonProperty("uuid")
     String uuid;
 
-    @JsonProperty("tabular_label")
+    @JsonProperty("label")
     String label;
 }

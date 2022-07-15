@@ -47,7 +47,7 @@ public class ProjectRepoService implements ProjectRepository {
     public Future<Project> createProject(@NonNull ProjectDTO projectDTO) {
         ProjectLoader loader = projectHandler.getProjectLoader(projectDTO.getProjectId());
         Tuple params = buildNewProject(loader);
-        log.info(params.toString());
+
         return queryOps.runQuery(PortfolioDbQuery.getCreateNewProject(), params, portfolioPool)
                 .map(response -> {
                     log.info("Project " + projectDTO.getProjectName() + " created");
@@ -120,13 +120,14 @@ public class ProjectRepoService implements ProjectRepository {
                 .projectName(row.getString(1))
                 .annotationType(row.getInteger(2))
                 .projectPath(row.getString(3))
-                .isNew(row.getBoolean(4))
-                .isStarred(row.getBoolean(5))
-                .projectInfra(row.getString(6))
-                .currentVersion(row.getString(7))
-                .versionList(row.getString(8))
-                .uuidProjectVersion(row.getString(9))
-                .labelProjectVersion(row.getString(10))
+                .projectFilePath(row.getString(4))
+                .isNew(row.getBoolean(5))
+                .isStarred(row.getBoolean(6))
+                .projectInfra(row.getString(7))
+                .currentVersion(row.getString(8))
+                .versionList(row.getString(9))
+                .uuidProjectVersion(row.getString(10))
+                .labelProjectVersion(row.getString(11))
                 .build();
     }
 
@@ -139,6 +140,7 @@ public class ProjectRepoService implements ProjectRepository {
                 loader.getProjectName(),                    //project_name
                 loader.getAnnotationType(),                 //annotation_type
                 loader.getProjectPath().getAbsolutePath(),  //project_path
+                loader.getProjectFilePath().getAbsolutePath(), //project_file_path
                 loader.getIsProjectNew(),                   //is_new
                 loader.getIsProjectStarred(),               //is_starred
                 loader.getProjectInfra().name(),            //project_infra
@@ -356,16 +358,16 @@ public class ProjectRepoService implements ProjectRepository {
                                 Map<Integer, List<ProjectLoader>> annotationTypeProjectLoaderMap = new HashMap<>();
                                 for (Row row : result)
                                 {
-                                    Version currentVersion = new Version(row.getString(7));
+                                    Version currentVersion = new Version(row.getString(8));
 
-                                    ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(8));     //project_version
+                                    ProjectVersion project = PortfolioParser.loadProjectVersion(row.getString(9));     //project_version
 
                                     project.setCurrentVersion(currentVersion.getVersionUuid());
 
-                                    Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(row.getString(9));
+                                    Map<String, List<String>> uuidDict = ActionOps.getKeyWithArray(row.getString(10));
                                     project.setUuidListDict(uuidDict);                                                      //uuid_project_version
 
-                                    Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(row.getString(10));
+                                    Map<String, List<String>> labelDict = ActionOps.getKeyWithArray(row.getString(11));
                                     project.setLabelListDict(labelDict);                                                    //label_project_version
 
                                     ProjectLoader loader = ProjectLoader.builder()
@@ -373,10 +375,11 @@ public class ProjectRepoService implements ProjectRepository {
                                             .projectName(row.getString(1))                                                 //project_name
                                             .annotationType(row.getInteger(2))                                             //annotation_type
                                             .projectPath(new File(row.getString(3)))                                       //project_path
+                                            .projectFilePath(new File(row.getString(4)))                                   //project_file_path
                                             .projectLoaderStatus(ProjectLoaderStatus.DID_NOT_INITIATED)
-                                            .isProjectNew(row.getBoolean(4))                                               //is_new
-                                            .isProjectStarred(row.getBoolean(5))                                           //is_starred
-                                            .projectInfra(ProjectInfra.get(row.getString(6)))                              //project_infra
+                                            .isProjectNew(row.getBoolean(5))                                               //is_new
+                                            .isProjectStarred(row.getBoolean(6))                                           //is_starred
+                                            .projectInfra(ProjectInfra.get(row.getString(7)))                              //project_infra
                                             .projectVersion(project)                                                            //project_version
                                             .build();
 

@@ -29,7 +29,7 @@ public class TabularQueryGen {
             Map<String, String> map = new HashMap<>();
             if (object != null && tabularUtils.isDateObject(object))
             {
-                map.put(object, "VARCHAR(100)");
+                map.put(object, "VARCHAR(50)");
             }
 
             else if(object != null && !tabularUtils.isDateObject(object)) {

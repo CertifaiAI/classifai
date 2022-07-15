@@ -6,22 +6,27 @@ import ai.classifai.core.loader.ProjectHandler;
 import ai.classifai.core.loader.ProjectLoader;
 import ai.classifai.core.properties.audio.AudioProperties;
 import ai.classifai.core.properties.audio.AudioRegionsProperties;
-import ai.classifai.core.service.annotation.AnnotationService;
+import ai.classifai.core.service.annotation.AudioAnnotationService;
 import ai.classifai.core.utility.handler.ReplyHandler;
 import ai.classifai.frontend.response.ActionStatus;
 import ai.classifai.frontend.response.AudioRegionsResponse;
 import ai.classifai.frontend.response.WaveFormPeaksResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.Future;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
+@Slf4j
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class AudioController {
 
-    private final AnnotationService<AudioDTO, AudioProperties> audioService;
+    private final AudioAnnotationService<AudioDTO, AudioProperties> audioService;
     private final ProjectHandler projectHandler;
 
-    public AudioController(AnnotationService<AudioDTO, AudioProperties> audioService,
+    public AudioController(AudioAnnotationService<AudioDTO, AudioProperties> audioService,
                            ProjectHandler projectHandler) {
         this.audioService = audioService;
         this.projectHandler = projectHandler;
@@ -39,46 +44,45 @@ public class AudioController {
                 .otherwise(ActionStatus.failedWithMessage("Fail to update labels: " + projectName));
     }
 
-//    @GET
-//    @Path("/v2/{annotation_type}/projects/{project_name}/audioregions")
-//    public Future<AudioRegionsResponse> getAudioRegions(@PathParam("annotation_type") String annotationType,
-//                                                        @PathParam("project_name") String projectName)
-//    {
-//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
-//        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
-//
-//        return audioService.getAnnotationById(loader)
-//                .map(result -> AudioRegionsResponse.builder()
-//                        .message(ReplyHandler.SUCCESSFUL)
-//                        .listOfRegions(result)
-//                        .build())
-//                .otherwise(AudioRegionsResponse.builder()
-//                        .message(ReplyHandler.FAILED)
-//                        .errorMessage("Failed to retrieve data")
-//                        .build());
-//    }
-//
-//    @GET
-//    @Path("/v2/{annotation_type}/projects/{project_name}/audiopeaks")
-//    public Future<WaveFormPeaksResponse> getWaveFormPeaks(@PathParam("annotation_type") String annotationType,
-//                                                          @PathParam("project_name") String projectName)
-//    {
-//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
-//        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
-//
-//        return portfolioDB.getWaveFormPeaks(loader)
-//                .map(result -> WaveFormPeaksResponse.builder()
-//                        .message(ReplyHandler.SUCCESSFUL)
-//                        .waveFormPeaks(result)
-//                        .build())
-//                .otherwise(WaveFormPeaksResponse.builder()
-//                        .message(ReplyHandler.FAILED)
-//                        .errorMessage("Failed to retrieve data")
-//                        .build());
-//    }
-//
+    @GET
+    @Path("/v2/{annotation_type}/projects/{project_name}/audioregions")
+    public Future<AudioRegionsResponse> getAudioRegions(@PathParam("annotation_type") String annotationType,
+                                                        @PathParam("project_name") String projectName)
+    {
+        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
+        ProjectLoader loader = projectHandler.getProjectLoader(projectName, type);
+
+        return audioService.getAudioRegions(loader.getProjectId())
+                .map(result -> AudioRegionsResponse.builder()
+                        .message(ReplyHandler.SUCCESSFUL)
+                        .listOfRegions(result)
+                        .build())
+                .otherwise(AudioRegionsResponse.builder()
+                        .message(ReplyHandler.FAILED)
+                        .errorMessage("Failed to retrieve data")
+                        .build());
+    }
+
+    @GET
+    @Path("/v2/{annotation_type}/projects/{project_name}/audiopeaks")
+    public Future<WaveFormPeaksResponse> getWaveFormPeaks(@PathParam("annotation_type") String annotationType,
+                                                          @PathParam("project_name") String projectName)
+    {
+        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
+        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
+        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
+
+        return audioService.getWaveFormPeaks(loader)
+                .map(result -> WaveFormPeaksResponse.builder()
+                        .message(ReplyHandler.SUCCESSFUL)
+                        .waveFormPeaks(result)
+                        .build())
+                .otherwise(WaveFormPeaksResponse.builder()
+                        .message(ReplyHandler.FAILED)
+                        .errorMessage("Failed to retrieve data")
+                        .build());
+    }
+
 //    @DELETE
 //    @Path("/v2/{annotation_type}/projects/{project_name}/deleteregion/{uuid}")
 //    public ActionStatus deleteAudioRegion(@PathParam("annotation_type") String annotationType,
@@ -104,7 +108,7 @@ public class AudioController {
 //
 //        return audioService.updateAnnotation(loader, audioRegionsProperties);
 //    }
-
+//
 //    @POST
 //    @Path("/v2/{annotation_type}/projects/{project_name}/saveannotation")
 //    public Future<ActionStatus> exportAudioAnnotationFile(@PathParam("annotation_type") String annotationType,
@@ -114,7 +118,7 @@ public class AudioController {
 //        String projectID = projectHandler.getProjectId(projectName, type.ordinal());
 //        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
 //
-//        return portfolioDB.exportAudioAnnotation(loader)
+//        return audioService.exportAudioAnnotation(loader)
 //                .map(ActionStatus.ok())
 //                .otherwise(ActionStatus.failedWithMessage("Fail to generate save audio annotation file"));
 //    }

@@ -8,10 +8,12 @@ import ai.classifai.frontend.ui.component.LookFeelSetter;
 import ai.classifai.core.enumeration.RunningStatus;
 import ai.classifai.frontend.ui.launcher.ConverterLauncher;
 import ai.classifai.frontend.ui.launcher.WelcomeLauncher;
+import ai.classifai.frontend.ui.selector.AudioFileSelector;
+import ai.classifai.frontend.ui.selector.VideoFileSelector;
 import ai.classifai.frontend.ui.selector.project.LabelFileSelector;
 import ai.classifai.frontend.ui.selector.project.ProjectFolderSelector;
 import ai.classifai.frontend.ui.selector.project.ProjectImportSelector;
-import ai.classifai.frontend.ui.selector.project.TabularFileSelector;
+import ai.classifai.frontend.ui.selector.TabularFileSelector;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -26,6 +28,8 @@ public class DesktopUI implements NativeUI {
     private final ProjectFolderSelector projectFolderSelector;
     private final LabelFileSelector labelFileSelector;
     private final TabularFileSelector tabularFileSelector;
+    private final AudioFileSelector audioFileSelector;
+    private final VideoFileSelector videoFileSelector;
 
     public DesktopUI(Runnable serverShutdownCallback, ProjectImport projectImport){
         LookFeelSetter.setDarkMode();
@@ -35,6 +39,8 @@ public class DesktopUI implements NativeUI {
         projectFolderSelector = new ProjectFolderSelector(this);
         labelFileSelector = new LabelFileSelector(this);
         tabularFileSelector = new TabularFileSelector(this);
+        audioFileSelector = new AudioFileSelector(this);
+        videoFileSelector = new VideoFileSelector(this);
     }
 
     @Override
@@ -128,6 +134,46 @@ public class DesktopUI implements NativeUI {
     @Override
     public String getTabularFileSelectedPath() {
         return tabularFileSelector.getTabularFilePath();
+    }
+
+    @Override
+    public void showAudioFileSelector() {
+        audioFileSelector.run();
+    }
+
+    @Override
+    public boolean isAudioFileSelectorOpen() {
+        return audioFileSelector.isWindowOpen();
+    }
+
+    @Override
+    public SelectionWindowStatus getAudioFileSelectorWindowStatus() {
+        return audioFileSelector.getWindowStatus();
+    }
+
+    @Override
+    public String getAudioFileSelectedPath() {
+        return audioFileSelector.getAudioFilePath();
+    }
+
+    @Override
+    public void showVideoFileSelector() {
+        videoFileSelector.run();
+    }
+
+    @Override
+    public boolean isVideoFileSelectorOpen() {
+        return videoFileSelector.isWindowOpen();
+    }
+
+    @Override
+    public SelectionWindowStatus getVideoFileSelectorWindowStatus() {
+        return videoFileSelector.getWindowStatus();
+    }
+
+    @Override
+    public String getVideoFileSelectedPath() {
+        return videoFileSelector.getVideoFilePath();
     }
 
     public void ensureWelcomeLauncherStaysInBackground(){

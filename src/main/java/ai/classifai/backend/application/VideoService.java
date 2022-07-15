@@ -8,6 +8,7 @@ import ai.classifai.core.loader.ProjectLoaderStatus;
 import ai.classifai.core.properties.video.VideoProperties;
 import ai.classifai.core.service.annotation.AnnotationRepository;
 import ai.classifai.core.service.annotation.AnnotationService;
+import ai.classifai.core.service.annotation.VideoAnnotationService;
 import ai.classifai.core.service.project.ProjectService;
 import io.vertx.core.Future;
 import lombok.NonNull;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public class VideoService implements AnnotationService<VideoDTO, VideoProperties> {
+public class VideoService implements VideoAnnotationService<VideoDTO, VideoProperties> {
 
     private final AnnotationRepository<VideoEntity, VideoDTO> videoRepoService;
     private final ProjectService projectService;

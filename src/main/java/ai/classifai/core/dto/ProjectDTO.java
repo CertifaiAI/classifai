@@ -33,6 +33,10 @@ public class ProjectDTO {
     @JsonProperty("project_path")
     String projectPath;
 
+    @JsonProperty("project_file_path")
+    @JsonInclude(Include.NON_EMPTY)
+    String projectFilePath;
+
     @JsonProperty("is_new")
     Boolean isNewParam;
 

@@ -11,8 +11,7 @@ import ai.classifai.core.properties.audio.AudioProperties;
 import ai.classifai.core.properties.image.ImageDTO;
 import ai.classifai.core.properties.tabular.TabularProperties;
 import ai.classifai.core.properties.video.VideoProperties;
-import ai.classifai.core.service.annotation.AnnotationService;
-import ai.classifai.core.service.annotation.ImageAnnotationService;
+import ai.classifai.core.service.annotation.*;
 import ai.classifai.core.service.project.ProjectDataService;
 import ai.classifai.frontend.request.ThumbnailProperties;
 import io.vertx.core.Future;
@@ -21,14 +20,14 @@ import lombok.NonNull;
 public class DataService implements ProjectDataService {
 
     private final ImageAnnotationService<ImageDTO, ThumbnailProperties> imageService;
-    private final AnnotationService<VideoDTO, VideoProperties> videoService;
-    private final AnnotationService<AudioDTO, AudioProperties> audioService;
-    private final AnnotationService<TabularDTO, TabularProperties> tabularService;
+    private final VideoAnnotationService<VideoDTO, VideoProperties> videoService;
+    private final AudioAnnotationService<AudioDTO, AudioProperties> audioService;
+    private final TabularAnnotationService<TabularDTO, TabularProperties> tabularService;
 
     public DataService(ImageAnnotationService<ImageDTO, ThumbnailProperties> imageService,
-                       AnnotationService<VideoDTO, VideoProperties> videoService,
-                       AnnotationService<AudioDTO, AudioProperties> audioService,
-                       AnnotationService<TabularDTO, TabularProperties> tabularService)
+                       VideoAnnotationService<VideoDTO, VideoProperties> videoService,
+                       AudioAnnotationService<AudioDTO, AudioProperties> audioService,
+                       TabularAnnotationService<TabularDTO, TabularProperties> tabularService)
     {
         this.imageService = imageService;
         this.videoService = videoService;
@@ -136,15 +135,15 @@ public class DataService implements ProjectDataService {
     }
 
     private Future<ProjectLoaderStatus> loadVideoProject(@NonNull ProjectLoader projectLoader) {
-        return imageService.loadProject(projectLoader);
+        return videoService.loadProject(projectLoader);
     }
 
     private Future<ProjectLoaderStatus> loadTabularProject(@NonNull ProjectLoader projectLoader) {
-        return imageService.loadProject(projectLoader);
+        return tabularService.loadProject(projectLoader);
     }
 
     private Future<ProjectLoaderStatus> loadAudioProject(@NonNull ProjectLoader projectLoader) {
-        return imageService.loadProject(projectLoader);
+        return audioService.loadProject(projectLoader);
     }
 
 }

@@ -18,10 +18,14 @@ package ai.classifai.core.utility.handler;
 import ai.classifai.core.utility.ParamConfig;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
+import org.h2.store.fs.FileUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -180,6 +184,27 @@ public class FileHandler
             return false;
         }
         return true;
+    }
+
+    public static String createProjectFolder(File projectFile) throws IOException {
+        String projectDirectory = projectFile.getParent() + File.separator + FilenameUtils.getBaseName(projectFile.getName()) + "_classifai";
+        File projectFolderPath = new File(projectDirectory);
+
+        if (!projectFolderPath.exists()) {
+            Files.createDirectory(Paths.get(projectDirectory));
+            log.info("Project directory is created at " + projectDirectory);
+        }
+
+        return projectDirectory;
+    }
+
+    public static String moveFileToProjectFolder(String projectFolderPath, String projectFilePath) throws IOException {
+        File projectFile = new File(projectFilePath);
+        String targetProjectFilePath = projectFolderPath + File.separator + projectFile.getName();
+        Files.move(Paths.get(projectFile.getAbsolutePath()), Paths.get(targetProjectFilePath));
+        log.info(projectFile.getName() + " has move to directory: " + projectFolderPath);
+
+        return targetProjectFilePath;
     }
 
 }

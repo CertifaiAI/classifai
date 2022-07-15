@@ -1,5 +1,6 @@
 package ai.classifai.backend.repository.query;
 
+import ai.classifai.core.utility.handler.StringHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,16 +31,15 @@ public class TabularAnnotationQuery
     @Getter private static String changeProjectTableNameQuery;
 
     static {
-        createProjectAttributeTableQuery = "CREATE TABLE IF NOT EXISTS ProjectAttributeTable(project_id UUID, attributes CLOB, attributeTypeMap CLOB)";
+        createProjectAttributeTableQuery = "CREATE TABLE IF NOT EXISTS ProjectAttributeTable(project_id UUID, attributes CLOB, attribute_type_map CLOB)";
         updateProjectAttributeTableQuery = "INSERT INTO ProjectAttributeTable VALUES(?, ?, ?)";
         projectAttributeQuery = "SELECT attributes FROM ProjectAttributeTable WHERE project_id = ?";
-        attributeTypeMapQuery = "SELECT attributeTypeMap FROM ProjectAttributeTable WHERE project_id = ?";
+        attributeTypeMapQuery = "SELECT attribute_type_map FROM ProjectAttributeTable WHERE project_id = ?";
         getDeleteProjectAttributeQuery = "DELETE FROM ProjectAttributeTable WHERE project_id = ?";
     }
 
     public static void createProjectTablePreparedStatement(Map<String, String> headers, String projectName) {
         List<String> attributes = new ArrayList<>();
-//        String projectName = projectName;
 
         String columnNames = "uuid UUID, project_id UUID, project_name VARCHAR(100), ";
 
@@ -47,15 +47,15 @@ public class TabularAnnotationQuery
             attributes.add(headerName + " " + headers.get(headerName));
         }
 
-        String attributesString = String.join(", ", attributes);
-        columnNames += attributesString;
-        columnNames += ", fileName VARCHAR(2000), label CLOB DEFAULT NULL, PRIMARY KEY(uuid, project_id)";
+        String attributesString = String.join(", ", attributes.toArray(new String[0]));
+        columnNames += StringHandler.removeQuotes(attributesString);
+        columnNames += ", file_path VARCHAR(2000), label CLOB DEFAULT NULL, PRIMARY KEY(uuid, project_id)";
 
         createProjectTableQuery = "CREATE TABLE IF NOT EXISTS " + projectName + " (" + columnNames + ")";
     }
 
     public static void createGetAllDataPreparedStatement(String projectName, String columnNames) {
-        getAllDataQuery = "SELECT uuid, project_name, " + columnNames + " , fileName, label FROM " + projectName;
+        getAllDataQuery = "SELECT uuid, project_id, project_name, " + StringHandler.removeQuotes(columnNames) + ", file_path, label FROM " + projectName;
     }
 
     public static void createDataPreparedStatement(String projectName, Integer columnNumbers) {
@@ -75,7 +75,7 @@ public class TabularAnnotationQuery
     }
 
     public static void createGetSpecificDataPreparedStatement(String projectName, String columnNames) {
-        getDataQuery = "SELECT uuid, project_name," + columnNames + " , fileName, label FROM " + projectName + " WHERE uuid = ? AND project_id = ?";
+        getDataQuery = "SELECT uuid, project_id, project_name," + StringHandler.removeQuotes(columnNames) + " , file_path, label FROM " + projectName + " WHERE uuid = ? AND project_id = ?";
     }
 
     public static void createGetLabelPreparedStatement(String projectName) {

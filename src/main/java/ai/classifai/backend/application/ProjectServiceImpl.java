@@ -1,6 +1,7 @@
 package ai.classifai.backend.application;
 
 import ai.classifai.backend.repository.database.DBUtils;
+import ai.classifai.backend.repository.query.AnnotationQuery;
 import ai.classifai.core.data.handler.ImageHandler;
 import ai.classifai.core.dto.ProjectDTO;
 import ai.classifai.core.entity.project.Project;
@@ -14,6 +15,7 @@ import ai.classifai.core.service.project.ProjectRepository;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.core.status.FileSystemStatus;
 import ai.classifai.core.utility.UuidGenerator;
+import ai.classifai.core.utility.handler.FileHandler;
 import ai.classifai.core.versioning.Version;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -21,7 +23,9 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,6 +53,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setLastModifiedDate(currentVersion.getLastModifiedDate().toString());
         project.setCurrentVersion(currentVersion.getVersionUuid());
         project.setIsRootPathValid(projectPath.exists());
+        project.setProjectFilePath(loader.getProjectFilePath().getPath());
 
         return project;
     }
@@ -56,17 +61,41 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Future<ProjectDTO> createProject(@NonNull ProjectDTO projectDTO) {
         projectDTO.setProjectId(UuidGenerator.generateUuid());
+        AnnotationType type = AnnotationType.get(projectDTO.getAnnotationType());
 
         ProjectLoader loader = ProjectLoader.builder()
                 .projectId(projectDTO.getProjectId())
                 .projectName(projectDTO.getProjectName())
                 .annotationType(projectDTO.getAnnotationType())
-                .projectPath(new File(projectDTO.getProjectPath()))
                 .labelList(projectDTO.getLabelList())
                 .projectLoaderStatus(ProjectLoaderStatus.LOADED)
                 .projectInfra(ProjectInfra.ON_PREMISE)
                 .fileSystemStatus(FileSystemStatus.ITERATING_FOLDER)
                 .build();
+
+        if (type != AnnotationType.IMAGEBOUNDINGBOX && type != AnnotationType.IMAGESEGMENTATION)
+        {
+            String newProjectFolderPath;
+            String targetProjectFilePath;
+            try
+            {
+                newProjectFolderPath = FileHandler.createProjectFolder(new File(projectDTO.getProjectFilePath()));
+                targetProjectFilePath = FileHandler.moveFileToProjectFolder(newProjectFolderPath, projectDTO.getProjectFilePath());
+                projectDTO.setProjectPath(newProjectFolderPath);
+                projectDTO.setProjectFilePath(targetProjectFilePath);
+                loader.setProjectPath(new File(newProjectFolderPath));
+                loader.setProjectFilePath(new File(targetProjectFilePath));
+            }
+            catch (IOException e)
+            {
+                log.info("Fail to generate project folder. " + e);
+            }
+        }
+
+        else
+        {
+            loader.setProjectPath(new File(projectDTO.getProjectPath()));
+        }
 
         projectHandler.loadProjectLoader(loader);
 

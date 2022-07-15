@@ -16,6 +16,8 @@ public class Project implements ProjectEntity {
 
     String projectPath;
 
+    String projectFilePath;
+
     Integer annotationType;
 
     String projectInfra;
@@ -64,6 +66,11 @@ public class Project implements ProjectEntity {
     @Override
     public String getProjectPath() {
         return projectPath;
+    }
+
+    @Override
+    public String getProjectFilePath() {
+        return projectFilePath;
     }
 
     @Override

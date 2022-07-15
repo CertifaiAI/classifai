@@ -12,6 +12,7 @@ import ai.classifai.core.entity.annotation.AudioEntity;
 import ai.classifai.core.entity.annotation.ImageEntity;
 import ai.classifai.core.entity.annotation.TabularEntity;
 import ai.classifai.core.entity.annotation.VideoEntity;
+import ai.classifai.core.entity.project.Project;
 import ai.classifai.core.enumeration.RunningStatus;
 import ai.classifai.core.loader.ProjectHandler;
 import ai.classifai.core.loader.ProjectLoader;
@@ -20,12 +21,8 @@ import ai.classifai.core.properties.image.ImageDTO;
 import ai.classifai.core.properties.tabular.TabularProperties;
 import ai.classifai.core.properties.video.VideoProperties;
 import ai.classifai.core.service.NativeUI;
-import ai.classifai.core.service.annotation.AnnotationRepository;
-import ai.classifai.core.service.annotation.AnnotationService;
-import ai.classifai.core.service.annotation.ImageAnnotationService;
-import ai.classifai.core.service.annotation.ImageDataRepository;
+import ai.classifai.core.service.annotation.*;
 import ai.classifai.core.service.project.ProjectDataService;
-import ai.classifai.core.service.project.ProjectLoadService;
 import ai.classifai.core.service.project.ProjectRepository;
 import ai.classifai.core.service.project.ProjectService;
 import ai.classifai.core.utility.DbConfig;
@@ -40,6 +37,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,19 +45,18 @@ import java.util.Map;
 public class MainVerticle extends AbstractVerticle {
     private final ProjectRepository projectRepoService;
     private final ImageDataRepository<ImageEntity, ImageDTO> imageRepoService;
-    private final AnnotationRepository<VideoEntity, VideoDTO> videoRepoService;
-    private final AnnotationRepository<AudioEntity, AudioDTO> audioRepoService;
-    private final AnnotationRepository<TabularEntity, TabularDTO> tabularRepoService;
+    private final VideoDataRepository<VideoEntity, VideoDTO> videoRepoService;
+    private final AudioDataRepository<AudioEntity, AudioDTO> audioRepoService;
+    private final TabularDataRepository<TabularEntity, TabularDTO> tabularRepoService;
     private final ProjectService projectService;
     private final ProjectDataService projectDataService;
     private final ImageAnnotationService<ImageDTO, ThumbnailProperties> imageService;
-    private final AnnotationService<VideoDTO, VideoProperties> videoService;
-    private final AnnotationService<AudioDTO, AudioProperties> audioService;
-    private final AnnotationService<TabularDTO, TabularProperties> tabularService;
+    private final VideoAnnotationService<VideoDTO, VideoProperties> videoService;
+    private final AudioAnnotationService<AudioDTO, AudioProperties> audioService;
+    private final TabularAnnotationService<TabularDTO, TabularProperties> tabularService;
     private final RouterService routerService;
     private final JDBCPoolHolder jdbcPoolHolder;
     private final NativeUI ui;
-    private final ProjectLoadService projectLoadService;
 
     public MainVerticle(Vertx vertx) {
         jdbcPoolHolder = new JDBCPoolHolder(vertx, DbConfig.getH2());
@@ -73,15 +70,14 @@ public class MainVerticle extends AbstractVerticle {
         final ProjectHandler projectHandler = new ProjectHandler(ui);
         this.projectRepoService = new ProjectRepoService(jdbcPoolHolder, projectHandler);
         this.projectService = new ProjectServiceImpl(projectRepoService, projectHandler);
-        this.projectLoadService = new ProjectLoadServiceImpl(projectService, projectHandler);
-        this.imageRepoService = new ImageRepoRepository(jdbcPoolHolder);
+        this.imageRepoService = new ImageRepoService(jdbcPoolHolder);
         this.videoRepoService = new VideoRepoService(jdbcPoolHolder);
         this.audioRepoService = new AudioRepoService(jdbcPoolHolder);
-        this.tabularRepoService = new TabularRepoService(jdbcPoolHolder);
-        this.imageService = new ImageService(imageRepoService, projectService, projectLoadService, projectHandler);
+        this.tabularRepoService = new TabularRepoService(jdbcPoolHolder, projectHandler);
+        this.imageService = new ImageService(imageRepoService, projectService, projectHandler);
         this.videoService = new VideoService(videoRepoService, projectService);
-        this.audioService = new AudioService(audioRepoService, projectService);
-        this.tabularService = new TabularService(tabularRepoService, projectService);
+        this.audioService = new AudioService(audioRepoService, projectService, projectHandler);
+        this.tabularService = new TabularService(tabularRepoService, projectService, projectHandler);
         this.projectDataService = new DataService(imageService, videoService, audioService, tabularService);
         this.routerService = new RouterService(projectService, imageService, videoService, audioService,
                 tabularService, projectDataService, projectHandler, ui);
@@ -140,11 +136,19 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void loadAllDataPoint(Map<Integer, List<ProjectLoader>> annotationTypeProjectLoaderMap) {
-        List<ProjectLoader> imageLoader = annotationTypeProjectLoaderMap.get(0);
-        
-        for (ProjectLoader loader : imageLoader) {
-            imageRepoService.configProjectLoaderFromDb(loader);
-        }
+        List<ProjectLoader> imageLoader = new ArrayList<>();
+        List<ProjectLoader> videoLoader = new ArrayList<>();
+        imageLoader.addAll(annotationTypeProjectLoaderMap.get(0));
+        imageLoader.addAll(annotationTypeProjectLoaderMap.get(1));
+        videoLoader.addAll(annotationTypeProjectLoaderMap.get(2));
+        videoLoader.addAll(annotationTypeProjectLoaderMap.get(3));
+        List<ProjectLoader> tabularLoader = annotationTypeProjectLoaderMap.get(4);
+        List<ProjectLoader> audioLoader = annotationTypeProjectLoaderMap.get(5);
+
+        imageLoader.forEach(imageRepoService::configProjectLoaderFromDb);
+        audioLoader.forEach(audioRepoService::configProjectLoaderFromDb);
+        tabularLoader.forEach(tabularRepoService::configProjectLoaderFromDb);
+        videoLoader.forEach(videoRepoService::configProjectLoaderFromDb);
     }
 
     public void closeVerticles()

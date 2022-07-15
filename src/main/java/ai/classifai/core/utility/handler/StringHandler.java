@@ -38,4 +38,8 @@ public class StringHandler
     {
         return removeSlashes(input.substring(0,2)) + input.substring(2);
     }
+
+    public static String removeQuotes(String str) {
+        return str.replaceAll("\"", "").replaceAll("^\"|\"$", "").strip();
+    }
 }

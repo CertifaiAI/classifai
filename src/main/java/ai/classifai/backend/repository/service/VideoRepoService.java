@@ -9,6 +9,7 @@ import ai.classifai.core.entity.annotation.VideoEntity;
 import ai.classifai.core.loader.ProjectLoader;
 import ai.classifai.core.loader.ProjectLoaderStatus;
 import ai.classifai.core.service.annotation.AnnotationRepository;
+import ai.classifai.core.service.annotation.VideoDataRepository;
 import ai.classifai.frontend.request.ThumbnailProperties;
 import io.vertx.core.Future;
 import io.vertx.jdbcclient.JDBCPool;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 @Slf4j
-public class VideoRepoService implements AnnotationRepository<VideoEntity, VideoDTO> {
+public class VideoRepoService implements VideoDataRepository<VideoEntity, VideoDTO> {
     private final JDBCPool annotationPool;
     private final QueryOps queryOps = new QueryOps();
 

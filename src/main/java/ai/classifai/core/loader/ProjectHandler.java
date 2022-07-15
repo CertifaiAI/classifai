@@ -18,13 +18,15 @@ package ai.classifai.core.loader;
 import ai.classifai.core.enumeration.AnnotationType;
 import ai.classifai.core.service.NativeUI;
 import ai.classifai.core.versioning.ProjectVersion;
-import lombok.NoArgsConstructor;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.swing.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -227,5 +229,55 @@ public class ProjectHandler {
         }
     }
 
+    public static Future<Void> loadProject(ProjectLoader projectLoader) {
+        Promise<Void> promise = Promise.promise();
+        List<String> oriUUIDList = projectLoader.getUuidListFromDb();
 
+        if (oriUUIDList.size() == 0) {
+            promise.fail("Error detected in retrieving data id from database, size is 0");
+        }
+
+        else {
+            projectLoader.setDbOriUUIDSize(oriUUIDList.size());
+            for (int i = 0; i < oriUUIDList.size(); ++i) {
+                projectLoader.pushDBValidUUID(oriUUIDList.get(i));
+                projectLoader.updateDBLoadingProgress(i + 1);
+            }
+            promise.complete();
+        }
+        return promise.future();
+    }
+
+    public static Future<ProjectLoaderStatus> checkProjectLoaderStatus(ProjectLoader projectLoader) {
+        Promise<ProjectLoaderStatus> promise = Promise.promise();
+        projectLoader.toggleFrontEndLoaderParam();
+
+        loadProject(projectLoader).onComplete(res -> {
+            if (res.succeeded()) {
+                ProjectLoaderStatus projectLoaderStatus = projectLoader.getProjectLoaderStatus();
+
+                if(projectLoaderStatus.equals(ProjectLoaderStatus.DID_NOT_INITIATED))
+                {
+                    projectLoader.setProjectLoaderStatus(ProjectLoaderStatus.LOADING);
+                    promise.complete(ProjectLoaderStatus.LOADING);
+                }
+                else if (projectLoaderStatus.equals(ProjectLoaderStatus.LOADED)) {
+                    promise.complete(ProjectLoaderStatus.LOADED);
+                }
+                else if(projectLoaderStatus.equals(ProjectLoaderStatus.LOADING))
+                {
+                    promise.complete(ProjectLoaderStatus.LOADING);
+                }
+                else if(projectLoaderStatus.equals(ProjectLoaderStatus.ERROR))
+                {
+                    promise.complete(ProjectLoaderStatus.ERROR);
+                }
+            }
+            if (res.failed()) {
+                promise.fail(res.cause());
+            }
+        });
+
+        return promise.future();
+    }
 }
