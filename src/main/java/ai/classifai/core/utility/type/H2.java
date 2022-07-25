@@ -1,6 +1,5 @@
 package ai.classifai.core.utility.type;
 
-import ai.classifai.core.utility.type.RelationalDb;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.mvstore.FileStore;

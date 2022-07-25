@@ -11,14 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -373,36 +375,6 @@ public class TabularHandler {
             case "DATE" -> type = "Date";
         }
         return type;
-    }
-
-    private static String determineDatePattern(String date) {
-        String[] regexDateFormat = {
-                "([0-9][0-9]){2}/[0-1]?[0-9]/[0-3]?[0-9]" ,
-                "[0-1]?[0-9]/[0-3]?[0-9]/([0-9][0-9]){2}",
-                "[0-3]?[0-9]/[0-1]?[0-9]/([0-9][0-9]){2}",
-                "[0-1]?[0-9]/[0-3]?[0-9]/([0-9][0-9])?[0-9]{2}",
-                "[0-3]?[0-9]/[0-1]?[0-9]/([0-9][0-9])?[0-9]{2}",
-        };
-        String dateFormat = "";
-        String matchFormat = "";
-
-        for(String regex : regexDateFormat) {
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(date);
-            if(matcher.matches()) {
-                matchFormat = regex;
-            }
-        }
-
-        switch(matchFormat) {
-            case "([0-9][0-9]){2}/[0-1]?[0-9]/[0-3]?[0-9]" -> dateFormat = "yyyy-MM-dd";
-            case "[0-1]?[0-9]/[0-3]?[0-9]/([0-9][0-9]){2}" -> dateFormat = "MM-dd-yyyy";
-            case "[0-3]?[0-9]/[0-1]?[0-9]/([0-9][0-9]){2}" -> dateFormat = "dd-MM-yyyy";
-            case "[0-1]?[0-9]/[0-3]?[0-9]/([0-9][0-9])?[0-9]{2}" -> dateFormat = "MM-dd-yy";
-            case "[0-3]?[0-9]/[0-1]?[0-9]/([0-9][0-9])?[0-9]{2}" -> dateFormat = "dd-MM-yy";
-
-        }
-        return dateFormat;
     }
 
     private static String convertDateFormat(String date) {

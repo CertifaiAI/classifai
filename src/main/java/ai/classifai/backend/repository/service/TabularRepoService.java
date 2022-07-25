@@ -370,11 +370,11 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
                                                 .stream()
                                                 .map(StringHandler::removeQuotes)
                                                 .collect(Collectors.toList());
-                                        columnNames.addAll(Arrays.asList("fileName","label"));
+                                        columnNames.addAll(Collections.singletonList("label"));
                                         try {
                                             log.info("Generating csv file...");
-                                            csvOutputFileWriter(listOfObjectOfTabularData(res.result()
-                                                    , columnNames, isFilterInvalidData), projectId);
+                                            List<Object[]> objectsList = getListOfTabularDataObject(res.result(), columnNames, isFilterInvalidData);
+                                            csvOutputFileWriter(objectsList, projectId);
                                             promise.complete();
                                         } catch (IOException e) {
                                             promise.fail("Error in generating csv file");
@@ -407,137 +407,58 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
         return list.toString();
     }
 
-    private List<Object[]> listOfObjectOfTabularData(List<TabularEntity> tabularEntityList, List<String> extractedColumnNames,
-                                                     boolean isFilteredInvalidData)
+    private List<Object[]> getListOfTabularDataObject(List<TabularEntity> tabularEntityList, List<String> extractedColumnNames,
+                                                      boolean isFilterInvalidData)
     {
         List<Object[]> resultArrayList = new ArrayList<>();
         resultArrayList.add(extractedColumnNames.toArray());
-        for(TabularEntity tabularEntity : tabularEntityList) {
-            List<Object> tempList = new ArrayList<>();
-            if(isFilteredInvalidData) {
-                if(!checkContainInvalidData(tabularEntity.getLabel())) {
-                    getListOfTabularObject(extractedColumnNames, resultArrayList, tabularEntity, tempList);
-                }
-            } else {
-                getListOfTabularObject(extractedColumnNames, resultArrayList, tabularEntity, tempList);
-            }
+        for (TabularEntity tabularEntity : tabularEntityList) {
+            Map<String, Object> objectMap = mapColumnNameToValue(tabularEntity, extractedColumnNames);
+            getListOfTabularObject(objectMap, resultArrayList, extractedColumnNames, isFilterInvalidData);
         }
         return resultArrayList;
     }
 
-    private void getListOfTabularObject(List<String> extractedColumnNames, List<Object[]> resultArrayList, TabularEntity tabularEntity, List<Object> tempList) {
-        for (String extractedColumnName : extractedColumnNames) {
-            String columnName = extractedColumnName.toUpperCase();
-//            Object value = row.toJson().getValue(columnName);
-            if (columnName.equals("LABEL")) {
-                if (value == null) {
-                    tempList.add("No Label");
-                } else {
-                    tempList.add(extractLabelsFromArrayToString(value));
+    private Map<String, Object> mapColumnNameToValue(TabularEntity tabularEntity, List<String> columnNames) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        List<Object> objects = new ArrayList<>(Arrays.asList(tabularEntity.getData()));
+        objects.add(tabularEntity.getLabel());
+        for (int i = 0; i < columnNames.size(); i++) {
+            map.put(columnNames.get(i), objects.get(i));
+        }
+        return map;
+    }
+
+    private void getListOfTabularObject(Map<String, Object> objectMap, List<Object[]> resultArrayList,
+                                        List<String> extractedColumnNames, boolean isFilterInvalidData)
+    {
+        List<Object> tempList = new ArrayList<>();
+        for (String columnName : extractedColumnNames)
+        {
+            if (columnName.equals("label"))
+            {
+                if (objectMap.get(columnName) == null)
+                {
+                    tempList.add("[No Label]");
                 }
-            } else {
-                tempList.add(value);
+
+                else
+                {
+                    String label = extractLabelsFromArrayToString(objectMap.get(columnName));
+                    String content = StringUtils.substringBetween(label, "[", "]");
+                    if (isFilterInvalidData && content.equals("Invalid")) return;
+                    tempList.add(label);
+                }
+            }
+
+            else
+            {
+                tempList.add(objectMap.get(columnName));
             }
         }
         Object[] resultArray = tempList.toArray(Object[]::new);
         resultArrayList.add(resultArray);
         tempList.clear();
-    }
-
-    private Future<JsonObject> convertToJson(TabularEntity tabularEntity) {
-        Promise<JsonObject> promise = Promise.promise();
-        String projectName = tabularEntity.getProjectName();
-
-        getAttributes(projectName)
-                .onComplete(res -> {
-                    if (res.succeeded()) {
-                        List<String> attributes = res.result()
-                                .stream()
-                                .map(StringHandler::removeQuotes)
-                                .collect(Collectors.toList());
-
-                        getAttributeTypeMap(projectName)
-                                .onComplete(result -> {
-                                    if (result.succeeded()) {
-                                        Map<String, String> attributeTypeMap = result.result();
-                                        JsonObject jsonObject = new JsonObject();
-                                        jsonObject.put("uuid", tabularEntity.getUuid());
-                                        jsonObject.put("project_id", tabularEntity.getProjectId());
-                                        jsonObject.put("project_name", tabularEntity.getProjectName());
-                                        jsonObject.put("label", tabularEntity.getLabel());
-                                        jsonObject.put("file_path", tabularEntity.getFilePath());
-
-                                        List<String> data = Arrays.asList(tabularEntity.getData());
-                                        for (int i = 0; i < attributes.size(); i++) {
-                                            String type = attributeTypeMap.get(attributes.get(i));
-                                            switch (type) {
-                                                case "INT" -> jsonObject.put(attributes.get(i), Integer.valueOf(data.get(i)));
-                                                case "DECIMAL" -> jsonObject.put(attributes.get(i), Double.valueOf(data.get(i)));
-                                                default -> jsonObject.put(attributes.get(i), data.get(i));
-                                            }
-                                        }
-
-                                        promise.complete(jsonObject);
-                                    }
-
-                                    if (result.failed()) {
-                                        promise.fail(result.cause());
-                                    }
-                                });
-                    }
-                    if (res.failed()) {
-                        promise.fail(res.cause());
-                    }
-                });
-        return promise.future();
-    }
-
-    private boolean checkContainInvalidData(String label){
-        if(label != null) {
-            JSONArray jsonArray = new JSONArray(label);
-            for(int i = 0; i < jsonArray.length(); i++) {
-                String labelName = jsonArray.getJSONObject(i).getString("labelName");
-                if(labelName.equals("Invalid")) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private List<JsonObject> lisOfJsonObjectOfTabularData(RowSet<Row> result, List<String> extractedColumnNames, boolean isFilterInvalidData) {
-        List<JsonObject> resultList = new ArrayList<>();
-
-        for(Row row : result.value()) {
-            JsonObject jsonObject = new JsonObject();
-            if(isFilterInvalidData) {
-                if(checkContainInvalidData(row)){
-                    getTabularJsonObject(extractedColumnNames, resultList, row, jsonObject);
-                }
-            } else {
-                getTabularJsonObject(extractedColumnNames, resultList, row, jsonObject);
-            }
-
-        }
-
-        return resultList;
-    }
-
-    private void getTabularJsonObject(List<String> extractedColumnNames, List<JsonObject> resultList, Row row, JsonObject jsonObject) {
-        for (String extractedColumnName : extractedColumnNames) {
-            String columnName = extractedColumnName.toUpperCase();
-            Object value = row.toJson().getValue(columnName);
-            if (columnName.equals("LABEL")) {
-                if (value == null) {
-                    jsonObject.put(extractedColumnName,"No Label");
-                } else {
-                    jsonObject.put(extractedColumnName, extractLabelsFromArrayToString(value));
-                }
-            } else {
-                jsonObject.put(extractedColumnName, value);
-            }
-        }
-        resultList.add(jsonObject);
     }
 
     private void csvOutputFileWriter(List<Object[]> retrievedDataList, String projectId) throws IOException {
@@ -551,9 +472,9 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
         BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile));
 
         if (projectDirectory.mkdirs()) {
-            log.info("Project folder " + projectDirectory.getName() + " is created");
+            log.debug("Project folder " + projectDirectory.getName() + " is created");
         } else {
-            log.info("Project folder " + projectDirectory.getName() + " is exist");
+            log.debug("Project folder " + projectDirectory.getName() + " is exist");
         }
 
         for (Object[] objArr : retrievedDataList) {
@@ -577,50 +498,85 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
         }
     }
 
-    private Future<Void> writeJsonFile(String projectId, boolean isFilterInvalidData) {
-        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
-        String query = TabularAnnotationQuery.getProjectAttributeQuery();
-        Tuple params = Tuple.of(projectId);
-        JDBCPool pool = this.holder.getJDBCPool(loader);
-        List<String> extractedColumnNames = new ArrayList<>();
-        Promise<Void> promise = Promise.promise();
+    private List<JsonObject> getListOfTabularDataJsonObject(List<TabularEntity> tabularEntityList, List<String> extractedColumnNames, boolean isFilterInvalidData) {
+        List<JsonObject> resultList = new ArrayList<>();
 
-        return pool.withConnection(conn -> {
-            conn.preparedQuery(query).execute(params).map(res -> {
-                if(res.size() != 0) {
-                    Row row = res.iterator().next();
-                    String columnNames = row.getString(0) + ",fileName,label";
-                    String[] columnNamesArray = columnNames.split(",");
-                    extractedColumnNames.addAll(Arrays.asList(columnNamesArray));
-                    TabularAnnotationQuery.createGetAllDataPreparedStatement(loader, row.getString(0));
+        for(TabularEntity tabularEntity : tabularEntityList) {
+            Map<String, Object> objectMap = mapColumnNameToValue(tabularEntity, extractedColumnNames);
+            getTabularJsonObject(objectMap, resultList, extractedColumnNames, isFilterInvalidData);
+        }
 
-                    return TabularAnnotationQuery.getGetAllDataQuery();
+        return resultList;
+    }
+
+    private void getTabularJsonObject(Map<String, Object> objectMap, List<JsonObject> resultList,
+                                      List<String> extractedColumnNames, boolean isFilterInvalidData)
+    {
+        JsonObject jsonObject = new JsonObject();
+        for (String columnName : extractedColumnNames)
+        {
+            if (columnName.equals("label"))
+            {
+                if (objectMap.get(columnName) == null)
+                {
+                    jsonObject.put(columnName,"[No Label]");
                 }
-                return null;
-            }).compose(res -> conn.preparedQuery(res).execute())
-                    .map(result -> {
-                        if(result.size() != 0) {
-                            return lisOfJsonObjectOfTabularData(result.value(), extractedColumnNames, isFilterInvalidData);
-                        }
-                        return null;
-                    })
-                    .onComplete(res -> {
-                        if(res.succeeded()) {
-                            try {
-                                log.info("Generating Json file...");
-                                jsonFileWriter(res.result(), projectId);
-                                promise.complete();
-                            } catch (IOException e) {
-                                promise.fail("Error in generating json file");
-                            }
-                        }
 
-                        if(res.failed()) {
-                            promise.fail(res.cause());
-                        }
-                    });
-            return promise.future();
-        });
+                else
+                {
+                    String label = extractLabelsFromArrayToString(objectMap.get(columnName));
+                    String content = StringUtils.substringBetween(label, "[", "]");
+                    if (isFilterInvalidData && content.equals("Invalid")) return;
+                    jsonObject.put(columnName, extractLabelsFromArrayToString(objectMap.get(columnName)));
+                }
+            }
+
+            else
+            {
+                jsonObject.put(columnName, objectMap.get(columnName));
+            }
+        }
+        resultList.add(jsonObject);
+    }
+
+    private Future<Void> writeJsonFile(String projectId, boolean isFilterInvalidData) {
+        Promise<Void> promise = Promise.promise();
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        String projectName = loader.getProjectName();
+
+        listAnnotation(projectName)
+                .onComplete(res -> {
+                    if(res.succeeded()) {
+                        getAttributes(projectName)
+                                .onComplete(result -> {
+                                    if (result.succeeded()) {
+                                        List<String> columnNames = result.result()
+                                                .stream()
+                                                .map(StringHandler::removeQuotes)
+                                                .collect(Collectors.toList());
+                                        columnNames.addAll(Collections.singletonList("label"));
+                                        try {
+                                            log.info("Generating json file...");
+                                            List<JsonObject> jsonObjectList = getListOfTabularDataJsonObject(res.result(), columnNames, isFilterInvalidData);
+                                            jsonFileWriter(jsonObjectList, projectId);
+                                            promise.complete();
+                                        } catch (IOException e) {
+                                            promise.fail("Error in generating json file");
+                                        }
+                                    }
+
+                                    if (result.failed()) {
+                                        promise.fail(result.cause());
+                                    }
+                                });
+                    }
+
+                    if(res.failed()) {
+                        promise.fail(res.cause());
+                    }
+                });
+
+        return promise.future();
     }
 
     private void jsonFileWriter(List<JsonObject> result, String projectId) throws IOException {
@@ -631,9 +587,9 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
         FileWriter writer = new FileWriter(jsonFilePath);
 
         if(projectDirectory.mkdirs()) {
-            log.info("Project folder " + projectDirectory.getName() + " is created");
+            log.debug("Project folder " + projectDirectory.getName() + " is created");
         } else {
-            log.info("Project folder " + projectDirectory.getName() + " is exist");
+            log.debug("Project folder " + projectDirectory.getName() + " is exist");
         }
 
         try {
