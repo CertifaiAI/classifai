@@ -6,7 +6,7 @@ import ai.classifai.core.enumeration.AnnotationType;
 import ai.classifai.core.loader.ProjectHandler;
 import ai.classifai.core.loader.ProjectLoader;
 import ai.classifai.core.properties.video.VideoProperties;
-import ai.classifai.core.service.annotation.AnnotationService;
+import ai.classifai.core.service.annotation.VideoAnnotationService;
 import ai.classifai.frontend.request.VideoFrameExtractBody;
 import ai.classifai.frontend.request.VideoFrameRangeExtractBody;
 import ai.classifai.frontend.response.ActionStatus;
@@ -28,10 +28,10 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class VideoController {
 
-    private final AnnotationService<VideoDTO, VideoProperties> videoService;
+    private final VideoAnnotationService<VideoDTO, VideoProperties> videoService;
     private final ProjectHandler projectHandler;
 
-    public VideoController(AnnotationService<VideoDTO, VideoProperties> videoService,
+    public VideoController(VideoAnnotationService<VideoDTO, VideoProperties> videoService,
                            ProjectHandler projectHandler) {
         this.videoService = videoService;
         this.projectHandler = projectHandler;

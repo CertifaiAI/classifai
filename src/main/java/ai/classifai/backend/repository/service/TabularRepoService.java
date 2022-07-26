@@ -4,6 +4,7 @@ import ai.classifai.backend.repository.JDBCPoolHolder;
 import ai.classifai.backend.repository.database.DBUtils;
 import ai.classifai.backend.repository.query.QueryOps;
 import ai.classifai.backend.repository.query.TabularAnnotationQuery;
+import ai.classifai.core.data.handler.TabularHandler;
 import ai.classifai.core.dto.TabularDTO;
 import ai.classifai.core.entity.annotation.TabularEntity;
 import ai.classifai.core.enumeration.AnnotationType;
@@ -14,6 +15,7 @@ import ai.classifai.core.service.annotation.TabularDataRepository;
 import ai.classifai.core.utility.handler.StringHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Row;
@@ -277,70 +279,33 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
 
     }
 
-//    public Future<JsonObject> getTabularDataByUuid(String projectID, String uuid) {
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectID);
-//        String projectAttributeQuery = TabularAnnotationQuery.getProjectAttributeQuery();
-//        JDBCPool pool = this.holder.getJDBCPool(loader);
-//
-//        Tuple params = Tuple.of(projectID);
-//        Tuple params2 = Tuple.of(uuid, projectID);
-//
-//        return pool.withConnection(conn ->
-//                conn.preparedQuery(projectAttributeQuery)
-//                        .execute(params)
-//                        .map(res -> {
-//                            if(res.size() != 0) {
-//                                Row row = res.iterator().next();
-//                                TabularAnnotationQuery.createGetSpecificDataPreparedStatement(loader, row.getString(0));
-//
-//                                return TabularAnnotationQuery.getGetDataQuery();
-//                            }
-//                            return null;
-//                        })
-//                        .compose(res -> conn.preparedQuery(res).execute(params2))
-//                        .map(res -> {
-//                            if (res.size() != 0) {
-//                                conn.close();
-//                                return res.iterator().next().toJson();
-//                            }
-//                            conn.close();
-//                            return null;
-//                        })
-//        )
-//                .onSuccess(res -> log.info("Retrieve data success"))
-//                .onFailure(res -> log.info("Fail to retrieve data from database. " + res.getCause().getMessage()));
-//
-//    }
-//
+    @Override
+    public Future<JsonArray> getLabel(String projectId, String uuid) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        TabularAnnotationQuery.createGetLabelPreparedStatement(loader.getProjectName());
+        String query = TabularAnnotationQuery.getGetLabelQuery();
+        Tuple params = Tuple.of(uuid, projectId);
 
-//
-//    public Future<JsonArray> getLabel(String projectId, String uuid) {
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
-//        TabularAnnotationQuery.createGetLabelPreparedStatement(loader);
-//        String query = TabularAnnotationQuery.getGetLabelQuery();
-//        Tuple params = Tuple.of(uuid, projectId);
-//
-//        return runQuery(query, params, this.holder.getJDBCPool(loader)).map(result -> {
-//            JsonArray labelsListJsonArray = new JsonArray();
-//            if(result.size() != 0) {
-//                Row row = result.iterator().next();
-//                String labelsJsonString = row.getString(0);
-//
-//                if(labelsJsonString == null) {
-//                    JsonObject emptyLabelJson = new JsonObject().put("labelName", "").put("tagColor", "");
-//                    labelsListJsonArray.add(emptyLabelJson);
-//                }
-//                else {
-//                    JSONArray labelsJsonArray = new JSONArray(labelsJsonString);
-//                    TabularHandler.processJSONArrayToJsonArray(labelsJsonArray, labelsListJsonArray);
-//                }
-//                return labelsListJsonArray;
-//            }
-//            log.info("Fail to query label");
-//            return null;
-//        });
-//    }
-//
+        return queryOps.runQuery(query, params, annotationPool).map(result -> {
+            JsonArray labelsListJsonArray = new JsonArray();
+            if(result.size() != 0) {
+                Row row = result.iterator().next();
+                String labelsJsonString = row.getString(0);
+
+                if(labelsJsonString == null) {
+                    JsonObject emptyLabelJson = new JsonObject().put("labelName", "").put("tagColor", "");
+                    labelsListJsonArray.add(emptyLabelJson);
+                }
+                else {
+                    JSONArray labelsJsonArray = new JSONArray(labelsJsonString);
+                    TabularHandler.processJSONArrayToJsonArray(labelsJsonArray, labelsListJsonArray);
+                }
+                return labelsListJsonArray;
+            }
+            log.info("Fail to query label");
+            return null;
+        });
+    }
 
     @Override
     public Future<Void> writeFile(String projectId, String format, boolean isFilterInvalidData) {
@@ -604,29 +569,6 @@ public class TabularRepoService implements TabularDataRepository<TabularEntity, 
             writer.close();
         }
     }
-
-//    public Future<JsonObject> automateTabularLabelling(String projectId, JsonObject preLabellingConditions,
-//                                                       String currentUuid, String labellingMode,PortfolioDB portfolioDB) throws Exception {
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
-//        List<String> uuidList = loader.getUuidListFromDb();
-//        TabularHandler tabularHandler = new TabularHandler();
-////        tabularHandler.initiateAutomaticLabellingForTabular(projectId, preLabellingConditions, uuidList, labellingMode,portfolioDB);
-//        log.info("initiate");
-//        Promise<JsonObject> promise = Promise.promise();
-//        log.info(String.valueOf(tabularHandler.checkIsCurrentUuidFinished(currentUuid)));
-//        if(tabularHandler.checkIsCurrentUuidFinished(currentUuid)) {
-//            getTabularDataByUuid(projectId, currentUuid).onComplete(res -> {
-//                if(res.succeeded()) {
-//                    promise.complete(res.result());
-//                }
-//
-//                if(res.failed()) {
-//                    promise.fail(res.cause());
-//                }
-//            });
-//        }
-//        return promise.future();
-//    }
 
     @Override
     public Future<List<String>> getAllInvalidData(String projectName) {

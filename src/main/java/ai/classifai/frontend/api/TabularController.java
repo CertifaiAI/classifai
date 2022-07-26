@@ -8,10 +8,12 @@ import ai.classifai.core.properties.tabular.TabularProperties;
 import ai.classifai.core.service.annotation.TabularAnnotationService;
 import ai.classifai.core.utility.handler.ReplyHandler;
 import ai.classifai.frontend.request.TabularFileBody;
+import ai.classifai.frontend.request.TabularPreLabellingConditionsBody;
 import ai.classifai.frontend.request.UpdateTabularDataBody;
 import ai.classifai.frontend.response.ActionStatus;
 import ai.classifai.frontend.response.TabularDataResponse;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
@@ -92,37 +94,35 @@ public class TabularController {
                 .otherwise(ActionStatus.failedWithMessage("Failure in updating database for " + type + " project: " + projectName));
     }
 
-//    @POST
-//    @Path("/v2/{annotation_type}/projects/{project_name}/prelabel")
-//    public ActionStatus preLabellingCondition(@PathParam("annotation_type") String annotationType,
-//                                              @PathParam("project_name") String projectName,
-//                                              TabularPreLabellingConditionsBody requestBody)
-//    public Future<TabularDataResponse> preLabellingCondition(@PathParam("annotation_type") String annotationType,
-//                                                             @PathParam("project_name") String projectName,
-//                                                             TabularPreLabellingConditionsBody requestBody)
-//            throws Exception {
-//        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
-//        String projectId = projectHandler.getProjectId(projectName, type.ordinal());
-//
-//        TabularHandler tabularHandler = new TabularHandler();
-//        JsonObject preLabellingConditions = new JsonObject(requestBody.getConditions());
-//        String currentUuid = requestBody.getCurrentUuid();
-//        String labellingMode = requestBody.getLabellingMode();
-//
-//        tabularHandler.initiateAutomaticLabellingForTabular(projectId, preLabellingConditions, labellingMode, portfolioDB, projectHandler);
-//        return ActionStatus.ok();
+    @POST
+    @Path("/v2/{annotation_type}/projects/{project_name}/prelabel")
+    public Future<TabularDataResponse> preLabellingCondition(@PathParam("annotation_type") String annotationType,
+                                                             @PathParam("project_name") String projectName,
+                                                             TabularPreLabellingConditionsBody requestBody)
+    {
+        AnnotationType type = AnnotationType.getTypeFromEndPoint(annotationType);
+        String projectId = projectHandler.getProjectId(projectName, type.ordinal());
+        JsonObject preLabellingConditions = new JsonObject(requestBody.getConditions());
+        String currentUuid = requestBody.getCurrentUuid();
+        String labellingMode = requestBody.getLabellingMode();
+        log.info(requestBody.toString());
+        log.info(currentUuid);
+        log.info(labellingMode);
+        log.info(preLabellingConditions.toString());
+        log.info(projectId);
 
-//        return portfolioDB.automateTabularLabelling(projectId, preLabellingConditions, currentUuid, labellingMode, portfolioDB)
-//                .map(result -> TabularDataResponse.builder()
-//                        .message(ReplyHandler.SUCCESSFUL)
-//                        .tabularData(result)
-//                        .build())
-//                .otherwise(TabularDataResponse.builder()
-//                        .message(ReplyHandler.FAILED)
-//                        .errorMessage("Failed to retrieve data")
-//                        .build());
-//    }
-//
+        return tabularService.automateTabularLabelling(projectId, preLabellingConditions, currentUuid, labellingMode)
+                .compose(res -> tabularService.toJson(Collections.singletonList(res.orElse(null))))
+                .map(result -> TabularDataResponse.builder()
+                        .message(ReplyHandler.SUCCESSFUL)
+                        .tabularData(result.get(0))
+                        .build())
+                .otherwise(TabularDataResponse.builder()
+                        .message(ReplyHandler.FAILED)
+                        .errorMessage("Failed to retrieve data")
+                        .build());
+    }
+
     @POST
     @Path("/v2/{annotation_type}/projects/{project_name}/file")
     public Future<ActionStatus> downloadFile(@PathParam("annotation_type") String annotationType,

@@ -9,20 +9,21 @@ import ai.classifai.core.dto.ProjectDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvException;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Tabular data handling
@@ -106,263 +107,142 @@ public class TabularHandler {
 
         return jsonString;
     }
-//
-//    /**
-//     * Automated Labelling
-//     *
-//     */
-////    public void initiateAutomaticLabellingForTabular(String projectId, JsonObject preLabellingConditions, List<String> uuidList, String labellingMode,
-////                                                     PortfolioDB portfolioDB) throws Exception {
-//    public void initiateAutomaticLabellingForTabular(String projectId, JsonObject preLabellingConditions, String labellingMode,
-//                                                     PortfolioDB portfolioDB, ProjectHandler projectHandler) throws Exception {
-//        JsonObject attributeTypeMap = getAttributeTypeFromDataBase(projectId, portfolioDB);
-//        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
-//        List<String> uuidList = loader.getUuidListFromDb();
-//        if(preLabellingConditions != null)
-//        {
-//            for(String uuid : uuidList)
-//            {
-//                for(int i = 0; i < preLabellingConditions.size(); i++)
-//                {
-//                    JsonObject tabularDataFromDataBase = getTabularDataFromDataBase(projectId, uuid, portfolioDB);
-//                    JsonObject condition = preLabellingConditions.getJsonObject(String.valueOf(i));
-//                    String labelsFromConditionSetting = parsePreLabellingCondition(condition.getMap(), attributeTypeMap,tabularDataFromDataBase);
-//                    List<String> listOfLabelsFromDataBase = getListOfLabelsFromDataBase(projectId, uuid, portfolioDB);
-//
-//                    if(labelsFromConditionSetting != null) {
-//                        // update labels directly if labels from database is null or selected mode is overwrite
-//                        if(listOfLabelsFromDataBase.size() == 0 || labellingMode.equals("overwrite")) {
-//                            if(!isContainInvalidData(getLabelFromDataBase(projectId,uuid, portfolioDB))) {
-//                                updateTabularDataLabelInDatabase(projectId, uuid, labelsFromConditionSetting, portfolioDB);
-//                            }
-//                        }
-//
-//                        // update labels on appending the labels
-//                        else if (labellingMode.equals("append")){
-//                            JsonArray labelsFromDataBaseJsonArray = getLabelFromDataBase(projectId, uuid, portfolioDB);
-//                            JsonArray labelsFromConditionSettingJsonArray = parseLabelsJsonStringToJsonArray(labelsFromConditionSetting);
-//                            String distinctLabels = processExistedLabelsAndConditionLabels(labelsFromDataBaseJsonArray,
-//                                    labelsFromConditionSettingJsonArray);
-//                            updateTabularDataLabelInDatabase(projectId, uuid, distinctLabels, portfolioDB);
-//                        }
-//                    }
-//                }
-////                processingUuid = uuid;
-//            }
-////            processingUuid = "";
-//        }
-//    }
-//
-//    public Boolean checkIsCurrentUuidFinished(String currentUuid) {
-//        return currentUuid.equals(processingUuid);
-//    }
-//
-//    private JsonArray parseLabelsJsonStringToJsonArray(String labelsJsonString) {
-//        JsonArray labelsListJsonArray = new JsonArray();
-//        JSONArray labelsJsonArray = new JSONArray(labelsJsonString);
-//
-//        processJSONArrayToJsonArray(labelsJsonArray, labelsListJsonArray);
-//        return labelsListJsonArray;
-//    }
-//
-//    public static void processJSONArrayToJsonArray(JSONArray jsonArray, JsonArray vertxJsonArray) {
-//        for(int i = 0; i < jsonArray.length(); i++) {
-//            JsonObject jsonObject = new JsonObject()
-//                    .put("labelName", jsonArray.getJSONObject(i).get("labelName"))
-//                    .put("tagColor", jsonArray.getJSONObject(i).get("tagColor"));
-//            vertxJsonArray.add(jsonObject);
-//        }
-//    }
-//
-//    private List<String> getListOfLabelsFromConditionSetting(String labelsFromConditionSetting)
-//    {
-//        JsonArray labelsFromConditionSettingJsonArray = new JsonArray(labelsFromConditionSetting);
-//        return getLabelList(labelsFromConditionSettingJsonArray);
-//    }
-//
-//    private List<String> getListOfLabelsFromDataBase(String projectId, String uuid, PortfolioDB portfolioDB)
-//            throws ExecutionException, InterruptedException
-//    {
-//        List<String> listOfLabelsFromDataBase = new ArrayList<>();
-//        JsonArray labelsFromDataBaseJsonArray = getLabelFromDataBase(projectId, uuid, portfolioDB);
-//
-//        if(labelsFromDataBaseJsonArray.size() == 1)
-//        {
-//            JsonObject jsonObject = labelsFromDataBaseJsonArray.getJsonObject(0);
-//            if(jsonObject.getString("labelName").equals(""))
-//            {
-//                return listOfLabelsFromDataBase;
-//            }
-//        }
-//
-//        listOfLabelsFromDataBase = getLabelList(labelsFromDataBaseJsonArray);
-//        return listOfLabelsFromDataBase;
-//    }
-//
-//    private List<String> getLabelList(JsonArray labelsJsonArray)
-//    {
-//        List<String> labelList = new ArrayList<>();
-//        for(int i = 0; i < labelsJsonArray.size(); i++) {
-//            JsonObject jsonObject = labelsJsonArray.getJsonObject(i);
-//            labelList.add(jsonObject.getString("labelName"));
-//        }
-//        return labelList;
-//    }
-//
-//    private String processExistedLabelsAndConditionLabels(JsonArray labelsFromDataBaseJsonArray, JsonArray labelsFromConditionSettingJsonArray)
-//    {
-//        List<String> listOfLabelsFromDataBase = getLabelList(labelsFromDataBaseJsonArray);
-//        List<String> listOfLabelsFromConditionSetting = getLabelList(labelsFromConditionSettingJsonArray);
-//        String labelsListJsonString;
-//        JsonArray filteredArray = new JsonArray();
-//        boolean containInvalidData = isContainInvalidData(labelsFromDataBaseJsonArray);
-//
-//        if(!containInvalidData) {
-//            List<String> filteredLabels = listOfLabelsFromConditionSetting
-//                    .stream()
-//                    .filter(label -> !listOfLabelsFromDataBase.contains(label))
-//                    .collect(Collectors.toList());
-//
-//            for(int i = 0; i < labelsFromConditionSettingJsonArray.size(); i++){
-//                String label = labelsFromConditionSettingJsonArray.getJsonObject(i).getString("labelName");
-//                if(filteredLabels.contains(label)) {
-//                    filteredArray.add(labelsFromConditionSettingJsonArray.getJsonObject(i));
-//                }
-//            }
-//            labelsListJsonString = labelsFromDataBaseJsonArray.addAll(filteredArray).encode();
-//        } else {
-//            labelsListJsonString = labelsFromDataBaseJsonArray.encode();
-//        }
-//
-//        return labelsListJsonString;
-//    }
-//
-//    private boolean isContainInvalidData(JsonArray labelsFromDataBaseJsonArray) {
-//        for(int i = 0; i < labelsFromDataBaseJsonArray.size(); i++){
-//            String label = labelsFromDataBaseJsonArray.getJsonObject(i).getString("labelName");
-//            if(label.equals("Invalid")) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//
-//    private String parsePreLabellingCondition(Map<String, Object> conditionMap, JsonObject attributeTypeMap,
-//                                              JsonObject tabularDataFromDataBase) throws Exception {
-//        String labels = null;
-//        ObjectMapper mapper = new ObjectMapper();
-//
-//        for(String key : conditionMap.keySet())
-//        {
-//            if(key.equals("threshold"))
-//            {
-//                String thresholdConditionJsonString = mapper.writeValueAsString(conditionMap.get(key));
-//                JsonObject thresholdConditionJsonObject = new JsonObject(thresholdConditionJsonString);
-//                labels = processThresholdCondition(thresholdConditionJsonObject, attributeTypeMap, tabularDataFromDataBase);
-//            }
-//
-//            else if (key.equals("range"))
-//            {
-//                String rangeConditionJsonString = mapper.writeValueAsString(conditionMap.get(key));
-//                JsonObject rangeConditionJsonObject = new JsonObject(rangeConditionJsonString);
-//                labels = processRangeCondition(rangeConditionJsonObject, attributeTypeMap, tabularDataFromDataBase);
-//            }
-//        }
-//
-//        return labels;
-//    }
-//
-//    private String processThresholdCondition(JsonObject thresholdCondition, JsonObject attributeTypeMap,
-//                                             JsonObject tabularDataFromDataBase) throws Exception {
-//        String attributeName = thresholdCondition.getString("attribute");
-//        String attributeType = attributeTypeMap.getString(attributeName);
-//        Object attributeValue = tabularDataFromDataBase.getValue(attributeName);
-//
-//        String conditionOperator = thresholdCondition.getString("operator");
-//        Object conditionValue = thresholdCondition.getValue("value");
-//        String labels = thresholdCondition.getJsonArray("label").toString();
-//        String dateFormat = thresholdCondition.getString("dateFormat");
-//
-//        String type;
-//        if(attributeName.equals("Date")) {
-//            type = "Date";
-//        } else {
-//            type = checkAttributeType(attributeType);
-//        }
-//
-//        boolean matchCondition = checkTrueNessOfCondition(attributeValue, type, "threshold",
-//                Collections.singletonList(conditionValue), Collections.singletonList(conditionOperator), dateFormat);
-//        return matchCondition ? labels : null;
-//    }
-//
-//    private String processRangeCondition(JsonObject rangeCondition, JsonObject attributeTypeMap,
-//                                         JsonObject tabularDataFromDataBase) throws Exception {
-//        String attributeName = rangeCondition.getString("attribute");
-//        String attributeType = attributeTypeMap.getString(attributeName);
-//        Object attributeValue = tabularDataFromDataBase.getValue(attributeName);
-//
-//        String lowerOperator = rangeCondition.getString("lowerOperator");
-//        String upperOperator = rangeCondition.getString("upperOperator");
-//        Object lowerLimit = rangeCondition.getValue("lowerLimit");
-//        Object upperLimit = rangeCondition.getValue("upperLimit");
-//        String labels = rangeCondition.getJsonArray("label").toString();
-//        String dateFormat = rangeCondition.getString("dateFormat");
-//        boolean matchCondition = checkTrueNessOfCondition(attributeValue, checkAttributeType(attributeType), "range",
-//                Arrays.asList(lowerLimit, upperLimit), Arrays.asList(lowerOperator, upperOperator), dateFormat);
-//        return matchCondition ? labels : null;
-//    }
-//
-//    private JsonObject getTabularDataFromDataBase(String projectId, String uuid, PortfolioDB portfolioDB)
-//            throws ExecutionException, InterruptedException {
-//        CompletableFuture<JsonObject> future = new CompletableFuture<>();
-//        portfolioDB.getTabularDataByUuid(projectId, uuid)
-//                .onComplete(res -> {
-//                    if(res.succeeded()) {
-//                        future.complete(res.result());
-//                    } else {
-//                        future.completeExceptionally(res.cause());
-//                    }
-//                });
-//
-//        return future.get();
-//    }
-//
-//    private static void updateTabularDataLabelInDatabase(String projectId, String uuid, String labels, PortfolioDB portfolioDB) {
-//        JsonObject jsonObject = new JsonObject()
-//                .put("uuid", uuid)
-//                .put("labels", labels);
-//        portfolioDB.updateLabel(projectId, jsonObject);
-//    }
-//
-//    private JsonObject getAttributeTypeFromDataBase(String projectId, PortfolioDB portfolioDB)
-//            throws ExecutionException, InterruptedException {
-//        CompletableFuture<JsonObject> future = new CompletableFuture<>();
-//        portfolioDB.getAttributeTypeMap(projectId)
-//                .onComplete(res -> {
-//                    if(res.succeeded()) {
-//                        future.complete(res.result());
-//                    } else {
-//                        future.completeExceptionally(res.cause());
-//                    }
-//                });
-//
-//        return future.get();
-//    }
-//
-//    private JsonArray getLabelFromDataBase(String projectId, String uuid, PortfolioDB portfolioDB)
-//            throws ExecutionException, InterruptedException {
-//        CompletableFuture<JsonArray> future = new CompletableFuture<>();
-//        portfolioDB.getLabel(projectId, uuid)
-//                .onComplete(res -> {
-//                    if(res.succeeded()) {
-//                        future.complete(res.result());
-//                    } else {
-//                        future.completeExceptionally(res.cause());
-//                    }
-//                });
-//
-//        return future.get();
-//    }
+
+    public static JsonArray parseLabelsJsonStringToJsonArray(String labelsJsonString) {
+        JsonArray labelsListJsonArray = new JsonArray();
+        JSONArray labelsJsonArray = new JSONArray(labelsJsonString);
+
+        processJSONArrayToJsonArray(labelsJsonArray, labelsListJsonArray);
+        return labelsListJsonArray;
+    }
+
+    public static void processJSONArrayToJsonArray(JSONArray jsonArray, JsonArray vertxJsonArray) {
+        for(int i = 0; i < jsonArray.length(); i++) {
+            JsonObject jsonObject = new JsonObject()
+                    .put("labelName", jsonArray.getJSONObject(i).get("labelName"))
+                    .put("tagColor", jsonArray.getJSONObject(i).get("tagColor"));
+            vertxJsonArray.add(jsonObject);
+        }
+    }
+
+    private List<String> getListOfLabelsFromConditionSetting(String labelsFromConditionSetting)
+    {
+        JsonArray labelsFromConditionSettingJsonArray = new JsonArray(labelsFromConditionSetting);
+        return getLabelList(labelsFromConditionSettingJsonArray);
+    }
+
+    public static List<String> getLabelList(JsonArray labelsJsonArray)
+    {
+        List<String> labelList = new ArrayList<>();
+        for(int i = 0; i < labelsJsonArray.size(); i++) {
+            JsonObject jsonObject = labelsJsonArray.getJsonObject(i);
+            labelList.add(jsonObject.getString("labelName"));
+        }
+        return labelList;
+    }
+
+    public static String processExistedLabelsAndConditionLabels(JsonArray labelsFromDataBaseJsonArray, JsonArray labelsFromConditionSettingJsonArray)
+    {
+        List<String> listOfLabelsFromDataBase = getLabelList(labelsFromDataBaseJsonArray);
+        List<String> listOfLabelsFromConditionSetting = getLabelList(labelsFromConditionSettingJsonArray);
+        String labelsListJsonString;
+        JsonArray filteredArray = new JsonArray();
+        boolean containInvalidData = isContainInvalidData(labelsFromDataBaseJsonArray);
+
+        if(!containInvalidData) {
+            List<String> filteredLabels = listOfLabelsFromConditionSetting
+                    .stream()
+                    .filter(label -> !listOfLabelsFromDataBase.contains(label))
+                    .collect(Collectors.toList());
+
+            for(int i = 0; i < labelsFromConditionSettingJsonArray.size(); i++){
+                String label = labelsFromConditionSettingJsonArray.getJsonObject(i).getString("labelName");
+                if(filteredLabels.contains(label)) {
+                    filteredArray.add(labelsFromConditionSettingJsonArray.getJsonObject(i));
+                }
+            }
+            labelsListJsonString = labelsFromDataBaseJsonArray.addAll(filteredArray).encode();
+        } else {
+            labelsListJsonString = labelsFromDataBaseJsonArray.encode();
+        }
+
+        return labelsListJsonString;
+    }
+
+    public static boolean isContainInvalidData(JsonArray labelsFromDataBaseJsonArray) {
+        for(int i = 0; i < labelsFromDataBaseJsonArray.size(); i++){
+            String label = labelsFromDataBaseJsonArray.getJsonObject(i).getString("labelName");
+            if(label.equals("Invalid")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String parsePreLabellingCondition(Map<String, Object> conditionMap, JsonObject attributeTypeMap,
+                                              JsonObject tabularDataFromDataBase) throws Exception {
+        String labels = null;
+        ObjectMapper mapper = new ObjectMapper();
+
+        for(String key : conditionMap.keySet())
+        {
+            if(key.equals("threshold"))
+            {
+                String thresholdConditionJsonString = mapper.writeValueAsString(conditionMap.get(key));
+                JsonObject thresholdConditionJsonObject = new JsonObject(thresholdConditionJsonString);
+                labels = processThresholdCondition(thresholdConditionJsonObject, attributeTypeMap, tabularDataFromDataBase);
+            }
+
+            else if (key.equals("range"))
+            {
+                String rangeConditionJsonString = mapper.writeValueAsString(conditionMap.get(key));
+                JsonObject rangeConditionJsonObject = new JsonObject(rangeConditionJsonString);
+                labels = processRangeCondition(rangeConditionJsonObject, attributeTypeMap, tabularDataFromDataBase);
+            }
+        }
+
+        return labels;
+    }
+
+    private String processThresholdCondition(JsonObject thresholdCondition, JsonObject attributeTypeMap,
+                                             JsonObject tabularDataFromDataBase) throws Exception {
+        String attributeName = thresholdCondition.getString("attribute");
+        String attributeType = attributeTypeMap.getString(attributeName);
+        Object attributeValue = tabularDataFromDataBase.getValue(attributeName);
+
+        String conditionOperator = thresholdCondition.getString("operator");
+        Object conditionValue = thresholdCondition.getValue("value");
+        String labels = thresholdCondition.getJsonArray("label").toString();
+        String dateFormat = thresholdCondition.getString("dateFormat");
+
+        String type;
+        if(attributeName.equals("Date")) {
+            type = "Date";
+        } else {
+            type = checkAttributeType(attributeType);
+        }
+
+        boolean matchCondition = checkTrueNessOfCondition(attributeValue, type, "threshold",
+                Collections.singletonList(conditionValue), Collections.singletonList(conditionOperator), dateFormat);
+        return matchCondition ? labels : null;
+    }
+
+    private String processRangeCondition(JsonObject rangeCondition, JsonObject attributeTypeMap,
+                                         JsonObject tabularDataFromDataBase) throws Exception {
+        String attributeName = rangeCondition.getString("attribute");
+        String attributeType = attributeTypeMap.getString(attributeName);
+        Object attributeValue = tabularDataFromDataBase.getValue(attributeName);
+
+        String lowerOperator = rangeCondition.getString("lowerOperator");
+        String upperOperator = rangeCondition.getString("upperOperator");
+        Object lowerLimit = rangeCondition.getValue("lowerLimit");
+        Object upperLimit = rangeCondition.getValue("upperLimit");
+        String labels = rangeCondition.getJsonArray("label").toString();
+        String dateFormat = rangeCondition.getString("dateFormat");
+        boolean matchCondition = checkTrueNessOfCondition(attributeValue, checkAttributeType(attributeType), "range",
+                Arrays.asList(lowerLimit, upperLimit), Arrays.asList(lowerOperator, upperOperator), dateFormat);
+        return matchCondition ? labels : null;
+    }
 
     public static String checkAttributeType(String attributeType) {
         String type = "";

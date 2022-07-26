@@ -17,12 +17,15 @@ import ai.classifai.core.utility.handler.StringHandler;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -68,11 +71,9 @@ public class TabularService implements TabularAnnotationService<TabularDTO, Tabu
                         futures.add(tabularDataRepository.saveFilesMetaData(tabularDTO));
                     }
 
-                    return Future.future(promise -> {
-                        CompositeFuture.all(futures)
-                                .onFailure(promise::fail)
-                                .onSuccess(promise::complete);
-                    });
+                    return Future.future(promise -> CompositeFuture.all(futures)
+                            .onFailure(promise::fail)
+                            .onSuccess(promise::complete));
                 }).map(result -> loader);
     }
 
@@ -205,5 +206,167 @@ public class TabularService implements TabularAnnotationService<TabularDTO, Tabu
     @Override
     public Future<Void> writeFile(String projectId, String fileType, boolean isFilterInvalidData) {
         return tabularDataRepository.writeFile(projectId, fileType, isFilterInvalidData);
+    }
+
+    @Override
+    public Future<Optional<TabularDTO>> automateTabularLabelling(String projectId, JsonObject preLabellingConditions, String currentUuid, String labellingMode) {
+        ProjectLoader loader = projectHandler.getProjectLoader(projectId);
+        List<String> uuidList = loader.getUuidListFromDb();
+
+        tabularDataRepository.getAttributes(loader.getProjectName())
+                .onComplete(res -> {
+                    if (res.succeeded()) {
+                        tabularDataRepository.getAttributeTypeMap(loader.getProjectName())
+                                .onComplete(result -> {
+                                    if (result.succeeded()) {
+                                        try {
+                                            JsonObject attributesJsonObject = new JsonObject();
+                                            for (Map.Entry<String, String> map : result.result().entrySet()) {
+                                                attributesJsonObject.put(map.getKey(), map.getValue());
+                                            }
+                                            initiateAutomaticLabellingForTabular(loader, preLabellingConditions,
+                                                    labellingMode, uuidList, attributesJsonObject);
+                                        } catch (Exception e) {
+                                            log.info("Fail to initiate auto pre-labeling for tabular data. " + e);
+                                        }
+                                    }
+
+                                    if (result.failed()) {
+                                        log.warn("Fail to get " + result.cause().getMessage());
+                                    }
+                                });
+                    }
+                    if (res.failed()) {
+                        log.warn("Fail to get attributes");
+                    }
+                });
+
+        return getAnnotationById(loader.getProjectName(), currentUuid);
+    }
+
+    private void initiateAutomaticLabellingForTabular(ProjectLoader loader, JsonObject preLabellingConditions,
+                                                     String labellingMode, List<String> uuidList, JsonObject attributeMap) throws Exception
+    {
+        if(preLabellingConditions != null)
+        {
+            for(String uuid : uuidList)
+            {
+                for(int i = 0; i < preLabellingConditions.size(); i++)
+                {
+                    JsonObject tabularDataFromDataBase = getTabularDataById(loader.getProjectName(), uuid);
+                    JsonObject condition = preLabellingConditions.getJsonObject(String.valueOf(i));
+                    String labelsFromConditionSetting = tabularHandler.parsePreLabellingCondition(condition.getMap(),
+                            attributeMap, tabularDataFromDataBase);
+                    List<String> listOfLabelsFromDataBase = getListOfLabelsFromDataBase(loader.getProjectId(), uuid);
+
+                    if(labelsFromConditionSetting != null) {
+                        // update labels directly if labels from database is null or selected mode is overwrite
+                        if(listOfLabelsFromDataBase.size() == 0 || labellingMode.equals("overwrite")) {
+                            if(!TabularHandler.isContainInvalidData(getLabelFromDataBase(loader.getProjectId(),uuid))) {
+                                updateTabularDataLabelInDatabase(loader.getProjectName(), uuid, labelsFromConditionSetting);
+                            }
+                        }
+
+                        // update labels on appending the labels
+                        else if (labellingMode.equals("append")){
+                            JsonArray labelsFromDataBaseJsonArray = getLabelFromDataBase(loader.getProjectId(), uuid);
+                            JsonArray labelsFromConditionSettingJsonArray = TabularHandler.parseLabelsJsonStringToJsonArray(labelsFromConditionSetting);
+                            String distinctLabels = TabularHandler.processExistedLabelsAndConditionLabels(labelsFromDataBaseJsonArray,
+                                    labelsFromConditionSettingJsonArray);
+                            updateTabularDataLabelInDatabase(loader.getProjectName(), uuid, distinctLabels);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw new Exception("Pre-Labeling conditions must be provided in automatic labeling.");
+        }
+    }
+
+    private JsonObject getTabularDataById(String projectName, String uuid) throws ExecutionException, InterruptedException
+    {
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        getAnnotationById(projectName, uuid)
+                .onComplete(res -> {
+                    if(res.succeeded()) {
+                        log.info("get");
+                        toJson(List.of(Objects.requireNonNull(res.result().orElse(null))))
+                                .onComplete(response -> {
+                                    if (response.succeeded()) {
+                                        future.complete(response.result().get(0));
+                                    }
+
+                                    if (response.failed()) {
+                                        future.completeExceptionally(response.cause());
+                                    }
+                                });
+                    }
+
+                    if (res.failed())
+                    {
+                        log.info("fail to get annotation by id");
+                        future.completeExceptionally(res.cause());
+                    }
+                });
+        return future.get();
+    }
+
+    private JsonArray getLabelFromDataBase(String projectId, String uuid) throws ExecutionException, InterruptedException
+    {
+        CompletableFuture<JsonArray> future = new CompletableFuture<>();
+        tabularDataRepository.getLabel(projectId, uuid)
+                .onComplete(res -> {
+                    if(res.succeeded()) {
+                        future.complete(res.result());
+                    } else {
+                        future.completeExceptionally(res.cause());
+                    }
+                });
+
+        return future.get();
+    }
+
+    private List<String> getListOfLabelsFromDataBase(String projectId, String uuid) throws ExecutionException, InterruptedException
+    {
+        List<String> listOfLabelsFromDataBase = new ArrayList<>();
+        JsonArray labelsFromDataBaseJsonArray = getLabelFromDataBase(projectId, uuid);
+
+        if(labelsFromDataBaseJsonArray.size() == 1)
+        {
+            JsonObject jsonObject = labelsFromDataBaseJsonArray.getJsonObject(0);
+            if(jsonObject.getString("labelName").equals(""))
+            {
+                return listOfLabelsFromDataBase;
+            }
+        }
+
+        listOfLabelsFromDataBase = TabularHandler.getLabelList(labelsFromDataBaseJsonArray);
+        return listOfLabelsFromDataBase;
+    }
+
+    private void updateTabularDataLabelInDatabase(String projectName, String uuid, String labels)
+    {
+        JsonObject jsonObject = new JsonObject()
+                .put("uuid", uuid)
+                .put("labels", labels);
+
+        TabularDTO tabularDTO = TabularDTO.builder()
+                .uuid(uuid)
+                .projectName(projectName)
+                .label(jsonObject.toString())
+                .build();
+
+        tabularDataRepository.updateAnnotation(tabularDTO)
+                .onComplete(res -> {
+                    if (res.succeeded()) {
+                        log.debug("Update label complete");
+                    }
+
+                    if (res.failed()) {
+                        log.debug("Update label failed");
+                    }
+                });
     }
 }

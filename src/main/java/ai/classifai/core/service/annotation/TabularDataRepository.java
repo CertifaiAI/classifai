@@ -1,6 +1,7 @@
 package ai.classifai.core.service.annotation;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
 
 import java.util.List;
 import java.util.Map;
@@ -15,4 +16,6 @@ public interface TabularDataRepository<T, U> extends AnnotationRepository<T, U>{
     Future<List<String>> getAllInvalidData(String projectName);
 
     Future<Void> writeFile(String projectId, String fileType, boolean isFilterInvalidData);
+
+    Future<JsonArray> getLabel(String projectId, String uuid);
 }
